@@ -1,8 +1,8 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-    <div id="content" v-if="getToSection=='toAion'">
-      <div v-if="getToPlatform"> 
+    <div id="content" v-if="getToSection == 'toAion'">
+      <div v-if="getToPlatform">
         <b-container fluid>
           <b-row>
             <b-col class="d-contents"><h1 class="title">Platform</h1> </b-col>
@@ -19,7 +19,6 @@
                 <span class="pt-3"
                   ><i class="fa fa-print align-middle" @click="print"></i
                 ></span>
-               
               </div>
               <b-button id="export-btn" v-b-modal.modal class="d-none">
                 <i class="fa fa-info-circle fa-2x" />
@@ -43,23 +42,22 @@
               </b-modal>
             </b-col>
           </b-row>
-           <section id="date-picker" class="text-rigth">
-                  <date-picker
-                    v-model="valueDate"
-                    type="date"
-                    range
-                    placeholder="เลือกช่วงเวลา"
-                    :disabled-date="(date) => date >= new Date()"
-                    value-type="YYYY-MM-DD"
-                    format="DD/MM/YYYY"
-                    @change="selectData()"
-                    ></date-picker
-                  >
-                </section>
+          <section id="date-picker" class="text-rigth">
+            <date-picker
+              v-model="valueDate"
+              type="date"
+              range
+              placeholder="เลือกช่วงเวลา"
+              :disabled-date="date => date >= new Date()"
+              value-type="YYYY-MM-DD"
+              format="DD/MM/YYYY"
+              @change="selectData()"
+            ></date-picker>
+          </section>
           <b-row align-h="end"> </b-row>
         </b-container>
         <b-container>
-          <b-row  style="padding-bottom: 200px">
+          <b-row style="padding-bottom: 200px">
             <Summary />
             <Facebook />
             <Twitter />
@@ -94,7 +92,7 @@ import moment from "moment";
 import PlatFormMain from "@/components/platform/PlatFormMain.vue";
 
 export default {
-  name: 'Dashboard',
+  name: "Dashboard",
   computed: {
     ...mapGetters([
       "getLoadStatus",
@@ -104,7 +102,7 @@ export default {
       "getShowDomain",
       "getBacklogs",
       "getToPlatform",
-       "getToSection",
+      "getToSection"
     ]),
     ssdate() {
       var ssdate = this.sdate;
@@ -119,7 +117,7 @@ export default {
       var e = new Date(this.getRangeEnddate.slice(0, 10));
       eedate = new Intl.DateTimeFormat("en-AU").format(e);
       return eedate;
-    },
+    }
   },
   components: {
     HomeNav,
@@ -134,20 +132,27 @@ export default {
     Blockdit,
     Tiktok
   },
-  data: function () {
+  data: function() {
     return {
       domainData: "",
       sdate: "",
       edate: "",
       start_date: "",
       end_date: " ",
-      valueDate:[ moment(new Date()).format().slice(0, 10),moment(new Date()).format().slice(0, 10)],
+      valueDate: [
+        moment(new Date())
+          .format()
+          .slice(0, 10),
+        moment(new Date())
+          .format()
+          .slice(0, 10)
+      ],
       dmy: "",
       today: "aa",
       options: [
         { id: "daily", value: "Today" },
         { id: "weekly", value: "Last week" },
-        { id: "monthly", value: "1 month" },
+        { id: "monthly", value: "1 month" }
       ],
       type_selected: "daily",
       showDetail: false,
@@ -236,7 +241,7 @@ export default {
           flex: 0 0 88.666667%;
           max-width: 88.666667%;
         }
-      }`,
+      }`
     };
   },
   methods: {
@@ -250,35 +255,39 @@ export default {
         this.$store.dispatch("fetchSentimentStatDashboard", {
           start_date: this.start_date,
           end_date: this.end_date,
-          domain: this.domainData,
+          domain: this.domainData
         });
         this.$store.dispatch("fetchAllstats", {
           start_date: this.start_date,
-          end_date: this.end_date,
+          end_date: this.end_date
         });
       } else {
-        let today = moment(new Date()).format().slice(0, 10);
+        let today = moment(new Date())
+          .format()
+          .slice(0, 10);
         this.start_date = today + "T00:00:00";
         this.end_date = today + "T23:59:59";
         this.$store.dispatch("fetchSentimentStatDashboard", {
           start_date: this.start_date,
           end_date: this.end_date,
-          domain: this.domainData,
+          domain: this.domainData
         });
         this.$store.dispatch("fetchAllstats", {
           start_date: this.start_date,
-          end_date: this.end_date,
+          end_date: this.end_date
         });
       }
     },
     print() {
       const d = new Printd();
       d.print(document.getElementById("content"), [this.cssText]);
-    },
+    }
   },
   async created() {
     //console.log(`${this.$options.name} component succesfully mounted`);
-    let today = moment(new Date()).format().slice(0, 10);
+    let today = moment(new Date())
+      .format()
+      .slice(0, 10);
     console.log("moment", moment(new Date()).format());
     this.start_date = today + "T00:00:00";
     this.$store.commit("setRageStartdate", this.start_date);
@@ -286,10 +295,10 @@ export default {
     this.$store.commit("setRageEnddate", this.end_date);
     this.$store.dispatch("fetchAllstats", {
       start_date: this.start_date,
-      end_date: this.end_date,
+      end_date: this.end_date
     });
     await this.$store.dispatch("fetchDomain");
-    let domainName = this.getShowDomain.map((key) => {
+    let domainName = this.getShowDomain.map(key => {
       return key.name;
     });
     this.domainData = domainName;
@@ -298,9 +307,9 @@ export default {
     await this.$store.dispatch("fetchSentimentStatDashboard", {
       start_date: this.start_date,
       end_date: this.end_date,
-      domain: domainName,
+      domain: domainName
     });
-  },
+  }
 };
 </script>
 
@@ -397,10 +406,10 @@ export default {
   .col-10 {
     max-width: 100%;
   }
-   #date-picker {
-  /* margin: 20px 0px 0px 0px; */
-  text-align: center;
-}
+  #date-picker {
+    /* margin: 20px 0px 0px 0px; */
+    text-align: center;
+  }
 }
 @media only screen and (min-device-width: 768px) and (max-device-width: 1000px) {
   .popup {
@@ -416,6 +425,5 @@ export default {
   .popup {
     width: 100%;
   }
-
 }
 </style>

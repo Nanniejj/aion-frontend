@@ -55,9 +55,16 @@
         </b-input-group>
       </b-col>
     </b-row>
-    <b-alert show variant="danger" class="w-100 p-1" v-if="alert">กรุณาเลือกจังหวัด</b-alert>
+    <b-alert show variant="danger" class="w-100 p-1" v-if="alert"
+      >กรุณาเลือกจังหวัด</b-alert
+    >
     <div class="text-right">
-      <b-button @click="submit" id="search-btn"  variant="warning" :disabled="isDisabled">
+      <b-button
+        @click="submit"
+        id="search-btn"
+        variant="warning"
+        :disabled="isDisabled"
+      >
         ค้นหา</b-button
       >
     </div>
@@ -74,10 +81,7 @@
           <h5 class="bold text-lg-left">
             <i class="fas fa-map-marker-alt" /> {{ cw }}
             <span v-if="am">/ {{ am.toString() }} </span>
-            <span
-              v-if="uname"
-              class="font-weight-light small m-3"
-              id="bg-user"
+            <span v-if="uname" class="font-weight-light small m-3" id="bg-user"
               ><i class="fa fa-user" /> {{ uname }}</span
             >
           </h5>
@@ -120,7 +124,7 @@ import "vue-select/dist/vue-select.css";
 export default {
   data() {
     return {
-      uname:"",
+      uname: "",
       alert: false,
       cw: "",
       am: "",
@@ -157,13 +161,13 @@ export default {
             "15",
             "16",
             "58",
-            "59",
+            "59"
           ],
-          text: "ภาคกลาง",
+          text: "ภาคกลาง"
         },
         {
           value: ["47", "48", "49", "51", "52", "53", "54"],
-          text: "ภาคกลางตอนบน",
+          text: "ภาคกลางตอนบน"
         },
         {
           value: [
@@ -181,13 +185,13 @@ export default {
             "16",
             "58",
             "59",
-            "60",
+            "60"
           ],
-          text: "ภาคกลางตอนล่าง",
+          text: "ภาคกลางตอนล่าง"
         },
         {
           value: ["38", "39", "40", "41", "42", "43", "44", "45", "46"],
-          text: "ภาคเหนือ",
+          text: "ภาคเหนือ"
         },
         {
           value: [
@@ -210,9 +214,9 @@ export default {
             "34",
             "35",
             "36",
-            "37",
+            "37"
           ],
-          text: "ภาคอีสาน",
+          text: "ภาคอีสาน"
         },
         {
           value: [
@@ -229,21 +233,21 @@ export default {
             "73",
             "74",
             "75",
-            "76",
+            "76"
           ],
-          text: "ภาคใต้",
+          text: "ภาคใต้"
         },
         { value: ["50", "55", "56", "61", "62"], text: "ภาคตะวันตก" },
         {
           value: ["10", "11", "12", "13", "14", "15", "17"],
-          text: "ภาคตะวันออก",
-        },
-      ],
+          text: "ภาคตะวันออก"
+        }
+      ]
     };
   },
   components: {
     TabPost,
-    vSelect,
+    vSelect
   },
   computed: {
     ...mapGetters([
@@ -252,16 +256,16 @@ export default {
       "getLocationCount",
       "getCwIndex",
       "getLoadStatus",
-      "getLoadLocation",
+      "getLoadLocation"
     ]),
-    isDisabled: function () {
+    isDisabled: function() {
       var select_changwats = this.select_changwats;
       return !select_changwats;
     },
-    isDisabled1: function () {
+    isDisabled1: function() {
       var select_Region = this.select_Region;
       return !select_Region;
-    },
+    }
     // Reg() {
     //   let data = this.changwats_name;
     //   if (data) {
@@ -282,17 +286,17 @@ export default {
       this.showData = true;
       this.btnstatus = !this.btnstatus;
       this.cw = this.changwats_name;
-      this.am = this.select_amphoes
-      this.uname =this.username;
+      this.am = this.select_amphoes;
+      this.uname = this.username;
       console.log("this.select_changwats", this.select_changwats);
     },
     searchLocation() {},
     regions() {
-      if ( this.select_Region=="") {
-        this.select_changwats =""
+      if (this.select_Region == "") {
+        this.select_changwats = "";
       }
       //  this.apiAble = true;
-      let regid = Object.keys(this.select_Region).map((key) => {
+      let regid = Object.keys(this.select_Region).map(key => {
         let n = this.select_Region[key].value;
         return n;
       });
@@ -300,12 +304,12 @@ export default {
       temp = temp.split(",");
       const uniqueArr = Array.from(new Set(temp));
 
-      let result = uniqueArr.map((key) => {
+      let result = uniqueArr.map(key => {
         return this.getChangwats[key];
       });
       this.dataChagwats = result;
 
-      let result2 = Object.keys(this.dataChagwats).map((key) => {
+      let result2 = Object.keys(this.dataChagwats).map(key => {
         return this.dataChagwats[key].name;
       });
       this.cwdata = result2.toString();
@@ -314,34 +318,34 @@ export default {
       this.apiAble = true;
       this.select_amphoes = "";
 
-      let result_Am = Object.keys(this.getAmphoes).map((key) => {
+      let result_Am = Object.keys(this.getAmphoes).map(key => {
         return this.getAmphoes[key];
       });
 
-      this.changwats_name = Object.keys(this.select_changwats).map((key) => {
+      this.changwats_name = Object.keys(this.select_changwats).map(key => {
         return this.select_changwats[key].name;
       });
       this.changwats_name = this.changwats_name.toString();
       console.log(" this.changwats_name", this.changwats_name);
-      let changwats_id = Object.keys(this.select_changwats).map((key) => {
+      let changwats_id = Object.keys(this.select_changwats).map(key => {
         return { changwats_id: this.select_changwats[key].id };
       });
       // console.log("this.select_changwats.id", changwats_id);
 
       const arr1 = result_Am;
       const arr2 = changwats_id;
-      const intersection = arr1.filter((item1) =>
-        arr2.some((item2) => item1.changwat_id === item2.changwats_id)
+      const intersection = arr1.filter(item1 =>
+        arr2.some(item2 => item1.changwat_id === item2.changwats_id)
       );
       // console.log("intersection", intersection);
 
-      let results = Object.keys(intersection).map((key) => {
+      let results = Object.keys(intersection).map(key => {
         return intersection[key].name.th;
       });
       console.log("reg", results);
       this.dataAmphoes = results;
-    },
-  },
+    }
+  }
 };
 </script>
 
