@@ -96,10 +96,13 @@ export default {
           this.getMaxMinMap.min,
           this.getMaxMinMap.max
         );
-        newColor = interpolateColor("#00ff00", "#ff0000", factor) + "50";
+        newColor = interpolateColor("#000000", "#0000ff", factor) + "50";
         title = `${tmpData.name}: ${tmpData.count} Posts`;
         console.log(tmpData);
         console.log(newColor);
+      }
+      if (v.section == this.id_khet && v.province == this.id_province) {
+        newColor = "rgba(0, 255, 0, 0.4)";
       }
       return {
         ...v,
