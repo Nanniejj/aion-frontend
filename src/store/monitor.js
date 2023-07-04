@@ -3,6 +3,8 @@ import { DomainService } from "@/common/api.services";
 
 export default {
   state: {
+    mapdata:[],
+    maxminmap:"",
     sumsocial: {
       targetlist: [],
       hashtaglist: [],
@@ -109,6 +111,12 @@ export default {
     socialmo: "",
   },
   getters: {
+    getMaxMinMap: (state) => {
+      return state.maxminmap;
+    },
+    getMapdata: (state) => {
+      return state.mapdata;
+    },
     getSumMonitor: (state) => {
       return state.sumsocial;
     },
@@ -199,6 +207,12 @@ export default {
     },
   },
   mutations: {
+    setMaxMinMap: (state, payload) =>  {
+    state.maxminmap=payload
+    },
+    setMapdata: (state, payload) =>  {
+     state.mapdata=payload
+    },
     setSumMonitor: (state, payload) => {
      state.sumsocial = payload;
     },
