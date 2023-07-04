@@ -1,16 +1,14 @@
 <template>
   <div style="width: 100%; height: 100%;">
-    {{ getMaxMinMap }}
-    {{ getMapdata }}
     <longdo-map>
       <longdo-map-polygon
-        v-for="loc in locs"
-        :key="loc"
+        v-for="(loc, i) in locs"
+        :key="i"
         :location="loc.location"
         :lineWidth="1"
         :lineColor="'rgba(0, 0, 0, 1)'"
-        :fillColor="loc.fillColor"
-        :title="`เขต ${loc.section}: 30 Posts`"
+        :fillColor="loc.newColor || loc.fillColor"
+        :title="loc.title"
       />
     </longdo-map>
   </div>
@@ -39,8 +37,8 @@ function ArrayToHex(rgb) {
 }
 
 function interpolateColor(color1, color2, factor) {
-  color1 = this.hexToArray(color1);
-  color2 = this.hexToArray(color2);
+  color1 = hexToArray(color1);
+  color2 = hexToArray(color2);
   if (arguments.length < 3) {
     factor = 0.5;
   }
@@ -48,7 +46,7 @@ function interpolateColor(color1, color2, factor) {
   for (var i = 0; i < 3; i++) {
     result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
   }
-  return this.ArrayToHex(result);
+  return ArrayToHex(result);
 }
 
 function getFactor(value, min, max) {
@@ -64,8 +62,7 @@ export default {
   },
   watch: {
     id_province(val) {
-      console.log("val", val, this.id_province);
-      // this.getColor()
+      console.log("val province", val, this.id_province);
     }
   },
   data() {
@@ -82,20 +79,36 @@ export default {
   },
   methods: {},
   async mounted() {
+    console.log(getFactor, interpolateColor);
+    console.log("val province4", this.getMapdata);
     this.locs = this.locs.map(v => {
       let tmpLocs = window.longdo.Util.overlayFromWkt(v.poly)
         .map(v => v.location())
         .flat();
-      // console.log(v.province_geocode, v.section);
+      let newColor = null;
+      let title = "";
+
+      let tmpData = this.getMapdata.find(x => parseInt(x.khet) == v.section);
+      if (tmpData && v.province == this.id_province) {
+        const factor = getFactor(
+          tmpData.count,
+          this.getMaxMinMap.min,
+          this.getMaxMinMap.max
+        );
+        newColor = interpolateColor("#00ff00", "#ff0000", factor) + "50";
+        title = `${tmpData.name}: ${tmpData.count} Posts`;
+        console.log(tmpData);
+        console.log(newColor);
+      }
       return {
         ...v,
         location: tmpLocs,
         fillColor:
-          v.province == this.id_province && v.section == 3
-            ? "rgba(0, 255, 0, 0.4)"
-            : "rgba(255, 0, 0, 0.1)" && v.province == this.id_province
+          v.province == this.id_province
             ? "rgba(255, 0, 0, 0.1)"
-            : "rgba(0, 0, 0, 0.1)"
+            : "rgba(0, 0, 0, 0.1)",
+        newColor,
+        title
       };
     });
   }

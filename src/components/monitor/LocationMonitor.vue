@@ -70,7 +70,7 @@
       >
     </div>
     <div style="height: 50vh;">
-      <Map :id_province="idcw" :key="componentKey" />
+      <Map :id_province="idcw"  />
     </div>
 
     <div v-if="showData == true" class="mt-3">
@@ -169,13 +169,13 @@ export default {
             "15",
             "16",
             "58",
-            "59",
+            "59"
           ],
-          text: "ภาคกลาง",
+          text: "ภาคกลาง"
         },
         {
           value: ["47", "48", "49", "51", "52", "53", "54"],
-          text: "ภาคกลางตอนบน",
+          text: "ภาคกลางตอนบน"
         },
         {
           value: [
@@ -193,13 +193,13 @@ export default {
             "16",
             "58",
             "59",
-            "60",
+            "60"
           ],
-          text: "ภาคกลางตอนล่าง",
+          text: "ภาคกลางตอนล่าง"
         },
         {
           value: ["38", "39", "40", "41", "42", "43", "44", "45", "46"],
-          text: "ภาคเหนือ",
+          text: "ภาคเหนือ"
         },
         {
           value: [
@@ -222,9 +222,9 @@ export default {
             "34",
             "35",
             "36",
-            "37",
+            "37"
           ],
-          text: "ภาคอีสาน",
+          text: "ภาคอีสาน"
         },
         {
           value: [
@@ -241,22 +241,22 @@ export default {
             "73",
             "74",
             "75",
-            "76",
+            "76"
           ],
-          text: "ภาคใต้",
+          text: "ภาคใต้"
         },
         { value: ["50", "55", "56", "61", "62"], text: "ภาคตะวันตก" },
         {
           value: ["10", "11", "12", "13", "14", "15", "17"],
-          text: "ภาคตะวันออก",
-        },
-      ],
+          text: "ภาคตะวันออก"
+        }
+      ]
     };
   },
   components: {
     TabPost,
     vSelect,
-    Map,
+    Map
   },
   computed: {
     ...mapGetters([
@@ -265,7 +265,7 @@ export default {
       "getLocationCount",
       "getCwIndex",
       "getLoadStatus",
-      "getLoadLocation",
+      "getLoadLocation"
     ]),
     isDisabled: function() {
       var select_changwats = this.select_changwats;
@@ -274,7 +274,7 @@ export default {
     isDisabled1: function() {
       var select_Region = this.select_Region;
       return !select_Region;
-    },
+    }
     // Reg() {
     //   let data = this.changwats_name;
     //   if (data) {
@@ -389,7 +389,7 @@ export default {
         this.select_changwats = "";
       }
       //  this.apiAble = true;
-      let regid = Object.keys(this.select_Region).map((key) => {
+      let regid = Object.keys(this.select_Region).map(key => {
         let n = this.select_Region[key].value;
         return n;
       });
@@ -399,12 +399,12 @@ export default {
       temp = temp.split(",");
       const uniqueArr = Array.from(new Set(temp));
 
-      let result = uniqueArr.map((key) => {
+      let result = uniqueArr.map(key => {
         return this.getChangwats[key];
       });
       this.dataChagwats = result;
 
-      let result2 = Object.keys(this.dataChagwats).map((key) => {
+      let result2 = Object.keys(this.dataChagwats).map(key => {
         return this.dataChagwats[key].name;
       });
       this.cwdata = result2.toString();
@@ -412,35 +412,34 @@ export default {
     changWats() {
       this.apiAble = true;
       this.select_amphoes = "";
-      let result_Am = Object.keys(this.getAmphoes).map((key) => {
+      let result_Am = Object.keys(this.getAmphoes).map(key => {
         return this.getAmphoes[key];
       });
 
-      this.changwats_name = Object.keys(this.select_changwats).map((key) => {
+      this.changwats_name = Object.keys(this.select_changwats).map(key => {
         return this.select_changwats[key].name;
       });
       this.changwats_name = this.changwats_name.toString();
       console.log(" this.changwats_name", this.changwats_name);
-      let changwats_id = Object.keys(this.select_changwats).map((key) => {
+      let changwats_id = Object.keys(this.select_changwats).map(key => {
         return { changwats_id: this.select_changwats[key].id };
       });
 
       const arr1 = result_Am;
       const arr2 = changwats_id;
       this.idcw = changwats_id[0].changwats_id;
-      const intersection = arr1.filter((item1) =>
-        arr2.some((item2) => item1.changwat_id === item2.changwats_id)
+      const intersection = arr1.filter(item1 =>
+        arr2.some(item2 => item1.changwat_id === item2.changwats_id)
       );
       console.log("intersection", this.idcw[0].changwats_id, arr1);
 
-      let results = Object.keys(intersection).map((key) => {
+      let results = Object.keys(intersection).map(key => {
         return intersection[key].name.th;
       });
       console.log("reg", results);
       this.dataAmphoes = results;
-    },
-  },
- 
+    }
+  }
 };
 </script>
 
