@@ -15,7 +15,7 @@
         </v-select>
       </b-col>
       <b-col md="6" lg="6" class="p-2">
-        {{ select_amphoes }}
+        <!-- {{ select_amphoes }} -->
         <v-select
           multiple
           :options="dataChagwats"
@@ -70,7 +70,7 @@
       >
     </div>
     <div style="height: 50vh;">
-      <Map :id_province="idcw"  />
+      <Map :id_province="idcw" :id_khet="idkt" :key="componentKey" class="mt-3" />
     </div>
 
     <div v-if="showData == true" class="mt-3">
@@ -129,6 +129,7 @@ import "vue-select/dist/vue-select.css";
 export default {
   data() {
     return {
+      idkt:"",
       mapData: [],
       componentKey: 0,
       idcw: "",
@@ -169,13 +170,13 @@ export default {
             "15",
             "16",
             "58",
-            "59"
+            "59",
           ],
-          text: "ภาคกลาง"
+          text: "ภาคกลาง",
         },
         {
           value: ["47", "48", "49", "51", "52", "53", "54"],
-          text: "ภาคกลางตอนบน"
+          text: "ภาคกลางตอนบน",
         },
         {
           value: [
@@ -193,13 +194,13 @@ export default {
             "16",
             "58",
             "59",
-            "60"
+            "60",
           ],
-          text: "ภาคกลางตอนล่าง"
+          text: "ภาคกลางตอนล่าง",
         },
         {
           value: ["38", "39", "40", "41", "42", "43", "44", "45", "46"],
-          text: "ภาคเหนือ"
+          text: "ภาคเหนือ",
         },
         {
           value: [
@@ -222,9 +223,9 @@ export default {
             "34",
             "35",
             "36",
-            "37"
+            "37",
           ],
-          text: "ภาคอีสาน"
+          text: "ภาคอีสาน",
         },
         {
           value: [
@@ -241,22 +242,22 @@ export default {
             "73",
             "74",
             "75",
-            "76"
+            "76",
           ],
-          text: "ภาคใต้"
+          text: "ภาคใต้",
         },
         { value: ["50", "55", "56", "61", "62"], text: "ภาคตะวันตก" },
         {
           value: ["10", "11", "12", "13", "14", "15", "17"],
-          text: "ภาคตะวันออก"
-        }
-      ]
+          text: "ภาคตะวันออก",
+        },
+      ],
     };
   },
   components: {
     TabPost,
     vSelect,
-    Map
+    Map,
   },
   computed: {
     ...mapGetters([
@@ -265,7 +266,7 @@ export default {
       "getLocationCount",
       "getCwIndex",
       "getLoadStatus",
-      "getLoadLocation"
+      "getLoadLocation",
     ]),
     isDisabled: function() {
       var select_changwats = this.select_changwats;
@@ -274,7 +275,7 @@ export default {
     isDisabled1: function() {
       var select_Region = this.select_Region;
       return !select_Region;
-    }
+    },
     // Reg() {
     //   let data = this.changwats_name;
     //   if (data) {
@@ -314,7 +315,7 @@ export default {
       if (
         this.select_amphoes[0] == "สาทร" ||
         this.select_amphoes[0] == "ปทุมวัน" ||
-        this.select_amphoes[0] == "ราชเทวี"
+        this.select_amphoes[0] == "บางรัก"
       ) {
         idam = "2";
       }
@@ -334,31 +335,35 @@ export default {
       }
 
       if (
-        this.select_amphoes[0] == "เขตห้วยขวาง" ||
-        this.select_amphoes[0] == "วังทองหลาง"
+        this.select_amphoes[0] == "ห้วยขวาง" ||
+        this.select_amphoes[0] == "ดินแดง"
       ) {
         idam = "5";
       }
 
       if (
         this.select_amphoes[0] == "พญาไท" ||
-        this.select_amphoes[0] == "ดินแดง"
+        this.select_amphoes[0] == "ราชเทวี"
       ) {
         idam = "6";
       }
 
-      if (this.select_amphoes[0] == "บางซื่อ") {
+      if (this.select_amphoes[0] == "บางซื่อ"||this.select_amphoes[0] == "ดุสิต") {
         idam = "7";
       }
-
+      if (
+        this.select_amphoes[0] == "ลาดพร้าว" ||this.select_amphoes[0] == 'วังทองหลาง' 
+      ) {
+        idam = "8";
+      }
       if (
         this.select_amphoes[0] == "หลักสี่" ||
         this.select_amphoes[0] == "จตุจักร"
       ) {
-        idam = "8";
+        idam = "9";
       }
       if (this.select_amphoes[0] == "บางเขน") {
-        idam = "9";
+        idam = "12";
       }
       if (this.select_amphoes[0] == "ดอนเมือง") {
         idam = "10";
@@ -367,17 +372,82 @@ export default {
       if (this.select_amphoes[0] == "สายไหม") {
         idam = "11";
       }
+      
+   
 
       if (
-        this.select_amphoes[0] == "ลาดพร้าว" ||
         this.select_amphoes[0] == "บึงกุ่ม"
       ) {
-        idam = "13";
+        idam = "14";
       }
 
       if (this.select_amphoes[0] == "บางกะปิ") {
-        idam = "14";
+        idam = "13";
       }
+      if (this.select_amphoes[0] == "คันนายาว") {
+        idam = "15";
+      }
+      if (this.select_amphoes[0] == "คลองสามวา") {
+        idam = "16";
+      }
+      if (this.select_amphoes[0] == "หนองจอก") {
+        idam = "17";
+      }
+      if (this.select_amphoes[0] == "มีนบุรี") {
+        idam = "15";
+      }
+      if (this.select_amphoes[0] == "ลาดกระบัง") {
+        idam = "18";
+      }
+      if (this.select_amphoes[0] == "ประเวศ"||this.select_amphoes[0] == 'สะพานสูง') {
+        idam = "19";
+      }
+      if (this.select_amphoes[0] == "สวนหลวง") {
+        idam = "20";
+      }
+      if (this.select_amphoes[0] == "พระโขนง"||this.select_amphoes[0] == 'บางนา') {
+        idam = "21";
+      }
+      if (this.select_amphoes[0] == 'คลองสาน') {
+        idam = "22";
+      }
+      if (this.select_amphoes[0] == "ทุ่งครุ"||this.select_amphoes[0] == 'ราษฎร์บูรณะ') {
+        idam = "24";
+      }
+      if (this.select_amphoes[0] == "ธนบุรี"||this.select_amphoes[0] == "จอมทอง") {
+        idam = "23";
+      }
+      if (this.select_amphoes[0] == "บางขุนเทียน") {
+        idam = "25";
+      }
+      if (this.select_amphoes[0] == "บางบอน") {
+        idam = "26";
+      }
+      if (this.select_amphoes[0] == "หนองแขม") {
+        idam = "26";
+      }
+      if (this.select_amphoes[0] == "บางแค") {
+        idam = "28";
+      }
+      if (this.select_amphoes[0] == "ตลิ่งชัน") {
+        idam = "27";
+      }
+      if (this.select_amphoes[0] == "ทวีวัฒนา") {
+        idam = "27";
+      }
+      if (this.select_amphoes[0] == "บางกอกใหญ่") {
+        idam = "22";
+      }
+      if (this.select_amphoes[0] == "ภาษีเจริญ") {
+        idam = "29";
+      }
+      if (this.select_amphoes[0] == "บางกอกน้อย") {
+        idam = "30";
+      }
+      if (this.select_amphoes[0] == "บางพลัด") {
+        idam = "30";
+      }
+      this.idkt=idam
       console.log(idam);
       this.uname = this.username;
       this.forceRerender();
@@ -389,7 +459,7 @@ export default {
         this.select_changwats = "";
       }
       //  this.apiAble = true;
-      let regid = Object.keys(this.select_Region).map(key => {
+      let regid = Object.keys(this.select_Region).map((key) => {
         let n = this.select_Region[key].value;
         return n;
       });
@@ -399,12 +469,12 @@ export default {
       temp = temp.split(",");
       const uniqueArr = Array.from(new Set(temp));
 
-      let result = uniqueArr.map(key => {
+      let result = uniqueArr.map((key) => {
         return this.getChangwats[key];
       });
       this.dataChagwats = result;
 
-      let result2 = Object.keys(this.dataChagwats).map(key => {
+      let result2 = Object.keys(this.dataChagwats).map((key) => {
         return this.dataChagwats[key].name;
       });
       this.cwdata = result2.toString();
@@ -412,34 +482,35 @@ export default {
     changWats() {
       this.apiAble = true;
       this.select_amphoes = "";
-      let result_Am = Object.keys(this.getAmphoes).map(key => {
+      let result_Am = Object.keys(this.getAmphoes).map((key) => {
         return this.getAmphoes[key];
       });
 
-      this.changwats_name = Object.keys(this.select_changwats).map(key => {
+      this.changwats_name = Object.keys(this.select_changwats).map((key) => {
         return this.select_changwats[key].name;
       });
       this.changwats_name = this.changwats_name.toString();
       console.log(" this.changwats_name", this.changwats_name);
-      let changwats_id = Object.keys(this.select_changwats).map(key => {
+      let changwats_id = Object.keys(this.select_changwats).map((key) => {
         return { changwats_id: this.select_changwats[key].id };
       });
 
       const arr1 = result_Am;
       const arr2 = changwats_id;
       this.idcw = changwats_id[0].changwats_id;
-      const intersection = arr1.filter(item1 =>
-        arr2.some(item2 => item1.changwat_id === item2.changwats_id)
+      const intersection = arr1.filter((item1) =>
+        arr2.some((item2) => item1.changwat_id === item2.changwats_id)
       );
       console.log("intersection", this.idcw[0].changwats_id, arr1);
 
-      let results = Object.keys(intersection).map(key => {
+      let results = Object.keys(intersection).map((key) => {
         return intersection[key].name.th;
       });
       console.log("reg", results);
       this.dataAmphoes = results;
-    }
-  }
+    },
+  },
+ 
 };
 </script>
 

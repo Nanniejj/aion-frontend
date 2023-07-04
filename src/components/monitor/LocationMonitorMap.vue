@@ -58,7 +58,8 @@ export default {
     ...mapGetters(["getMaxMinMap", "getMapdata"])
   },
   props: {
-    id_province: String
+    id_province: String,
+    id_khet: String
   },
   watch: {
     id_province(val) {
