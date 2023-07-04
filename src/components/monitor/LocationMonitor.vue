@@ -68,6 +68,9 @@
         ค้นหา</b-button
       >
     </div>
+    <div style="height: 50vh;">
+      <Map />
+    </div>
 
     <div v-if="showData == true" class="mt-3">
       <vue-element-loading
@@ -117,6 +120,7 @@
 
 <script>
 import TabPost from "@/components/profile/TabPost.vue";
+import Map from "@/components/monitor/LocationMonitorMap.vue";
 import { mapGetters } from "vuex";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
@@ -247,7 +251,8 @@ export default {
   },
   components: {
     TabPost,
-    vSelect
+    vSelect,
+    Map
   },
   computed: {
     ...mapGetters([
