@@ -54,47 +54,47 @@
         <b-row align-h="center" class="mt-lg-4 mt-md-2">
           <b-col cols="1" align-h="center" class="ml-4">
             <li v-on:click="all()" id="all">
-              <a><img src="@/assets/All.png" class="imgsocial" /></a>
+              <a><img src="@/assets/All.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="facebook()" id="fb">
-              <a><img src="@/assets/Facebook.png" class="imgsocial" /></a>
+              <a><img src="@/assets/Facebook.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="twitter()" id="tw">
-              <a><img src="@/assets/Twitter.png" class="imgsocial" /></a>
+              <a><img src="@/assets/Twitter.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="pantip()" id="pt">
-              <a><img src="@/assets/Pantip.png" class="imgsocial" /></a>
+              <a><img src="@/assets/Pantip.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="youtube()" id="yt">
-              <a><img src="@/assets/Youtube.png" class="imgsocial" /></a>
+              <a><img src="@/assets/Youtube.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="news()" id="nw">
-              <a><img src="@/assets/News.png" class="imgsocial" /></a>
+              <a><img src="@/assets/News.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="instagram()" id="itg">
-              <a><img src="@/assets/Instagram.png" class="imgsocial" /></a>
+              <a><img src="@/assets/Instagram.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="blockdit()" id="bd">
-              <a><img src="@/assets/Blockdit.png" class="imgsocial" /></a>
+              <a><img src="@/assets/Blockdit.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="tiktok()" id="tt">
-              <a><img src="@/assets/Tiktok.png" class="imgsocial" /></a>
+              <a><img src="@/assets/Tiktok.png" class="imgsocial"/></a>
             </li>
           </b-col>
         </b-row>
@@ -158,7 +158,7 @@ export default {
     TopUserSocial,
   },
   props: ["source"],
-  data: function () {
+  data: function() {
     return {
       stmname: "",
       datatext: [],
@@ -188,7 +188,7 @@ export default {
     };
   },
   beforeCreate() {
-    this.$nextTick(function () {
+    this.$nextTick(function() {
       this.linksdata = this.getLinksTopInfluencer;
     });
   },
@@ -205,7 +205,7 @@ export default {
       "getSocialTop",
       "getShowTopInflu",
     ]),
-    isDisabled: function () {
+    isDisabled: function() {
       var select_sc = this.social;
       select_sc = this.select_domain;
       return !select_sc;
@@ -219,22 +219,27 @@ export default {
       );
       // this.$store.commit("setTopInfluencer",data)
     },
-    printWindow: function () {
+    printWindow: function() {
       try {
         window.print();
       } catch (err) {
         console.log(err);
       }
     },
-    onOptionsChange: function () {
+    onOptionsChange: function() {
       this.$store.commit("changeDataChoice", { choice: this.type_selected });
     },
     selectData() {
       console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         this.start_date =
-          moment(new Date()).format().slice(0, 10) + "T00:00:00";
-        this.end_date = moment(new Date()).format().slice(0, 10) + "T23:59:59";
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T00:00:00";
+        this.end_date =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T23:59:59";
       } else {
         this.start_date = this.valueDate[0] + "T00:00:00";
         this.end_date = this.valueDate[1] + "T23:59:59";
@@ -243,11 +248,11 @@ export default {
       this.$store.commit("setWordCloudStartDate", this.start_date);
       this.$store.commit("setWordCloudEndDate", this.end_date);
     },
-    btnlinks: function () {
+    btnlinks: function() {
       //this.submited = true;
       this.$store.commit("setSubmitInfluencer", true);
     },
-    submitform: function () {
+    submitform: function() {
       //this.submited = true;
       this.$store.commit("setStmInflu", this.select_stm.name);
       this.$store.commit("setSubmitInfluencer", true);
@@ -256,8 +261,13 @@ export default {
       this.$store.commit("setShowTopInflu", true);
       if (this.valueDate == "") {
         this.start_date =
-          moment(new Date()).format().slice(0, 10) + "T00:00:00";
-        this.end_date = moment(new Date()).format().slice(0, 10) + "T23:59:59";
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T00:00:00";
+        this.end_date =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T23:59:59";
       }
       this.$store.commit("setLoadTopUserPf", true);
       //http://139.59.103.67:3000/api/v2/userposts/getInfluencerTarget?
@@ -287,7 +297,7 @@ export default {
           var data = response.data;
 
           // -------------------------------------------translateuid-----------------------------------------------------------
-          if ( this.social == "youtube") {
+          if (this.social == "youtube") {
             data.map((result) => {
               // console.log("API", result.items.details.account_name);
               Object.assign(result.items.details, {
@@ -360,13 +370,14 @@ export default {
 
           this.$store.commit("setLoadTopUserPf", false);
         })
-        .catch(function (error) {
+        .catch(function(error) {
           console.log(error);
           this.$store.commit("setLoadTopUserPf", false);
         });
     },
     all() {
-      this.social = "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok";
+      this.social =
+        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok";
       document.getElementById("all").style.opacity = "1";
       document.getElementById("fb").style.opacity = "0.3";
       document.getElementById("tw").style.opacity = "0.3";
@@ -474,7 +485,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
     },
   },
-  created: function () {
+  created: function() {
     this.domain = this.select_domain;
     this.$store.dispatch("fetchDomainRanking");
     // this.$nextTick(function() {
@@ -542,7 +553,7 @@ button {
 }
 /*#search-input {
  box-sizing: border-box;
-  background-image: url("/search_icon.png");
+  background-image: url("@/assets/search_icon.png");
   background-position: 14px 17px;
   background-repeat: no-repeat;
 } */

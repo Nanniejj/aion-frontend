@@ -290,7 +290,6 @@ export default {
     //   source: this.social,
     // });
     // this.$store.dispatch("fetchListTargetReport",{});
-
     // if(this.getSocialMo == ''){
     // await  this.$store.dispatch("fatchListMonitor");
     // }else {
@@ -403,7 +402,7 @@ table > thead > tr > th:nth-child(3) {
 }
 #filter-input {
   box-sizing: border-box;
-  background-image: url("/search_icon.png");
+  background-image: url("@/assets/search_icon.png");
   background-position: 94% 10px;
   background-repeat: no-repeat;
   padding: 7px 20px 7px 45px;

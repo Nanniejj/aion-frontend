@@ -369,11 +369,11 @@ export default {
               });
               this.hideModal();
             })
-            .catch(function (error) {
+            .catch(function(error) {
               console.log(error);
             });
         })
-        .catch(function (error) {
+        .catch(function(error) {
           console.log(error);
           this.$fire({
             title: "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
@@ -383,7 +383,7 @@ export default {
           });
         });
     },
-    removeRow: function (item) {
+    removeRow: function(item) {
       this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
         const axios = require("axios").default;
         var config = {
@@ -416,7 +416,7 @@ export default {
                   timer: 1000,
                 });
               })
-              .catch(function (error) {
+              .catch(function(error) {
                 console.log(error);
                 this.$fire({
                   title: "ลบข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
@@ -426,17 +426,17 @@ export default {
                 });
               });
           })
-          .catch(function (error) {
+          .catch(function(error) {
             console.log(error);
           });
       });
     },
-    backDomain: function () {
+    backDomain: function() {
       this.$store.commit("setListWord", false);
       this.$store.commit("setListSubDomain", false);
       //console.log('back');
     },
-    backSubDomain: function () {
+    backSubDomain: function() {
       this.$store.commit("setListWord", false);
       //console.log('back');
     },
@@ -479,7 +479,7 @@ export default {
         .then((response) => {
           this.$store.commit("setDataIssue", response.data);
         })
-        .catch(function (error) {
+        .catch(function(error) {
           this.$fire({
             title: "กรุณาลองอีกครั้ง",
             type: "error",
@@ -568,7 +568,7 @@ export default {
 }
 #filter-input {
   box-sizing: border-box;
-  background-image: url("/search_icon.png");
+  background-image: url("@/assets/search_icon.png");
   background-position: 94% 10px;
   background-repeat: no-repeat;
   padding: 7px 20px 7px 45px;

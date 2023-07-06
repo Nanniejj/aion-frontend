@@ -601,7 +601,7 @@ button {
 }
 /* #search-input {
   box-sizing: border-box;
-  background-image: url("/search_icon.png");
+  background-image: url("@/assets/search_icon.png");
   background-position: 14px 17px;
   background-repeat: no-repeat;
   padding: 7px 20px 7px 45px;

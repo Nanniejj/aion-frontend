@@ -99,12 +99,12 @@ export default {
     };
   },
   methods: {
-    clickSocial(){
+    clickSocial() {
       const result = this.select_social.filter((word) => word == "All");
       let rs = String(result);
       if (rs == "All") {
-        if (this.select_social[0]=='All'&&this.select_social.length >= 2) {
-          this.select_social = this.select_social.slice(1)
+        if (this.select_social[0] == "All" && this.select_social.length >= 2) {
+          this.select_social = this.select_social.slice(1);
         } else {
           this.select_social = ["All"];
         }
@@ -116,8 +116,8 @@ export default {
       let rs = String(result);
 
       if (rs == "All") {
-        if (this.select_issue[0]=='All'&&this.select_issue.length >= 2) {
-          this.select_issue = this.select_issue.slice(1)
+        if (this.select_issue[0] == "All" && this.select_issue.length >= 2) {
+          this.select_issue = this.select_issue.slice(1);
         } else {
           this.select_issue = ["All"];
         }
@@ -210,7 +210,7 @@ export default {
 }
 #input {
   box-sizing: border-box;
-  background-image: url("/search_icon.png");
+  background-image: url("@/assets/search_icon.png");
   background-position: 14px 10px;
   background-repeat: no-repeat;
   padding: 7px 20px 7px 45px;

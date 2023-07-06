@@ -196,7 +196,7 @@ export default {
       "getItemsSubDomain",
       "getDomainId",
       "getRowCount",
-      "getLoadStatus"
+      "getLoadStatus",
     ]),
     sortOptions() {
       // Create an options list from our fields
@@ -375,7 +375,7 @@ export default {
 }
 #filter-input {
   box-sizing: border-box;
-  background-image: url("/search_icon.png");
+  background-image: url("@/assets/search_icon.png");
   background-position: 94% 10px;
   background-repeat: no-repeat;
   padding: 7px 20px 7px 45px;
