@@ -101,6 +101,7 @@ export default {
                 // handle success
                 if(res.data.results=="error"){
                     console.log("Error")
+                    alert('ไม่สามารถเพิ่มบัญชีผู้ใช้งานได้ กรุณาลองอีกครั้ง')
                     commit('setAddUserStatus', "ERROR");
                 }
                 else{

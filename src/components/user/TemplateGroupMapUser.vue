@@ -6,26 +6,59 @@
       :animation-panel="'modal-slide-top'"
       :resize-width="{ 3000: '80%', 992: '50%', 768: '90%' }"
     >
-      <v-select v-on:input="onChangenProject()" :options="optionProject" v-model="projectnameselected" ></v-select>
-
       <b-container fluid>
-        <h5><b>Edit Userx</b></h5>
+        <!-- {{ items }} -->
+        <h5><b>การจัดการ Group</b></h5>
         <hr />
-
-        <b-row class="my-1">
-                    <b-col sm="12" style="text-align:left;">
-<h5>Domain Name</h5>
+        <b-row>
+          <b-col cols="2" class="bold py-2">
+            username
           </b-col>
-          <b-col sm="12" style="text-align:left;">
-{{this.getProjectOneDomainName}}
+          <b-col cols="10" class="py-2">
+            {{ items.username }}
+          </b-col>
+          <b-col cols="2" class="bold py-2">
+            email
+          </b-col>
+          <b-col cols="10" class="py-2">
+            {{ items.email }}
+          </b-col>
+          <b-col cols="2" class="bold py-2">
+            Group
+          </b-col>
+          <b-col cols="10" class="py-2">
+            <!-- {{ items.projectname }} -->
+            <v-select
+              v-on:input="onChangenProject()"
+              :options="optionProject"
+              v-model="projectnameselected"
+            ></v-select>
           </b-col>
         </b-row>
-        <b-row class="my-1">
-                    <b-col sm="12" style="text-align:left;">
-<h5>Hashtag</h5>
-          </b-col>
+        <b-row class="my-2">
           <b-col sm="12" style="text-align:left;">
-{{this.getProjectOneHashtag}}
+            <h6 class="bold">Domain</h6>
+          </b-col>
+          <b-col
+            sm="12"
+            style="max-height: 200px;
+    text-align: left;
+    overflow: auto;"
+          >
+            {{ this.getProjectOneDomainName }}
+          </b-col>
+        </b-row>
+        <b-row class="my-2">
+          <b-col sm="12" style="text-align:left;">
+            <h6 class="bold">Hashtag</h6>
+          </b-col>
+          <b-col
+            sm="12"
+            style="max-height: 200px;
+    text-align: left;
+    overflow: auto;"
+          >
+            {{ this.getProjectOneHashtag }}
           </b-col>
         </b-row>
         <b-row class="my-1">
@@ -34,7 +67,7 @@
             <b-button class="btn btn-close" size="sm" @click="hideModal()"
               >ปิดหน้าต่าง</b-button
             >
-            <b-button class="btn btn-save" size="sm" @click="submitform()"
+            <b-button class="btn btn-save mx-2" size="sm" @click="submitform()"
               >บันทึก</b-button
             >
           </b-col>
@@ -45,15 +78,17 @@
 </template>
 
 <script>
-
 import "vue-select/dist/vue-select.css";
 import { mapGetters } from "vuex";
 export default {
+  props: {
+    items: { type: Object },
+  },
   data() {
     return {
       open: false,
       optionProject: [],
-      projectnameselected:"",
+      projectnameselected: "",
       user: {
         _id: "",
         username: "",
@@ -61,28 +96,33 @@ export default {
     };
   },
   methods: {
-
     submitform() {
-
-          console.log(" >>>"+JSON.stringify({userlist:this.user._id}))
-          console.log(" >>>"+JSON.stringify({projectname:this.projectnameselected}))
-          this.$store.dispatch("addNameToProject",{projectname:this.projectnameselected,userid:this.user._id});
-          this.hideModal();
-
+      console.log(" >>>" + JSON.stringify({ userlist: this.user._id }));
+      console.log(
+        " >>>" + JSON.stringify({ projectname: this.projectnameselected })
+      );
+      this.$store.dispatch("addNameToProject", {
+        projectname: this.projectnameselected,
+        userid: this.user._id,
+      });
+      this.hideModal();
     },
     hideModal() {
       this.open = false;
     },
-    onChangenProject(){
-      this.$store.dispatch("fetchTemplateProjectOne",{projectname:this.projectnameselected});
-
+    onChangenProject() {
+      this.$store.dispatch("fetchTemplateProjectOne", {
+        projectname: this.projectnameselected,
+      });
     },
     openModal(item) {
       // console.log(item)
       this.user._id = item._id;
       this.user.username = item.username;
       this.projectnameselected = item.projectname;
-      this.$store.dispatch("fetchTemplateProjectOne",{projectname:this.projectnameselected});
+      this.$store.dispatch("fetchTemplateProjectOne", {
+        projectname: this.projectnameselected,
+      });
       this.open = true;
       var array = [];
       this.getProjectList.forEach(function(itemx) {
@@ -92,7 +132,11 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(["getProjectList","getProjectOneDomainName","getProjectOneHashtag"]),
+    ...mapGetters([
+      "getProjectList",
+      "getProjectOneDomainName",
+      "getProjectOneHashtag",
+    ]),
   },
   created() {
     this.$store.dispatch("fetchTemplateProject");

@@ -2,7 +2,7 @@ import { WordcloudService } from "@/common/api.services";
 import { DomainService } from "@/common/api.services";
 export default {
   state: {
-    relAcc:"",
+    relAcc: "",
     chartDomain: [],
     listDomain: [],
     topPost: [],
@@ -42,6 +42,9 @@ export default {
       let domain = state.listDomain.filter(
         (element) => element.display == true
       );
+      domain.sort(function(a, b) {
+        return parseFloat(a.id) - parseFloat(b.id);
+      });
       console.log(domain);
       return domain.map((result) => {
         return result;
@@ -71,7 +74,7 @@ export default {
   },
   mutations: {
     setRelAcc: (state, payload) => {
-     state.relAcc = payload;
+      state.relAcc = payload;
     },
     setArrDate: (state, payload) => {
       state.arrDate = payload;
@@ -125,10 +128,14 @@ export default {
       commit("setLoadStatus", true);
       try {
         const res = await WordcloudService.getDomain({ limit: 100000 });
+        res.data.results.sort(function(a, b) {
+          return parseFloat(a.id) - parseFloat(b.id);
+        });
         let domainName = res.data.results.map((key) => {
           return key.name;
         });
-        localStorage.setItem('domainArr', domainName.toString());
+        console.log('domainName',domainName);
+        localStorage.setItem("domainArr", domainName.toString());
         commit("setListDomain", res.data.results);
         commit("setLoadStatus", false);
       } catch (error) {
@@ -148,48 +155,48 @@ export default {
           const filtered = temp.filter(
             ({ full_text }, index) => !ids.includes(full_text, index + 1)
           );
-          var post = filtered
-          var pair = {read: true};   
-          var posts= post.map((result) => {
-          return {...result, ...pair}
-        });
-         // -------------------------------------------translateuid----------------------------------------------------------- 
-      posts.slice(0,3).map((result) => {
-        if (result.source=='youtube') {
-          var axios = require("axios");
-          var config = {
-            method: "get",
-            url:
-              "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-              result.account_name,
-            headers: {
-              Authorization: "Bearer " + localStorage.getItem("token"),
-              "Content-Type": "application/json",
-            },
-          };
-          axios(config)
-            .then((response) => {
-              console.log("Object.keys", Object.keys(response.data).length);
-              if (Object.keys(response.data).length) {
-                result.account_name= response.data.name
-                // console.log('2',result);
-              } else {
-                return 
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        } else {
-          return result
-        }
-       
-          return {result}
-        });
+          var post = filtered;
+          var pair = { read: true };
+          var posts = post.map((result) => {
+            return { ...result, ...pair };
+          });
+          // -------------------------------------------translateuid-----------------------------------------------------------
+          posts.slice(0, 3).map((result) => {
+            if (result.source == "youtube") {
+              var axios = require("axios");
+              var config = {
+                method: "get",
+                url:
+                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
+                  result.account_name,
+                headers: {
+                  Authorization: "Bearer " + localStorage.getItem("token"),
+                  "Content-Type": "application/json",
+                },
+              };
+              axios(config)
+                .then((response) => {
+                  console.log("Object.keys", Object.keys(response.data).length);
+                  if (Object.keys(response.data).length) {
+                    result.account_name = response.data.name;
+                    // console.log('2',result);
+                  } else {
+                    return;
+                  }
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            } else {
+              return result;
+            }
 
-  // ---------------------------------------------------------------------------------------------------------
-        
-          commit("setTopPostDomain", posts.slice(0,3));
+            return { result };
+          });
+
+          // ---------------------------------------------------------------------------------------------------------
+
+          commit("setTopPostDomain", posts.slice(0, 3));
           console.log("temp", [...temp]);
         } else {
           commit("setTopPostDomain", []);

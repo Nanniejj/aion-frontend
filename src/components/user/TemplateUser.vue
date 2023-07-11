@@ -25,7 +25,7 @@
         <b-col lg="6" class="my-1">
           <TemplateAddUser />
           <TemplateEditUser ref="TemplateEditUser" />
-          <TemplateGroupMapUser ref="TemplateGroupMapUser" />
+          <TemplateGroupMapUser ref="TemplateGroupMapUser" :items="datarow"/>
         </b-col>
       </b-row>
       <br />
@@ -82,6 +82,7 @@
             size="sm"
             @click="editGroup(row.item)"
           ></span>
+        
         </template>
 
         <template #cell(display)="row">
@@ -133,6 +134,7 @@ export default {
   components: { TemplateAddUser, TemplateEditUser, TemplateGroupMapUser },
   data() {
     return {
+      datarow:"",
       empData: "ไม่พบข้อมูล",
       idUser: 0,
       fields: [
@@ -185,6 +187,8 @@ export default {
       this.$refs.TemplateEditUser.openModal(item);
     },
     editGroup(item) {
+      console.log(item);
+      this.datarow=item
       this.$refs.TemplateGroupMapUser.openModal(item);
     },
     ///////////////////////////////

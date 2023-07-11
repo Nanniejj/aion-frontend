@@ -4,7 +4,7 @@
 
  <vue-modaltor :visible="open" @hide="hideModal" :animation-panel="'modal-slide-top'" :resize-width='{3000:"40%",992:"50%",768:"90%"}'>
      <b-container fluid>
-        <h5><b>Edit User</b></h5> <hr>
+        <h5><b>แก้ไขข้อมูล</b></h5> <hr>
           <b-row class="my-1">
               <b-col sm="12"><span style="white-space: nowrap;">คำแนะนำ : กรุณาแก้ไขข้อมูลของ</span></b-col>
               <b-col sm="12"><span style="white-space: nowrap;">{{this.getAddUserStatus}}</span></b-col>

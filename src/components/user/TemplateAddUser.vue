@@ -2,17 +2,17 @@
   
 <div> 
 <button class="btn btn-add" @click="openModal();"><i class="fa fa-plus"/>
-<span  style="font-size:16px;"> เพิ่ม User </span></button>
+<span  style="font-size:16px;"> เพิ่มบัญชี </span></button>
 
  <vue-modaltor :visible="open" @hide=" hideModal();" :animation-panel="'modal-slide-top'" :resize-width='{3000:"40%",992:"50%",768:"90%"}'>
      <b-container fluid>
-        <h5><b>เพิ่ม User</b></h5> <hr>
+        <h5><b>เพิ่มบัญชีผู้ใช้งาน</b></h5> <hr>
           <b-row class="my-1">
               <b-col sm="12"><span style="white-space: nowrap;">คำแนะนำ : กรุณาใส่ชื่อ Username ที่ต้องการ</span></b-col>
               <b-col sm="12"><span style="white-space: nowrap;">{{this.getAddUserStatus}}</span></b-col>
             <b-col sm="12">
               <br>
-              <label for="input-small1"><b>Username </b></label>
+              <label for="input-small1"><b>Username </b> <span class="h5 text-danger">*</span></label>
             </b-col>
             <b-col sm="12">
               <b-form-input id="input-small1" placeholder="" v-model="user.username"></b-form-input>
@@ -22,14 +22,22 @@
 
           <b-row class="my-1">
             <b-col sm="12">
-              <label for="input-small1"><b>Password </b></label>
+              <label for="input-small1"><b>Password </b><span class="h5 text-danger">*</span></label>
             </b-col>
             <b-col sm="12">
               <b-form-input id="input-small1" placeholder="" v-model="user.password"></b-form-input>
 
             </b-col>
           </b-row>
-
+          <b-row class="my-1">
+            <b-col sm="12">
+              <label for="input-small1"><b>Email </b><span class="h5 text-danger">*</span></label>
+            </b-col>
+            <b-col sm="12">
+              <b-form-input id="input-small1" placeholder="" v-model="user.email"></b-form-input>
+    
+            </b-col>
+          </b-row>
            <b-row class="my-1">
             <b-col sm="12">
               <label for="input-small1"><b>ชื่อ </b></label>
@@ -59,7 +67,7 @@
             </b-col>
           </b-row>
 
-          <b-row class="my-1">
+          <!-- <b-row class="my-1">
             <b-col sm="12">
               <label for="input-small1"><b>Email </b></label>
             </b-col>
@@ -67,7 +75,7 @@
               <b-form-input id="input-small1" placeholder="" v-model="user.email"></b-form-input>
     
             </b-col>
-          </b-row>
+          </b-row> -->
 
           <b-row class="my-1">
             <b-col sm="12">
@@ -123,6 +131,7 @@ methods: {
 
           this.$store.dispatch("addUser",this.user);
           console.log("Save data employee");
+          this.open = false;
 
       },
     hideModal() {

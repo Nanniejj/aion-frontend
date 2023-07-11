@@ -24,7 +24,7 @@ function hexToArray(hex) {
     ? [
         parseInt(result[1], 16),
         parseInt(result[2], 16),
-        parseInt(result[3], 16),
+        parseInt(result[3], 16)
       ]
     : null;
 }
@@ -55,48 +55,48 @@ function getFactor(value, min, max) {
 
 export default {
   computed: {
-    ...mapGetters(["getMaxMinMap", "getMapdata"]),
+    ...mapGetters(["getMaxMinMap", "getMapdata"])
   },
   props: {
     id_province: String,
-    id_khet: String,
+    id_khet: String
   },
   watch: {
     id_province(val) {
       console.log("val province", val, this.id_province);
-    },
+    }
   },
   data() {
     const importantPoly = mapData.data
-      .filter((v) => v.province_geocode)
-      .map((v) => ({
+      .filter(v => v.province_geocode)
+      .map(v => ({
         poly: v.multipolygon,
         province: v.province_geocode,
-        section: v.ward_no,
+        section: v.ward_no
       }));
     return {
-      locs: importantPoly,
+      locs: importantPoly
     };
   },
   methods: {},
   async mounted() {
     console.log(getFactor, interpolateColor);
     console.log("val province4", this.getMapdata);
-    this.locs = this.locs.map((v) => {
+    this.locs = this.locs.map(v => {
       let tmpLocs = window.longdo.Util.overlayFromWkt(v.poly)
-        .map((v) => v.location())
+        .map(v => v.location())
         .flat();
       let newColor = null;
       let title = "";
 
-      let tmpData = this.getMapdata.find((x) => parseInt(x.khet) == v.section);
+      let tmpData = this.getMapdata.find(x => parseInt(x.khet) == v.section);
       if (tmpData && v.province == this.id_province) {
         const factor = getFactor(
           tmpData.count,
           this.getMaxMinMap.min,
           this.getMaxMinMap.max
         );
-        newColor = interpolateColor("#000000", "#0000ff", factor) + "50";
+        newColor = interpolateColor("#ffffff", "#FFAF33", factor) + "75";
         title = `${tmpData.name}: ${tmpData.count} Posts`;
         console.log(tmpData);
         console.log(newColor);
@@ -112,9 +112,12 @@ export default {
             ? "rgba(255, 0, 0, 0.1)"
             : "rgba(0, 0, 0, 0.1)",
         newColor,
-        title,
+        title
       };
     });
-  },
+  }
 };
 </script>
+<style>
+
+</style>

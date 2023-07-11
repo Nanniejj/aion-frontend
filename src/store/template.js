@@ -171,6 +171,9 @@ export default {
         commit('setLoadStatus', true );
         try {
           const res = await WordcloudService.getDomain({ limit: 100000 });
+          res.data.results.sort(function(a, b) {
+            return parseFloat(a.id) - parseFloat(b.id);
+          });
           commit('setDomainItem', res.data.results);
           commit('setLoadStatus', false );
         } catch (error) {

@@ -85,12 +85,12 @@ export default {
           localStorage.setItem("issue", arr);
         })
         .catch(function(error) {
-          this.$fire({
-            title: "กรุณาลองอีกครั้ง",
-            type: "error",
-            showConfirmButton: false,
-            timer: 1000,
-          });
+          // this.$fire({
+          //   title: "กรุณาลองอีกครั้ง",
+          //   type: "error",
+          //   showConfirmButton: false,
+          //   timer: 1000,
+          // });
           console.log(error);
         });
     },

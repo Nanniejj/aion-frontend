@@ -86,6 +86,12 @@
               เช่น https://www.tiktok.com/@username
             </b-alert>
             <b-form-select
+              v-if="$route.name == 'Avatar'"
+              v-model="selectSource"
+              :options="optionsAV"
+            ></b-form-select>
+            <b-form-select
+              v-else
               v-model="selectSource"
               :options="options"
             ></b-form-select>
@@ -199,6 +205,17 @@ export default {
         { value: "blockdit", text: "Blockdit" },
         { value: "tiktok", text: "Tiktok" },
       ],
+      optionsAV: [
+        { value: null, text: "กรุณาเลือก source", disabled: true },
+        { value: "twitter", text: "Twitter" },
+        //  { value: "facebook", text: "Facebook" },
+        // { value: "youtube", text: "Youtube" },
+        // { value: "instagram", text: "Instagram" },
+        // { value: "news", text: "News" },
+        // { value: "pantip", text: "Pantip" },
+        // { value: "blockdit", text: "Blockdit" },
+        // { value: "tiktok", text: "Tiktok" },
+      ],
       optionsHash: [
         { value: null, text: "กรุณาเลือก source", disabled: true },
         { value: "twitter", text: "Twitter" },
@@ -250,7 +267,7 @@ export default {
       this.addTarget = [];
       this.addAvatar = [];
       this.open = false;
-       await this.$store.dispatch("fatchListMonitorUpdate", "test");
+      await this.$store.dispatch("fatchListMonitorUpdate", "test");
     },
     hideModal() {
       this.open = false;
@@ -259,7 +276,7 @@ export default {
 };
 </script>
 
-<style  scoped>
+<style scoped>
 .btn-close {
   color: #f8f9fa;
   background-color: #4c412b;

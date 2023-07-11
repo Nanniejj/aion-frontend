@@ -57,7 +57,7 @@ export default {
   mounted() {
     var config = {
       method: "get",
-      url: "http://139.59.103.67:3000/api/v2/userposts/getLocation",
+      url: "https://api2.cognizata.com/api/v2/userposts/getLocation",
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token"),
         "Content-Type": "application/json",
@@ -71,8 +71,8 @@ export default {
       var min = Math.min(...myArray.map((item) => item.count));
       var max = Math.max(...myArray.map((item) => item.count));
       this.$store.commit('setMaxMinMap',{max:max,min:min})
-      console.log("min: " + min);
-      console.log("max: " + max);
+      // console.log("min: " + min);
+      // console.log("max: " + max);
     });
   },
 };
