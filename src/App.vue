@@ -5,6 +5,10 @@
 </template>
 
 <style>
+
+.custom-switch.b-custom-control-lg .custom-control-label::before, .input-group-lg .custom-switch .custom-control-label::before  {
+   cursor: pointer !important;
+}
 .select-type-report .vs__dropdown-menu{
 max-height: 170px !important;
 height: 170px;

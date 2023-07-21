@@ -168,9 +168,11 @@ export default {
           let objId = data.accessToken.split(".");
           const decodedData = atob(objId[1]); // decode the string
           let obj = JSON.parse(decodedData);
+          console.log(decodedData);
           localStorage.setItem("objId", obj.id);
           localStorage.setItem("username", obj.username);
           localStorage.setItem("roleMion", obj.mion);
+          localStorage.setItem("projectId", obj.projectid);
           let mi =JSON.parse(localStorage.getItem("roleMion"));
           _this.$store.commit('setRoleMion',mi)
           console.log("decodedData", obj.mion);

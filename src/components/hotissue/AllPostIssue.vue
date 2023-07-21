@@ -1290,8 +1290,10 @@ export default {
       let edate = "&end=" + date[1] + "T23:59:59";
       var config = {
         method: "get",
+        // "https://api2.cognizata.com/api/v2/userposts/getPostHotissue?source="
+        //http://139.59.103.67:3000/api/v2/userposts/getPostHotissue2
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getPostHotissue?source=" +
+          "http://139.59.103.67:3000/api/v2/userposts/getPostHotissue?source=" +
           social +
           "&offset=" +
           offset +
@@ -1319,6 +1321,7 @@ export default {
           }
 
           var post = response.data[0].data;
+          console.log('post' ,post);
           var pair = { read: true };
           var posts = post.map((result) => {
             return { ...result, ...pair };

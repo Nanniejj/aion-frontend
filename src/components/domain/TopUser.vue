@@ -531,55 +531,55 @@ export default {
         "Content-Type": "application/json",
       },
     };
-    this.axios(config)
-      .then((response) => {
-        console.log("Toppp response.data", response.data);
-        // -------------------------------------------translateuid-----------------------------------------------------------
-        response.data.map((result) => {
-          // console.log("API", result.items.details.account_name);
-          if (
-            result.items.details.source == "facebook" ||
-            result.items.details.source == "youtube"
-          ) {
-            var axios = require("axios");
-            var config = {
-              method: "get",
-              url:
-                "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                result.items.details.account_name,
-              headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
-              },
-            };
-            axios(config)
-              .then((response) => {
-                console.log("Object.keys", Object.keys(response.data).length);
-                if (Object.keys(response.data).length) {
-                  result.items.details.account_name = response.data.name;
-                  // console.log('2',result);
-                } else {
-                  return;
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          } else {
-            return result;
-          }
+    // this.axios(config)
+    //   .then((response) => {
+    //     console.log("Toppp response.data", response.data);
+    //     // -------------------------------------------translateuid-----------------------------------------------------------
+    //     response.data.map((result) => {
+    //       // console.log("API", result.items.details.account_name);
+    //       if (
+    //         result.items.details.source == "facebook" ||
+    //         result.items.details.source == "youtube"
+    //       ) {
+    //         var axios = require("axios");
+    //         var config = {
+    //           method: "get",
+    //           url:
+    //             "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
+    //             result.items.details.account_name,
+    //           headers: {
+    //             Authorization: "Bearer " + localStorage.getItem("token"),
+    //             "Content-Type": "application/json",
+    //           },
+    //         };
+    //         axios(config)
+    //           .then((response) => {
+    //             console.log("Object.keys", Object.keys(response.data).length);
+    //             if (Object.keys(response.data).length) {
+    //               result.items.details.account_name = response.data.name;
+    //               // console.log('2',result);
+    //             } else {
+    //               return;
+    //             }
+    //           })
+    //           .catch((error) => {
+    //             console.log(error);
+    //           });
+    //       } else {
+    //         return result;
+    //       }
 
-          return { result };
-        });
+    //       return { result };
+    //     });
 
-        // ---------------------------------------------------------------------------------------------------------
-        this.topuser = response.data.slice(0, 5);
-        this.$store.commit("setLoadTopUser", false);
-      })
-      .catch(function (error) {
-        this.$store.commit("setLoadTopUser", false);
-        console.log(error);
-      });
+    //     // ---------------------------------------------------------------------------------------------------------
+    //     this.topuser = response.data.slice(0, 5);
+    //     this.$store.commit("setLoadTopUser", false);
+    //   })
+    //   .catch( (error)=> {
+    //     this.$store.commit("setLoadTopUser", false);
+    //     console.log(error);
+    //   });
   },
 };
 </script>

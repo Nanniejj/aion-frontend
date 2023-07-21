@@ -23,19 +23,37 @@
           </b-form-group>
         </b-col>
         <b-col lg="6" class="my-1">
-          <TemplateAddUser />
+          <TemplateAddUser
+            :usernameproject="username"
+            v-if="
+              (switchUserAll && switchUserAll.length < 5) ||
+                username == 'adminatapy'
+            "
+            :userAll="userAll"
+            :projectUser="{ projectname: switchUserAll[0].projectname }"
+          />
+          <!-- <b-form-checkbox
+            switch
+            size="lg"
+            class="d-inline-block mt-3"
+            v-if="username == 'adminatapy'"
+            v-model="userAll"
+            style="cursor: pointer;"
+            >บัญชีทั้งหมด</b-form-checkbox
+          > -->
           <TemplateEditUser ref="TemplateEditUser" />
-          <TemplateGroupMapUser ref="TemplateGroupMapUser" :items="datarow"/>
+          <!-- <TemplateGroupMapUser ref="TemplateGroupMapUser" :items="datarow"/> -->
         </b-col>
       </b-row>
       <br />
 
       <br />
+      <!-- {{ dataItems }} -->
       <!-- {{getUserList}} -->
       <!-- Main table element -->
       <b-table
         hover
-        :items="getUserList"
+        :items="switchUserAll"
         :fields="fields"
         :current-page="currentPage"
         :per-page="perPage"
@@ -75,14 +93,8 @@
             size="sm"
             v-on:click="removeRow(row.item)"
           ></span>
-          <span
-            class="fas fa-list-ul"
-            v-b-tooltip.hover
-            title="จัดการ group"
-            size="sm"
-            @click="editGroup(row.item)"
-          ></span>
-        
+
+          <TemplateGroupMapUser ref="TemplateGroupMapUser" :items="row.item" />
         </template>
 
         <template #cell(display)="row">
@@ -101,7 +113,7 @@
         <b-col sm="7" md="6" class="my-1" id="page" v-if="!filter">
           <b-pagination
             v-model="currentPage"
-            :total-rows="this.getUserList.length"
+            :total-rows="switchUserAll.length"
             :per-page="perPage"
             align="fill"
             size="sm"
@@ -131,10 +143,21 @@ import TemplateEditUser from "@/components/user/TemplateEditUser.vue";
 import TemplateGroupMapUser from "@/components/user/TemplateGroupMapUser.vue";
 
 export default {
+  watch: {
+    getUserLoginList: {
+      handler(val) {
+        console.log(val);
+      },
+    },
+  },
   components: { TemplateAddUser, TemplateEditUser, TemplateGroupMapUser },
   data() {
     return {
-      datarow:"",
+      userAll: false,
+      projectId: "",
+      username: "",
+      dataItems: [],
+      datarow: "",
       empData: "ไม่พบข้อมูล",
       idUser: 0,
       fields: [
@@ -172,7 +195,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getUserList"]),
+    ...mapGetters(["getUserList", "getUserLoginList", "getUsername"]),
     sortOptions() {
       // Create an options list from our fields
       return this.fields
@@ -181,6 +204,15 @@ export default {
           return { text: f.label, value: f.key };
         });
     },
+    switchUserAll() {
+      let user = [];
+      if (this.userAll) {
+        user = this.getUserList;
+      } else {
+        user = this.getUserLoginList;
+      }
+      return user;
+    },
   },
   methods: {
     editUser(item) {
@@ -188,8 +220,8 @@ export default {
     },
     editGroup(item) {
       console.log(item);
-      this.datarow=item
-      this.$refs.TemplateGroupMapUser.openModal(item);
+      this.datarow = item;
+      // this.$refs.TemplateGroupMapUser.openModal(item);
     },
     ///////////////////////////////
     removeRow: function(item) {
@@ -197,7 +229,7 @@ export default {
       this.$confirm("คุณต้องการลบข้อมูล " + item.username + " ?").then(() => {
         // alert(item._id)
         this.$store.dispatch("deleteUser", { delUserid: item._id });
-        this.totalRows = this.getUserList.length;
+        this.totalRows = this.switchUserAll.length;
       });
     },
     onFiltered(filteredItems) {
@@ -205,9 +237,39 @@ export default {
       console.log("item", filteredItems);
       this.currentPage = 1;
     },
+    getLoggedDevice() {
+      const axios = require("axios").default;
+      var config = {
+        method: "get",
+        url: "https://api2.cognizata.com/api/v2/user/getLoggedDevice",
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      axios(config)
+        .then((response) => {
+          this.dataItems = response.data;
+          console.log("response", response.data);
+        })
+        .catch(function(error) {
+          this.$fire({
+            title: "กรุณาลองอีกครั้ง",
+            type: "error",
+            showConfirmButton: false,
+            timer: 1000,
+          });
+          console.log(error);
+        });
+    },
   },
   created() {
+    this.$store.dispatch("fetchTemplateProject");
     this.$store.dispatch("fetchTemplateUser");
+    this.$store.dispatch("fetchLoggedDevice");
+    this.username = localStorage.getItem("username");
+    this.projectId = localStorage.getItem("projectId");
+    // this.getLoggedDevice()
   },
 };
 </script>
