@@ -21,8 +21,10 @@ export default {
     apexchart: VueApexCharts,
   },
   watch: {
-    getArrDate: function () {
-      var e = moment(new Date()).format().slice(0, 10);
+    getArrDate: function() {
+      var e = moment(new Date())
+        .format()
+        .slice(0, 10);
       if (
         this.getSdateDm.slice(0, 10) == e &&
         this.getEdateDm.slice(0, 10) == e
@@ -60,7 +62,7 @@ export default {
   },
   computed: {
     ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate"]),
-    getSeries: function () {
+    getSeries: function() {
       return [
         {
           name: "จำนวนโพสต์",
@@ -95,13 +97,18 @@ export default {
       };
       await this.axios(config).then((response) => {
         var _this = this;
-        var getDaysArray = function (s, e) {
+        var getDaysArray = function(s, e) {
           for (
             var a = [], d = new Date(s);
             d <= e;
             d.setDate(d.getDate() + 1)
           ) {
-            a.push({ date: moment(d).format().slice(0, 10), count: _this.val });
+            a.push({
+              date: moment(d)
+                .format()
+                .slice(0, 10),
+              count: _this.val,
+            });
           }
           return a;
         };
@@ -139,7 +146,7 @@ export default {
             categories: datelist,
           },
           tooltip: {
-            custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+            custom: function({ series, seriesIndex, dataPointIndex, w }) {
               let tophash, valpost, a, b, c, f;
               valpost = series[seriesIndex][dataPointIndex];
               if (top3[dataPointIndex]) {
@@ -194,14 +201,16 @@ export default {
     async startChart() {
       var currentTime = new Date();
       console.log("currentTime", currentTime);
-      currentTime.setDate(currentTime.getDate() - 14);
+      currentTime.setDate(currentTime.getDate() - 14)
+      
       //http://139.59.103.67:3000/api/userposts_test/getChartDataPlatform?domain=covid19&start=2021-11-19T00:00:00&end=2021-11-22T23:59:59
       //https://api2.cognizata.com/api/v2/userposts/getChartDataDomain?domain=การเมือง&start=2021-11-24T00:00:00&end=2021-11-24T23:59:59
       //http://139.59.103.67:3000/api/v2/domain/getChartData?start=2022-10-24T00:00:00&end=2022-11-07T23:59:59&domain=การเมือง
+      //"https://api2.cognizata.com/api/v2/userposts/getChartDataDomain?domain="
       var config = {
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getChartDataDomain?domain=" +
+        "https://api2.cognizata.com/api/v2/userposts/getChartDataDomain?domain="+
           this.getClickDomain,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -211,21 +220,33 @@ export default {
       await this.axios(config).then((response) => {
         console.log("response.data", response.data);
         var _this = this;
-        var getDaysArrays = function (s, e) {
+        var getDaysArrays = function(s, e) {
           for (
             var a = [], d = new Date(s);
             d <= e;
             d.setDate(d.getDate() + 1)
           ) {
-            a.push({ date: moment(d).format().slice(0, 10), count: _this.val });
+            a.push({
+              date: moment(d)
+                .format()
+                .slice(0, 10),
+              count: _this.val,
+            });
           }
           return a;
         };
-        let de = moment(new Date()).format().slice(0, 10);
-        let ds = moment(currentTime).format().slice(0, 10);
+        let de = moment(new Date())
+          .format()
+          .slice(0, 10);
+        let ds = moment(currentTime)
+          .format()
+          .slice(0, 10);
         var daylist = getDaysArrays(new Date(ds), new Date(de));
 
+        //เปลี่ยน response.data
+        // let data = response.data[0].data;
         let data = response.data;
+
         // let datelist = data.map((item) => item.date);
         // let countlist = data.map((item) => item.count);
 
@@ -276,7 +297,7 @@ export default {
             },
           },
           tooltip: {
-            custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+            custom: function({ series, seriesIndex, dataPointIndex, w }) {
               let tophash, valpost, a, b, c, f;
               valpost = series[seriesIndex][dataPointIndex];
               if (top3[dataPointIndex]) {
@@ -362,10 +383,9 @@ export default {
       });
     },
   },
-  created: async function () {
-       this.startChart();
+  created: async function() {
+    this.startChart();
   },
 };
 </script>
-<style scoped>
-</style>
+<style scoped></style>

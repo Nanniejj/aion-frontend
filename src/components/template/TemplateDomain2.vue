@@ -238,7 +238,7 @@ export default {
       console.log("delete");
       this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
         this.$store.dispatch("deleteDomain", {
-          domain: item.name,
+          id: item.id,
           index: index,
         });
         this.totalRows = this.getItemsDomain.length;

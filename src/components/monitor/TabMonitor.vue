@@ -5,6 +5,7 @@
       lazy
       active-nav-item-class="font-weight-bold"
       nav-item-class="font-weight-bold"
+      v-model="tab"
     >
       <b-tab @click="toTab('profile')">
         <template #title calss="title-tab">
@@ -25,8 +26,8 @@
         </template>
         <HashtagMonitor :tabsMonitor="'tabHashtag'" />
       </b-tab>
-      <!-- ----------------------------------tab2 --------------------------------------------------->
-      <b-tab @click="toTab('location')">
+      <!-- ----------------------------------tab3 --------------------------------------------------->
+      <b-tab @click="toTab('location')" >
         <template #title id="title-tab">
           <span id="title-tab">
             <i class="fas fa-map-marker-alt" />
@@ -35,6 +36,19 @@
         </template>
         <LocationMonitor :tabsMonitor="'tabLocation'" id="tablo" />
       </b-tab>
+
+      <!-- ----------------------------------tab4 --------------------------------------------------->
+    
+      <b-tab @click="toTab('keyword')"  >
+        <template #title id="title-tab">
+          <span id="title-tab">
+            <i class="fas fa-tag" />
+            Keyword
+          </span>
+        </template>
+        <KeywordsMonitor :tabsMonitor="'tabKeyword'" id="tablo" />
+      </b-tab>
+
     </b-tabs>
   </div>
 </template>
@@ -43,11 +57,25 @@
 import ProfileMonitor from "@/components/monitor/ProfileMonitor.vue";
 import HashtagMonitor from "@/components/monitor/HashtagMonitor.vue";
 import LocationMonitor from "@/components/monitor/LocationMonitor.vue";
+import KeywordsMonitor from "@/components/monitor/KeywordsMonitor.vue";
 export default {
+  watch: {
+    tab(val) {
+      console.log(val);
+      localStorage.setItem("tabMonitor", val);
+      // this.$store.commit('setTabEva', val)
+    },
+  },
+  data() {
+    return {
+      tab: localStorage.getItem("tabMonitor"),
+    }
+  },
   components: {
     ProfileMonitor,
     HashtagMonitor,
     LocationMonitor,
+    KeywordsMonitor,
   },
   methods: {
     toTab(name) {
@@ -55,6 +83,12 @@ export default {
     },
   },
   mounted() {
+    let idx = localStorage.getItem("tabMonitor");
+    console.log('idx',idx);
+    if (idx) {
+      this.tab = Number(idx);
+      console.log('this.tab',this.tab);
+    }
     var config = {
       method: "get",
       url: "https://api2.cognizata.com/api/v2/userposts/getLocation",
@@ -65,16 +99,17 @@ export default {
     };
     this.axios(config).then((response) => {
       this.mapData = response.data;
-      this.$store.commit('setMapdata',response.data)
+      this.$store.commit("setMapdata", response.data);
       // this.$store.commit('setMaxMinMap',response.data)
       var myArray = [...response.data];
       var min = Math.min(...myArray.map((item) => item.count));
       var max = Math.max(...myArray.map((item) => item.count));
-      this.$store.commit('setMaxMinMap',{max:max,min:min})
+      this.$store.commit("setMaxMinMap", { max: max, min: min });
       // console.log("min: " + min);
       // console.log("max: " + max);
     });
   },
+
 };
 </script>
 

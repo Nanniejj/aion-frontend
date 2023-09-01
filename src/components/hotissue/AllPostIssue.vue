@@ -403,7 +403,7 @@
           <b-col lg="12">
             <b-card-body>
               <b-card-text class="box-contents">
-                <Highlighter
+                <!-- <Highlighter
                   class="my-highlight md-font"
                   :style="{
                     textAlign: 'left',
@@ -412,6 +412,20 @@
                   }"
                   highlightClassName="highlight4"
                   :searchWords="highlightText(datas.hotissue_docs.keywords)"
+                  :autoEscape="true"
+                  :textToHighlight="
+                    datas.read ? datas.full_text.slice(0, 450) : datas.full_text
+                  "
+                ></Highlighter> -->
+                <Highlighter
+                  class="my-highlight md-font"
+                  :style="{
+                    textAlign: 'left',
+                    fontSize: '17px',
+                    padding: '10px',
+                  }"
+                  highlightClassName="highlight4"
+                  :searchWords="highlightText(heightword)"
                   :autoEscape="true"
                   :textToHighlight="
                     datas.read ? datas.full_text.slice(0, 450) : datas.full_text
@@ -1025,13 +1039,13 @@
                             cmt.author
                           }}</span>
                           <span
-                            v-if="datas.source == 'pantip'&&cmt.time"
+                            v-if="datas.source == 'pantip' && cmt.time"
                             class="font-weight-light"
                             id="cmt-time"
                             >{{ cmt.time }}</span
                           >
                           <span
-                            v-if="datas.source == 'youtube'&&cmt.time"
+                            v-if="datas.source == 'youtube' && cmt.time"
                             class="font-weight-light"
                             id="cmt-time"
                             >{{ cmt.time.split("T")[0] }} |
@@ -1293,7 +1307,7 @@ export default {
         // "https://api2.cognizata.com/api/v2/userposts/getPostHotissue?source="
         //http://139.59.103.67:3000/api/v2/userposts/getPostHotissue2
         url:
-          "http://139.59.103.67:3000/api/v2/userposts/getPostHotissue?source=" +
+          "https://api2.cognizata.com/api/v2/userposts/getPostHotissue?source=" +
           social +
           "&offset=" +
           offset +
@@ -1313,7 +1327,22 @@ export default {
       };
       axios(config)
         .then((response) => {
-          console.log("Toppp response.data", response.data);
+          let heightarr = [];
+          let andarr = [];
+          let splitarr = [];
+          let wordarr = [];
+          heightarr = response.data[0].highlight;
+          andarr = heightarr.and_keywords;
+          wordarr = heightarr.keywords;
+          // andarr.split('+')
+          splitarr=  andarr.map((x) => {
+            console.log('split',x.split("+"));
+            return x.split("+");
+          }).flat(1)
+          this.heightword= splitarr.concat(wordarr);
+          // console.log("highlight1",splitarr);
+          // console.log("highlight", heightarr, andarr, wordarr, this.heightword,splitarr);
+          // console.log("Toppp response.data", response.data[0]);
           if (response.data[0].count.length) {
             this.datacount = response.data[0].count[0].total;
           } else {
@@ -1321,7 +1350,7 @@ export default {
           }
 
           var post = response.data[0].data;
-          console.log('post' ,post);
+          console.log("post", post);
           var pair = { read: true };
           var posts = post.map((result) => {
             return { ...result, ...pair };
@@ -1365,7 +1394,7 @@ export default {
           // this.$store.commit("setLoadTopUserPf", false);
         })
 
-        .catch(function(error) {
+        .catch((error) => {
           console.log(error);
           this.$store.commit("setLoadAllPostIssue", false);
           // this.$store.commit("setLoadTopUserPf", false);

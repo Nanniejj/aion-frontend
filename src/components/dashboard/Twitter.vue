@@ -10,7 +10,7 @@
     <div class="box" id="twitter" @click="toPlatform">
       <div class="left"></div>
       <img src="@/assets/Twitter.png" class="socialogo" />
-      <!-- <i class="fab fa-twitter fa-2x"></i> -->
+      <!-- <i class="fa fa-x-twitter"></i> -->
       <div class="md-font">
         ทวิตที่เกี่ยวข้อง
         <span class="total-all"> {{ getTwitter.post | numFormat }} </span>
@@ -194,10 +194,29 @@ export default {
 </script>
 
 <style scoped>
-#twitter {
-  background-color: #55adec;
+/* #twitter {
+  background-color: #ffffff;
   color: #ffffff;
   cursor: pointer;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+} */
+#twitter {
+  background: rgb(45, 45, 50);
+  background: linear-gradient(
+    145deg,
+    rgba(45, 45, 50, 1) 10%,
+    rgba(0, 0, 0, 1) 55%
+  );
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+}
+#twitter:hover {
+  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
+    rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
+    rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
+    rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
 #sumboxtw {
   width: 100%;

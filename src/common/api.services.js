@@ -400,9 +400,14 @@ export const RelationPostService = {
     return ApiService.get(`/v1/subdomain-list/${payload}/?limit=100000`,);
     },
     DeleteDomain(payload) {
+      Vue.axios.defaults.baseURL = 'https://api2.cognizata.com/api/';
       ApiService.setHeader()
-      return ApiService.post(`v1/delete-domain/`,{'domain':payload.domain});
+      return ApiService.post(`v2/domain/deleteDomain/`,{'id':payload.id});
     },
+    // DeleteDomain(payload) {
+    //   ApiService.setHeader()
+    //   return ApiService.post(`v2/delete-domain/`,{'id':payload.id});
+    // },
     AddDomain(payload) {
       ApiService.setHeader()
       return ApiService.post(`/v1/domain/`,{'name':payload.name,'display':payload.display});

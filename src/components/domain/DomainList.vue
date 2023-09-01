@@ -3,7 +3,7 @@
     <div class="prt h3">Domain List</div>
     <b-row cols="2" cols-sm="2" cols-md="3" cols-lg="4" class="m-auto">
       <b-col v-for="(domain, k) in getListDomain" :key="k">
-        <span id="box-domain" class="mt-3 mb-3 h5" @click="toDomainStat(domain.name)">
+        <span id="box-domain" class="mt-3 mb-3 h5" @click="toDomainStat(domain)">
           <vue-element-loading
             :active="getLoadStatus"
             size="80"
@@ -42,8 +42,9 @@ export default {
     },
     toDomainStat(domain){
       console.log(domain);
+      localStorage.setItem("updated_until",domain.updated_until)
       this.$store.commit("setPushDomainStat",true)
-      this.$store.commit("setClickDomain",domain)
+      this.$store.commit("setClickDomain",domain.name)
     }
   },
   created() {

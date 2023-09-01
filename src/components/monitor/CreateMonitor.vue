@@ -9,6 +9,9 @@
       <span style="font-size: 16px" v-else-if="tabsMonitor == 'tabHashtag'">
         เพิ่มแฮชแท็ก
       </span>
+      <span style="font-size: 16px" v-else-if="tabsMonitor == 'tabKeyword'">
+        เพิ่ม keyword
+      </span>
       <span style="font-size: 16px" v-else> เพิ่มบัญชี Avatar</span>
     </button>
 
@@ -26,6 +29,10 @@
         <h5><b>เพิ่มแฮชแท็ก</b></h5>
         <hr />
       </div>
+      <div v-else-if="tabsMonitor == 'tabKeyword'">
+        <h5><b>เพิ่ม Keyword</b></h5>
+        <hr />
+      </div>
       <div v-else>
         <h5><b>เพิ่มบัญชี Avatar</b></h5>
         <hr />
@@ -34,6 +41,10 @@
         <b-col sm="12">
           <span v-if="tabsMonitor == 'tabHashtag'">
             คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่แฮชแท็กที่ต้องการ</span
+          >
+          <span v-else-if="tabsMonitor == 'tabKeyword'">
+            คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่ keyword
+            ที่ต้องการ</span
           >
           <span v-else>
             คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่บัญชีที่ต้องการ</span
@@ -49,6 +60,15 @@
             <b-form-select
               v-model="selectSourceHash"
               :options="optionsHash"
+            ></b-form-select>
+          </div>
+          <div v-else-if="tabsMonitor == 'tabKeyword'">
+            <b-alert show
+              >ตัวอย่างการใส่ข้อมูล <br />ใส่คำ keyword ที่ต้องการ เช่น การเมือง
+            </b-alert>
+            <b-form-select
+              v-model="selectSourceKeyword"
+              :options="optionsKeyword"
             ></b-form-select>
           </div>
           <div v-else>
@@ -127,6 +147,25 @@
             remove-on-delete
           ></b-form-tags>
         </b-col>
+        <!--------------------------------------------------addKeyword --------------------------------------------------------------->
+        <b-col sm="12" v-else-if="tabsMonitor == 'tabKeyword'">
+          <label class="mt-4" for="textarea-default"><b>keyword</b></label>
+          <b-form-input
+            id="input-default"
+            v-model="addKeyword"
+            :disabled="!selectSourceKeyword"
+            placeholder="กรุณากรอก keyword"
+          ></b-form-input>
+          <!-- <b-form-tags
+            input-id="tags-pills"
+            v-model="addKeyword"
+            tag-variant="light"
+            tag-pills
+            size="md"
+            placeholder="Enter เพื่อเพิ่ม keyword"
+            remove-on-delete
+          ></b-form-tags> -->
+        </b-col>
         <!--------------------------------------------------avatar --------------------------------------------------------------->
         <b-col sm="12" v-else>
           <label class="mt-4" for="textarea-default"><b>ชื่อทีม</b></label>
@@ -181,7 +220,9 @@ export default {
   },
   data() {
     return {
+      selectSourceKeyword: "twitter",
       selectSourceHash: "twitter",
+      addKeyword: "",
       addHashtag: [],
       addTarget: [],
       addAvatar: [],
@@ -221,6 +262,11 @@ export default {
         { value: "twitter", text: "Twitter" },
         { value: "tiktok", text: "Tiktok" },
       ],
+      optionsKeyword: [
+        { value: null, text: "กรุณาเลือก source", disabled: true },
+        { value: "twitter", text: "Twitter" },
+        // { value: "tiktok", text: "Tiktok" },
+      ],
     };
   },
   methods: {
@@ -255,6 +301,11 @@ export default {
           source: this.selectSourceHash,
           hashtag: this.addHashtag,
         });
+      } else if (this.tabsMonitor == "tabKeyword") {
+        await this.$store.dispatch("CreateKeyword", {
+          source: this.selectSourceKeyword,
+          keyword: this.addKeyword,
+        });
       } else {
         await this.$store.dispatch("CreateAvatar", {
           source: this.selectSource,
@@ -267,7 +318,9 @@ export default {
       this.addTarget = [];
       this.addAvatar = [];
       this.open = false;
-      await this.$store.dispatch("fatchListMonitorUpdate", "test");
+      if (this.tabsMonitor !== "tabKeyword") {
+        await this.$store.dispatch("fatchListMonitorUpdate", "test");
+      }
     },
     hideModal() {
       this.open = false;

@@ -90,7 +90,10 @@
           <hr />
           <!-- ig engage -->
           <b-row
-            v-if="user.items.details.source == 'instagram'|| user.items.details.source == 'tiktok'"
+            v-if="
+              user.items.details.source == 'instagram' ||
+                user.items.details.source == 'tiktok'
+            "
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -441,7 +444,7 @@ export default {
     ]),
   },
   watch: {
-    getArrDate: function () {
+    getArrDate: function() {
       this.startd = this.getSdateDm.slice(0, 10);
       this.endd = this.getEdateDm.slice(0, 10);
       this.selectDate();
@@ -492,10 +495,7 @@ export default {
         .then((response) => {
           // console.log("Toppp response.data", response.data);
           // -------------------------------------------translateuid-----------------------------------------------------------
-          if (
-  
-            this.getNamePlatform == "youtube"
-          ) {
+          if (this.getNamePlatform == "youtube") {
             response.data.map((result) => {
               console.log("API", result.items.details.account_name);
 
@@ -531,7 +531,7 @@ export default {
           this.topuser = response.data.slice(0, 5);
           this.$store.commit("setLoadTopUserPf", false);
         })
-        .catch(function (error) {
+        .catch((error) => {
           console.log(error);
           this.$store.commit("setLoadTopUserPf", false);
         });
@@ -539,10 +539,16 @@ export default {
   },
 
   created() {
-    this.startd = moment(new Date()).format().slice(0, 10);
-    this.endd = moment(new Date()).format().slice(0, 10);
+    this.startd = moment(new Date())
+      .format()
+      .slice(0, 10);
+    this.endd = moment(new Date())
+      .format()
+      .slice(0, 10);
     let sdate, edate, today;
-    today = moment(new Date()).format().slice(0, 10);
+    today = moment(new Date())
+      .format()
+      .slice(0, 10);
     sdate = "&start=" + today + "T00:00:00";
     edate = "&end=" + today + "T23:59:59";
     this.$store.commit("setLoadTopUserPf", true);
@@ -566,9 +572,7 @@ export default {
         // console.log("Toppp response.data", response.data);
 
         // -------------------------------------------translateuid-----------------------------------------------------------
-        if (
-          this.getNamePlatform == "youtube"
-        ) {
+        if (this.getNamePlatform == "youtube") {
           response.data.map((result) => {
             console.log("API", result.items.details.account_name);
 
@@ -605,7 +609,7 @@ export default {
         this.topuser = response.data.slice(0, 5);
         this.$store.commit("setLoadTopUserPf", false);
       })
-      .catch(function (error) {
+      .catch(function(error) {
         console.log(error);
         this.$store.commit("setLoadTopUserPf", false);
       });

@@ -41,9 +41,11 @@ export default {
         "getToSection"
     ]),
   },
-  // beforeCreate() {
-  //   this.$store.dispatch(' ',{type: "daily"});
-  // }
+ async mounted() {
+ let domain= localStorage.getItem("domainArr");
+    // this.domainData = domainName;
+    this.$store.commit("setDomainArr", domain);
+  }
 };
 </script>
 

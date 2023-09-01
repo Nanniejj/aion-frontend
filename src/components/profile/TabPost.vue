@@ -119,7 +119,17 @@
                     v-else
                   ></b-avatar>
                 </span>
-                <span v-else> <b-avatar size="45px"></b-avatar></span>
+                <span v-else>
+                  <b-avatar
+                    @error="setAltImg"
+                    size="47px"
+                    :src="profilePost.photos"
+                    loading="lazy"
+                    class="imgpro"
+                    v-if="profilePost.source == 'tiktok'"
+                  ></b-avatar>
+                  <b-avatar size="45px" v-else></b-avatar>
+                </span>
                 <img
                   v-if="profilePost.source == 'twitter'"
                   src="@/assets/Twitter.png"
@@ -567,25 +577,28 @@
         <template #footer>
           <div class="text-left md-font">
             <span
-                    v-b-tooltip.hover
-                    title="Engagement"
-                    v-if="profilePost.source == 'pantip'"
-                  >
-                    <span style="font-size:14px;">Engages </span>
-                    {{
-                      (profilePost.engagement + profilePost.comments_count)
-                        | numFormat
-                    }}
-                  </span>
+              v-b-tooltip.hover
+              title="Engagement"
+              v-if="profilePost.source == 'pantip'"
+            >
+              <span style="font-size:14px;">Engages </span>
+              {{
+                (profilePost.engagement + profilePost.comments_count)
+                  | numFormat
+              }}
+            </span>
 
-                  <span v-b-tooltip.hover title="Engagement" v-else>
-                    <span style="font-size:14px;">Engages </span
-                    >{{ profilePost.engagement | numFormat }}
-                  </span>
+            <span v-b-tooltip.hover title="Engagement" v-else>
+              <span style="font-size:14px;">Engages </span
+              >{{ profilePost.engagement | numFormat }}
+            </span>
 
-            <span v-b-toggle="'btn' + page + k"  id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Comments">
+            <span
+              v-b-toggle="'btn' + page + k"
+              id="box-reaction"
+              v-b-tooltip.hover
+              title="Comments"
+            >
               <i
                 class="fas fa-comment"
                 :aria-expanded="visible ? 'true' : 'false'"
@@ -1076,13 +1089,13 @@
                           ></a
                         >
                         <span
-                          v-if="profilePost.source == 'pantip'&&cmt.time"
+                          v-if="profilePost.source == 'pantip' && cmt.time"
                           class="font-weight-light"
                           id="cmt-time"
                           >{{ cmt.time }}</span
                         >
                         <span
-                          v-if="profilePost.source == 'youtube'&&cmt.time"
+                          v-if="profilePost.source == 'youtube' && cmt.time"
                           class="font-weight-light"
                           id="cmt-time"
                           >{{ cmt.time.split("T")[0] }} |
@@ -1527,7 +1540,10 @@ export default {
       sort = this.selectedSort;
       offset = this.page;
       sentiment = this.selected;
-      var hashtag = this.getHashtagData.replace("#", "");
+      if (this.getHashtagData) {
+        var hashtag = this.getHashtagData.replace("#", "");
+      }
+
       var payload;
       var rt;
       console.log("this.getValSource", this.getValSource);

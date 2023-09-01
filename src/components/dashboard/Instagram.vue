@@ -20,13 +20,15 @@
           <b-col class="border-right">
             <div class="md-font dp">Users</div>
             <div class="total-sub">
-              <span class="prt">Users : </span> {{ getInstagram.users | numFormat }}
+              <span class="prt">Users : </span>
+              {{ getInstagram.users | numFormat }}
             </div>
           </b-col>
           <b-col class="border-left">
             <div class="md-font dp">Messages</div>
             <div class="total-sub">
-              <span class="prt">Messages : </span> {{ getInstagram.comment +getInstagram.post  | numFormat }}
+              <span class="prt">Messages : </span>
+              {{ (getInstagram.comment + getInstagram.post) | numFormat }}
             </div>
           </b-col>
         </b-row>
@@ -46,13 +48,16 @@
           </b-col>
           <b-col cols="7" class="sum-right">
             <div>
-              <span class="prt">Posts : </span> {{ getSumInstagram.post | numFormat }}
+              <span class="prt">Posts : </span>
+              {{ getSumInstagram.post | numFormat }}
             </div>
             <div>
-              <span class="prt">Comments : </span> {{ getSumInstagram.comment | numFormat}}
+              <span class="prt">Comments : </span>
+              {{ getSumInstagram.comment | numFormat }}
             </div>
             <div>
-              <span class="prt">Users : </span> {{ getSumInstagram.users | numFormat }}
+              <span class="prt">Users : </span>
+              {{ getSumInstagram.users | numFormat }}
             </div>
             <div>
               <span class="prt">ข้อมูลที่ไปเก็บ : </span
@@ -82,7 +87,7 @@
             <div class="doc md-font">
               <img src="@/assets/Instagram.png" class="socialicon" />
               เอกสารที่พบ
-              <strong> {{ getInstagram.post | numFormat}} </strong>
+              <strong> {{ getInstagram.post | numFormat }} </strong>
               (Comments/Posts)
             </div>
           </b-col>
@@ -107,7 +112,7 @@ export default {
   components: {
     SentimentChart,
   },
-  data: function () {
+  data: function() {
     return {
       showDetail: true,
       dateToday: new Intl.DateTimeFormat("en-AU").format(),
@@ -193,6 +198,16 @@ export default {
   background-color: #ff9773;
   color: #ffffff;
   cursor: pointer;
+  background: linear-gradient(145deg, #f3794f 10%, #d14717 55%);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
+    rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+}
+#ig:hover {
+  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
+    rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
+    rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
+    rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
 #sumboxig {
   width: 100%;

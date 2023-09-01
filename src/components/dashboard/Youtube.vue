@@ -12,7 +12,7 @@
       <img src="@/assets/Youtube.png" class="socialogo" />
       <div class="md-font">
         จำนวนวิดิโอที่เกี่ยวข้อง
-        <span class="total-all"> {{ getYoutube.post | numFormat  }} </span>
+        <span class="total-all"> {{ getYoutube.post | numFormat }} </span>
       </div>
       <b-container>
         <b-row class="comment-post">
@@ -20,14 +20,14 @@
             <div class="md-font dp">Users</div>
             <div class="total-sub">
               <span class="prt">Users : </span
-              >{{ getYoutube.users | numFormat  }}
+              >{{ getYoutube.users | numFormat }}
             </div>
           </b-col>
           <b-col class="border-left">
             <div class="md-font dp">Messages</div>
             <div class="total-sub">
               <span class="prt">Messages : </span
-              >{{ getYoutube.comment +getYoutube.post | numFormat  }}
+              >{{ (getYoutube.comment + getYoutube.post) | numFormat }}
             </div>
           </b-col>
         </b-row>
@@ -48,23 +48,23 @@
           <b-col cols="7" class="sum-right">
             <div>
               <span class="prt">Posts : </span
-              >{{ getSumYoutube.post | numFormat  }}
+              >{{ getSumYoutube.post | numFormat }}
             </div>
             <div>
               <span class="prt">Comments : </span
-              >{{ getSumYoutube.comment | numFormat  }}
+              >{{ getSumYoutube.comment | numFormat }}
             </div>
             <div>
               <span class="prt">Users : </span
-              >{{ Number(getSumYoutube.users) | numFormat  }}
+              >{{ Number(getSumYoutube.users) | numFormat }}
             </div>
             <div>
               <span class="prt">ข้อมูลที่ไปเก็บ : </span
-              >{{ getCraw.crawler_youtube | numFormat  }}
+              >{{ getCraw.crawler_youtube | numFormat }}
             </div>
             <div>
               <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
-              >{{ getCraw.preprocess_youtube | numFormat  }}
+              >{{ getCraw.preprocess_youtube | numFormat }}
             </div>
 
             <!-- <div>{{ startFormat}}</div>
@@ -86,7 +86,7 @@
           <b-col>
             <div class="doc md-font">
               <img src="@/assets/Youtube.png" class="socialicon" /> เอกสารที่พบ
-              <strong> {{ getYoutube.post | numFormat  }} </strong>
+              <strong> {{ getYoutube.post | numFormat }} </strong>
               (Comments/Posts)
             </div>
           </b-col>
@@ -108,7 +108,7 @@ import { mapGetters } from "vuex";
 import SentimentChart from "../chart/SentimentChart.vue";
 
 export default {
-  data: function () {
+  data: function() {
     return {
       showDetail: true,
       dateToday: new Intl.DateTimeFormat("en-AU").format(),
@@ -197,6 +197,17 @@ export default {
   background-color: #f26666;
   color: #ffffff;
   cursor: pointer;
+  background: linear-gradient(145deg, #ed4d4d 10%, #9f0707 55%);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
+    rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  transition: 0.3s;
+}
+#youtube:hover {
+  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
+    rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
+    rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
+    rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
 #sumboxyt {
   width: 100%;

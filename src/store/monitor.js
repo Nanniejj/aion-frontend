@@ -3,8 +3,9 @@ import { DomainService } from "@/common/api.services";
 
 export default {
   state: {
-    mapdata:[],
-    maxminmap:"",
+    keywordMonitor:[],
+    mapdata: [],
+    maxminmap: "",
     sumsocial: {
       targetlist: [],
       hashtaglist: [],
@@ -111,6 +112,9 @@ export default {
     socialmo: "",
   },
   getters: {
+    getKeyword: (state) => {
+      return state.keywordMonitor;
+    },
     getMaxMinMap: (state) => {
       return state.maxminmap;
     },
@@ -207,14 +211,17 @@ export default {
     },
   },
   mutations: {
-    setMaxMinMap: (state, payload) =>  {
-    state.maxminmap=payload
+    setKeyword: (state, payload) => {
+     state.keywordMonitor=payload
     },
-    setMapdata: (state, payload) =>  {
-     state.mapdata=payload
+    setMaxMinMap: (state, payload) => {
+      state.maxminmap = payload;
+    },
+    setMapdata: (state, payload) => {
+      state.mapdata = payload;
     },
     setSumMonitor: (state, payload) => {
-     state.sumsocial = payload;
+      state.sumsocial = payload;
     },
     setUpdateTable: (state, payload) => {
       state.updatetable = payload;
@@ -360,6 +367,57 @@ export default {
     },
   },
   actions: {
+    async CreateKeyword({ commit,dispatch }, payload) {
+      console.log("resetDomainLastUpdate",payload);
+      var axios = require("axios");
+      await axios
+        .post("http://139.59.103.67:3000/api/v2/keyword/createKeyword", payload)
+        .then((res) => {
+          // handle success
+          console.log("success", res);
+          dispatch('fetchKeyword')
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async DeleteKeyword({ commit,dispatch }, payload) {
+      console.log("resetDomainLastUpdate",payload);
+      var axios = require("axios");
+      await axios
+        .delete("http://139.59.103.67:3000/api/v2/keyword/deleteKeyword?_id="+ payload._id)
+        .then((res) => {
+          // handle success
+          console.log("success", res);
+          dispatch('fetchKeyword')
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async fetchKeyword({ commit }, payload) {
+      var axios = require("axios");
+      var config = {
+        method: "get",
+        url: "http://139.59.103.67:3000/api/v2/keyword/getMonitorKeyword",
+  
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      axios(config)
+        .then((response) => {
+          commit("setKeyword", response.data)
+          // console.log("Toppp response.data", response.data[0].TopHashtags);
+          console.log("response", response.data);
+          // this.$store.commit("setLoadHashIssue", false);
+        })
+        .catch((error)=> {
+          console.log(error);
+          // this.$store.commit("setLoadHashIssue", false);
+        });
+    },
     async EditStatusHashtag({ commit }, payload) {
       commit("setLoadStatus", true);
       try {
@@ -669,7 +727,7 @@ export default {
       commit("setLoadStatus", true);
       try {
         const res = await MonitorService.getListMonitor(payload);
-        
+
         commit("setSumMonitor", res.data[0]);
         // console.log(res.data[0]);
         //commit('setListHashtag', res.data[0].hashtaglist);
@@ -715,7 +773,7 @@ export default {
         // -------------------------------------------translateuid-----------------------------------------------------------
         posts.map((result) => {
           // console.log('API',result);
-          if ( result.source == "youtube") {
+          if (result.source == "youtube") {
             var axios = require("axios");
             var config = {
               method: "get",
@@ -740,7 +798,6 @@ export default {
               .catch((error) => {
                 console.log(error);
                 return result;
-               
               });
           } else {
             return result;

@@ -426,6 +426,7 @@ export default {
       localStorage.removeItem("domainArr");
       localStorage.removeItem("issue");
       localStorage.removeItem("roleMion");
+      localStorage.removeItem('tabMonitor')
       this.$store.commit("setListProfile", {
         targetlist: [],
         hashtaglist: [],

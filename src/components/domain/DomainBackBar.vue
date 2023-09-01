@@ -55,6 +55,19 @@
         ></i>
       </b-col>
     </b-row>
+    <div
+      class="text-right pr-5 mt-2 text-secondary"
+      style="font-size:14px"
+      v-if="updated_until"
+    >
+      <span
+        v-b-tooltip.hover
+        style="cursor: pointer;"
+        title="ข้อมูลวันที่ระบบอัพเดทล่าสุดเมื่อทำการเปลี่ยนแปลงค่าข้อมูลหรือ keyword ใน domain"
+        ><i class="fa fa-info-circle" aria-hidden="true"></i> ข้อมูลอัพเดทล่าสุด
+        {{ updated_until }}</span
+      >
+    </div>
   </div>
 </template>
 
@@ -68,22 +81,36 @@ export default {
   },
   data() {
     return {
-      valueDate: [ moment(new Date()).format().slice(0, 10),moment(new Date()).format().slice(0, 10)],
+      valueDate: [
+        moment(new Date())
+          .format()
+          .slice(0, 10),
+        moment(new Date())
+          .format()
+          .slice(0, 10),
+      ],
       start_date: "",
       end_date: "",
+      updated_until: "",
     };
   },
   methods: {
     selectData() {
       //console.log(this.valueDate[0], this.valueDate[1]);
-      if (this.valueDate[0]==null) {
-       this.start_date = moment(new Date()).format().slice(0,10) + "T00:00:00";
-       this.end_date = moment(new Date()).format().slice(0,10) + "T23:59:59";
-      }else{
-      this.start_date = this.valueDate[0] + "T00:00:00";
-      this.end_date = this.valueDate[1] + "T23:59:59";
+      if (this.valueDate[0] == null) {
+        this.start_date =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T00:00:00";
+        this.end_date =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T23:59:59";
+      } else {
+        this.start_date = this.valueDate[0] + "T00:00:00";
+        this.end_date = this.valueDate[1] + "T23:59:59";
       }
-     
+
       this.$store.commit("setSdateDm", this.start_date);
       this.$store.commit("setEdateDm", this.end_date);
       this.$store.commit("setArrDate", this.valueDate);
@@ -117,14 +144,30 @@ export default {
     backDomain() {
       this.$store.commit("setPushDomainStat", false);
     },
-    printWindow: function () {
+    printWindow: function() {
       try {
         window.print();
       } catch (err) {
         console.log(err);
       }
     },
+  },
+  destroyed() {
+    localStorage.removeItem("updated_until");
+  },
+  mounted() {
+    let date = localStorage.getItem("updated_until");
+    // let datearr = date.split("T");
+    let datearr
+    if(date){
+       datearr=moment(date).add(7, 'hours').format("YYYY-MM-DD HH:mm:ss")
 
+    }
+  //  let datearr2 = new Date(datearr) 
+            
+    // let datetime = datearr[0] + " " + datearr[1].slice(0, 5);
+  //  console.log('date',datearr,datearr2);
+    this.updated_until = datearr;
   },
 };
 </script>

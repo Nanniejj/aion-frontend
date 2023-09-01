@@ -156,14 +156,12 @@
                 </div>
               </b-col>
             </b-row>
-            <b-row class="tablehashtag"  align-v="center" >
-              <b-col sm="12" md="12" lg="6" align-h="center" >
-                <StaticWordcloud :social="socialname"  :tabs="'hashtag'"/>
-              </b-col>
-              <b-col sm="12" md="12" lg="6" align-h="center" class="d-none">
+            <b-row class="tablehashtag">
+              <b-col sm="12" md="12" lg="6" align-h="center">
                 <div style="margin-top: 30px">
                   <!-- <PieChart /> -->
                   <PieChart :OverallData="getSentimentHashtagChart" />
+                  <!-- <GChart type="PieChart" :data="OverallData" :options="chartOptionsPie" /> -->
                 </div>
                 <div class="users">จำนวน user</div>
                 <div>
@@ -358,7 +356,6 @@
                   <!-- End Post and comment/retweet founds -->
                 </div>
               </b-col>
-            
               <b-col sm="12" md="12" lg="6" align-h="right">
                 <b-row>
                   <!-- social tab nav -->
@@ -567,7 +564,6 @@ import PieChart from "../chart/PieChart.vue";
 import Sentimentv2 from "../chart/Sentimentv2.vue";
 import HashPost from "../wordcloud/HashPost.vue";
 import SocialSelect from "@/components/domain/SocialSelect.vue";
-import StaticWordcloud from "../wordcloud/StaticWordcloud.vue";
 import moment from "moment";
 export default {
   props: {
@@ -598,7 +594,6 @@ export default {
     HashPost,
     SocialSelect,
     Sentimentv2,
-    StaticWordcloud
   },
   methods: {
     // words() {
@@ -647,39 +642,6 @@ export default {
       this.socialname = "news";
       //this.$store.commit("setHashtagSocial", this.socialname);
     },
-    getStat() {
-      let domainarr;
-      if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
-        domainarr = this.getDomainArr;
-      }else if(this.getWordCloudDomain) {
-        domainarr = this.getWordCloudDomain;
-      } else {
-        domainarr = "";
-      }
-      let socials = [
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
-        "facebook",
-        "twitter",
-        "news",
-        "pantip",
-        "instagram",
-        "youtube",
-        "blockdit",
-        "tiktok",
-      ];
-      socials.map((x) => {
-        this.$store.dispatch("fetchSentimentHashtag2", {
-          start_date: this.getWordCloudStartDate,
-          end_date: this.getWordCloudEndDate,
-          keywords: this.getKeywords,
-          domain: domainarr,
-          hashtag: this.getWordCloudHashtag,
-          monitor: this.getSelectedMonitor,
-          social: x,
-          // social:this.socialname
-        });
-      });
-    },
     tablefreq() {
       this.tab_selected = "word";
     },
@@ -695,45 +657,15 @@ export default {
       this.WordsFre = hashtag.name;
       this.$store.commit("setWordCloudHashtag", hashtag.name);
       this.$store.commit("setHashtagSocial", this.socialname);
-      let domainarr;
-      if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
-        domainarr = this.getDomainArr;
-      }else if(this.getWordCloudDomain) {
-        domainarr = this.getWordCloudDomain;
-      } else {
-        domainarr = "";
-      }
-      let socials = [
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
-        "facebook",
-        "twitter",
-        "news",
-        "pantip",
-        "instagram",
-        "youtube",
-        "blockdit",
-        "tiktok",
-      ];
-      socials.map((x) => {
-        this.$store.dispatch("fetchSentimentHashtag2", {
-          start_date: this.getWordCloudStartDate,
-          end_date: this.getWordCloudEndDate,
-          keywords: this.getKeywords,
-          domain: domainarr,
-          hashtag: hashtag.name.replace("#", ""),
-          monitor: this.getSelectedMonitor,
-          social: x,
-          // social:this.socialname
-        });
+      this.$store.dispatch("fetchSentimentHashtag", {
+        start_date: this.getWordCloudStartDate,
+        end_date: this.getWordCloudEndDate,
+        // type: "daily",
+        keywords: this.getKeywords,
+        hashtag: hashtag.name.replace("#", ""),
+        domain: this.getWordCloudDomain,
+        monitor: this.getSelectedMonitor,
       });
-      // this.$store.dispatch("fetchSentimentHashtag", {
-      //   start_date: this.getWordCloudStartDate,
-      //   end_date: this.getWordCloudEndDate,
-      //   keywords: this.getKeywords,
-      //   hashtag: hashtag.name.replace("#", ""),
-      //   domain: this.getWordCloudDomain,
-      //   monitor: this.getSelectedMonitor,
-      // });
 
       //post detail
       this.$store.dispatch("fetchSentimentHashtagDetail", {
@@ -781,7 +713,6 @@ export default {
   },
   computed: {
     ...mapGetters([
-      "getDomainArr",
       "getLoadChartCloud",
       "getKeywords",
       "getSelectedMonitor",

@@ -10,7 +10,7 @@
     <div class="box" id="facebook" @click="toPlatform">
       <div class="left"></div>
       <div style="cursor: pointer">
-        <!-- <i class="fab fa-facebook-f fa-2x"></i> -->
+        <!-- <i class="fab fa-facebook-f fa-3x mt-3"></i> -->
         <img src="@/assets/Facebook.png" class="socialogo" />
 
         <div class="md-font">
@@ -397,8 +397,23 @@ export default {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0);
 }
 #facebook {
-  background-color: #4867aa;
+  /* background-color: #4867aa; */
+  background: #043185;
+  background: linear-gradient(
+    145deg,
+    #4867aa 10%,
+    rgb(17 41 85) 55%
+  );
+  /* background: linear-gradient(184deg, #7ba0f0, rgb(9, 31, 73) ); */
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
   color: #ffffff;
+}
+#facebook:hover {
+  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
+    rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
+    rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
+    rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
 .boxr {
   margin: auto;

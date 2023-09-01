@@ -742,17 +742,7 @@
                 }}</span
               >
             </span>
-            <span
-              id="box-reaction"
-              v-b-tooltip.hover
-              title="Engagement"
-              v-else
-              style="float:right;"
-            >
-              <span style="font-size:14px; "
-                >Engages {{ datas.engagement | numFormat }}</span
-              >
-            </span>
+           
 
             <!-- twitter -->
             <span v-if="datas.source == 'twitter'">

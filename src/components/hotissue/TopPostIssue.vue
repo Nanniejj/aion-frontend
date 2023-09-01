@@ -358,7 +358,7 @@
                         padding: '10px',
                       }"
                       highlightClassName="highlight2"
-                      :searchWords="postDomain.hotissue_docs.keywords"
+                      :searchWords="heightword"
                       :autoEscape="true"
                       :textToHighlight="
                         postDomain.read
@@ -1151,6 +1151,7 @@ export default {
       const axios = require("axios").default;
       let sdate = "&start=" + date[0] + "T00:00:00";
       let edate = "&end=" + date[1] + "T23:59:59";
+      // http://139.59.103.67:3000/api
       var config = {
         method: "get",
         url:
@@ -1171,6 +1172,18 @@ export default {
       };
       axios(config)
         .then((response) => {
+          let heightarr = [];
+          let andarr = [];
+          let splitarr = [];
+          let wordarr = [];
+          heightarr = response.data[0].highlight;
+          andarr = heightarr.and_keywords;
+          wordarr = heightarr.keywords;
+          // andarr.split('+')
+          splitarr=  andarr.map((x) => {
+            return x.split("+");
+          }).flat(1)
+          this.heightword= splitarr.concat(wordarr);
           console.log("Toppp response.data", response.data);
           var post = response.data[0].data;
           var pair = { read: true };
@@ -1213,7 +1226,7 @@ export default {
           this.$store.commit("setLoadPostIssue", false);
           // this.$store.commit("setLoadTopUserPf", false);
         })
-        .catch(function(error) {
+        .catch((error)=> {
           console.log(error);
           this.$store.commit("setLoadPostIssue", false);
           // this.$store.commit("setLoadTopUserPf", false);

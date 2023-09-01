@@ -3,6 +3,12 @@
     <b-col>
       <li v-on:click="all()" style="padding-bottom: 0px">
         <!-- <p class="all-sort">ALL</p> -->
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <b-card id="all">
           <div class="h5">All</div>
           <div
@@ -44,6 +50,12 @@
 
     <b-col>
       <li v-on:click="facebook()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/Facebook.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="fb"
           ><div class="h5">Facebook</div>
@@ -73,6 +85,12 @@
 
     <b-col>
       <li v-on:click="twitter()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/Twitter.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="tw"
           ><div class="h5">Twitter</div>
@@ -90,6 +108,12 @@
 
     <b-col>
       <li v-on:click="pantip()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/Pantip.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="pt">
           <div class="h5">Pantip</div>
@@ -107,6 +131,12 @@
 
     <b-col>
       <li v-on:click="news()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/News.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="nw">
           <div class="h5">News</div>
@@ -124,6 +154,12 @@
 
     <b-col>
       <li v-on:click="youtube()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/Youtube.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="yt">
           <div class="h5">Youtube</div>
@@ -141,6 +177,12 @@
 
     <b-col>
       <li v-on:click="instagram()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/Instagram.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="itg">
           <div class="h5">Instagram</div>
@@ -162,6 +204,12 @@
 
     <b-col>
       <li v-on:click="blockdit()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/Instagram.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="bd">
           <div class="h5">Blockdit</div>
@@ -183,6 +231,12 @@
 
     <b-col>
       <li v-on:click="tiktok()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
         <!-- <img src="@/assets/Instagram.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="tt">
           <div class="h5">Tiktok</div>
@@ -223,6 +277,7 @@ export default {
       "getSumMonitor",
       "getSocialMo",
       "getListMonitor",
+      "getLoadStatus"
     ]),
   },
   methods: {
@@ -539,7 +594,8 @@ export default {
 }
 .card-body {
   width: 150px;
-box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
   border-radius: 7px;
   /* box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%); */
 }

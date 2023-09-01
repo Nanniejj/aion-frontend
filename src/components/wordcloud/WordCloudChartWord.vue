@@ -154,8 +154,12 @@
                 </div>
               </b-col>
             </b-row>
-            <b-row class="tablewords">
-              <b-col sm="12" md="12" lg="6">
+            <!-- <StaticWordcloud :social="socialname" /> -->
+            <b-row class="tablewords" align-v="center">
+              <b-col sm="12" md="12" lg="6" >
+                <StaticWordcloud :social="socialname" :tabs="'word'" />
+              </b-col>
+              <b-col sm="12" md="12" lg="6" class="d-none">
                 <div class="piechart" style="margin-top: 30px">
                   <PieChart :OverallData="getSentimentChart" />
                 </div>
@@ -188,6 +192,7 @@
                   <b-row
                     v-if="tab_selected_detail_social == 'facebook'"
                     class="my-3"
+                    @click="facebook"
                   >
                     <b-col>
                       <span>Post</span><br />
@@ -307,7 +312,7 @@
                     </b-col>
                   </b-row>
                   <!-- End Post and comment/retweet founds -->
-                   <!-- Post and comment/retweet founds -->
+                  <!-- Post and comment/retweet founds -->
                   <b-row
                     v-if="tab_selected_detail_social == 'blockdit'"
                     class="my-3"
@@ -329,7 +334,7 @@
                   </b-row>
                   <!-- End Post and comment/retweet founds -->
 
-                   <!-- Post and comment/retweet founds -->
+                  <!-- Post and comment/retweet founds -->
                   <b-row
                     v-if="tab_selected_detail_social == 'tiktok'"
                     class="my-3"
@@ -428,7 +433,7 @@
                               />
                             </a>
                           </li>
-                           <li v-on:click="tiktok()">
+                          <li v-on:click="tiktok()">
                             <a tabindex="0">
                               <img
                                 src="@/assets/Tiktok.png"
@@ -449,6 +454,7 @@
                       v-if="tab_selected_detail_social == 'all'"
                     >
                       <span id="day">
+                        <!-- {{ getSentimentAll }} -->
                         <Sentimentv2 :chartData="getSentimentAll" />
                         <!-- <SentimentChart
                           :chartData="getSentimentAll"
@@ -511,7 +517,7 @@
                         <Sentimentv2 :chartData="getSentimentNews" />
                       </span>
                     </span>
-                     <span
+                    <span
                       class=""
                       id="blockdit"
                       v-if="tab_selected_detail_social == 'blockdit'"
@@ -520,7 +526,7 @@
                         <Sentimentv2 :chartData="getSentimentBlockdit" />
                       </span>
                     </span>
-                       <span
+                    <span
                       class=""
                       id="tiktok"
                       v-if="tab_selected_detail_social == 'tiktok'"
@@ -557,6 +563,7 @@ import PieChart from "../chart/PieChart.vue";
 import Sentimentv2 from "../chart/Sentimentv2.vue";
 import WordPost from "../wordcloud/WordPost.vue";
 import SocialSelect from "@/components/domain/SocialSelect.vue";
+import StaticWordcloud from "../wordcloud/StaticWordcloud.vue";
 import moment from "moment";
 export default {
   props: {
@@ -572,7 +579,7 @@ export default {
       this.all();
     },
   },
-  data: function () {
+  data: function() {
     return {
       WordsFre: "",
       result: {
@@ -584,7 +591,8 @@ export default {
       tab_selected_detail_social: "all",
       tab_selected_social: "all",
       edited: false,
-      socialname: "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+      socialname:
+        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
     };
   },
   components: {
@@ -594,6 +602,7 @@ export default {
     WordPost,
     SocialSelect,
     Sentimentv2,
+    StaticWordcloud,
   },
   methods: {
     // words() {
@@ -601,26 +610,32 @@ export default {
     // },
     all() {
       this.tab_selected_detail_social = "all";
-      this.socialname = "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok";
+      this.socialname =
+        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok";
       //this.$store.commit("setWordCloudSocial", this.socialname);
+      //// this.getStat()
     },
-     tiktok() {
+    tiktok() {
       this.tab_selected_detail_social = "tiktok";
       this.socialname = "tiktok";
+      // this.getStat()
     },
     blockdit() {
       this.tab_selected_detail_social = "blockdit";
       this.socialname = "blockdit";
+      // this.getStat()
     },
     facebook() {
       this.tab_selected_detail_social = "facebook";
       this.socialname = "facebook";
+      // this.getStat()
       //this.$store.commit("setWordCloudSocial", this.socialname);
     },
     twitter() {
       this.tab_selected_detail_social = "twitter";
       this.socialname = "twitter";
       //this.$store.commit("setWordCloudSocial", this.socialname);
+      // this.getStat()
     },
     pantip() {
       this.tab_selected_detail_social = "pantip";
@@ -630,24 +645,57 @@ export default {
     youtube() {
       this.tab_selected_detail_social = "youtube";
       this.socialname = "youtube";
+      // this.getStat()
       //this.$store.commit("setWordCloudSocial", this.socialname);
     },
     ig() {
       this.tab_selected_detail_social = "ig";
       this.socialname = "instagram";
       // this.$store.commit("setWordCloudSocial", this.socialname);
+      // this.getStat()
     },
     news() {
       this.tab_selected_detail_social = "news";
       this.socialname = "news";
+      // this.getStat()
       //this.$store.commit("setWordCloudSocial", this.socialname);
     },
     tablefreq() {
       this.tab_selected = "word";
     },
+    getStat() {
+      console.log(
+        "fetchSentiment2",
+        this.getDomainArr,
+        this.getWordCloudDomain
+      );
+      let domainarr;
+      if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
+        domainarr = this.getDomainArr;
+      }else if(this.getWordCloudDomain) {
+        domainarr = this.getWordCloudDomain;
+      } else {
+        domainarr = "";
+      }
+      this.$store.dispatch("fetchSentiment2", {
+        start_date: this.getWordCloudStartDate,
+        end_date: this.getWordCloudEndDate,
+        keywords: this.getKeywords,
+        domain: domainarr,
+        querySearch: this.getQuerySearch,
+        monitor: this.getSelectedMonitor,
+        social: this.socialname,
+      });
+    },
     table(word) {
-      var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
-      var todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
+      var todays =
+        moment(new Date())
+          .format()
+          .slice(0, 10) + "T00:00:00";
+      var todaye =
+        moment(new Date())
+          .format()
+          .slice(0, 10) + "T23:59:59";
 
       if (this.linkword) {
         this.$store.commit("setWordCloudStartDate", todays);
@@ -659,13 +707,41 @@ export default {
       this.WordsFre = word.name;
       this.$store.commit("setQuerySearch", word.name);
       this.$store.commit("setWordCloudSocial", this.socialname);
-      this.$store.dispatch("fetchSentiment", {
-        start_date: this.getWordCloudStartDate,
-        end_date: this.getWordCloudEndDate,
-        keywords: this.getKeywords,
-        domain: this.getWordCloudDomain,
-        querySearch: word.name,
-        monitor: this.getSelectedMonitor,
+      console.log(
+        "fetchSentiment2",
+   
+        this.getWordCloudDomain.toLocaleString()
+      );
+      let domainarr;
+      if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
+        domainarr = this.getDomainArr;
+      }else if(this.getWordCloudDomain) {
+        domainarr = this.getWordCloudDomain;
+      } else {
+        domainarr = "";
+      }
+      let socials = [
+        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+        "facebook",
+        "twitter",
+        "news",
+        "pantip",
+        "instagram",
+        "youtube",
+        "blockdit",
+        "tiktok",
+      ];
+      socials.map((x) => {
+        this.$store.dispatch("fetchSentiment2", {
+          start_date: this.getWordCloudStartDate,
+          end_date: this.getWordCloudEndDate,
+          keywords: this.getKeywords,
+          domain: domainarr,
+          querySearch: word.name,
+          monitor: this.getSelectedMonitor,
+          social: x,
+          // social:this.socialname
+        });
       });
 
       //post detail
@@ -703,6 +779,7 @@ export default {
   },
   computed: {
     ...mapGetters([
+      "getDomainArr",
       "getScroll",
       "getLoadChartCloud",
       "getWordCloudDomain",
@@ -1006,7 +1083,7 @@ a {
   border-radius: 50%;
 }
 #menusall > div > li:nth-child(8) > a {
-  border-radius: 50% ;
+  border-radius: 50%;
 }
 #menusall > div > li:nth-child(1) a :focus {
   background-color: #fed16eab;

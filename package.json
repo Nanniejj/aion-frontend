@@ -16,6 +16,7 @@
     "bootstrap-vue": "^2.17.3",
     "chart.js": "^2.9.4",
     "core-js": "^3.6.5",
+    "heatmap.js": "^2.0.5",
     "jquery": "^3.6.0",
     "leaflet": "^1.7.1",
     "longdo-map-vue": "^2.1.0",

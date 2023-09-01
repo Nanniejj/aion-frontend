@@ -197,7 +197,7 @@ width: 80%;
 .socialogo {
   width: 20%;
   margin-bottom: 15px;
-  margin-top: 5px;
+  margin-top: 15px;
 }
 svg {
   overflow: auto;
@@ -272,7 +272,7 @@ svg {
   border-radius: 19px;
   width: 98%;
 }
-div.left {
+/* div.left {
   position: absolute;
   top: 50%;
   left: 100%;
@@ -291,7 +291,7 @@ div.right {
   width: 30px;
   border-radius: 0 150px 150px 0;
   background-color: #ffffff;
-}
+} */
 .vue-popover {
   padding: 30px;
   width: 60vw !important;
@@ -807,7 +807,7 @@ div.modal-vue > div > div.modal-vue-panel.modal-fade.modal-vue-show {
     min-height: 40vh;
   }
   #sumboxsum {
-    min-height: 50vh;
+    /* min-height: 50vh; */
     padding-top: 90px;
   }
 }

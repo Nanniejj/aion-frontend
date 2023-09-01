@@ -1,6 +1,7 @@
 import { WordcloudService } from "@/common/api.services";
 export default {
   state: {
+    stmstatval: "",
     selected: false,
     selectedmonitor: "",
     detailPost: [],
@@ -90,6 +91,9 @@ export default {
     sentimenthashtagtiktokcomment: 0,
   },
   getters: {
+    getSentimentStatVal: (state) => {
+      return state.stmstatval;
+    },
     getDetailPost: (state) => {
       return state.detailPost;
     },
@@ -345,6 +349,9 @@ export default {
     },
   },
   mutations: {
+    setSentimentStatVal: (state, payload) => {
+      state.stmstatval = payload;
+    },
     setQuerySearch: (state, payload) => {
       state.querysearch = payload;
     },
@@ -642,7 +649,6 @@ export default {
         commit("setWordChart", wordChart);
         let temp = [];
         for (var i = 0; i < 10; i++) {
-         
           temp.push([
             wordChart[i].name,
             wordChart[i].count[0].count,
@@ -664,9 +670,8 @@ export default {
         let hashtagChart = res.data.data.hashtag.data;
         commit("setHashtagChart", hashtagChart);
         temp = [];
-       
+
         for (i = 0; i < 10; i++) {
-          
           temp.push([
             hashtagChart[i].name,
             hashtagChart[i].count[0].count,
@@ -703,6 +708,207 @@ export default {
       } catch (error) {
         console.log(error.response);
       }
+    },
+    async fetchSentiment2({ commit }, payload) {
+      commit("setLoadChartCloud", true);
+      let all = { negative: 0, neutral: 0, positive: 0 };
+      var axios = require("axios");
+      var dom = "",
+        key = "",
+        search = "",
+        mo = "";
+      if (payload.monitor) {
+        mo = `&monitor=${payload.monitor}`;
+      } else {
+        mo = "";
+      }
+      if (payload.domain.length > 0 && payload.keywords != "") {
+        dom = `&domain=${payload.domain}`;
+        key = `&keywords=${payload.keywords}`;
+        search = `&querySearch=${payload.querySearch}`;
+      } else if (payload.domain.length > 0) {
+        dom = `&domain=${payload.domain}`;
+        key = "";
+        search = `&querySearch=${payload.querySearch}`;
+      } else if (payload.keywords != "") {
+        dom = "";
+        key = `&keywords=${payload.keywords}`;
+        search = `&querySearch=${payload.querySearch}`;
+      } else {
+        dom = "";
+        key = "";
+        search = `&querySearch=${payload.querySearch}`;
+      }
+      var config = {
+        method: "get",
+        url:
+          `https://api2.cognizata.com/api/v2/userposts/getSentimentStat?source=${payload.social}&start=${payload.start_date}&end=${payload.end_date}` +
+          dom +
+          key +
+          search +
+          mo,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      axios(config)
+        .then((response) => {
+          let res = response.data[0];
+          //   {
+          //     "likes_count": 96,
+          //     "comments_count": 18,
+          //     "retweets_count": 0,
+          //     "engagement": 116,
+          //     "totalPost": 21,
+          //     "positiveSentiment": 15,
+          //     "neutralSentiment": 1,
+          //     "negativeSentiment": 5,
+          //     "Accounts": 7
+          // }
+          all = {
+            negative: res.negativeSentiment,
+            neutral: res.neutralSentiment,
+            positive: res.positiveSentiment,
+          };
+          console.log("all", all);
+          if (payload.social == "facebook") {
+            commit("setSentimentFacebook", all);
+            commit("setSentimentFacebookPost", res);
+          } else if (payload.social == "twitter") {
+            commit("setSentimentTwitter", all);
+            commit("setSentimentTwitterPost", res);
+          } else if (payload.social == "pantip") {
+            commit("setSentimentPantip", all);
+            commit("setSentimentPantipPost", res);
+          } else if (payload.social == "youtube") {
+            commit("setSentimentYoutube", all);
+            commit("setSentimentYoutubePost", res);
+          } else if (payload.social == "tiktok") {
+            commit("setSentimentTiktok", all);
+            commit("setSentimentTiktokPost", res);
+          } else if (payload.social == "news") {
+            commit("setSentimentNews", all);
+            commit("setSentimentNewsPost", res);
+          } else if (payload.social == "instagram") {
+            commit("setSentimentInstagram", all);
+            commit("setSentimentInstagramPost", res);
+          } else if (payload.social == "blockdit") {
+            commit("setSentimentBlockditPost", res);
+            commit("setSentimentBlockdit", all);
+          } else {
+            commit("setSentimentAllPost", res);
+            commit("setSentimentAll", all);
+          }
+
+          commit("setSentimentStatVal", response);
+          commit("setLoadChartCloud", false);
+          console.log("getSentimentStat", response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    async fetchSentimentHashtag2({ commit }, payload) {
+      commit("setLoadChartCloud", true);
+      let all = { negative: 0, neutral: 0, positive: 0 };
+      var axios = require("axios");
+      var dom = "",
+        key = "",
+        search = "",
+        hash = "",
+        mo = "";
+      if (payload.monitor) {
+        mo = `&monitor=${payload.monitor}`;
+      } else {
+        mo = "";
+      }
+      if (payload.domain.length > 0 && payload.keywords != "") {
+        dom = `&domain=${payload.domain}`;
+        key = `&keywords=${payload.keywords}`;
+        hash = `&hashtag=${payload.hashtag}`;
+      } else if (payload.domain.length > 0) {
+        dom = `&domain=${payload.domain}`;
+        key = "";
+        hash = `&hashtag=${payload.hashtag}`;
+      } else if (payload.keywords != "") {
+        dom = "";
+        key = `&keywords=${payload.keywords}`;
+        hash = `&hashtag=${payload.hashtag}`;
+      } else {
+        dom = "";
+        key = "";
+        hash = `&hashtag=${payload.hashtag}`;
+      }
+      var config = {
+        method: "get",
+        url:
+          `https://api2.cognizata.com/api/v2/userposts/getSentimentStat?source=${payload.social}&start=${payload.start_date}&end=${payload.end_date}` +
+          dom +
+          key +
+          hash +
+          mo,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      axios(config)
+        .then((response) => {
+          let res = response.data[0];
+          //   {
+          //     "likes_count": 96,
+          //     "comments_count": 18,
+          //     "retweets_count": 0,
+          //     "engagement": 116,
+          //     "totalPost": 21,
+          //     "positiveSentiment": 15,
+          //     "neutralSentiment": 1,
+          //     "negativeSentiment": 5,
+          //     "Accounts": 7
+          // }
+          all = {
+            negative: res.negativeSentiment,
+            neutral: res.neutralSentiment,
+            positive: res.positiveSentiment,
+          };
+          console.log("all", all);
+          if (payload.social == "facebook") {
+            commit("setSentimentHashtagFacebook", all);
+            commit("setSentimentHashtagFacebookPost", res);
+          } else if (payload.social == "twitter") {
+            commit("setSentimentHashtagTwitter", all);
+            commit("setSentimentHashtagTwitterPost", res);
+          } else if (payload.social == "pantip") {
+            commit("setSentimentHashtagPantip", all);
+            commit("setSentimentHashtagPantipPost", res);
+          } else if (payload.social == "youtube") {
+            commit("setSentimentHashtagYoutube", all);
+            commit("setSentimentHashtagYoutubePost", res);
+          } else if (payload.social == "tiktok") {
+            commit("setSentimentHashtagTiktok", all);
+            commit("setSentimentHashtagTiktokPost", res);
+          } else if (payload.social == "news") {
+            commit("setSentimentHashtagNews", all);
+            commit("setSentimentHashtagNewsPost", res);
+          } else if (payload.social == "instagram") {
+            commit("setSentimentHashtagInstagram", all);
+            commit("setSentimentHashtagInstagramPost", res);
+          } else if (payload.social == "blockdit") {
+            commit("setSentimentHashtagBlockditPost", res);
+            commit("setSentimentHashtagBlockdit", all);
+          } else {
+            commit("setSentimentHashtagAllPost", res);
+            commit("setSentimentHashtagAll", all);
+          }
+
+          commit("setSentimentStatVal", response);
+          commit("setLoadChartCloud", false);
+          console.log("getSentimentStat", response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     async fetchSentiment({ commit }, payload) {
       commit("setLoadChartCloud", true);
@@ -848,8 +1054,7 @@ export default {
           tiktok = res.data.tiktok.total_sentiments;
           all.negative = all.negative +=
             res.data.tiktok.total_sentiments.negative;
-          all.neutral = all.neutral +=
-            res.data.tiktok.total_sentiments.neutral;
+          all.neutral = all.neutral += res.data.tiktok.total_sentiments.neutral;
           all.positive = all.positive +=
             res.data.tiktok.total_sentiments.positive;
           total.comments = total.comments += res.data.tiktok.comment;
@@ -1050,18 +1255,14 @@ export default {
           tiktok = res.data.tiktok.total_sentiments;
           all.negative = all.negative +=
             res.data.tiktok.total_sentiments.negative;
-          all.neutral = all.neutral +=
-            res.data.tiktok.total_sentiments.neutral;
+          all.neutral = all.neutral += res.data.tiktok.total_sentiments.neutral;
           all.positive = all.positive +=
             res.data.tiktok.total_sentiments.positive;
           total.comments = total.comments += res.data.tiktok.comment;
           total.post = total.post += res.data.tiktok.post;
 
           commit("setSentimentHashtagTiktokPost", res.data.tiktok.post);
-          commit(
-            "setSentimentHashtagTiktokComment",
-            res.data.tiktok.comment
-          );
+          commit("setSentimentHashtagTiktokComment", res.data.tiktok.comment);
         }
 
         let temp = [];

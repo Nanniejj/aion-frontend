@@ -201,7 +201,7 @@ export default {
       ];
 
       if (this.getNamePlatform == "twitter") {
-        this.colorp = ["#42c8f4"];
+        this.colorp = ["#919495"];
       } else if (this.getNamePlatform == "facebook") {
         this.colorp = ["#4c77bb"];
       } else if (this.getNamePlatform == "pantip") {

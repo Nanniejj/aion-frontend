@@ -54,7 +54,17 @@
                           v-else
                         ></b-avatar>
                       </span>
-                      <span v-else> <b-avatar size="45px"></b-avatar></span>
+                      <span v-else>
+                        <b-avatar
+                          @error="setAltImg"
+                          size="47px"
+                          :src="postDomain.photos"
+                          loading="lazy"
+                          class="imgpro"
+                          v-if="postDomain.source== 'tiktok'"
+                        ></b-avatar>
+                        <b-avatar size="45px" v-else></b-avatar>
+                      </span>
                       <img
                         v-if="postDomain.source == 'twitter'"
                         src="@/assets/Twitter.png"

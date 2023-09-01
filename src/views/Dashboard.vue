@@ -58,7 +58,7 @@
         </b-container>
         <b-container>
           <b-row style="padding-bottom: 200px">
-            <Summary />
+            <Summary  class="mt-2"/>
             <Facebook />
             <Twitter />
             <Pantip />

@@ -9,42 +9,59 @@
           /> -->
       <br class="prt" />
       <!-- <img src="@/assets/arrow.png" class="socialogo-sum" /> -->
-      <span class="total-all h5 mb-2" id="tt-sum">Total </span>
-      <b-row class="comment-post">
-        <b-col>
+      <!-- <span class="total-all h5 mb-2 text-left" id="tt-sum">Total </span> -->
+      <b-row class="comment-post mt-3">
+        <b-col v-b-tooltip.top :title="(sumPost + sumComment) | numFormat" sm="6" md="3"  cols="6">
           <i class="fa fa-comments fa-2x" />
           <div class="md-font"></div>
           <div class="total-all">
-            <span class="prt">Messages : </span
-            >{{ (sumPost + sumComment) | numFormat }}
+            <div class="h4 bold mb-0 dp">
+              {{ formatCash(sumPost + sumComment) }}
+            </div>
+            <span class="prt">Messages : </span>
+            <span class="small mt-0 p-0 prt">
+              {{ (sumPost + sumComment) | numFormat }}</span
+            >
           </div>
-          <span class="dp"
+          <span class="dp" style="color:#6e6149"
             >Messages
-            <div class="small">( posts + comments )</div>
+            <div
+              class="small d-none"
+              style="font-size: x-small;color:#4c412b ;"
+            >
+              ( posts + comments )
+            </div>
           </span>
         </b-col>
 
-        <b-col class="border-left">
+        <b-col class="border-left" v-b-tooltip.top :title="sumPost | numFormat"  sm="6" md="3"  cols="6">
           <i class="fa fa-paper-plane fa-2x" />
           <div class="md-font"></div>
           <div class="total-all">
-            <span class="prt">Posts : </span>{{ sumPost | numFormat }}
+            <div class="h4 bold mb-0 dp">{{ formatCash(sumPost) }}</div>
+            <span class="prt ">Posts : {{ sumPost | numFormat }} </span>
           </div>
           <span class="dp">Posts </span>
         </b-col>
 
-        <b-col class="border-left">
+        <b-col
+          class="border-left"
+          v-b-tooltip.top
+          :title="sumComment | numFormat"
+          cols="6" sm="6" md="3"
+        >
           <div><i class="fa fa-comment fa-2x" /></div>
           <div class="total-all">
-            <span class="prt">Comments : </span>{{ sumComment | numFormat }}
+            <div class="h4 bold mb-0 dp">{{ formatCash(sumComment) }}</div>
+            <span class="prt">Comments :{{ sumComment | numFormat }} </span>
           </div>
           <span class="dp">Comments</span>
         </b-col>
-        <b-col class="border-left">
+        <b-col class="border-left" v-b-tooltip.top :title="sumUser | numFormat" cols="6" sm="6" md="3">
           <div><i class="fa fa-users fa-2x" /></div>
+          <div class="h4 bold mb-0 dp">{{ formatCash(sumUser) }}</div>
           <div class="total-all">
-            <span class="prt">Users : </span>
-            {{ sumUser | numFormat }}
+            <span class="prt">Users : {{ sumUser | numFormat }} </span>
           </div>
           <span class="dp">Users</span>
         </b-col>
@@ -107,6 +124,15 @@ export default {
       return sum;
     },
   },
+  methods: {
+    formatCash(n) {
+      if (n < 1e3) return n;
+      if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + "K";
+      if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + "M";
+      if (n >= 1e9 && n < 1e12) return +(n / 1e9).toFixed(1) + "B";
+      if (n >= 1e12) return +(n / 1e12).toFixed(1) + "T";
+    },
+  },
   created() {
     var items = [
       { name: "Edward", value: 21 },
@@ -153,11 +179,20 @@ export default {
 </script>
 
 <style scoped>
+.h4,
+.border-left {
+  color: #6e6149;
+}
 .fa {
-  color: #ccc2b2;
+    color: #fdd786;
+    background: linear-gradient(to bottom, #fdd786 0%, #e3b348 100%);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 .border-left {
-  border-left: 1px solid #9e9e9e !important;
+  border-left: 0px solid #9e9e9e !important;
 }
 .border-right {
   border-left: 1px solid #9e9e9e !important;
@@ -167,11 +202,10 @@ export default {
   display: -webkit-inline-box;
 }
 #sumboxsum {
-  padding-top: 10px;
+  padding-top: 30px;
   width: 100%;
   background-color: transparent;
-  padding-bottom: 20px;
-  min-height: 20vh;
+  padding-bottom: 30px;
   display: block;
   margin: auto;
   border-radius: 26px;
@@ -238,7 +272,7 @@ export default {
     border-left: none !important;
   }
   .total-all {
-    font-size: 10pt;
+    /* font-size: 10pt; */
     font-weight: bold;
   }
   .comment-post {
