@@ -1,10 +1,11 @@
 <template>
   <div>
+    <div class="mb-4">
     <h1 class="title">Keyword</h1>
-    <h4 class="title-monitor">
+    <h4 class="title-monitor mb-">
       <router-link :to="{ name: 'Monitor' }">Monitor </router-link>
       <i class="fas fa-angle-right" /><span id="active">Keyword </span>
-    </h4>
+    </h4></div>
     <KeywordPost class="mt-2" />
   </div>
 </template>
@@ -13,6 +14,9 @@ import KeywordPost from "./KeywordPost.vue";
 export default {
   components: {
     KeywordPost,
+  },
+  destroyed() {
+    localStorage.removeItem("keywordName")
   },
 };
 </script>

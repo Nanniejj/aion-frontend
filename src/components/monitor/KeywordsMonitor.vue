@@ -1,9 +1,10 @@
 <template>
   <div>
-    <b-container fluid>
+    <b-container fluid class="mt-4">
       <!-- https://bootstrap-vue.org/docs/components/table#custom-data-rendering   \ Complete example -->
       <!-- User Interface controls -->
-      <SumMonitor :tabsMonitor="'tabHashtag'" />
+      <!-- <SumMonitor :tabsMonitor="'tabHashtag'" /> -->
+      <h3 class="text-left bold my-4">Keyword</h3>
       <b-row id="input-btn">
         <b-col lg="6" class="my-1">
           <b-form-group
@@ -30,7 +31,16 @@
 
       <!-- Main table element -->
       <b-row class="mb-2">
-        <b-col lg="6"></b-col>
+        <b-col cols="12" md="6" lg="6"
+          >
+          <div class="text-left" v-if="getKeyword">
+            <span class=" "
+              >Total
+              <span class="bold">{{ getKeyword.length }}</span> keywords</span
+            >
+          </div>
+          </b-col
+        >
         <b-col lg="6">
           <b-form-group
             label="Sort"
@@ -189,13 +199,13 @@
 <script>
 import { mapGetters } from "vuex";
 import CreateMonitor from "@/components/monitor/CreateMonitor.vue";
-import SumMonitor from "@/components/monitor/SumMonitor.vue";
+// import SumMonitor from "@/components/monitor/SumMonitor.vue";
 //import TemplateAddDomain from '@/components/template/TemplateAddDomain.vue';
 
 export default {
   components: {
     CreateMonitor,
-    SumMonitor,
+    // SumMonitor,
   },
   data() {
     return {
@@ -268,11 +278,11 @@ export default {
       this.hover = s;
     },
     delKeyword(item, index) {
-      console.log('delete',item);
-      console.log('delete',item);
+      console.log("delete", item);
+      console.log("delete", item);
       this.$confirm("คุณต้องการลบข้อมูล ?").then(async () => {
         await this.$store.dispatch("DeleteKeyword", {
-          _id:item._id
+          _id: item._id,
         });
       });
     },
@@ -280,7 +290,8 @@ export default {
       this.$confirm("คุณต้องการลบข้อมูล ?").then(() => {});
     },
     linkToHashtag(item) {
-      // this.$store.commit("setHashtagData", item.uid);
+      this.$store.commit("setKeywordName", item.keyword);
+      localStorage.setItem("keywordName", item.keyword);
       // this.$store.commit("setValSource", item.source);
       this.$router.push("/keyword");
     },

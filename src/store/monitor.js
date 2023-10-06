@@ -1,9 +1,13 @@
 import { MonitorService } from "@/common/api.services";
 import { DomainService } from "@/common/api.services";
+import { API_V2_URL } from "@/common/config";
 
 export default {
   state: {
-    keywordMonitor:[],
+    keywordCount:{fb:0,tw:0},
+    keywordName:"",
+    keywordPost: [],
+    keywordMonitor: [],
     mapdata: [],
     maxminmap: "",
     sumsocial: {
@@ -112,6 +116,15 @@ export default {
     socialmo: "",
   },
   getters: {
+    getKeywordCount: (state) => {
+      return state.keywordCount;
+    },
+    getKeywordName: (state) => {
+      return state.keywordName;
+    },
+    getKeywordPost: (state) => {
+      return state.keywordPost;
+    },
     getKeyword: (state) => {
       return state.keywordMonitor;
     },
@@ -202,7 +215,6 @@ export default {
     getProfile: (state) => {
       return state;
     },
-
     getFieldsProfile: (state) => {
       return state.fieldsProfile;
     },
@@ -211,8 +223,17 @@ export default {
     },
   },
   mutations: {
+    setKeywordCount: (state, payload) => {
+      state.keywordCount = payload;
+    },
+    setKeywordName: (state, payload) => {
+      state.keywordName = payload;
+    },
+    setKeywordPost: (state, payload) => {
+      state.keywordPost = payload;
+    },
     setKeyword: (state, payload) => {
-     state.keywordMonitor=payload
+      state.keywordMonitor = payload;
     },
     setMaxMinMap: (state, payload) => {
       state.maxminmap = payload;
@@ -367,40 +388,81 @@ export default {
     },
   },
   actions: {
-    async CreateKeyword({ commit,dispatch }, payload) {
-      console.log("resetDomainLastUpdate",payload);
+    async PostsKeyword({ commit, dispatch }, payload) {
       var axios = require("axios");
-      await axios
-        .post("http://139.59.103.67:3000/api/v2/keyword/createKeyword", payload)
+      var config = {
+        method: "get",
+        url: API_V2_URL+"/api/v2/keyword/getKeywordPosts",
+        params:payload,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+     
+      axios(config)
         .then((res) => {
           // handle success
-          console.log("success", res);
-          dispatch('fetchKeyword')
+          commit("setKeywordPost", res.data);
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    async DeleteKeyword({ commit,dispatch }, payload) {
-      console.log("resetDomainLastUpdate",payload);
+
+    async CreateKeyword({ commit, dispatch }, payload) {
+      console.log("resetDomainLastUpdate", payload);
       var axios = require("axios");
-      await axios
-        .delete("http://139.59.103.67:3000/api/v2/keyword/deleteKeyword?_id="+ payload._id)
-        .then((res) => {
+
+      var config = {
+        method: "post",
+        url: API_V2_URL+"/api/v2/keyword/createKeyword",
+        data:payload,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      axios(config).then(() => {
+          // handle success
+          dispatch("fetchKeyword");
+        })
+        .catch((error) => {
+          if(error.response.data.error=='Maximum number of posts reached for this project.'){
+            alert("ไม่สามารถเพิ่มข้อมูลได้ จำกัดการเพิ่มข้อมูล 5 keywords ต่อ 1 บัญชีผู้ใช้งาน ! ");
+          }else{
+            alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+          }
+          console.log();
+        });
+    },
+    async DeleteKeyword({ commit, dispatch }, payload) {
+      console.log("resetDomainLastUpdate", payload);
+      var axios = require("axios");
+      var config = {
+        method: "DELETE",
+        url: API_V2_URL+"/api/v2/keyword/deleteKeyword?_id=" +payload._id,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      axios(config).then((res) => {
           // handle success
           console.log("success", res);
-          dispatch('fetchKeyword')
+          dispatch("fetchKeyword");
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async fetchKeyword({ commit }, payload) {
+      //"http://139.59.103.67:3000/api/v2/keyword/getMonitorKeyword"
       var axios = require("axios");
       var config = {
         method: "get",
-        url: "http://139.59.103.67:3000/api/v2/keyword/getMonitorKeyword",
-  
+        url: API_V2_URL+"/api/v2/keyword/getMonitorKeyword",
+
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -408,12 +470,12 @@ export default {
       };
       axios(config)
         .then((response) => {
-          commit("setKeyword", response.data)
+          commit("setKeyword", response.data);
           // console.log("Toppp response.data", response.data[0].TopHashtags);
           console.log("response", response.data);
           // this.$store.commit("setLoadHashIssue", false);
         })
-        .catch((error)=> {
+        .catch((error) => {
           console.log(error);
           // this.$store.commit("setLoadHashIssue", false);
         });

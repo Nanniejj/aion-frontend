@@ -24,12 +24,24 @@ export default {
     return {};
   },
   computed: {
-    ...mapGetters(['getLoadStatus',"getSocialMo","getToSection"]),
+    ...mapGetters(['getLoadStatus',"getSocialMo","getToSection","getItemsProfile",
+      "getFieldsProfile",
+      "getProfile",
+      "getListMonitorProfile",]),
   },
   methods: { 
   
 },
-
+async mounted() {
+  
+  // if (this.getSocialMo == "") {
+  //     await this.$store.dispatch("fatchListMonitor");
+  //   } else {
+  //     await this.$store.dispatch("fatchListMonitor", {
+  //       source: this.social,
+  //     });
+  //   }
+},
  
 };
 </script>

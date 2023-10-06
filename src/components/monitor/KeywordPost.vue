@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container mt-3">
     <div>
       <vue-element-loading
         :active="getLoadPostCloud"
@@ -7,116 +7,78 @@
         background-color="rgba(255, 255, 255, 0.5)"
         color="#fbf7f6"
       />
-      <div class="container" id="tab-all" v-if="getSentimentDetail">
-        <b-row v-if="getQuerySearch" class="mb-1">
+      <b-row>
+        <b-col>
+          <div class="text-left h4 bold">{{ keyword_name }}</div>   
+        </b-col>
+        <b-col>
+          <div class="text-right">
+            <date-picker
+              v-model="valueDate"
+              type="date"
+              range
+              placeholder="เลือกช่วงเวลา"
+              size="sm"
+              :disabled-date="(date) => date >= new Date()"
+              value-type="format"
+              format="YYYY-MM-DD"
+              @change="selectData()"
+              id="date-domain"
+              >{{ valueDate }}</date-picker
+            >
+          </div>
+        </b-col>
+      </b-row>
+
+      <KeywordStat
+        :keywords="keyword_name"
+        :dates="[start_date, end_date]"
+        :end="end_date"
+        v-if="keyword_name"
+      />
+
+      <div class="container" id="tab-all" v-if="getKeywordPost">
+        <!-- {{ getKeywordPost }} -->
+        <b-row v-if="getKeywordPost" class="mb-1">
           <b-col md="8" lg="8" class="m-auto my-1">
-            <h5 class="bold text-lg-left text-md-left">{{ getQuerySearch }}</h5>
+            <h5 class="bold text-lg-left text-md-left">{{ keyword_name }}</h5>
           </b-col>
           <b-col md="4" lg="4" class="text-lg-right my-1">
             <span id="post-comment">
               <i class="far fa-paper-plane" />
 
               <b>
-                <span v-if="getSentimentDetail.count !== 0">
-                  {{ getSentimentDetail.count | numFormat }} </span
+                <span v-if="getKeywordPost.count !== 0">
+                  {{ getKeywordPost.count | numFormat }} </span
                 ><span v-else> 0 </span></b
               >
               โพสต์
             </span>
           </b-col>
         </b-row>
-        <div class="row">
-          <b-col sm="12" md="12" lg="" v-if="checkpost">
-            <b-form-group label="" v-slot="{ ariaDescribedby }">
-              <b-row>
-                <b-col sm="12">
-                  <b-form-radio-group
-                    v-model="selected"
-                    :options="optionsstm"
-                    :aria-describedby="ariaDescribedby"
-                    name="radio-inline"
-                    class="mt-2 text-lg-left ml-2 text-md-center text-sm-center"
-                    @change="selectSentiment"
-                  ></b-form-radio-group>
-                </b-col>
-              </b-row>
-            </b-form-group>
+        <b-row>
+          <b-col sm="12" md="8">
+            <b-form-radio-group
+              v-model="selected"
+              :options="options"
+              name="radio-inline"
+              class="mt-1 mb-2 text-left ml-2"
+              @change="selectSentiment"
+            ></b-form-radio-group>
           </b-col>
-          <b-col sm="12" md="12" lg="6" id="tab-post" v-if="!checkpost">
-            <b-row>
-              <b-col cols="12">
-                <span
-                  v-if="
-                    getWordCloudSocial ===
-                      'facebook,twitter,news,pantip,instagram,youtube'
-                  "
-                >
-                  <a> <a class="all">ALL</a> </a>
-                </span>
-                <span v-if="getWordCloudSocial === 'facebook'"
-                  ><img
-                    src="@/assets/Facebook.png"
-                    width="50px"
-                    id="img-title"
-                  />
-                </span>
-                <span v-if="getWordCloudSocial === 'twitter'"
-                  ><img
-                    src="@/assets/Twitter.png"
-                    width="50px"
-                    id="img-title"
-                  />
-                </span>
-                <span v-if="getWordCloudSocial === 'pantip'"
-                  ><img src="@/assets/Pantip.png" width="50px" id="img-title" />
-                </span>
-                <span v-if="getWordCloudSocial === 'youtube'"
-                  ><img
-                    src="@/assets/Youtube.png"
-                    width="50px"
-                    id="img-title"
-                  />
-                </span>
-                <span v-if="getWordCloudSocial === 'news'"
-                  ><img src="@/assets/News.png" width="50px" id="img-title" />
-                </span>
-                <span v-if="getWordCloudSocial === 'instagram'"
-                  ><img
-                    src="@/assets/Instagram.png"
-                    width="50px"
-                    id="img-title"
-                  />
-                </span>
-                <span id="post-comment">
-                  <i class="far fa-paper-plane" />
-                  <b> {{ getSentimentDetail.count | numFormat }} </b> posts |
-                  <i class="far fa-comments" />
-                  <b> {{ getSentimentDetail.total_comment | numFormat }} </b>
-                  comments</span
-                >
-              </b-col>
-            </b-row>
+          <b-col sm="12" md="4" class="text-right">
+            <b-form-select
+              v-model="sort"
+              :options="optionSort"
+              size="sm"
+              class="mb-2 select-sort"
+              @change="selectSort"
+            ></b-form-select>
           </b-col>
-          <b-col sm="12" md="12" lg="6" id="tab-view">
-            <span id="title-tab"
-              ><i class="fas fa-sort-amount-down-alt"></i
-            ></span>
-            <span id="all-eltab">
-              <a id="eltab1" tabindex="0" @click="tabactive()">
-                <i class="fa fa-clock-o" /> โพสต์ล่าสุด
-              </a>
-              <a id="eltab2" tabindex="0" @click="tab2()">
-                <i class="fa fa-repeat" /> โพสต์เริ่มต้น
-              </a>
-              <a id="eltab3" tabindex="0" @click="tab3()">
-                <i class="fa fa-chart-line" /> Engagement
-              </a>
-            </span>
-          </b-col>
-        </div>
+        </b-row>
       </div>
 
-      <div v-if="getSentimentDetail" class="container">
+      <div v-if="getKeywordPost" class="container">
         <!-- Highlight -->
         <b-form-checkbox
           switch
@@ -130,7 +92,14 @@
           <span v-else class="box-hl pl-2 pr-2">Highlight</span>
         </b-form-checkbox>
 
-        <div v-if="getDetailPost.length == 0" class="md-font">
+        <div
+          v-if="
+            getKeywordPost &&
+              getKeywordPost.data &&
+              getKeywordPost.data.length == 0
+          "
+          class="md-font"
+        >
           <b-card>
             <div class="mt-3">ไม่พบข้อมูล</div>
           </b-card>
@@ -222,6 +191,15 @@
                 </span>
                 <span v-else id="user-name">
                   <a
+                    v-bind:href="'https://twitter.com' + datas.uid"
+                    target="_blank"
+                  >
+                    <b style="text-decoration: none; color: #2c3e50">{{
+                      datas.account_name
+                    }}</b>
+                    <i class="fa fa-external-link" />
+                  </a>
+                  <!-- <a
                     v-bind:href="
                       'https://twitter.com/' +
                         datas.account_name +
@@ -234,7 +212,7 @@
                       datas.account_name
                     }}</b>
                     <i class="fa fa-external-link" />
-                  </a>
+                  </a> -->
                 </span>
                 <!-- Time -->
                 <div id="text-date" style="text-align: start" class="md-font">
@@ -479,7 +457,7 @@
                       padding: '10px',
                     }"
                     highlightClassName="highlight4"
-                    :searchWords="highlightText(datas.full_text)"
+                    :searchWords="highlightText(datas.full_text, datas)"
                     :autoEscape="true"
                     :textToHighlight="
                       datas.read
@@ -1166,7 +1144,7 @@
           </template>
         </b-card>
       </div>
-      <ul class="pagination" v-if="getDetailPost.length != 0">
+      <ul class="pagination" v-if="getKeywordPost.length != 0">
         <li
           class="page-item"
           v-for="pageNumber in totalPages"
@@ -1203,10 +1181,10 @@
         v-model="gotopage"
         id="setpage"
         style="width: 150px"
-        v-if="getDetailPost.length != 0"
+        v-if="getKeywordPost.length != 0"
       />
 
-      <span v-if="getDetailPost.length != 0">
+      <span v-if="getKeywordPost.length != 0">
         <button type="button" class="btn btn-default" @click="page()">
           <span id="submit" class="md-font">Go to Page</span>
         </button>
@@ -1220,6 +1198,7 @@ import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
+import KeywordStat from "./KeywordStat.vue";
 
 export default {
   props: {
@@ -1253,6 +1232,7 @@ export default {
   },
   data() {
     return {
+      keyword_name: "",
       objId: "",
       arrword: [],
       myStyle: {
@@ -1268,7 +1248,7 @@ export default {
       overlayActiveFather: false,
       start_date: "",
       end_date: "",
-      valueDate: "",
+      valueDate: null,
       offset: 0,
       btnPosStyle: {
         backgroundColor: "#54c69d",
@@ -1306,29 +1286,31 @@ export default {
       imgtt: require("@/assets/Tiktok.png"),
       user: require("@/assets/user.svg"),
       selectedStm: this.status,
+      selected: "1,0,-1",
       options: [
-        { text: "Positive", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Negative", value: -1 },
-      ],
-      selected: "",
-      optionsstm: [
         { text: "Positive", value: "1" },
         { text: "Neutral", value: "0" },
         { text: "Negative", value: "-1" },
-        { text: "ทั้งหมด", value: "" },
+        { text: "ทั้งหมด", value: "1,0,-1" },
+      ],
+      selectedSort: "",
+      optionSort: [
+        { value: "", text: " โพสต์ล่าสุด" },
+        { value: "descend", text: "โพสต์เริ่มต้น" },
+        { value: "engagement", text: "Engagement" },
       ],
     };
   },
   components: {
     Highlighter,
     VueGallerySlideshow,
+    KeywordStat,
   },
   computed: {
     ...mapGetters([
       "getDomainArr",
       "getWordCloudDomain",
-      "getSentimentDetail",
+      "getKeywordPost",
       "getWordCloudStartDate",
       "getWordCloudEndDate",
       "getWordCloudSocial",
@@ -1336,13 +1318,13 @@ export default {
       "getKeywords",
       "getEditSentiment",
       "getSelectedMonitor",
-      "getDetailPost",
       "getLoadPostCloud",
+      "getKeywordName",
     ]),
 
     paginate() {
-      var data = this.getDetailPost;
-      var count = this.getSentimentDetail.count;
+      var data = this.getKeywordPost.data;
+      var count = this.getKeywordPost.count;
       var currentPage = this.currentPage;
       var totalPages = this.totalPages;
       //var resultCount = this.resultCount;
@@ -1358,7 +1340,7 @@ export default {
     },
     totalPages: function() {
       var itemsPerPage = this.itemsPerPage;
-      var count = this.getSentimentDetail.count;
+      var count = this.getKeywordPost.count;
       var length;
       if (count < 10) {
         length = 10;
@@ -1371,10 +1353,10 @@ export default {
     },
   },
   methods: {
-    highlightText(full_text) {
+    highlightText(full_text, data) {
       var word = [];
       if (this.checked) {
-        word.push(...this.heightword, this.getQuerySearch);
+        word.push(...this.heightword, data.keyword);
         if (this.andkey.length) {
           this.andkey.forEach(function(key) {
             // console.log("keyyyy", k, key, key.length);
@@ -1411,9 +1393,15 @@ export default {
         }
         return word;
       } else {
-        word.push(this.getQuerySearch);
+        word = [];
       }
       return word;
+    },
+    selectSort() {
+      this.offset = 0;
+      this.currentPage = 1;
+      this.page = 0;
+      this.pageApi(this.sort, this.offset);
     },
     selectSentiment() {
       this.offset = 0;
@@ -1430,50 +1418,60 @@ export default {
       this.overlayActiveFather = true;
     },
     selectData(sort, offset) {
+      console.log("stm", this.selected);
       offset = this.offset;
       sort = this.sort;
-      this.start_date = moment(this.valueDate[0])
-        .format()
-        .slice(0, 10);
-      this.end_date = moment(this.valueDate[1])
-        .format()
-        .slice(0, 10);
-      console.log(this.start_date);
-      this.$store.dispatch("fetchSentimentDetail", {
-        start_date: this.start_date,
-        end_date: this.end_date,
-        keywords: this.getKeywords,
-        domain: this.getWordCloudDomain,
+      if (this.valueDate[0] == null) {
+        this.start_date =""
+          // moment(new Date())
+          //   .format()
+          //   .slice(0, 10) + "T00:00:00";
+        this.end_date =""
+          // moment(new Date())
+          //   .format()
+          //   .slice(0, 10) + "T23:59:59";
+      } else {
+        this.start_date = this.valueDate[0] + "T00:00:00";
+        this.end_date = this.valueDate[1] + "T23:59:59";
+      }
+      this.$store.dispatch("PostsKeyword", {
+        start: this.start_date,
+        end: this.end_date,
+        keyword: this.keyword_name,
         sentiment: this.selected,
         offset: offset,
         sort_by: sort,
-        querySearch: this.getQuerySearch,
-        source: this.getWordCloudSocial,
-        monitor: this.getSelectedMonitor,
       });
     },
     pageApi(sort, offset, querySearch) {
       offset = this.offset;
       sort = this.sort;
       querySearch = this.getQuerySearch;
-      this.$store.dispatch("fetchSentimentDetail", {
-        start_date: this.getWordCloudStartDate,
-        end_date: this.getWordCloudEndDate,
-        keywords: this.getKeywords,
-        domain: this.getWordCloudDomain,
-        sentiment: this.selected,
+      this.$store.dispatch("PostsKeyword", {
+        start: this.start_date,
+        end: this.end_date,
         offset: offset,
         sort_by: sort,
-        querySearch: querySearch,
-        source: this.getWordCloudSocial,
-        monitor: this.getSelectedMonitor,
+        keyword: this.keyword_name,
+        sentiment: this.selected,
       });
+      // this.$store.dispatch("fetchSentimentDetail", {
+      //   start_date: this.getWordCloudStartDate,
+      //   end_date: this.getWordCloudEndDate,
+      //   keywords: this.getKeywords,
+      //   domain: this.getWordCloudDomain,
+      //   sentiment: this.selected,
+      //   offset: offset,
+      //   sort_by: sort,
+      //   querySearch: querySearch,
+      //   source: this.getWordCloudSocial,
+      //   monitor: this.getSelectedMonitor,
+      // });
     },
     page() {
       var pageNumber;
       if (
-        parseInt(this.gotopage) >
-          Math.ceil(this.getSentimentDetail.count / 10) ||
+        parseInt(this.gotopage) > Math.ceil(this.getKeywordPost.count / 10) ||
         this.gotopage.includes("-")
       ) {
         alert("Wrong number");
@@ -1496,7 +1494,7 @@ export default {
       } else {
         this.offset = 0;
       }
-      if (this.querySearch != "") {
+      if (this.keyword_name != "") {
         this.pageApi(this.sort, 0, this.querySearch);
       } else {
         console.log("setPage else");
@@ -1505,39 +1503,7 @@ export default {
       }
       console.log("#box-domain");
     },
-    tabactive() {
-      document.getElementById("eltab1").style.borderColor = "#fed16e";
-      document.getElementById("eltab2").style.borderColor = "#4c412b";
-      document.getElementById("eltab3").style.borderColor = "#4c412b";
-      this.offset = 0;
-      this.sort = "";
-      this.currentPage = 1;
-      this.pageApi(this.sort, this.offset, this.querySearch);
-      // this.offset=0
-      // this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:"",offset:this.offset});
-    },
-    tab2() {
-      document.getElementById("eltab1").style.borderColor = "#4c412b";
-      document.getElementById("eltab3").style.borderColor = "#4c412b";
-      document.getElementById("eltab2").style.borderColor = "#fed16e";
-      this.offset = 0;
-      this.currentPage = 1;
-      this.sort = "descend";
-      this.pageApi(this.sort, this.offset, this.querySearch);
-      // this.offset=0
-      // this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:'descend',offset:this.offset});
-    },
-    tab3() {
-      document.getElementById("eltab1").style.borderColor = "#4c412b";
-      document.getElementById("eltab2").style.borderColor = "#4c412b";
-      document.getElementById("eltab3").style.borderColor = "#fed16e";
-      this.offset = 0;
-      this.currentPage = 1;
-      this.sort = "engagement";
-      this.pageApi(this.sort, this.offset, this.querySearch);
-      //   this.offset=0
-      // this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:'engagement',offset:this.offset});
-    },
+
     getTheSelected(k, v, uid) {
       var err;
       if (v == 1) {
@@ -1566,49 +1532,49 @@ export default {
           this.axios(config)
             .then(function(response) {
               console.log(response);
-              if (_this.selected == "") {
+              if (_this.selected == "1,0,-1") {
                 if (v == 1) {
-                  _this.getDetailPost[k].sentiment = 1;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = 1;
+                  _this.getKeywordPost.data[k].sentiment = 1;
+                  _this.getKeywordPost.data[k].user_sentiment[_this.objId] = 1;
                 } else if (v == 0) {
-                  _this.getDetailPost[k].sentiment = 0;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = 0;
+                  _this.getKeywordPost.data[k].sentiment = 0;
+                  _this.getKeywordPost.data[k].user_sentiment[_this.objId] = 0;
                 } else {
-                  _this.getDetailPost[k].sentiment = -1;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = -1;
+                  _this.getKeywordPost.data[k].sentiment = -1;
+                  _this.getKeywordPost.data[k].user_sentiment[_this.objId] = -1;
                 }
               } else {
                 console.log("in 1");
                 if (v == _this.selected) {
                   console.log("in 11");
-                  _this.getDetailPost[k].sentiment = v;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = v;
+                  _this.getKeywordPost.data[k].sentiment = v;
+                  _this.getKeywordPost.data[k].user_sentiment[_this.objId] = v;
                 } else {
                   console.log("in 12");
-                  _this.getDetailPost.splice(k, 1);
+                  _this.getKeywordPost.data.splice(k, 1);
                 }
               }
             })
             .catch(function(response) {
               console.log("errrrrrr", response.message);
             });
-          // if (v !== this.getDetailPost[k].sentiment) {
+          // if (v !== this.getKeywordPost[k].sentiment) {
           //   this.$store.dispatch("editSentimentPost", {
           //     sentiment: v,
           //     uid: uid,
           //   });
           //   if (this.selected == "") {
           //     if (v == 1) {
-          //       this.getDetailPost[k].sentiment = 1;
+          //       this.getKeywordPost[k].sentiment = 1;
           //     } else if (v == 0) {
-          //       this.getDetailPost[k].sentiment = 0;
+          //       this.getKeywordPost[k].sentiment = 0;
           //     } else {
-          //       this.getDetailPost[k].sentiment = -1;
+          //       this.getKeywordPost[k].sentiment = -1;
           //     }
           //   } else {
-          //     this.getDetailPost.splice(k, 1);
+          //     this.getKeywordPost.splice(k, 1);
           //   }
-          //   // this.getDetailPost.splice(k, 1);
+          //   // this.getKeywordPost.splice(k, 1);
           //   this.$fire({
           //     title: "แก้ไขสำเร็จ",
           //     type: "success",
@@ -1622,19 +1588,43 @@ export default {
       );
     },
   },
+  destroyed() {
+    this.$store.dispatch("setKeywordName", "");
+  },
   mounted() {
-    // this.$store.commit("setWordCloudSocial", this.socialname);
-    this.$store.dispatch("fetchSentiment", {
-      start_date: "2023-08-29T00:00:00",
-      end_date: "2023-08-29T23:59:59",
+    // if (this.valueDate[0] == null) {
+    //   this.start_date =
+    //     moment(new Date())
+    //       .format()
+    //       .slice(0, 10) + "T00:00:00";
+    //   this.end_date =
+    //     moment(new Date())
+    //       .format()
+    //       .slice(0, 10) + "T23:59:59";
+    // } else {
+    //   this.start_date = this.valueDate[0] + "T00:00:00";
+    //   this.end_date = this.valueDate[1] + "T23:59:59";
+    // }
+
+    this.objId = localStorage.getItem("objId");
+    this.keyword_name = localStorage.getItem("keywordName");
+    if (this.getKeywordName) {
+      this.keyword_name = this.getKeywordName;
+      console.log(" this.keyword_name", this.keyword_name);
+    } else {
+      this.keyword_name = localStorage.getItem("keywordName");
+      console.log(" this.keyword_name=2", this.keyword_name);
+    }
+    this.$store.dispatch("PostsKeyword", {
+      // start: this.start_date,
+      // end: this.end_date,
       offset: 0,
-      sort_by: "",
-      domain: "การเมือง",
-      keywords: "",
-      querySearch: "รัฐบาล",
-      monitor: true,
-      source: "twitter",
+      // sort_by: "engagement",
+      keyword: this.keyword_name,
+      sentiment: "1,0,-1",
     });
+
+    // this.$store.commit("setWordCloudSocial", this.socialname);
   },
   //   async created(sort, offset) {
   //     this.objId = localStorage.getItem("objId");

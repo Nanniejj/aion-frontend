@@ -1213,7 +1213,7 @@ export default {
       imgbd: require("@/assets/Blockdit.png"),
       user: require("@/assets/user.svg"),
       selectedStm: this.status,
-      selected: [1, 0, -1],
+      selected: "1,0,-1",
       selectedSort: "",
       options: [
         { text: "Positive", value: "1" },

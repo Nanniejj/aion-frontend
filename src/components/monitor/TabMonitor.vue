@@ -39,15 +39,15 @@
 
       <!-- ----------------------------------tab4 --------------------------------------------------->
     
-      <!-- <b-tab @click="toTab('keyword')"  >
+      <b-tab @click="toTab('keyword')"  >
         <template #title id="title-tab">
           <span id="title-tab">
             <i class="fas fa-tag" />
-            Keyword
+            Keyword <span class="small">(beta)</span>
           </span>
         </template>
         <KeywordsMonitor :tabsMonitor="'tabKeyword'" id="tablo" />
-      </b-tab> -->
+      </b-tab>
 
     </b-tabs>
   </div>
@@ -57,7 +57,7 @@
 import ProfileMonitor from "@/components/monitor/ProfileMonitor.vue";
 import HashtagMonitor from "@/components/monitor/HashtagMonitor.vue";
 import LocationMonitor from "@/components/monitor/LocationMonitor.vue";
-// import KeywordsMonitor from "@/components/monitor/KeywordsMonitor.vue";
+import KeywordsMonitor from "@/components/monitor/KeywordsMonitor.vue";
 export default {
   watch: {
     tab(val) {
@@ -74,7 +74,7 @@ export default {
     ProfileMonitor,
     HashtagMonitor,
     LocationMonitor,
-    // KeywordsMonitor,
+    KeywordsMonitor,
   },
   methods: {
     toTab(name) {

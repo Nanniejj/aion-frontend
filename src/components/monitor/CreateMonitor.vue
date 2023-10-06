@@ -317,6 +317,7 @@ export default {
       this.addHashtag = [];
       this.addTarget = [];
       this.addAvatar = [];
+      this.addKeyword=""
       this.open = false;
       if (this.tabsMonitor !== "tabKeyword") {
         await this.$store.dispatch("fatchListMonitorUpdate", "test");
