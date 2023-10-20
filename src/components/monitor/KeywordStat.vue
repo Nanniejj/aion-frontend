@@ -4,7 +4,7 @@
       :active="getLoadStat"
       size="80"
       background-color="rgba(255, 255, 255, 0.5)"
-      color="#fbf7f6"
+      color="#b6ac9a"
     />
 
     <div class="text-left">
@@ -351,7 +351,7 @@ export default {
     //   .slice(0, 10);
     // sdate = today + "T00:00:00";
     // edate = today + "T23:59:59";
- await   this.apiStat(sdate, edate);
+ await   this.apiStat("", "");
   },
 };
 </script>

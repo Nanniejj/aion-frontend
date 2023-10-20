@@ -7,7 +7,7 @@
             :active="modalShow2"
             size="40"
             background-color="rgba(255, 255, 255, 0)"
-            color="#fbf7f6"
+            color="#b6ac9a"
           />
           <i class="fa fa-download"></i><span> Download</span>
         </template>

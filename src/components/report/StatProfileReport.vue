@@ -102,7 +102,7 @@
                 :active="getLoadReportStat"
                 size="80"
                 background-color="rgba(255, 255, 255, 0.3)"
-                color="#fbf7f6"
+                color="#b6ac9a"
               />
               <div>Posts</div>
               <div class="num-text">
@@ -116,7 +116,7 @@
                 :active="getLoadReportStat"
                 size="80"
                 background-color="rgba(255, 255, 255, 0.3)"
-                color="#fbf7f6"
+                color="#b6ac9a"
               />
               <div>Engagement</div>
               <div class="num-text">
@@ -130,7 +130,7 @@
                 :active="getLoadReportStat"
                 size="80"
                 background-color="rgba(255, 255, 255, 0.3)"
-                color="#fbf7f6"
+                color="#b6ac9a"
               />
               <div>Follower</div>
               <div class="num-text">

@@ -5,7 +5,7 @@
         :active="getLoadMap"
         size="80"
         background-color="rgba(255, 255, 255, 0.5)"
-        color="#fbf7f6"
+        color="#b6ac9a"
       />
       <div class="text-left mt-4 mb-2">
         <i class="fa fa-map-marker" style="font-size:20px"></i> <span class="bold h5 ml-2">{{getMapCountry}}</span>
@@ -55,7 +55,7 @@
         :active="getLoadMap"
         size="80"
         background-color="rgba(255, 255, 255, 0.5)"
-        color="#fbf7f6"
+        color="#b6ac9a"
       />
       <b-card class="pt-3 pb-3">
         <div v-if="getLoadMap">Loading</div>

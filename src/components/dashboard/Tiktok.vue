@@ -5,7 +5,7 @@
       :active="getLoadStatus"
       size="80"
       background-color="rgba(255, 255, 255, 0.3)"
-      color="#fbf7f6"
+      color="#b6ac9a"
     />
     <div class="box" id="tiktok" @click="toPlatform">
       <div class="right"></div>

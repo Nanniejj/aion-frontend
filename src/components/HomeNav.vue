@@ -118,6 +118,19 @@
               ></router-link
             >
           </li>
+          <li class="nav-item d-none" id="li-nav" >
+            <router-link to="/keyword" tag="p"
+              ><a class="nav-link"
+                ><img
+                  src="../assets/keyword2.png"
+                  alt="logo"
+                  class="img-nav"
+                  style="margin-bottom: 8px"
+                /><strong>Keyword</strong>
+                <span class="small"> (beta)</span></a
+              ></router-link
+            >
+          </li>
           <li class="nav-item" id="li-nav" >
             <router-link to="/monitor" tag="p"
               ><a class="nav-link"
@@ -311,6 +324,18 @@
                 <img src="@/assets/Hotissue.png" alt="logo" class="img-nav" />
                 <a class="nav-link titlenav">
                   <strong>Hot Issue</strong><span class="small"> (beta)</span>
+                </a>
+              </a>
+            </router-link>
+          </b-nav-item>
+
+          
+          <b-nav-item id="nav-con1" class="d-none" >
+            <router-link to="/keyword" tag="p">
+              <a class="nav-link">
+                <img src="@/assets/keyword2.png" alt="logo" class="img-nav" />
+                <a class="nav-link titlenav">
+                  <strong>Keyword</strong><span class="small"> (beta)</span>
                 </a>
               </a>
             </router-link>

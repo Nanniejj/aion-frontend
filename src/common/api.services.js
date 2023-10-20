@@ -44,10 +44,12 @@ export const WordcloudService = {
   //   return ApiService.put(`v1/EditSentiment/`,{'sentiment':payload.sentiment,'uid':payload.uid});
   // },
   getDomain(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`/v1/domain/?limit=${payload.limit}`);
   },
   getWordCloud(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     // console.log(payload.domain.length);
     ApiService.setHeader();
     var dom = "",
@@ -91,10 +93,9 @@ export const WordcloudService = {
         dash
     );
   },
-  // getWordCloudSentiment(payload) {
-  //   return ApiService.get(`/v1/getwordcloud/?type=${payload.type}&keyword=${payload.keyword}&domain=${payload.domain}`);
-  // },
+
   getSentiment(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     // console.log(payload);
     ApiService.setHeader();
     var dom = "",
@@ -132,6 +133,7 @@ export const WordcloudService = {
     );
   },
   getSentimentHashtag(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
       key = "",
@@ -168,6 +170,7 @@ export const WordcloudService = {
     );
   },
   getSentimentDetail(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
       key = "",
@@ -225,6 +228,7 @@ export const WordcloudService = {
     );
   },
   getSentimentHashtagDetail(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
       key = "",
@@ -276,15 +280,19 @@ export const WordcloudService = {
   },
 };
 export const RankingService = {
-  getDomainRanking(payload) {
+
+  getDomainRanking(payload) {  
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`/v1/domain/?limit=${payload.limit}`);
   },
   getSubDomainRanking(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`/v1/subdomain-list/${payload.domain}/`);
   },
   getRanking(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var subdom;
     if (payload.subdomain) {
@@ -298,6 +306,7 @@ export const RankingService = {
     );
   },
   getSentimentStat(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var subdom;
     if (payload.subdomain) {
@@ -311,6 +320,7 @@ export const RankingService = {
     );
   },
   getSentimentDetailRanking(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var subdom, stm, dm, obj;
     if (payload.subdomain) {
@@ -344,12 +354,14 @@ export const RankingService = {
 };
 export const TopInfluencerService = {
   getTopInfluencer(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
       `/v1/gettopinfluencer/?start_date=${payload.start_date}&end_date=${payload.end_date}&source=${payload.source}&domain=${payload.domain}`
     );
   },
   getLinksTopInfluencer(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/getinfluencerlink/`, {
       influencer: payload.influencer,
@@ -360,6 +372,7 @@ export const TopInfluencerService = {
 };
 export const InfluencerLinkService = {
   getInfluencerLink(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/getinfluencerlink/`, {
       influencer: payload.influencer,
@@ -369,12 +382,14 @@ export const InfluencerLinkService = {
 };
 export const DashboardService = {
   getAllstats(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
       `/v1/getAllstats/?start_date=${payload.start_date}&end_date=${payload.end_date}`
     );
   },
   getSentimentStatDashboard(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     // return ApiService.get(`/v1/getsentimentstat/?type=${payload.type}`);
     return ApiService.get(
@@ -382,6 +397,7 @@ export const DashboardService = {
     );
   },
   getSentimentPost(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
       `/v1/getsentimentdetail/?start_date=${payload.start_date}&end_date=${payload.end_date}&source=${payload.source}&sentiment=${payload.sentiment}&sort_by=${payload.sort_by}&offset=${payload.offset}&domain=${payload.domain}&dashboard=true`
@@ -390,6 +406,7 @@ export const DashboardService = {
     //                                    &sort_by=${payload.sort_by}&offset=${payload.offset}`);
   },
   EditSentiment(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.put(`v1/EditSentiment/`, {
       sentiment: payload.sentiment,
@@ -397,6 +414,7 @@ export const DashboardService = {
     });
   },
   getBacklogs(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     // return ApiService.get(`/v1/getsentimentstat/?type=${payload.type}`);
     return ApiService.get(
@@ -406,6 +424,7 @@ export const DashboardService = {
 };
 export const GsearchService = {
   getGsearch(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/googlesearch/?`, {
       date: payload.date,
@@ -415,10 +434,12 @@ export const GsearchService = {
 };
 export const RelationPostService = {
   getRelationPost() {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`/v1/getPostRelation/`);
   },
   getRelationPostLink() {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`/v1/getPostRelation/?trigger=true`);
   },
@@ -426,20 +447,24 @@ export const RelationPostService = {
 
 export const AvatarService = {
   DeleteAvatar(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`v1/avatar-delete/`, { avatar: payload.avatar });
   },
   getAvatarTeam() {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`v1/avatardept/`);
   },
   getAvatars(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
       `/v1/getavatar/?start_date=${payload.start_date}&end_date=${payload.end_date}`
     );
   },
   getCsvAvatar(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/download/avatar/csv/`, {
       date: payload.date,
@@ -449,19 +474,21 @@ export const AvatarService = {
 };
 export const TemplateService = {
   getListSubDomain(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`/v1/subdomain-list/${payload}/?limit=100000`);
   },
   DeleteDomain(payload) {
     Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.post(`v2/domain/deleteDomain/`, { id: payload.id });
+    return ApiService.put(`v2/domain/deleteDomain?id=${payload.id }`);
   },
   // DeleteDomain(payload) {
   //   ApiService.setHeader()
   //   return ApiService.post(`v2/delete-domain/`,{'id':payload.id});
   // },
   AddDomain(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/domain/`, {
       name: payload.name,
@@ -469,6 +496,7 @@ export const TemplateService = {
     });
   },
   EditDomain(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.put(`/v1/domain/${payload.id}/`, {
       name: payload.name,
@@ -477,6 +505,7 @@ export const TemplateService = {
     });
   },
   EditSubDomain(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.put(`/v1/subdomain/${payload.id}/`, {
       name: payload.name,
@@ -484,6 +513,7 @@ export const TemplateService = {
     });
   },
   AddSubDomain(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/subdomain-create/`, {
       name: payload.name,
@@ -492,12 +522,14 @@ export const TemplateService = {
     });
   },
   getListWord(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
       `/v1/object-list/?domain=${payload.domain}&subdomain=${payload.subdomain}&limit=100000`
     );
   },
   AddWord(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/object-create/`, {
       name: payload.name,
@@ -510,6 +542,7 @@ export const TemplateService = {
     });
   },
   EditWord(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.put(`/v1/object/${payload.id}/`, {
       name: payload.name,
@@ -523,16 +556,21 @@ export const TemplateService = {
     });
   },
   DeleteSubdomain(payload) {
+    // Vue.axios.defaults.baseURL = API_URL;
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.del(`/v1/subdomain/${payload.id}/`, { id: payload.id });
+    return ApiService.put(`/v2/domain/deleteSubdomain?id=${payload.id}`);
   },
   DeleteWord(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.del(`/v1/object/${payload.id}/`, { id: payload.id });
   },
 };
 export const MonitorService = {
+
   EditStatusHashtag(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`v1/edit-hashtag/`, {
       hashtag: payload.hashtag,
@@ -541,6 +579,7 @@ export const MonitorService = {
     });
   },
   EditDescription(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.put(`v1/Target/`, {
       uid: payload.uid,
@@ -551,11 +590,22 @@ export const MonitorService = {
     });
   },
   getLocation(payload) {
-    let query, account, sentiment;
+    Vue.axios.defaults.baseURL = API_URL;
+    let query, account, sentiment,sdate,edate;
     if (payload.query) {
       query = `&query=${payload.query}`;
     } else {
       query = "";
+    }
+    if (payload.start_date) {
+      sdate = `&start_date=${payload.start_date}`;
+    } else {
+      sdate = "";
+    }
+    if (payload.end_date) {
+      edate = `&end_date=${payload.end_date}`;
+    } else {
+      edate = "";
     }
     if (payload.account) {
       account = `&account=${payload.account}`;
@@ -572,10 +622,11 @@ export const MonitorService = {
       `v1/searchLocation/?sort_by=${payload.sort_by}&offset=${payload.offset}` +
         query +
         account +
-        sentiment
+        sentiment+sdate+edate
     );
   },
   delMonitor(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     console.log("payload", payload);
     return ApiService.post(`/v1/delete-monitor/`, {
@@ -585,6 +636,7 @@ export const MonitorService = {
     });
   },
   getListMonitor(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     var source = "";
     if (payload.source) {
       source = `?source=${payload.source}`;
@@ -593,6 +645,7 @@ export const MonitorService = {
     return ApiService.get(`/v1/getMonitorlist/` + source);
   },
   CreateMonitor(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.post(`/v1/create-monitor/`, {
       source: payload.source,
@@ -603,18 +656,21 @@ export const MonitorService = {
     });
   },
   getSearchMonitor(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
       `/v1/searchMonitor/?query=${payload.query}&search_type=${payload.search_type}`
     );
   },
   getProfile(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
       `v1/getMonitor/?query=${payload.query}&api_type=${payload.api_type}&top_type=${payload.top_type}&sort_by=${payload.sort_by}`
     );
   },
   getPostAllMonitor(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dm = "",
       stm = "",
@@ -696,6 +752,7 @@ export const LoginService = {
 };
 export const DomainService = {
   getPostDomain(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dm = "",
       stm = "",

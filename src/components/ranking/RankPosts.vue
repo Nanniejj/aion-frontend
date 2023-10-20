@@ -4,7 +4,7 @@
       :active="getLoadRankPost"
       size="80"
       background-color="rgba(255, 255, 255, 0.5)"
-      color="#fbf7f6"
+      color="#b6ac9a"
     />
     <div class="container" id="tab-all" v-if="getSentimentDetailRanking">
       <b-row v-if="getQuerySearch" class="mb-1 box-stitle">

@@ -98,7 +98,7 @@
         :active="getLoadCloud"
         size="80"
         background-color="rgba(255, 255, 255, 0.5)"
-        color="#fbf7f6"
+        color="#b6ac9a"
       />
 
       <div v-if="getWordCloud.data" class="mt-2">

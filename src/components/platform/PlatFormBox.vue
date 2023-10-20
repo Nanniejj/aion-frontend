@@ -17,7 +17,7 @@
             :active="getLoadStatus"
             size="80"
             background-color="rgba(255, 255, 255, 0.8)"
-            color="#fbf7f6"
+            color="#b6ac9a"
           />
           <img src="@/assets/Facebook.png" class="socialogo" />
           <div class="mt-2">Facebook</div>
@@ -34,7 +34,7 @@
             :active="getLoadStatus"
             size="80"
             background-color="rgba(255, 255, 255, 0.8)"
-            color="#fbf7f6"
+            color="#b6ac9a"
           />
           <img src="@/assets/Twitter.png" class="socialogo" />
           <div class="mt-2">Twitter</div>

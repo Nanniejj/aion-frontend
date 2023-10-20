@@ -27,19 +27,23 @@
         <HashtagMonitor :tabsMonitor="'tabHashtag'" />
       </b-tab>
       <!-- ----------------------------------tab3 --------------------------------------------------->
-      <b-tab @click="toTab('location')" >
+      <b-tab @click="toTab('location')">
         <template #title id="title-tab">
           <span id="title-tab">
             <i class="fas fa-map-marker-alt" />
             Location
           </span>
         </template>
-        <LocationMonitor :tabsMonitor="'tabLocation'" id="tablo" />
+        <LocationMonitor
+          :tabsMonitor="'tabLocation'"
+          id="tablo"
+          @id-changwats="doFuncFoo"
+        />
       </b-tab>
 
       <!-- ----------------------------------tab4 --------------------------------------------------->
-    
-      <b-tab @click="toTab('keyword')"  >
+
+      <!-- <b-tab @click="toTab('keyword')" >
         <template #title id="title-tab">
           <span id="title-tab">
             <i class="fas fa-tag" />
@@ -47,8 +51,7 @@
           </span>
         </template>
         <KeywordsMonitor :tabsMonitor="'tabKeyword'" id="tablo" />
-      </b-tab>
-
+      </b-tab> -->
     </b-tabs>
   </div>
 </template>
@@ -68,7 +71,8 @@ export default {
   data() {
     return {
       tab: localStorage.getItem("tabMonitor"),
-    }
+      idChangwats: "",
+    };
   },
   components: {
     ProfileMonitor,
@@ -77,38 +81,82 @@ export default {
     KeywordsMonitor,
   },
   methods: {
+    doFuncFoo(value) {
+      this.idChangwats = Number(value);
+      console.log(
+        "this.idChangwats",
+        this.idChangwats,
+        typeof this.idChangwats
+      );
+      if (this.idChangwats) {
+        this.apiLocation();
+      }
+      console.log("doFuncFoo", value);
+    },
     toTab(name) {
       console.log(name);
     },
+    apiLocation() {
+      var config = {
+        method: "get",
+        url: "https://api2.cognizata.com/api/v2/userposts/getLocation",
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      this.axios(config).then((response) => {
+        this.mapData = response.data;
+        this.$store.commit("setMapdata", response.data);
+        // this.$store.commit('setMaxMinMap',response.data)
+        var myArray = [...response.data];
+        var min = Math.min(...myArray.map((item) => item.count));
+        var max = Math.max(...myArray.map((item) => item.count));
+        this.$store.commit("setMaxMinMap", { max: max, min: min });
+        // console.log("min: " + min);
+        // console.log("max: " + max);
+      });
+    },
+
+    // apiLocation() {
+    //   let id = "";
+    //   if (this.idChangwats) {
+    //     id = "id=" + this.idChangwats;
+    //   } else {
+    //     id = "";
+    //   }
+
+    //   //https://api2.cognizata.com/api/v2/userposts/getLocation?id=2
+    //   var config = {
+    //     method: "get",
+    //     url: "https://api2.cognizata.com/api/v2/userposts/getLocation?" + id,
+    //     headers: {
+    //       Authorization: "Bearer " + localStorage.getItem("token"),
+    //       "Content-Type": "application/json",
+    //     },
+    //   };
+    //   this.axios(config).then((response) => {
+    //     this.mapData = response.data;
+    //     this.$store.commit("setMapdata", response.data);
+    //     // this.$store.commit('setMaxMinMap',response.data)
+    //     var myArray = [...response.data];
+    //     var min = Math.min(...myArray.map((item) => item.count));
+    //     var max = Math.max(...myArray.map((item) => item.count));
+    //     this.$store.commit("setMaxMinMap", { max: max, min: min });
+    //     // console.log("min: " + min);
+    //     // console.log("max: " + max);
+    //   });
+    // },
   },
   mounted() {
+    this.apiLocation();
+    console.log("doFuncFoo2", this.idChangwats);
     let idx = localStorage.getItem("tabMonitor");
-    console.log('idx',idx);
+
     if (idx) {
       this.tab = Number(idx);
-      console.log('this.tab',this.tab);
     }
-    var config = {
-      method: "get",
-      url: "https://api2.cognizata.com/api/v2/userposts/getLocation",
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    };
-    this.axios(config).then((response) => {
-      this.mapData = response.data;
-      this.$store.commit("setMapdata", response.data);
-      // this.$store.commit('setMaxMinMap',response.data)
-      var myArray = [...response.data];
-      var min = Math.min(...myArray.map((item) => item.count));
-      var max = Math.max(...myArray.map((item) => item.count));
-      this.$store.commit("setMaxMinMap", { max: max, min: min });
-      // console.log("min: " + min);
-      // console.log("max: " + max);
-    });
   },
-
 };
 </script>
 

@@ -5,7 +5,7 @@
       :active="getLoadPostTab"
       size="80"
       background-color="rgba(255, 255, 255, 0.3)"
-      color="#fbf7f6"
+      color="#b6ac9a"
     />
     <div>
       <!-- {{heightword.data[0].Keywords}} -->
@@ -1163,7 +1163,7 @@ export default {
       type: String,
     },
     amphoes: {
-      type: String,
+      type: Array,
     },
     users: {
       type: String,
@@ -1180,6 +1180,9 @@ export default {
     btn: {
       type: Boolean,
     },
+    dateLocat:{
+      type:Array
+    }
   },
   watch: {
     dh: function(newVal, oldVal) {
@@ -1208,7 +1211,7 @@ export default {
       this.infiniteScroll();
     },
     amphoes: function(newVal, oldVal) {
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      console.log("Prop changed amphoes: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
@@ -1735,6 +1738,8 @@ export default {
           }
         } else {
           if (this.statusLocat == true) {
+            // let sdateLocat =this.dateLocat[0].slice(0, 16);
+            // let edateLocat =this.dateLocat[1].slice(0, 16);
             this.statusLocat == false;
             if (sentiment === "") {
               payload = {
@@ -1742,6 +1747,8 @@ export default {
                 sort_by: sort,
                 offset: offset,
                 query: this.changwats + "," + this.amphoes,
+                // start_date:sdateLocat,
+                // end_date:edateLocat
               };
               if (this.amphoes.length) {
                 console.log("this.amphoes", this.amphoes);
@@ -1755,6 +1762,8 @@ export default {
                 offset: offset,
                 sentiment: sentiment,
                 query: this.changwats,
+                // start_date:sdateLocat,
+                // end_date:edateLocat
               };
               if (this.amphoes.length) {
                 console.log("this.amphoes", this.amphoes);
@@ -1777,7 +1786,7 @@ export default {
         checkApi = "fetchPostAll";
       }
       let temp = await this.$store.dispatch(checkApi, payload);
-      if (temp.length === 0) {
+      if (temp&&temp.length === 0) {
         this.isInfinite = false;
       }
       this.page += 10;

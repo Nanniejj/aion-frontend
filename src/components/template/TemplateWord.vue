@@ -4,7 +4,7 @@
       :active="getLoadStatus"
       size="80"
       background-color="rgba(255, 255, 255, 0.4)"
-      color="#fbf7f6"
+      color="#b6ac9a"
     />
     <b-row id="input-btn">
       <b-col lg="6" class="my-1">
@@ -252,7 +252,7 @@
               <b-button class="btn btn-close" size="sm" @click="hideModal()"
                 >ปิดหน้าต่าง</b-button
               >
-              <b-button class="btn btn-save" size="sm" @click="EditWord()"
+              <b-button class="btn btn-save" size="sm" @click="EditWord"
                 >บันทึก</b-button
               >
             </b-col>
@@ -271,6 +271,7 @@ export default {
   components: { TemplateAddWord },
   data() {
     return {
+      itemEdit:"",
       empData: "ไม่พบข้อมูล",
       tabIndex: 0,
       textInclude: [],
@@ -346,6 +347,7 @@ export default {
       //this.$store.dispatch("fetchListWord",{domain:this.getSubDomainName.domain.name,subdomain:this.getSubDomainName.name,offset:this.offset})
     },
     EditWord() {
+      console.log('val',this.itemEdit);
       this.$store.dispatch("updateWord", {
         name: this.textWord,
         keywords: this.textKeyword,
@@ -354,7 +356,10 @@ export default {
         subdomain: Number(this.subDomainId),
         domain: Number(this.IdDm),
         id: Number(this.idWord),
+        subdomainName:this.itemEdit.subdomain.name,
+        domainName:this.itemEdit.domain.name,
       });
+      this.$store.dispatch("resetDomainLastUpdate", Number(this.IdDm));
       this.open = false;
     },
     removeRow: function(index, item) {
@@ -379,6 +384,7 @@ export default {
       this.tabIndex = 0;
     },
     info(item, index, button) {
+      this.itemEdit=item
       this.infoModal.title = `Row index: ${index}`;
       this.idWord = item.id;
       this.IdDm = item.domain.id;

@@ -4,7 +4,7 @@
       :active="getLoadPostHash"
       size="80"
       background-color="rgba(255, 255, 255, 0.5)"
-      color="#fbf7f6"
+      color="#b6ac9a"
     />
     <div class="container" id="tab-all" v-if="getSentimentHashtagDetail">
       <b-row v-if="getWordCloudHashtag" class="mb-1">

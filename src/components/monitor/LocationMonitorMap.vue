@@ -109,7 +109,7 @@ export default {
         location: tmpLocs,
         fillColor:
           v.province == this.id_province
-            ? "rgba(255, 0, 0, 0.1)"
+            ? "rgba(255, 175, 51, 0.4)"
             : "rgba(0, 0, 0, 0.1)",
         newColor,
         title

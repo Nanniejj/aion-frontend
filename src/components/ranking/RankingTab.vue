@@ -115,7 +115,7 @@
             :active="getLoadRankTab"
             size="80"
             background-color="rgba(255, 255, 255, 0.5)"
-            color="#fbf7f6"
+            color="#b6ac9a"
           />
           <b-col style="padding: 20px">
             <b-row>
@@ -539,7 +539,7 @@
         :active="getLoadStatus"
         size="80"
         background-color="rgba(255, 255, 255, 0.5)"
-        color="#fbf7f6"
+        color="#b6ac9a"
       />
       <b-card class="mt-4">
         <div class="mt-3">ไม่พบข้อมูล</div>

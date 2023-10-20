@@ -3,6 +3,7 @@ import { TemplateService } from "@/common/api.services";
 const axios = require("axios");
 export default {
   state: {
+    loadObj:false,
     itemsWord: [],
     rowCount: 0,
     domainName: "",
@@ -53,6 +54,9 @@ export default {
     },
   },
   getters: {
+    getLoadObj: (state) => {
+      return state.loadObj;
+    },
     getRowCount: (state) => {
       return state.rowCount;
     },
@@ -93,6 +97,9 @@ export default {
     },
   },
   mutations: {
+    setLoadObj: (state, payload) =>{
+      state.loadObj=payload
+    },
     setRowCount: (state, payload) => {
       state.rowCount = payload;
     },
@@ -202,8 +209,10 @@ export default {
       commit("setLoadStatus", true);
       try {
         const res = await TemplateService.getListSubDomain(payload);
-        commit("setListSubDomain", res.data.results);
-        commit("setRowCount", res.data.count);
+       let data= res.data.results.filter((v)=>v.display)
+        commit("setListSubDomain", data);
+        console.log('data.length',data.length);
+        commit("setRowCount", data.length);
         commit("setLoadStatus", false);
       } catch (error) {
         commit("setLoadStatus", false);
@@ -211,63 +220,73 @@ export default {
       }
     },
     async updateSubDomain({ commit }, payload) {
+      commit("setLoadStatus", true);
       try {
         const res = await TemplateService.EditSubDomain(payload);
-        //console.log('res',res);
+
         commit("updateSubDomain", res.data);
-        // var _this =this
-        // _this.$fire({
-        //  title: "บันทึกข้อมูลสำเร็จ",
-        //        type: "success",
-        //      showConfirmButton: false,
-        //        timer: 1000,
-        //       })
+        commit('setLoadStatus',false)
       } catch (error) {
+        commit('setLoadStatus',false)
         console.log(error.response);
       }
     },
     async updateAddSubDomain({ commit }, payload) {
+      commit("setLoadStatus", true);
       try {
         const res = await TemplateService.AddSubDomain(payload);
-        //console.log('res',res);
         commit("addSubDomain", res.data);
+        commit('setLoadStatus',false)
       } catch (error) {
+        commit('setLoadStatus',false)
         console.log(error.response);
       }
     },
     async updateDomain({ commit }, payload) {
+      commit("setLoadStatus", true);
       try {
         const res = await TemplateService.EditDomain(payload);
         //console.log('res',res);
         commit("updateDomain", res.data);
+        commit('setLoadStatus',false)
       } catch (error) {
+        commit('setLoadStatus',false)
         console.log(error.response);
       }
     },
     async updateAddDomain({ commit }, payload) {
+      commit("setLoadStatus", true);
       try {
         const res = await TemplateService.AddDomain(payload);
         commit("addDomain", res.data);
+        commit('setLoadStatus',false)
       } catch (error) {
+        commit('setLoadStatus',false)
         console.log(error.response);
       }
     },
     async updateAddWord({ commit, dispatch }, payload) {
+      commit("setLoadStatus", true);
       try {
         const res = await TemplateService.AddWord(payload);
         commit("addWord", res.data);
         dispatch("resetDomainLastUpdate", payload.domain);
+        commit('setLoadStatus',false)
       } catch (error) {
+        commit('setLoadStatus',false)
         console.log(error.response);
       }
     },
     async updateWord({ commit,dispatch }, payload) {
+      commit("setLoadStatus", true);
       try {
         const res = await TemplateService.EditWord(payload);
-        console.log("payload.domain", res, payload.domain);
-        commit("updateWord", res.data);
-        dispatch("resetDomainLastUpdate", payload.domain);
+        console.log("payload.domain", res, payload);
+        dispatch('fetchListWord',{domain:payload.domainName,subdomain:payload.subdomainName,limit:1000})
+        // dispatch("resetDomainLastUpdate", payload.domain);
+        commit('setLoadStatus',false)
       } catch (error) {
+        // commit('setLoadStatus',false)
         console.log(error.response);
       }
     },
@@ -294,9 +313,8 @@ export default {
         );
         console.log(index, state.itemsWord);
         state.itemsWord.splice(index, 1);
-        //state.itemsWord.splice(payload.index, 1);
         commit("updateWord", res.data);
-        dispatch("resetDomainLastUpdate", payload.domain);
+        // dispatch("resetDomainLastUpdate", payload.domain);
 
       } catch (error) {
         console.log(error.response);

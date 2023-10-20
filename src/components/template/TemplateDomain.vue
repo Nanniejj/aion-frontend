@@ -4,7 +4,7 @@
       :active="getLoadStatus"
       size="80"
       background-color="rgba(255, 255, 255, 0.4)"
-      color="#fbf7f6"
+      color="#b6ac9a"
     />
     <div class="row">
       <div class="col-8">

@@ -4,6 +4,7 @@ import { API_V2_URL } from "@/common/config";
 
 export default {
   state: {
+    loadKeyword:false,
     keywordCount:{fb:0,tw:0},
     keywordName:"",
     keywordPost: [],
@@ -92,16 +93,16 @@ export default {
       { key: "name", label: "name", sortable: true },
       { key: "source", label: "source", sortable: true },
       { key: "crawled", label: "การเก็บข้อมูล", sortable: true },
-      {
-        key: "status",
-        label: "สถานะ",
-        formatter: (value) => {
-          return value ? "มีข้อมูล" : "ไม่มีข้อมูล";
-        },
-        sortable: true,
-        sortByFormatted: true,
-        filterByFormatted: true,
-      },
+      // {
+      //   key: "status",
+      //   label: "สถานะ",
+      //   formatter: (value) => {
+      //     return value ? "มีข้อมูล" : "ไม่มีข้อมูล";
+      //   },
+      //   sortable: true,
+      //   sortByFormatted: true,
+      //   filterByFormatted: true,
+      // },
       { key: "actions", label: "การจัดการ" },
     ],
     totalRows: 1,
@@ -116,6 +117,9 @@ export default {
     socialmo: "",
   },
   getters: {
+    getLoadKeyword: (state) => {
+      return state.loadKeyword;
+    },
     getKeywordCount: (state) => {
       return state.keywordCount;
     },
@@ -223,6 +227,9 @@ export default {
     },
   },
   mutations: {
+    setLoadKeyword: (state, payload) => {
+     state.loadKeyword = payload;
+    },
     setKeywordCount: (state, payload) => {
       state.keywordCount = payload;
     },
@@ -389,6 +396,7 @@ export default {
   },
   actions: {
     async PostsKeyword({ commit, dispatch }, payload) {
+      commit('setLoadKeyword',true)
       var axios = require("axios");
       var config = {
         method: "get",
@@ -402,10 +410,13 @@ export default {
      
       axios(config)
         .then((res) => {
+          commit('setLoadKeyword',false)
           // handle success
           commit("setKeywordPost", res.data);
         })
         .catch((error) => {
+          commit('setLoadKeyword',false)
+          alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
           console.log(error);
         });
     },

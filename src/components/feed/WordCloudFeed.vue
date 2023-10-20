@@ -5,7 +5,7 @@
         :active="getLoadFeedWC"
         size="80"
         background-color="rgba(255, 255, 255, 0.3)"
-        color="#fbf7f6"
+        color="#b6ac9a"
       />
       <span class="h5 font-weight-bold">HashtagCloud</span>
       <hr class="mb-3" />

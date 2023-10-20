@@ -143,7 +143,7 @@
           <span
             class="fas fa-list-ul"
             v-b-tooltip.hover
-            title="ดูแฮชแท็ก"
+            title="ดู keyword"
             size="sm"
             @click="linkToHashtag(row.item)"
           ></span>
