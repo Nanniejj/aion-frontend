@@ -11,7 +11,7 @@ export default {
           //  { key: 'url', label: 'URL', sortable: true, sortDirection: 'desc' },
             { key: 'source', label: 'source', sortable: true },
             //{ key: 'last_time', label: 'เวลา', sortable: true, sortDirection: 'desc' },
-            { key: 'crawled', label: 'การเก็บข้อมูล', sortable: true},
+            // { key: 'crawled', label: 'การเก็บข้อมูล', sortable: true},
             
           {
             key: 'status',

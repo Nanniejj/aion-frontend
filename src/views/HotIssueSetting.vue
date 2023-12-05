@@ -1,7 +1,7 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-     <div id="content" v-if="getToSection=='toAion'">
+     <div id="content" >
        <!-- <h1 class="title">Hot Issue</h1> -->
         <b-row >
         <b-col class="text-left"  cols="sm"> <h1 class="title">Hot Issue</h1></b-col>

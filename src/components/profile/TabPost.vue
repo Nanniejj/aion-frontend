@@ -487,13 +487,15 @@
             </div>
           </b-col>
           <b-col>
-            <div v-if="profilePost.source == 'tiktok'">
-              <iframe
+            <div v-if="profilePost.source == 'tiktok'&&profilePost.uid">
+              <lite-tiktok :videoid="profilePost.uid"></lite-tiktok>
+
+              <!-- <iframe
                 width="auto"
                 height="750"
                 :src="'https://www.tiktok.com/embed/v2/' + profilePost.uid"
                 allowfullscreen
-              ></iframe>
+              ></iframe> -->
             </div>
             <div
               id="photo-grid"
@@ -501,7 +503,7 @@
               class="mb-4"
             >
               <!-- {{typeof(profilePost.photos)}} -->
-              <div v-if="typeof profilePost.photos == 'string'">
+              <div v-if="profilePost.photos&&typeof profilePost.photos == 'string'">
                 <img
                   class="images1"
                   :src="profilePost.photos"
@@ -1144,6 +1146,7 @@ import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
+import '@justinribeiro/lite-tiktok';
 export default {
   components: {
     VueGallerySlideshow,
@@ -1253,6 +1256,7 @@ export default {
   },
   data() {
     return {
+      crawdash:true,
       objId: "",
       andkey: [],
       arrword: [],
@@ -1692,7 +1696,7 @@ export default {
           if (this.menu == "platform") {
             sc = this.getSocialPlatform;
             domains = this.getDomainArr;
-            dash = true;
+            dash = this.crawdash;
           } else {
             sc = this.getSocialDomain;
             domains = this.getClickDomain;
@@ -1806,6 +1810,13 @@ export default {
   },
   async created() {
     this.objId = localStorage.getItem("objId");
+    this.$store.dispatch("fetchListIssue");
+    this.$emitter.on("crawdash",async (val) => {
+      this.crawdash=val
+      this.page = 0;
+      await this.infiniteScroll();
+      console.log("emitter", val);
+    });
     console.log("page", this.$route);
     if (this.$route.name === "Domain") {
       this.pageCheck = this.$route.name;

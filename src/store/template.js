@@ -198,7 +198,9 @@ export default {
         res.data.results.sort(function(a, b) {
           return parseFloat(a.id) - parseFloat(b.id);
         });
-        commit("setDomainItem", res.data.results);
+      let domainlist =  res.data.results.filter((x)=> x.display==true)
+        console.log(' res.data.results', domainlist);
+        commit("setDomainItem", domainlist);
         commit("setLoadStatus", false);
       } catch (error) {
         console.log(error.response);
@@ -210,6 +212,7 @@ export default {
       try {
         const res = await TemplateService.getListSubDomain(payload);
        let data= res.data.results.filter((v)=>v.display)
+      //  let data= res.data.results
         commit("setListSubDomain", data);
         console.log('data.length',data.length);
         commit("setRowCount", data.length);

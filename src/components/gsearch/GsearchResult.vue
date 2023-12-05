@@ -184,8 +184,8 @@ export default {
 
 #submit {
   font-weight: bold;
-  color: #5679a5;
-  border: 2px solid #5679a5;
+  color: #fed16e;
+  border: 2px solid #fed16e;
   line-height: 1;
   display: inline-block;
   font-weight: 400;
@@ -200,7 +200,7 @@ export default {
 }
 
 #submit:hover {
-  background-color: #5679a5;
+  background-color: #fed16e;
   color: white;
 }
 

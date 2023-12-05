@@ -579,7 +579,7 @@ a#acclink {
   color: white;
 }
 .fa-list-ul {
-  background: #c3d3e7;
+  background: #fed16e8a ;
   padding: 7px;
   border-radius: 50%;
   box-shadow: 1px 1px 3px #666666;
@@ -716,7 +716,7 @@ tbody tr td:nth-child(7) {
   vertical-align: bottom;
   margin-right: 10px;
   color: #4c412b;
-  background: rgba(122, 158, 201, 0.452);
+  background: rgba(254, 209, 110, 0.452);
   padding-left: 5px;
   padding-right: 5px;
   border-radius: 6px;

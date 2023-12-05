@@ -237,5 +237,8 @@ td {
     display: block;
     margin-top: 20px;
   }
+  #box-report {
+  font-size: small;
+}
 }
 </style>

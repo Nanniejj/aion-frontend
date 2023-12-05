@@ -382,13 +382,15 @@
                   </div>
                 </b-col>
                 <b-col>
-                  <div v-if="postDomain.source == 'tiktok'">
-                    <iframe
+                  <div v-if="postDomain.source == 'tiktok'&&postDomain.uid">
+                    <lite-tiktok :videoid="postDomain.uid"></lite-tiktok>
+
+                    <!-- <iframe
                       width="auto"
                       height="750"
                       :src="'https://www.tiktok.com/embed/v2/' + postDomain.uid"
                       allowfullscreen
-                    ></iframe>
+                    ></iframe> -->
                   </div>
                   <div
                     id="photo-grid"

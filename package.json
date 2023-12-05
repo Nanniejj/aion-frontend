@@ -9,6 +9,7 @@
     "libinstall": "npm install"
   },
   "dependencies": {
+    "@justinribeiro/lite-tiktok": "^0.1.0",
     "@morioh/v-lightbox": "^1.0.3",
     "@syncfusion/ej2-vue-maps": "^19.4.56",
     "apexcharts": "^3.27.1",
@@ -22,6 +23,7 @@
     "longdo-map-vue": "^2.1.0",
     "moment": "^2.29.1",
     "numeral": "^2.0.6",
+    "papaparse": "^5.4.1",
     "printd": "^1.4.2",
     "v-tooltip": "^2.1.2",
     "vlightbox": "^2.0.2",
@@ -31,6 +33,7 @@
     "vue-backtotop": "^1.6.1",
     "vue-chartjs": "^3.5.1",
     "vue-clipboard2": "^0.3.1",
+    "vue-csv-import": "^2.3.4",
     "vue-d3-cloud": "^0.2.0",
     "vue-d3-network": "^0.1.28",
     "vue-element-loading": "^2.0.2",

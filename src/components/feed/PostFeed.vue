@@ -68,7 +68,7 @@
               id="checkbox-1"
               v-model="status"
               name="checkbox-1"
-              class="mi"
+            
             >
               อ่านแล้ว
             </b-form-checkbox>
@@ -77,7 +77,7 @@
           <b-form-checkbox
             switch
             size="md"
-            class="text-right mb-2 d-inline mr-3 mi"
+            class="text-right mb-2 d-inline mr-3"
             v-model="checked"
           >
             <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2"
@@ -457,13 +457,15 @@
             </b-card-text>
           </b-col>
           <b-col>
-            <div v-if="profilePost.source == 'tiktok'">
-              <iframe
+            <div v-if="profilePost.source == 'tiktok'&&profilePost.uid">
+              <lite-tiktok :videoid="profilePost.uid"></lite-tiktok>
+
+              <!-- <iframe
                 width="auto"
                 height="750"
                 :src="'https://www.tiktok.com/embed/v2/' + profilePost.uid"
                 allowfullscreen
-              ></iframe>
+              ></iframe> -->
             </div>
             <div
               id="photo-grid"
@@ -934,7 +936,12 @@
                     objId == '60a4a746ca07b83ecad0e71d' ||
                     objId == '60a4a74cca07b83ecad0e71e' ||
                     objId == '60a4a752ca07b83ecad0e71f' ||
-                    objId == '60a4a758ca07b83ecad0e720'
+                    objId == '60a4a758ca07b83ecad0e720'||
+                    objId == '64a2727f6bce4a4d32d67116' ||
+                    objId == '64a273076bce4a4d32d67120' ||
+                    objId == '64a273d46bce4a4d32d67128' ||
+                    objId == '64a273ff6bce4a4d32d6712e' ||
+                    objId == '64a2743f6bce4a4d32d67134'
                 "
                 :datareport="[
                   k,
@@ -1134,6 +1141,8 @@ import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import SocialSelect from "@/components/domain/SocialSelect.vue";
 import PopupReport from "@/components/feed/PopupReport.vue";
+import '@justinribeiro/lite-tiktok';
+
 // import moment from "moment";
 export default {
   components: {
@@ -1224,7 +1233,7 @@ export default {
     return {
       arrword: [],
       myStyle: {
-        backgroundColor: "#7a9dc9ab",
+        backgroundColor: "#f7dca2",
       },
       checked: true,
       andkey: [],
@@ -1695,7 +1704,7 @@ export default {
 </script>
 <style scoped>
 .highlight4 {
-  background-color: #7a9dc9ab;
+  background-color: #f7dca2;
   padding: 0 2px;
 }
 .custom-control {
@@ -1706,12 +1715,12 @@ export default {
   overflow: hidden !important;
 }
 #btn-submit {
-  background: #7a9dc9;
+  background: #f3ab0f;
   padding: 4px 11px;
   color: #fffff4;
 }
 #btn-submit:hover {
-  background: #5679a5;
+  background: #fed16e;
 }
 .box-noread {
   cursor: pointer;
@@ -1735,7 +1744,7 @@ export default {
 }
 
 .highlight2 {
-  background-color: #7a9dc9ab;
+  background-color: #f7dca2;
   padding: 0 2px;
 }
 #btn-neg,

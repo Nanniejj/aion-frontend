@@ -13,18 +13,18 @@
       <div>
         <i
           class="txt-icon fas fa-user-circle"
-          style="margin-left: 10px; font-size: 24px; color: #5679a5"
+          style="margin-left: 10px; font-size: 24px; color: #fed16e"
         ></i
         ><span id="user2" class="ml-1 mr-2">{{ username }}</span>
       </div>
       <div class="txt-lo" data-toggle="modal" data-target="#myModal">
-        <a style="color:#5679a5; margin-top: -2rem">Logout</a>
+        <a style="color:#fed16e; margin-top: -2rem">Logout</a>
       </div>
     </div>
 
     <!------------------------------------------------ phone ver. ---------------------------------------------------------- -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light" id="nav-phone">
-      <a class="navbar-brand" href="#"></a>
+      <a class="navbar-brand"></a>
       <button
         class="navbar-toggler"
         type="button"
@@ -68,7 +68,6 @@
           >
             <a
               class="nav-link dropdown-toggle"
-              href="#"
               id="navbarDropdown"
               role="button"
               data-toggle="dropdown"
@@ -221,9 +220,6 @@
                   >Gsearch</router-link
                 >
               </b-dropdown-item>
-              <!-- <b-dropdown-item>
-                <router-link to="/getrelation" tag="a" :style="dropdownStyle" :class="{ dropdownStyle: isActive9 }" id="dp-txt">Relation Post</router-link>
-              </b-dropdown-item> -->
             </b-nav-item-dropdown>
           </b-nav-item>
           <b-nav-item id="nav-con1" >
@@ -374,20 +370,20 @@ export default {
         this.$route.name === "campaign"
       );
     },
-    // isActive2() {
-    //   return (
-    //     this.$route.name === "influencertop" ||
-    //     this.$route.name === "influencerlink"
-    //   );
-    // },
+    isActive2() {
+      return (
+        this.$route.name === "monitor" ||
+        this.$route.name === "feed" ||this.$route.name === "report"
+      );
+    },
     isActive3() {
       return this.$route.name === "trend";
     },
     isActive4() {
-      return this.$route.name === "Gsearch";
+      return this.$route.name === "gsearch";
     },
     isActive5() {
-      return this.$route.name === "Avatar";
+      return this.$route.name === "avatar";
     },
     isActive6() {
       return this.$route.name === "influencertop";
@@ -400,6 +396,15 @@ export default {
     },
     isActive9() {
       return this.$route.name === "Getrelation";
+    },
+    isActive10() {
+      return this.$route.name === "monitor";
+    },
+    isActive11() {
+      return this.$route.name === "feed";
+    },
+    isActive12() {
+      return this.$route.name === "report";
     },
   },
   created() {
@@ -438,7 +443,7 @@ export default {
   vertical-align: top !important;
 }
 #user2 {
-  background: #5679a5;
+  background: #fed16e;
   padding: 0px 10px;
   border-radius: 14px;
   color: white;

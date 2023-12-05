@@ -235,7 +235,7 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.2) 0px -50px 36px -28px inset;
 }
 .box-logo2:hover {
-  border: 3px solid #5679a5;
+  border: 3px solid #fed16e;
   box-shadow: rgba(0, 0, 0, 0.2) 0px -50px 36px -28px inset;
 }
 #content {

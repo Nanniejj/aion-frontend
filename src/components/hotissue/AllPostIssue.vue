@@ -140,7 +140,7 @@
             </b-col>
             <b-col style="text-align: initial">
               <!-- {{username(datas.account_name)}} -->
-              <span v-if="datas.source !== 'twitter'" id="user-name">
+              <span id="user-name">
                 <a
                   v-if="datas.url_post != undefined && datas.url_post != ''"
                   v-bind:href="datas.url_post"
@@ -152,22 +152,7 @@
                   <i class="fa fa-external-link" />
                 </a>
               </span>
-              <span v-else id="user-name">
-                <a
-                  v-bind:href="
-                    'https://twitter.com/' +
-                      datas.account_name +
-                      '/status/' +
-                      datas.uid
-                  "
-                  target="_blank"
-                >
-                  <b style="text-decoration: none; color: #2c3e50">{{
-                    datas.account_name
-                  }}</b>
-                  <i class="fa fa-external-link" />
-                </a>
-              </span>
+
               <!-- Time -->
               <div id="text-date" style="text-align: start" class="md-font">
                 <span v-if="datas.date"
@@ -445,13 +430,15 @@
             </b-card-body>
           </b-col>
           <b-col>
-            <div v-if="datas.source == 'tiktok'">
-              <iframe
+            <div v-if="datas.source == 'tiktok' && datas.uid">
+              <lite-tiktok :videoid="datas.uid"></lite-tiktok>
+
+              <!-- <iframe
                 width="auto"
                 height="750"
                 :src="'https://www.tiktok.com/embed/v2/' + datas.uid"
                 allowfullscreen
-              ></iframe>
+              ></iframe> -->
             </div>
             <div
               id="photo-grid"
@@ -1121,6 +1108,7 @@ import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
+import "@justinribeiro/lite-tiktok";
 
 export default {
   props: {
@@ -1335,11 +1323,13 @@ export default {
           andarr = heightarr.and_keywords;
           wordarr = heightarr.keywords;
           // andarr.split('+')
-          splitarr=  andarr.map((x) => {
-            console.log('split',x.split("+"));
-            return x.split("+");
-          }).flat(1)
-          this.heightword= splitarr.concat(wordarr);
+          splitarr = andarr
+            .map((x) => {
+              console.log("split", x.split("+"));
+              return x.split("+");
+            })
+            .flat(1);
+          this.heightword = splitarr.concat(wordarr);
           // console.log("highlight1",splitarr);
           // console.log("highlight", heightarr, andarr, wordarr, this.heightword,splitarr);
           // console.log("Toppp response.data", response.data[0]);

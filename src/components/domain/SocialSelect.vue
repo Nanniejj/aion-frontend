@@ -184,7 +184,7 @@ export default {
       document.getElementById(bd).style.borderColor = "#ffffff00";
       document.getElementById(tt).style.borderColor = "#ffffff00";
       if (this.tabsocial == "feed") {
-        document.getElementById(active).style.borderColor = "#5679a5";
+        document.getElementById(active).style.borderColor = "#fed16e";
       } else {
         document.getElementById(active).style.borderColor = "#fed16e";
       }
@@ -205,7 +205,7 @@ export default {
   },
   mounted(){
  if (this.tabsocial == "feed") {
-      document.getElementById("eltab11").style.borderColor = "#5679a5";
+      document.getElementById("eltab11").style.borderColor = "#fed16e";
     } else {
       document.getElementById("eltab11").style.borderColor = "#fed16e";
     }

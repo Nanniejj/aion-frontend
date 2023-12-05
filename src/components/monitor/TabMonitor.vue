@@ -40,9 +40,8 @@
           @id-changwats="doFuncFoo"
         />
       </b-tab>
-
       <!-- ----------------------------------tab4 --------------------------------------------------->
-
+      
       <!-- <b-tab @click="toTab('keyword')" >
         <template #title id="title-tab">
           <span id="title-tab">
@@ -51,7 +50,7 @@
           </span>
         </template>
         <KeywordsMonitor :tabsMonitor="'tabKeyword'" id="tablo" />
-      </b-tab> -->
+      </b-tab>  -->
     </b-tabs>
   </div>
 </template>

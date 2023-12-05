@@ -6,7 +6,7 @@
           <div class="text-left sw-date">
             <span id="text-table">
               Daily <i class="fa fa-calendar-day"></i></span
-            ><b-form-checkbox switch size="lg" @change="tab()" class="mi">
+            ><b-form-checkbox switch size="lg" @change="tab()" >
               <span id="text-chart"
                 ><i class="fa fa-calendar-week"></i> Weekly</span
               ></b-form-checkbox
@@ -150,7 +150,7 @@ export default {
         this.$store.commit("setDateReport", [start, end]);
         this.selectedTab = false;
         document.getElementById("text-table").style.backgroundColor =
-          "rgba(122, 158, 201, 0.452)";
+          "rgba(254, 209, 110, 0.452)";
         document.getElementById("text-chart").style.backgroundColor = "#fff0";
 
         // document.getElementById("scroll").style.display = "block";
@@ -158,7 +158,7 @@ export default {
       } else {
         this.selectedTab = true;
         document.getElementById("text-chart").style.backgroundColor =
-          "rgba(122, 158, 201, 0.452)";
+          "rgba(254, 209, 110, 0.452)";
         document.getElementById("text-table").style.backgroundColor = "#fff0";
         // document.getElementById("scroll").style.display = "none";
       }
@@ -198,7 +198,7 @@ export default {
   vertical-align: bottom;
   margin-right: 10px;
   color: #4c412b;
-  background: rgba(122, 158, 201, 0.452);
+  background: rgba(254, 209, 110, 0.452);
   padding-left: 5px;
   padding-right: 5px;
   border-radius: 6px;

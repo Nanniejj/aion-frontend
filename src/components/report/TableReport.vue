@@ -379,7 +379,7 @@ table > thead > tr > th:nth-child(3) {
 .fa-trash,
 .fa-list-ul,
 .fa-user-alt-slash {
-  background: #c3d3e7;
+  background: #fed16e8a ;
   padding: 7px;
   border-radius: 50%;
   box-shadow: 1px 1px 3px #666666;

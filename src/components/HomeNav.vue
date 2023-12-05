@@ -21,7 +21,7 @@
 
     <!------------------------------------------------ phone ver. ---------------------------------------------------------- -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light" id="nav-phone">
-      <a class="navbar-brand" href="#"></a>
+      <a class="navbar-brand"></a>
       <button
         class="navbar-toggler"
         type="button"
@@ -36,15 +36,15 @@
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto" id="nav-bar">
-          <li class="nav-item" id="li-nav">
+          <!-- <li class="nav-item" id="li-nav">
             <router-link to="/home" tag="p" exact
               ><a class="nav-link">
                 <img src="../assets/home.png" alt="logo" class="img-nav" />
                 <strong>Home</strong></a
               ></router-link
             >
-            <!-- <hr class="line-nav"> -->
-          </li>
+
+          </li> -->
           <li class="nav-item" id="li-nav" >
             <router-link to="/domain" tag="p" exact
               ><a class="nav-link"
@@ -114,7 +114,7 @@
                   class="img-nav"
                   style="margin-bottom: 8px"
                 /><strong>Hot Issue </strong>
-                <span class="small"> (beta)</span></a
+                <span class="small"> </span></a
               ></router-link
             >
           </li>
@@ -127,11 +127,11 @@
                   class="img-nav"
                   style="margin-bottom: 8px"
                 /><strong>Keyword</strong>
-                <span class="small"> (beta)</span></a
+                <span class="small"> </span></a
               ></router-link
             >
           </li>
-          <li class="nav-item" id="li-nav" >
+          <!-- <li class="nav-item" id="li-nav" >
             <router-link to="/monitor" tag="p"
               ><a class="nav-link"
                 ><img
@@ -142,6 +142,90 @@
                 /><strong>Monitor</strong></a
               ></router-link
             >
+          </li> -->
+          <li
+            class=" nav-item dropdown"
+            id="li-nav"
+          >
+            <a
+              class="nav-link dropdown-toggle"
+              id="navbarDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              tag="p"
+              :class="{ 'router-link-exact-active': isActive2 }"
+            >
+              <img
+                src="../assets/monitor.png"
+                alt="logo"
+                class="img-nav"
+              /><strong>Monitor</strong>
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <router-link
+                to="/monitor"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive10 }"
+                id="nav-router"
+                ><center><strong>Monitor</strong></center></router-link
+              >
+              <router-link
+                to="/feed"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive11 }"
+                id="nav-router"
+                ><center><strong>Feed</strong></center></router-link
+              >
+              <router-link
+                to="/report"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive12 }"
+                id="nav-router"
+                ><center><strong>Report</strong></center></router-link
+              >
+              <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
+            </div>
+          </li>
+          <li
+            class=" nav-item dropdown"
+            id="li-nav"
+          >
+            <a
+              class="nav-link dropdown-toggle"
+        
+              id="navbarDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              tag="p"
+              :class="{ 'router-link-exact-active': isActive }"
+            >
+              <img
+                src="../assets/Evaluation.png"
+                alt="logo"
+                class="img-nav"
+              /><strong>Evaluation</strong>
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <router-link
+                to="/avatar"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive5 }"
+                id="nav-router"
+                ><center><strong>Avatar</strong></center></router-link
+              >
+              <router-link
+                to="/gsearch"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive4 }"
+                id="nav-router"
+                ><center><strong>Gsearch</strong></center></router-link
+              >
+              <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
+            </div>
           </li>
           <li class="nav-item" id="li-nav" >
             <router-link to="/templatesetting" tag="p"
@@ -190,7 +274,7 @@
         "
       >
         <b-navbar-nav>
-          <b-nav-item id="nav-con1">
+          <!-- <b-nav-item id="nav-con1">
             <router-link to="/home" tag="p" exact>
               <a class="nav-link">
                 <img src="@/assets/home.png" alt="logo" class="img-nav" />
@@ -199,7 +283,7 @@
                 </a>
               </a>
             </router-link>
-          </b-nav-item>
+          </b-nav-item> -->
           <b-nav-item id="nav-con1" >
             <router-link to="/domain" tag="p" exact>
               <a class="nav-link">
@@ -323,7 +407,7 @@
               <a class="nav-link">
                 <img src="@/assets/Hotissue.png" alt="logo" class="img-nav" />
                 <a class="nav-link titlenav">
-                  <strong>Hot Issue</strong><span class="small"> (beta)</span>
+                  <strong>Hot Issue</strong><span class="small"> </span>
                 </a>
               </a>
             </router-link>
@@ -335,13 +419,13 @@
               <a class="nav-link">
                 <img src="@/assets/keyword2.png" alt="logo" class="img-nav" />
                 <a class="nav-link titlenav">
-                  <strong>Keyword</strong><span class="small"> (beta)</span>
+                  <strong>Keyword</strong><span class="small"> </span>
                 </a>
               </a>
             </router-link>
           </b-nav-item>
 
-          <b-nav-item id="nav-con1" >
+          <!-- <b-nav-item id="nav-con1" >
             <router-link to="/monitor" tag="p">
               <a class="nav-link">
                 <img src="@/assets/monitor.png" alt="logo" class="img-nav" />
@@ -350,8 +434,101 @@
                 </a>
               </a>
             </router-link>
+          </b-nav-item> -->
+          <b-nav-item id="nav-con1" >
+            <b-nav-item-dropdown no-caret id="dp-color" class="">
+              <template slot="button-content">
+                <a
+                  class="nav-link"
+                  data-toggle="tab"
+                  tag="p"
+                  :class="{ 'router-link-exact-active': isActive2 }"
+                  style="padding: 0"
+                >
+                  <img
+                    src="@/assets/monitor.png"
+                    alt="logo"
+                    class="img-nav"
+                  />
+                  <a class="nav-link titlenav">
+                    <strong>Monitor</strong>
+                  </a>
+                </a>
+              </template>
+              <b-dropdown-item  to="/monitor">
+                <router-link
+                  to="/monitor"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive10 }"
+                  id="dp-txt"
+                  >Monitor</router-link
+                >
+              </b-dropdown-item>
+              <b-dropdown-item  to="/feed">
+                <router-link
+                  to="/feed"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive11}"
+                  id="dp-txt"
+                  >Feed</router-link
+                >
+              </b-dropdown-item>
+              <b-dropdown-item to="/report">
+                <router-link
+                  to="/report"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive12 }"
+                  id="dp-txt"
+                  >Report</router-link
+                >
+              </b-dropdown-item>
+            </b-nav-item-dropdown>
           </b-nav-item>
-
+          <b-nav-item id="nav-con1" >
+            <b-nav-item-dropdown no-caret id="dp-color" class="">
+              <template slot="button-content">
+                <a
+                  class="nav-link"
+                  data-toggle="tab"
+                  tag="p"
+                  :class="{ 'router-link-exact-active': isActive }"
+                  style="padding: 0"
+                >
+                  <img
+                    src="@/assets/Evaluation.png"
+                    alt="logo"
+                    class="img-nav"
+                  />
+                  <a class="nav-link titlenav">
+                    <strong>Evaluation</strong>
+                  </a>
+                </a>
+              </template>
+              <b-dropdown-item to="/avatar">
+                <router-link
+                  to="/avatar"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive5 }"
+                  id="dp-txt"
+                  >Avatar</router-link
+                >
+              </b-dropdown-item>
+              <b-dropdown-item to="/gsearch">
+                <router-link
+                  to="/gsearch"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive4 }"
+                  id="dp-txt"
+                  >Gsearch</router-link
+                >
+              </b-dropdown-item>
+            </b-nav-item-dropdown>
+          </b-nav-item>
           <b-nav-item id="nav-con1" >
             <router-link to="/templatesetting" tag="p">
               <a class="nav-link">
@@ -488,6 +665,13 @@ export default {
         this.$route.name === "campaign"
       );
     },
+    isActive2() {
+      console.log('this.$route.name',   this.$route.name);
+      return (
+        this.$route.name === "Monitor" ||
+        this.$route.name === "Feed" ||this.$route.name === "Report"
+      );
+    },
     // isActive2() {
     //   return (
     //     this.$route.name === "influencertop" ||
@@ -514,6 +698,15 @@ export default {
     },
     isActive9() {
       return this.$route.name === "Getrelation";
+    },
+    isActive10() {
+      return this.$route.name === "Monitor";
+    },
+    isActive11() {
+      return this.$route.name === "Feed";
+    },
+    isActive12() {
+      return this.$route.name === "Report";
     },
   },
   created() {
@@ -552,7 +745,7 @@ export default {
   vertical-align: top !important;
 }
 #user2 {
-  background: #5679a5;
+  background: #fed16e;
   padding: 0px 10px;
   border-radius: 14px;
   color: white;
@@ -689,7 +882,11 @@ a {
   color: #afacac !important;
   text-shadow: 2px 2px #d0cdcda1 !important;
 }
-
+@media only screen and (min-width: 0px) and (max-width: 1100px) {
+  .navbar-expand-sm .navbar-collapse{
+    zoom: 80% !important;
+  }
+}
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   #nav-desktop {
     display: none !important;

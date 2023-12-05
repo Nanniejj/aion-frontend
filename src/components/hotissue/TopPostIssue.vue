@@ -378,13 +378,15 @@
                 </div>
               </b-col>
               <b-col>
-                <div v-if="postDomain.source == 'tiktok'">
-                  <iframe
+                <div v-if="postDomain.source == 'tiktok'&&postDomain.uid">
+                  <lite-tiktok :videoid="postDomain.uid"></lite-tiktok>
+
+                  <!-- <iframe
                     width="auto"
                     height="750"
                     :src="'https://www.tiktok.com/embed/v2/' + postDomain.uid"
                     allowfullscreen
-                  ></iframe>
+                  ></iframe> -->
                 </div>
 
                 <div
@@ -980,6 +982,8 @@ import VueGallerySlideshow from "vue-gallery-slideshow";
 import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import moment from "moment";
+import '@justinribeiro/lite-tiktok';
+
 export default {
   components: { VueGallerySlideshow, Highlighter },
   props: {

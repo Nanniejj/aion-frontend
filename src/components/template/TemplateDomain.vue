@@ -16,7 +16,6 @@
           v-model="filter"
         />
       </div>
-
       <div class="col-4" style="text-align: end;">
         <router-link to="#" target="_blank">
           <button class="btn btn-add">

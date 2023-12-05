@@ -1,16 +1,33 @@
 <template>
   <div>
-    <div class="text-left">
-      <span class="h5 mr-3">Top Posts</span>
-      <div class="d-inline-block">
-        <div v-if="startd === endd" class="text-left onedate">
-          <i class="far fa-calendar-alt"></i> {{ startd }}
+    <b-row>
+      <b-col sm>
+        <div class="text-left">
+          <span class="h5 mr-3">Top Posts</span>
+          <div class="d-inline-block">
+            <div v-if="startd === endd" class="text-left onedate">
+              <i class="far fa-calendar-alt"></i> {{ startd }}
+            </div>
+            <div v-else class="text-left twodate">
+              <i class="far fa-calendar-alt"></i> {{ startd }} - {{ endd }}
+            </div>
+          </div>
         </div>
-        <div v-else class="text-left twodate">
-          <i class="far fa-calendar-alt"></i> {{ startd }} - {{ endd }}
+      </b-col>
+      <b-col>
+        <div class="text-md-right mt-3 mr-4" v-if="$route.name=='Dashboard'">
+          <b-form-radio-group
+            @change="selectData()"
+            v-model="selected"
+            :options="options"
+            class="mb-3 d-inline mi"
+            value-field="item"
+            text-field="name"
+            disabled-field="notEnabled"
+          ></b-form-radio-group>
         </div>
-      </div>
-    </div>
+      </b-col>
+    </b-row>
     <div class="mt-lg-3 mt-md-0 mb-3 mt-sm-0">
       <vue-element-loading
         :active="getLoadTopPost"
@@ -31,7 +48,7 @@ import TopPostCrad from "@/components/domain/TopPostCrad.vue";
 import moment from "moment";
 export default {
   watch: {
-    getArrDate: function () {
+    getArrDate: function() {
       this.startd = this.getSdateDm.slice(0, 10);
       this.endd = this.getEdateDm.slice(0, 10);
     },
@@ -40,7 +57,7 @@ export default {
     TopPostCrad,
   },
   computed: {
-    ...mapGetters(["getLoadTopPost", "getSdateDm", "getEdateDm", "getArrDate"]),
+    ...mapGetters(["getLoadTopPost", "getSdateDm", "getEdateDm", "getArrDate",'getNamePlatform','getDomainArr']),
   },
   data() {
     return {
@@ -48,11 +65,65 @@ export default {
       endd: "",
       sdate: "",
       edate: "",
+      start_date:"",
+      end_date:"",
+      selected: true,
+      options: [
+        { item: true, name: "วันที่ระบบเก็บโพสต์" },
+        { item: "", name: "วันที่โพสต์" },
+      ],
     };
   },
+  methods: {
+    selectData() {
+      this.$emitter.emit("crawdash", this.selected);
+      let  objtop;
+      if (this.startd) {
+        this.start_date =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T00:00:00";
+        this.end_date =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T23:59:59";
+      }else{
+        this.start_date =this.startd+ "T00:00:00"
+        this.end_date =this.endd  + "T23:59:59"
+      }
+      if (this.selected) {
+        objtop = {
+          start_date:this.start_date ,
+          end_date: this.end_date,
+          sort_by: "engagement",
+          offset: 0,
+          source: this.getNamePlatform,
+          domain: this.getDomainArr,
+          dashboard: true,
+        };
+      } else {
+        objtop = {
+          start_date:this.start_date ,
+          end_date: this.end_date,
+          sort_by: "engagement",
+          offset: 0,
+          source: this.getNamePlatform,
+          domain: this.getDomainArr,
+        };
+      }
+      this.$store.dispatch("fetchPostDomain", objtop);
+
+    
+      // this.$emitter.emit("clickSelect", this.selected);
+    },
+  },
   created() {
-    this.startd = moment(new Date()).format().slice(0, 10);
-    this.endd = moment(new Date()).format().slice(0, 10);
+    this.startd = moment(new Date())
+      .format()
+      .slice(0, 10);
+    this.endd = moment(new Date())
+      .format()
+      .slice(0, 10);
   },
 };
 </script>

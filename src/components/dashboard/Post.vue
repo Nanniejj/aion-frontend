@@ -884,7 +884,6 @@
           <a
             class="page-link md-font"
             v-bind:key="pageNumber"
-            href="#"
             @click="setPage(pageNumber)"
             :class="{
               current: currentPage === pageNumber,

@@ -63,7 +63,16 @@
       <template #cell(name)="row">
         <b>{{ row.value }}</b>
       </template>
-
+      <template #cell(display)="row">
+          <span v-if="row.value == true"
+            ><i class="fa fa-circle" style="color:#8cc751;" />
+         แสดงผล</span
+          >
+          <span v-else
+            ><i class="fa fa-circle" style="color:#d35151;" />
+            ไม่แสดงผล</span
+          >
+        </template>
       <template #cell(actions)="row">
         <span
           class="fa fa-pencil"
@@ -165,7 +174,7 @@ export default {
         { key: "id", label: "#", sortable: true, class: "text-center" },
         { key: "domain", label: "Domain", sortable: true },
         { key: "name", label: "SubDomain", sortable: true },
-
+        { key: "display", label: "status", sortable: true },
         { key: "actions", label: "การจัดการ" },
       ],
       textSubDomain: "",

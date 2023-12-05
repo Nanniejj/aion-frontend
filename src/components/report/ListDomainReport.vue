@@ -76,19 +76,19 @@ export default {
   font-size: 14px;
   color: #fff;
   padding: 5px 9px;
-  background-color: #5679a5;
+  background-color: #fed16e;
   border-radius: 15px;
   min-width: 35px;
 }
 .list-group-item-action:focus,
 .list-group-item-action:hover {
   z-index: 1;
-  color: #5679a5;
+  color: #fed16e;
   text-decoration: none;
   background-color: #ffffff;
   font-weight: 700;
 }
 button:focus {
-  outline: 5px auto #5679a5;
+  outline: 5px auto #fed16e;
 }
 </style>

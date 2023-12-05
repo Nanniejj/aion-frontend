@@ -6,13 +6,13 @@
           <span class="h5 mr-3">Post</span>
           <span id="domain-tag" class="">{{ getClickDomain }}</span>
         </div>
-        <div class="text-right my-3 mb-8 d-none">
+        <div class="text-right my-3 mb-8">
           <!-- {{ selectFilter }} -->
           <b-row align-h="end">
             <b-col cols="auto" class="" vertical="center">
               <i class="fa fa-sliders fa-2x my-1"> </i>
             </b-col>
-            <b-col cols="" sm="" md="3" class="mx-2 p-0">
+            <b-col cols="" sm="" md="3" class="mx-2 p-0 mb-2">
               <v-select
                 v-model="select"
                 :options="options"
@@ -21,7 +21,7 @@
               >
               </v-select
             ></b-col>
-            <b-col cols="" sm="" md="3" class="mx-0 p-0">
+            <b-col cols="" sm="" md="3" class="mx-2 p-0 mb-2">
               <v-select
                 v-model="selectFilter"
                 :options="optionsFilter"
@@ -33,8 +33,8 @@
           </b-row>
         </div>
     
-        <!-- <LineChartFilter :typeChart="selectFilter" :label="select" /> -->
-        <LineChart />
+        <LineChartFilter :typeChart="selectFilter" :label="select" />
+        <!-- <LineChart /> -->
       </b-col>
       <b-col lg="4">
         <div class="h5 text-left ">
@@ -59,9 +59,9 @@ import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import { mapGetters } from "vuex";
 
-import LineChart from "@/components/chart/LineChart.vue";
+// import LineChart from "@/components/chart/LineChart.vue";
 import BarChart from "@/components/chart/BarChart.vue";
-// import LineChartFilter from "../chart/LineChartFilter.vue";
+import LineChartFilter from "../chart/LineChartFilter.vue";
 import moment from "moment";
 export default {
   watch: {
@@ -71,10 +71,10 @@ export default {
     },
   },
   components: {
-    LineChart,
+    // LineChart,
     BarChart,
     vSelect,
-    // LineChartFilter,
+    LineChartFilter,
   },
   computed: {
     ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate"]),

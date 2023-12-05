@@ -2,7 +2,7 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
 
-    <div id="content" v-if="getRoleMion">
+    <div id="content">
       <vue-element-loading
         :active="getLoadStatus"
         :is-full-screen="true"
@@ -20,7 +20,7 @@
                 v-model="select_radio"
                 :options="options_date"
                 name="buttons2"
-                class="md-font mi"
+                class="md-font"
               ></b-form-radio-group>
             </b-form-group>
           </b-col>
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import HomeNav from "@/components/HomeNavMion.vue";
+import HomeNav from "@/components/HomeNav.vue";
 import GsearchResult from "@/components/gsearch/GsearchResult.vue";
 import { mapGetters } from "vuex";
 

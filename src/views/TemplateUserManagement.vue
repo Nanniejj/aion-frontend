@@ -3,7 +3,7 @@
     <HomeNav id="navHome" />
     <vue-element-loading :active="getLoadStatus" :is-full-screen="true" size='80' 
     background-color='rgba(0, 0, 0, 0.3)' color='#fff' spinner="bar-fade-scale" />
-    <div id="content" v-if="getToSection=='toAion'">
+    <div id="content" >
   <b-container fluid id="tp-size" >
       <h1 class="title">User Management</h1>
       <!-- <h4 class="title-domain" ><a >จัดการ Domain</a> </h4> -->

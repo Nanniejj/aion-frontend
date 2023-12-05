@@ -1,7 +1,10 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-    <div id="content" v-if="getToSection=='toAion'">
+    <div id="content">
+      <Transition name="slide-fade">
+        <TitleLogo v-show="elementVisible"
+      /></Transition>
       <!-- <Map/> -->
       <b-row v-if="!getPushDomainStat">
         <b-col> <h1 class="title">Domain</h1></b-col>
@@ -13,6 +16,7 @@
   </div>
 </template>
 <script>
+import TitleLogo from "../components/TitleLogo.vue";
 import HomeNav from "@/components/HomeNav.vue";
 import DomainList from "@/components/domain/DomainList.vue";
 import DomainMain from "@/components/domain/DomainMain.vue";
@@ -24,7 +28,13 @@ export default {
     HomeNav,
     DomainList,
     DomainMain,
+    TitleLogo,
     // Map
+  },
+  data() {
+    return {
+      elementVisible: false,
+    };
   },
 
   computed: {
@@ -35,28 +45,56 @@ export default {
       "getDomain",
       "getLoadStatus",
       "getPushDomainStat",
-      "getToSection"
+      "getToSection",
+      "getShowIntro",
     ]),
   },
   methods: {
-    printWindow: function () {
+    printWindow: function() {
       try {
         window.print();
       } catch (err) {
         console.log(err);
       }
     },
-    
+    closeShow() {
+      setTimeout(() => (this.elementVisible = false), 1000);
+      this.$store.commit("setShowIntro", false);
+    },
   },
-  created(){
-    this.$store.dispatch('fetchListIssue')
-  }
-
-
+  mounted() {
+    console.log('this.getShowIntro',this.getShowIntro);
+    if (this.getShowIntro) {
+      this.elementVisible=true
+      this.closeShow();
+    }
+  },
+  created() {
+    this.$store.dispatch("fetchListIssue");
+    // this.$emitter.on("showIntro", (val) => {
+    //   console.log("emitter", val);
+    //   this.elementVisible = false
+    //   // this.closeShow();
+    // });
+  },
 };
 </script>
 
 <style scoped>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
 .fa-print {
   text-align: end;
   float: right;

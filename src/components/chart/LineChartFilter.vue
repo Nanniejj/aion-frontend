@@ -1,5 +1,6 @@
 <template>
-  <div id="chart" class="mt-3">
+  <div id="chart" class="mt-3" >
+    
     <apexchart
       id="chart-domain"
       type="line"
@@ -33,9 +34,11 @@ export default {
     label: { type: String },
   },
   watch: {
-    getArrDate() {
+    getArrDate(val) {
       this.apiFilterChart();
       this.valdate = 0;
+      this.range=val[0]+' - '+val[1]
+      console.log('valdate',val);
     },
     typeChart(val) {
       this.apiFilterChart();
@@ -53,6 +56,7 @@ export default {
   },
   data() {
     return {
+  
       valdate: 0,
       sentiment: [],
       source: [],
@@ -65,6 +69,7 @@ export default {
         colors: [],
         dataLabels: {
           enabled: true,
+          
         },
         series: [],
         title: {
@@ -89,6 +94,7 @@ export default {
         colors: [],
         dataLabels: {
           enabled: true,
+       
         },
         series: [],
         title: {
@@ -108,6 +114,13 @@ export default {
     };
   },
   methods: {
+    formatCash(n) {
+      if (n < 1e3) return n;
+      if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + "K";
+      if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + "M";
+      if (n >= 1e9 && n < 1e12) return +(n / 1e9).toFixed(1) + "B";
+      if (n >= 1e12) return +(n / 1e12).toFixed(1) + "T";
+    },
     domainFilter(dataAll) {
       // console.log("dataAll", dataAll);
       // var getDaysArray = (s, e) => {
@@ -201,7 +214,8 @@ export default {
               "<hr class='p-1 m-1'/>" +
               "</div>" +
               "<span>" +
-                ytext+" : " +
+              ytext +
+              " : " +
               "<b>" +
               Number(valpost).toLocaleString() +
               "</b>" +
@@ -221,10 +235,11 @@ export default {
         dataLabels: {
           enabled: true,
           style: {
+            fontSize: "14px",
             colors: ["#4c412b"],
           },
           formatter: (value) => {
-            return Number(value).toLocaleString();
+            return  this.formatCash(value)
           },
         },
         stroke: {
@@ -373,11 +388,11 @@ export default {
         colors: ["#3cb185", "#1b678f", "#d94b39"],
         dataLabels: {
           enabled: true,
-            style: {
-              colors: undefined,
-            },
+          style: {
+            colors: undefined,
+          },
           formatter: (value) => {
-            return Number(value).toLocaleString();
+            return  this.formatCash(value)
           },
         },
 
@@ -440,7 +455,7 @@ export default {
       var config = {
         method: "get",
         url:
-          "http://139.59.103.67:3000/api/v2/userposts/getChartDataDomain?domain=" +
+          "https://api2.cognizata.com/api/v2/userposts/getChartDomainFilter?domain=" +
           this.getClickDomain +
           sdate +
           edate +
@@ -462,6 +477,10 @@ export default {
             this.sentimentFilter(response.data[0].sentiment);
           }
           if (this.typeChart == "domain") {
+            this.domainFilter(response.data[0].data);
+          }
+          console.log('this.typeChart',this.typeChart);
+          if (this.typeChart == ""|| this.typeChart==null) {
             this.domainFilter(response.data[0].data);
           }
           console.log("sourceFilter", response.data[0].source.result2);

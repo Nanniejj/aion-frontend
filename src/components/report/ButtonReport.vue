@@ -131,8 +131,8 @@ export default {
 <style scoped>
 .btn-primary {
   color: #ffffff;
-  border-color: #5679a5;
-  background-color: #5679a5;
+  border-color: #fed16e;
+  background-color: #fed16e;
 }
 .btn-primary:hover {
   color: #ffffff;

@@ -32,6 +32,7 @@ import { BootstrapVue, IconsPlugin } from "bootstrap-vue";
 import VueApexCharts from "vue-apexcharts";
 import JsonExcel from "vue-json-excel";
 import LongdoMap from "longdo-map-vue";
+import TinyEmitter from 'tiny-emitter'
 
 // import VNetworkGraph from "v-network-graph"
 // import "v-network-graph/lib/style.css"
@@ -41,7 +42,7 @@ import "leaflet/dist/leaflet.css";
 Vue.component("l-map", LMap);
 Vue.component("l-tile-layer", LTileLayer);
 Vue.component("l-marker", LMarker);
-
+const emitter = new TinyEmitter()
 import { Icon } from "leaflet";
 
 delete Icon.Default.prototype._getIconUrl;
@@ -50,7 +51,7 @@ Icon.Default.mergeOptions({
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   shadowUrl: require("leaflet/dist/images/marker-shadow.png")
 });
-
+Vue.prototype.$emitter = emitter
 // Vue.use(VNetworkGraph);
 Vue.component("downloadExcel", JsonExcel);
 Vue.use(VueApexCharts);

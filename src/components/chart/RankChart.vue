@@ -103,11 +103,13 @@ export default {
       });
       console.log("update", results);
       //sumy
-      let data1 = this.getDataTrend.map((item) => {
+      let data1 
+      if(this.getDataTrend){
+       data1 = this.getDataTrend.map((item) => {
         let sum = item.y.reduce((a, b) => a + b, 0);
         return { x: item.x, sumy: sum, data: item.y, name: item.label };
       });
-
+}
       //sort value y
       data1.sort((a, b) => {
         return b.sumy - a.sumy;
@@ -326,7 +328,7 @@ export default {
     this.startChart();
   },
   destroyed() {
-    this.$store.commit("setDataTrend", "");
+    this.$store.commit("setDataTrend",[]);
   },
 };
 </script>

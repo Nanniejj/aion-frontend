@@ -5,41 +5,42 @@
 </template>
 
 <style>
-
-.custom-switch.b-custom-control-lg .custom-control-label::before, .input-group-lg .custom-switch .custom-control-label::before  {
-   cursor: pointer !important;
+.custom-switch.b-custom-control-lg .custom-control-label::before,
+.input-group-lg .custom-switch .custom-control-label::before {
+  cursor: pointer !important;
 }
-.select-type-report .vs__dropdown-menu{
-max-height: 170px !important;
-height: 170px;
+.select-type-report .vs__dropdown-menu {
+  max-height: 170px !important;
+  height: 170px;
 }
-.btn-report .btn-secondary{
+.btn-report .btn-secondary {
   color: #ffffff !important;
-  border-color: #5679a5 !important;
-  background-color: #5679a5 !important;
+  border-color: #fed16e !important;
+  background-color: #fed16e !important;
 }
-.btn-report .dropdown-item:hover, .dropdown-item:focus {
-    color: #16181b;
-    text-decoration: none;
-    background-color:#c3d3e7;
+.btn-report .dropdown-item:hover,
+.dropdown-item:focus {
+  color: #16181b;
+  text-decoration: none;
+  background-color: #fed16e8a ;
 }
-#content > iframe.if-link > html{
-overflow: hidden !important;
+#content > iframe.if-link > html {
+  overflow: hidden !important;
 }
-.v-canvas.touches{
-    height: 100vh !important;
+.v-canvas.touches {
+  height: 100vh !important;
 }
-#content > iframe.if-link{
-width: 80%;
+#content > iframe.if-link {
+  width: 80%;
   height: 80vh;
 }
- .btn-secondary:focus {
-    box-shadow: 0 0 0 0.2rem rgb(130 138 145 / 0%);
+.btn-secondary:focus {
+  box-shadow: 0 0 0 0.2rem rgb(130 138 145 / 0%);
 }
-.vs__dropdown-menu{
+.vs__dropdown-menu {
   z-index: 9999999 !important;
 }
-.box-contents{
+.box-contents {
   text-align: justify;
 }
 .arrow_box {
@@ -355,12 +356,22 @@ div.right {
   min-height: 100vh;
   /* margin-top: 2%; */
 }
-/* #__BVID__254
-  > div
-  > div:nth-child(3)
-  > div
-  > div */
+ lite-tiktok{
+  display: block;
+    width: 400px !important;
+    margin: auto;
+    height: 500px;
+    margin-bottom: 20px;
+}
+
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  lite-tiktok {
+    display: block;
+    width: 300px !important;
+    height: 300px;
+    margin: auto;
+    margin-bottom: 20px;
+  }
   .mx-datepicker-range {
     width: fit-content !important;
   }
@@ -495,9 +506,14 @@ body {
 }
 .mi .custom-control-input:checked ~ .custom-control-label::before {
   color: #fff;
-  background-color:#5679a5;
-  border: #5679a5 solid 1px;
+  background-color: #fed16e;
+  border: #fed16e solid 1px;
 }
+/* .mi .custom-control-input:checked ~ .custom-control-label::before {
+  color: #fff;
+  background-color: #fed16e;
+  border: #fed16e solid 1px;
+} */
 
 .custom-control-input:checked ~ .custom-control-label::before {
   color: #fff;
@@ -954,4 +970,5 @@ div.modal-vue > div > div.modal-vue-panel.modal-fade.modal-vue-show {
     display: inline;
   }
 }
+
 </style>

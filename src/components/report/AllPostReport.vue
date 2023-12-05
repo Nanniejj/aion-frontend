@@ -28,7 +28,7 @@
             v-model="selected"
             :options="options"
             name="radio-inline"
-            class="mt-1 mb-2 text-left ml-2 mi"
+            class="mt-1 mb-2 text-left ml-2 "
             @change="selectSentiment"
           ></b-form-radio-group>
         </b-col>
@@ -55,7 +55,7 @@
       <b-form-checkbox
         switch
         size="lg"
-        class="text-right mb-2 mi"
+        class="text-right mb-2"
         v-model="checked"
       >
         <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2"
@@ -432,13 +432,15 @@
             </b-card-body>
           </b-col>
           <b-col>
-            <div v-if="datas.source == 'tiktok'">
-              <iframe
+            <div v-if="datas.source == 'tiktok'&&datas.uid">
+              <lite-tiktok :videoid="datas.uid"></lite-tiktok>
+
+              <!-- <iframe
                 width="auto"
                 height="750"
                 :src="'https://www.tiktok.com/embed/v2/' + datas.uid"
                 allowfullscreen
-              ></iframe>
+              ></iframe> -->
             </div>
             <div
               id="photo-grid"
@@ -1094,6 +1096,8 @@
 import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
+import '@justinribeiro/lite-tiktok';
+
 // import moment from "moment";
 
 export default {
@@ -1565,7 +1569,7 @@ highlightText(full_text) {
   border-radius: 10px;
 }
 .highlight4 {
-  background-color: #7a9dc9ab;
+  background-color: #f7dca2;
   padding: 0 2px;
 }
 .all {
@@ -1704,7 +1708,7 @@ p {
 
 .current {
   color: white;
-  background-color: #5679a5;
+  background-color: #fed16e;
 }
 /* ul {
   padding: 0;

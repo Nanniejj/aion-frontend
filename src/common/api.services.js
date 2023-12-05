@@ -294,8 +294,9 @@ export const RankingService = {
   getRanking(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    var subdom;
-    if (payload.subdomain) {
+    var subdom="";
+    console.log('payload.subdomain',payload.subdomain);
+    if (payload.subdomain&&payload.subdomain.length) {
       subdom = `&subdomain=${payload.subdomain}`;
     } else {
       subdom = "";
@@ -547,7 +548,7 @@ export const TemplateService = {
     return ApiService.put(`/v1/object/${payload.id}/`, {
       name: payload.name,
       domain: payload.domain,
-      display: payload.display,
+      // display: payload.display,
       subdomain: payload.subdomain,
       keywords: payload.keywords,
       id: payload.id,

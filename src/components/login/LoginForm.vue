@@ -176,8 +176,10 @@ export default {
           let mi =JSON.parse(localStorage.getItem("roleMion"));
           _this.$store.commit('setRoleMion',mi)
           console.log("decodedData", obj.mion);
-          // _this.$router.push({ name: "Domain" });
-          _this.$router.push({ name: "Section" });
+          _this.$store.commit('setShowIntro',true)
+          // _this.$emitter.emit('showIntro',true)
+          _this.$router.push({ name: "Domain" });
+          // _this.$router.push({ name: "Section" });
         })
         .catch(function(response) {
           console.log("errrrrrr", response.message);

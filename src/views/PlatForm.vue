@@ -1,7 +1,7 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-    <div id="content" v-if="getToSection == 'toAion'">
+    <div id="content" >
       <b-row>
         <b-col> <h1 class="title">Platform</h1></b-col>
         <b-col><i class="fas fa-print fa-2x" @click="printWindow()"></i></b-col>

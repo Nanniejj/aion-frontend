@@ -1,7 +1,7 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-    <div v-if="getToSection=='toAion'">
+    <div >
     <WordCloudMenu></WordCloudMenu>
     </div>
     <!-- <WordCloudMain v-show="getSelected"></WordCloudMain> -->

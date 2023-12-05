@@ -2,7 +2,7 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
     
-    <div id="content" v-if="getToSection=='toMion'">
+    <div id="content" >
       <vue-element-loading
       :active="getLoadStatus"
       size="80"
@@ -66,7 +66,7 @@
 <script>
 import axios from "axios";
 import { API_URL } from '@/common/config';
-import HomeNav from '@/components/HomeNavMion.vue';
+import HomeNav from '@/components/HomeNav.vue';
 import { mapGetters } from 'vuex';
 import AvatarTop5 from '@/components/avatar/AvatarTop5.vue';
 import AvatarTable from '@/components/avatar/AvatarTable.vue';
@@ -115,14 +115,14 @@ export default {
 tab(){
       if(this.selectedTab){
           this.selectedTab = false
-          document.getElementById("text-table").style.backgroundColor = "rgba(122, 158, 201, 0.452)";
+          document.getElementById("text-table").style.backgroundColor = "rgba(254, 209, 110, 0.452)";
           document.getElementById("text-chart").style.backgroundColor = "#fff0";
           document.getElementById("scroll").style.display = "block";
           console.log('log1');  
           }
       else{
           this.selectedTab = true
-          document.getElementById("text-chart").style.backgroundColor = "rgba(122, 158, 201, 0.452)";
+          document.getElementById("text-chart").style.backgroundColor = "rgba(254, 209, 110, 0.452)";
           document.getElementById("text-table").style.backgroundColor = "#fff0";
           document.getElementById("scroll").style.display = "none";
       }   
@@ -205,7 +205,7 @@ tab(){
     vertical-align: bottom;
     margin-right: 10px;
     color: #4c412b;
-    background: rgba(122, 158, 201, 0.452);
+    background: rgba(254, 209, 110, 0.452);
     padding-left: 5px;
     padding-right: 5px;
     border-radius: 6px;
@@ -246,14 +246,14 @@ tab(){
 #submit {
   font-weight: bold;
   color: #4e432d;
-  border: 2px solid #92aed1;
+  border: 2px solid #fed16e;
   line-height: 1;
   display: inline-block;
   font-weight: 400;
   text-align: center;
   vertical-align: middle;
   user-select: none;
-  background-color:#7a9dc9ab;
+  background-color:#fed16e;
   padding: 0.6rem 0.75rem;
   font-size: 1rem;
   border-radius: 0.25rem;
@@ -261,7 +261,7 @@ tab(){
 }
 
 #submit:hover {
-  background-color: #5679a5;
+  background-color: #fed16e;
   color: white;
 }
 

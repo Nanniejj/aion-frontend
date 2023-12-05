@@ -1,5 +1,5 @@
 <template>
-  <div id="content" v-if="getToSection == 'toAion'">
+  <div id="content" >
     <back-to-top bottom="50px" right="50px">
       <button type="button" class="btn btn-to-top">
         <i class="fa fa-chevron-up"></i>
@@ -55,7 +55,7 @@
                 </li>
               </ul>
             </div>
-
+<!-- {{ getShowSubDomainRanking }} -->
             <v-select
               class="mt-2 mb-3"
               :options="getDomainRanking"
@@ -322,7 +322,7 @@ export default {
     submitform: function() {
       //this.submited = true;
       this.$store.commit("setArrDateRank", this.valueDate);
-      this.$store.commit("setDataTrend", "");
+      this.$store.commit("setDataTrend", []);
       this.$store.commit("setShowRankTab", true);
       this.$store.commit("setShowWordList", true);
       this.$store.commit("setSubmitRanking", true);

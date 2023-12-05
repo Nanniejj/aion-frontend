@@ -166,9 +166,8 @@ export default {
       });
     },
     getShowSubDomainRanking: (state) => {
-      return state.resultssdm.map((result) => {
-        if (result.display) return result.name;
-      });
+      let data = state.resultssdm.filter((v)=>v.display)
+      return data.map((x)=>x.name)
     },
     // getSubDomainRanking: (state) => {
     //   return state.results;

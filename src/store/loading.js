@@ -1,31 +1,35 @@
 export default {
   state: {
-    loadTotalReport:false,
-    loadReportStat:false,
-    loadReport:false,
-    loadMap:false,
-    loadFeed:false,
-    loadInfluSum:false,
-    rankPost:false,
-    rankTab:false,
+    showIntro: false,
+    loadTotalReport: false,
+    loadReportStat: false,
+    loadReport: false,
+    loadMap: false,
+    loadFeed: false,
+    loadInfluSum: false,
+    rankPost: false,
+    rankTab: false,
     scroll: false,
     loadStatus: false,
     loadStatus2: false,
     loadDefaultCloud: false,
     loadCloud: false,
-    loadChartCloud:false,
-    loadPostCloud:false,
-    loadPosthash:false,
-    loadTopUser:false,
-    loadTopUserPf:false,
-    loadPostTab:false,
-    loadLocation:false,
-    loadFeedWC:false,
-    loadHashIssue:false,
-    loadPostIssue:false,
-    loadAllPostIssue:false
+    loadChartCloud: false,
+    loadPostCloud: false,
+    loadPosthash: false,
+    loadTopUser: false,
+    loadTopUserPf: false,
+    loadPostTab: false,
+    loadLocation: false,
+    loadFeedWC: false,
+    loadHashIssue: false,
+    loadPostIssue: false,
+    loadAllPostIssue: false,
   },
   getters: {
+    getShowIntro: (state) => {
+      return state.showIntro;
+    },
     getLoadTotalReport: (state) => {
       return state.loadTotalReport;
     },
@@ -101,65 +105,68 @@ export default {
   },
 
   mutations: {
-    setLoadTotalReport: (state,payload) => {
-      state.loadTotalReport=payload
+    setShowIntro: (state, payload)=> {
+      state.showIntro = payload;
     },
-    setLoadReportStat:(state,payload)  => {
-      state.loadReportStat=payload
+    setLoadTotalReport: (state, payload) => {
+      state.loadTotalReport = payload;
     },
-    setLoadReport:(state,payload)  => {
-      state.loadReport=payload
+    setLoadReportStat: (state, payload) => {
+      state.loadReportStat = payload;
     },
-    setLoadMap: (state,payload) => {
-      state.loadMap=payload
+    setLoadReport: (state, payload) => {
+      state.loadReport = payload;
     },
-    setLoadAllPostIssue: (state,payload) => {
-      state.loadAllPostIssue=payload
+    setLoadMap: (state, payload) => {
+      state.loadMap = payload;
     },
-    setLoadPostIssue: (state,payload) => {
-      state.loadPostIssue=payload
+    setLoadAllPostIssue: (state, payload) => {
+      state.loadAllPostIssue = payload;
     },
-    setLoadHashIssue: (state,payload) => {
-      state.loadHashIssue=payload
+    setLoadPostIssue: (state, payload) => {
+      state.loadPostIssue = payload;
     },
-    setLoadFeedWC: (state,payload) => {
-      state.loadFeedWC= payload
+    setLoadHashIssue: (state, payload) => {
+      state.loadHashIssue = payload;
     },
-    setLoadFeed: (state,payload) => {
-      state.loadFeed= payload
+    setLoadFeedWC: (state, payload) => {
+      state.loadFeedWC = payload;
     },
-    setLoadLocation: (state,payload) => {
-     state.loadLocation= payload
+    setLoadFeed: (state, payload) => {
+      state.loadFeed = payload;
+    },
+    setLoadLocation: (state, payload) => {
+      state.loadLocation = payload;
     },
     setLoadInfluSum: (state, payload) => {
-      state.loadInfluSum= payload
+      state.loadInfluSum = payload;
     },
     setLoadRankPost: (state, payload) => {
-      state.rankPost= payload
+      state.rankPost = payload;
     },
     setLoadRankTab: (state, payload) => {
-      state.rankTab= payload
+      state.rankTab = payload;
     },
     setLoadPostTab: (state, payload) => {
-      state.loadPostTab = payload
+      state.loadPostTab = payload;
     },
     setLoadTopUser: (state, payload) => {
-      state.loadTopUser=payload;
+      state.loadTopUser = payload;
     },
     setLoadTopUserPf: (state, payload) => {
-      state.loadTopUserPf=payload;
+      state.loadTopUserPf = payload;
     },
     setScroll: (state, payload) => {
-      state.scroll=payload;
+      state.scroll = payload;
     },
     setLoadPostHash: (state, payload) => {
-      state.loadPosthash=payload;
+      state.loadPosthash = payload;
     },
     setLoadPostCloud: (state, payload) => {
-      state.loadPostCloud=payload;
+      state.loadPostCloud = payload;
     },
     setLoadChartCloud: (state, payload) => {
-     state.loadChartCloud= payload;
+      state.loadChartCloud = payload;
     },
     setLoadCloud: (state, payload) => {
       state.loadCloud = payload;

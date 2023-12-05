@@ -55,6 +55,17 @@
         ></i>
       </b-col>
     </b-row>
+    <!-- <div class="text-md-right mt-3 mr-4">
+      <b-form-radio-group
+        @change="selectData()"
+        v-model="selected"
+        :options="options"
+        class="mb-3 d-inline mi"
+        value-field="item"
+        text-field="name"
+        disabled-field="notEnabled"
+      ></b-form-radio-group>
+    </div> -->
   </div>
 </template>
 
@@ -63,7 +74,6 @@ import { mapGetters } from "vuex";
 import moment from "moment";
 
 export default {
-
   computed: {
     ...mapGetters([
       "getClickDomain",
@@ -78,20 +88,35 @@ export default {
   data() {
     return {
       valueDate: [
-        moment(new Date()).format().slice(0, 10),
-        moment(new Date()).format().slice(0, 10),
+        moment(new Date())
+          .format()
+          .slice(0, 10),
+        moment(new Date())
+          .format()
+          .slice(0, 10),
       ],
       start_date: "",
       end_date: "",
+      selected: true,
+      options: [
+        { item: true, name: "วันที่ระบบเก็บโพสต์" },
+        { item: "", name: "วันที่โพสต์" },
+      ],
     };
   },
   methods: {
     selectData() {
+      this.$emitter.emit("crawdash", this.selected);
       console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         this.start_date =
-          moment(new Date()).format().slice(0, 10) + "T00:00:00";
-        this.end_date = moment(new Date()).format().slice(0, 10) + "T23:59:59";
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T00:00:00";
+        this.end_date =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T23:59:59";
       } else {
         this.start_date = this.valueDate[0] + "T00:00:00";
         this.end_date = this.valueDate[1] + "T23:59:59";
@@ -101,33 +126,51 @@ export default {
       this.$store.commit("setEdateDm", this.end_date);
       this.$store.commit("setArrDate", this.valueDate);
 
-      //news list 
+      //news list
       this.axios
-      .get(
-        "https://api2.cognizata.com/api/v2/userposts/getNews?source=news&start="+this.start_date+"&end="+  this.end_date+"&domain="+this.getDomainArr
-      )
-      .then((response) => (this.$store.commit('setNewslt',response.data[0])  ));
-      console.log('acc',this.getNewslt);
-
+        .get(
+          "https://api2.cognizata.com/api/v2/userposts/getNews?source=news&start=" +
+            this.start_date +
+            "&end=" +
+            this.end_date +
+            "&domain=" +
+            this.getDomainArr
+        )
+        .then((response) => this.$store.commit("setNewslt", response.data[0]));
+      console.log("acc", this.getNewslt);
+      let objword, objtop;
+      if (this.selected) {
+        objtop = {
+          start_date: this.start_date,
+          end_date: this.end_date,
+          sort_by: "engagement",
+          offset: 0,
+          source: this.getNamePlatform,
+          domain: this.getDomainArr,
+          dashboard: true,
+        };
+      } else {
+        objtop = {
+          start_date: this.start_date,
+          end_date: this.end_date,
+          sort_by: "engagement",
+          offset: 0,
+          source: this.getNamePlatform,
+          domain: this.getDomainArr,
+        };
+      }
       //wordcloud
-      this.$store.dispatch("fetchWordCloud", {
+      objword = {
         start_date: this.start_date,
         end_date: this.end_date,
-        source: this.getNamePlatform,
-        domain: this.getDomainArr,
-        dashboard:true
-      });
-
-      //TopPost
-      this.$store.dispatch("fetchPostDomain", {
-        start_date: this.start_date,
-        end_date: this.end_date,
-        sort_by: "engagement",
-        offset: 0,
         source: this.getNamePlatform,
         domain: this.getDomainArr,
         dashboard: true,
-      });
+      };
+      this.$store.dispatch("fetchWordCloud", objword);
+
+      //TopPost
+      this.$store.dispatch("fetchPostDomain", objtop);
 
       //AllPost
       // this.$store.dispatch("fetchAllPostDomain", {
@@ -157,7 +200,9 @@ export default {
       this.$store.commit("setPostAllMonitor", "");
       this.$store.commit("setTopPostDomain", "");
 
-      let today = moment(new Date()).format().slice(0, 10);
+      let today = moment(new Date())
+        .format()
+        .slice(0, 10);
       console.log("moment", moment(new Date()).format());
       this.start_date = today + "T00:00:00";
       this.$store.commit("setRageStartdate", this.start_date);
@@ -180,13 +225,19 @@ export default {
         domain: this.getDomainArr,
       });
     },
-    printWindow: function () {
+    printWindow: function() {
       try {
         window.print();
       } catch (err) {
         console.log(err);
       }
     },
+  },
+  mounted() {
+    this.$emitter.on("clickSelect", async (val) => {
+      this.selected = val;
+      this.selectData();
+    });
   },
 };
 </script>

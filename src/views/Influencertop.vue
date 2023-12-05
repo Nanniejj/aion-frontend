@@ -1,7 +1,7 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome"  />
-    <TopInfluencer v-if="getToSection=='toAion'"/>
+    <TopInfluencer />
   </div>
 </template>
 

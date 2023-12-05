@@ -495,13 +495,15 @@
             </b-card-body>
           </b-col>
           <b-col>
-            <div v-if="datas.source == 'tiktok'">
-              <iframe
+            <div v-if="datas.source == 'tiktok'&&datas.uid">
+              <lite-tiktok :videoid="datas.uid"></lite-tiktok>
+
+              <!-- <iframe
                 width="auto"
                 height="750"
                 :src="'https://www.tiktok.com/embed/v2/' + datas.uid"
                 allowfullscreen
-              ></iframe>
+              ></iframe> -->
             </div>
             <div
               id="photo-grid"
@@ -1209,6 +1211,8 @@ import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
+import '@justinribeiro/lite-tiktok';
+
 
 export default {
   watch: {

@@ -278,7 +278,7 @@ export default {
         txts = "";
       if (d.days() > 0) {
         txtd = String(d.days()) + "วัน ";
-        console.log("txtd", txtd);
+        // console.log("txtd", txtd);
       } else {
         txtd = "";
       }
