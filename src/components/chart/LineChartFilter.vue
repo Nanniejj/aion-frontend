@@ -493,6 +493,7 @@ export default {
 
   mounted() {
     this.apiFilterChart("start");
+   
   },
 };
 </script>

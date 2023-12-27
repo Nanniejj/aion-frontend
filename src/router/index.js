@@ -14,17 +14,18 @@ const routes = [
   //   name: 'PlatForm',
   //   component: () => import(/* webpackChunkName: "PlatForm" */ '../views/PlatForm.vue'),
   // },
-  {
-    path: "/home",
-    name: "Section",
-    component: () =>
-      import(/* webpackChunkName: "Section" */ "../views/Section.vue")
-  },
+ 
   {
     path: "/domain",
     name: "Domain",
     component: () =>
       import(/* webpackChunkName: "DomainList" */ "../views/Domain.vue")
+  },
+  {
+    path: "/domainReport",
+    name: "DomainReport",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/DomainReport.vue")
   },
   {
     path: "/platform",
@@ -305,6 +306,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "report" */ "../views/Report.vue")
   },
+  
   {
     path: "/targetprofile",
     name: "ReportProfile",
@@ -316,6 +318,12 @@ const routes = [
         /* webpackChunkName: "targetprofile" */ "../views/ReportProfile.vue"
       )
   }
+   // {
+  //   path: "/home",
+  //   name: "Section",
+  //   component: () =>
+  //     import(/* webpackChunkName: "Section" */ "../views/Section.vue")
+  // },
 ];
 
 const router = new VueRouter({

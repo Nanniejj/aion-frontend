@@ -1,7 +1,9 @@
 <template>
   <div id="chart" class="mt-3">
     <span class="mt-3 mb-3 box-domain">
-      <div class="text-left px-3" v-if="$route.name == 'Report'">Total Posts</div>
+      <div class="text-left px-3" v-if="$route.name == 'Report'">
+        Total Posts
+      </div>
       <b-row cols="12">
         <b-col cols="2">
           <div class="g-social">
@@ -17,12 +19,14 @@
         </b-col>
         <b-col cols="10">
           <apexchart
+          ref="myBarChart"
             id="chart-domain"
             type="bar"
             height="480"
             :options="chartOptions"
             :series="series"
           ></apexchart>
+          <!-- {{ series }} -->
         </b-col>
       </b-row>
     </span>
@@ -63,7 +67,7 @@ export default {
       range: "",
       series: [],
       chartOptions: {
-         colors: [
+        colors: [
           "#438afe",
           "#42c8f4",
           "#521d85",
@@ -78,7 +82,7 @@ export default {
           type: "bar",
           fontFamily: "Prompt, FontAwesome, sans-serif",
         },
-         legend: {
+        legend: {
           show: false,
         },
         plotOptions: {

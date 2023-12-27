@@ -8,6 +8,7 @@ export default {
     topPost: [],
     allPost: [],
     pushDomainStat: false,
+    showReort: false,
     clickDomain: "",
     loadWcloud: false,
     loadHclod: false,
@@ -17,8 +18,13 @@ export default {
     sdatedm: "",
     edatedm: "",
     arrDate: "",
+    exportTopPost: [],
+    exportTopPostNeg: [],
   },
   getters: {
+    getShowReport: (state) => {
+      return state.showReort;
+    },
     getRelAcc: (state) => {
       return state.relAcc;
     },
@@ -65,6 +71,12 @@ export default {
     getLoadStat: (state) => {
       return state.loadStat;
     },
+    getExportTopPostDomain: (state) => {
+      return state.exportTopPost;
+    },
+    getExportTopPostDomainNeg: (state) => {
+      return state.exportTopPostNeg;
+    },
     getTopPostDomain: (state) => {
       return state.topPost;
     },
@@ -73,6 +85,15 @@ export default {
     },
   },
   mutations: {
+    setShowReport: (state, payload) => {
+      state.showReort = payload;
+    },
+    setExportTopPostDomainNeg: (state, payload) => {
+      state.exportTopPostNeg = payload;
+    },
+    setExportTopPostDomain: (state, payload) => {
+      state.exportTopPost = payload;
+    },
     setRelAcc: (state, payload) => {
       state.relAcc = payload;
     },
@@ -134,7 +155,7 @@ export default {
         let domainName = res.data.results.map((key) => {
           return key.name;
         });
-        console.log('domainName',domainName);
+        console.log("domainName", domainName);
         localStorage.setItem("domainArr", domainName.toString());
         commit("setListDomain", res.data.results);
         commit("setLoadStatus", false);
@@ -200,6 +221,135 @@ export default {
           console.log("temp", [...temp]);
         } else {
           commit("setTopPostDomain", []);
+        }
+
+        commit("setLoadTopPost", false);
+      } catch (error) {
+        console.log(error.response);
+      }
+    },
+    //Export
+    async fetchExportPostDomain({ commit }, payload) {
+      commit("setLoadTopPost", true);
+      try {
+        const res = await DomainService.getPostDomain(payload);
+        //console.log(res.data.data.slice(0,3));
+        if (res.data.data.length) {
+          let temp = res.data.data;
+          console.log("temp", temp);
+          const ids = temp.map((o) => o.full_text);
+          const filtered = temp.filter(
+            ({ full_text }, index) => !ids.includes(full_text, index + 1)
+          );
+          var post = filtered;
+          var pair = { read: true };
+          var posts = post.map((result) => {
+            return { ...result, ...pair };
+          });
+          // -------------------------------------------translateuid-----------------------------------------------------------
+          posts.slice(0, 2).map((result) => {
+            if (result.source == "youtube") {
+              var axios = require("axios");
+              var config = {
+                method: "get",
+                url:
+                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
+                  result.account_name,
+                headers: {
+                  Authorization: "Bearer " + localStorage.getItem("token"),
+                  "Content-Type": "application/json",
+                },
+              };
+              axios(config)
+                .then((response) => {
+                  console.log("Object.keys", Object.keys(response.data).length);
+                  if (Object.keys(response.data).length) {
+                    result.account_name = response.data.name;
+                    // console.log('2',result);
+                  } else {
+                    return;
+                  }
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            } else {
+              return result;
+            }
+
+            return { result };
+          });
+
+          // ---------------------------------------------------------------------------------------------------------
+
+          commit("setExportTopPostDomain", posts.slice(0, 2));
+          console.log("temp", [...temp]);
+        } else {
+          commit("setExportTopPostDomain", []);
+        }
+
+        commit("setLoadTopPost", false);
+      } catch (error) {
+        console.log(error.response);
+      }
+    },
+    async fetchExportPostDomainNeg({ commit }, payload) {
+      commit("setLoadTopPost", true);
+      try {
+        const res = await DomainService.getPostDomain(payload);
+        //console.log(res.data.data.slice(0,3));
+        if (res.data.data.length) {
+          let temp = res.data.data;
+          console.log("temp", temp);
+          const ids = temp.map((o) => o.full_text);
+          const filtered = temp.filter(
+            ({ full_text }, index) => !ids.includes(full_text, index + 1)
+          );
+          var post = filtered;
+          var pair = { read: true };
+          var posts = post.map((result) => {
+            return { ...result, ...pair };
+          });
+          // -------------------------------------------translateuid-----------------------------------------------------------
+          posts.slice(0, 2).map((result) => {
+            if (result.source == "youtube") {
+              var axios = require("axios");
+              var config = {
+                method: "get",
+                url:
+                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
+                  result.account_name,
+                headers: {
+                  Authorization: "Bearer " + localStorage.getItem("token"),
+                  "Content-Type": "application/json",
+                },
+              };
+              axios(config)
+                .then((response) => {
+                  console.log("Object.keys", Object.keys(response.data).length);
+                  if (Object.keys(response.data).length) {
+                    result.account_name = response.data.name;
+                    // console.log('2',result);
+                  } else {
+                    return;
+                  }
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            } else {
+              return result;
+            }
+
+            return { result };
+          });
+
+          // ---------------------------------------------------------------------------------------------------------
+
+          commit("setExportTopPostDomainNeg", posts.slice(0, 2));
+          console.log("temp", [...temp]);
+        } else {
+          commit("setExportTopPostDomainNeg", []);
         }
 
         commit("setLoadTopPost", false);

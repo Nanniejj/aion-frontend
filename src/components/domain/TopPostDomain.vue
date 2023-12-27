@@ -15,7 +15,7 @@
         </div>
       </b-col>
       <b-col>
-        <div class="text-md-right mt-3 mr-4" v-if="$route.name=='Dashboard'">
+        <div class="text-md-right mt-3 mr-4" v-if="$route.name == 'Dashboard'">
           <b-form-radio-group
             @change="selectData()"
             v-model="selected"
@@ -36,7 +36,7 @@
         color="#b6ac9a"
       />
       <b-container>
-        <TopPostCrad :tpyeCard="'topPost'" />
+        <TopPostCrad :tpyeCard="'topPost'" :typeStm="typeStm"/>
       </b-container>
     </div>
   </div>
@@ -47,6 +47,9 @@ import { mapGetters } from "vuex";
 import TopPostCrad from "@/components/domain/TopPostCrad.vue";
 import moment from "moment";
 export default {
+  props: {
+    typeStm: { type: String },
+  },
   watch: {
     getArrDate: function() {
       this.startd = this.getSdateDm.slice(0, 10);
@@ -57,7 +60,14 @@ export default {
     TopPostCrad,
   },
   computed: {
-    ...mapGetters(["getLoadTopPost", "getSdateDm", "getEdateDm", "getArrDate",'getNamePlatform','getDomainArr']),
+    ...mapGetters([
+      "getLoadTopPost",
+      "getSdateDm",
+      "getEdateDm",
+      "getArrDate",
+      "getNamePlatform",
+      "getDomainArr",
+    ]),
   },
   data() {
     return {
@@ -65,8 +75,8 @@ export default {
       endd: "",
       sdate: "",
       edate: "",
-      start_date:"",
-      end_date:"",
+      start_date: "",
+      end_date: "",
       selected: true,
       options: [
         { item: true, name: "วันที่ระบบเก็บโพสต์" },
@@ -77,7 +87,7 @@ export default {
   methods: {
     selectData() {
       this.$emitter.emit("crawdash", this.selected);
-      let  objtop;
+      let objtop;
       if (this.startd) {
         this.start_date =
           moment(new Date())
@@ -87,13 +97,13 @@ export default {
           moment(new Date())
             .format()
             .slice(0, 10) + "T23:59:59";
-      }else{
-        this.start_date =this.startd+ "T00:00:00"
-        this.end_date =this.endd  + "T23:59:59"
+      } else {
+        this.start_date = this.startd + "T00:00:00";
+        this.end_date = this.endd + "T23:59:59";
       }
       if (this.selected) {
         objtop = {
-          start_date:this.start_date ,
+          start_date: this.start_date,
           end_date: this.end_date,
           sort_by: "engagement",
           offset: 0,
@@ -103,7 +113,7 @@ export default {
         };
       } else {
         objtop = {
-          start_date:this.start_date ,
+          start_date: this.start_date,
           end_date: this.end_date,
           sort_by: "engagement",
           offset: 0,
@@ -113,7 +123,6 @@ export default {
       }
       this.$store.dispatch("fetchPostDomain", objtop);
 
-    
       // this.$emitter.emit("clickSelect", this.selected);
     },
   },

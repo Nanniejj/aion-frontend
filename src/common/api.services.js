@@ -758,7 +758,13 @@ export const DomainService = {
     var dm = "",
       stm = "",
       source = "",
-      dash = "";
+      dash = "",
+      findkey =""
+      if(payload.querySearch){
+        findkey=`&querySearch=${payload.querySearch}`
+      }else{
+        findkey=""
+      }
     if (payload.dashboard) {
       dash = `&dashboard=${payload.dashboard}`;
     } else {
@@ -784,7 +790,7 @@ export const DomainService = {
         stm +
         dm +
         source +
-        dash
+        dash+findkey
     );
   },
   getPostDomain2(payload) {

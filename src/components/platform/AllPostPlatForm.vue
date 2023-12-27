@@ -32,7 +32,8 @@
             </span>
           </b-col>
         </b-row>
-        <TabPost :tabs="'PostTab'" :api="'location'" :pageMenu="'domain'" :menu="'platform'" />
+        <!-- {{ selected }} -->
+        <TabPost :tabs="'PostTab'" :api="'location'" :pageMenu="'domain'" :menu="'platform'" :crawdash="selected" />
       </div>
     </b-container>
   </div>
@@ -70,13 +71,20 @@ export default {
   data() {
     return {
       startd: "",
+      selected: true,
       endd: "",
     };
   },
   created() {
+    
+
     this.startd = moment(new Date()).format().slice(0,10);
     this.endd = moment(new Date()).format().slice(0,10);
      this.$store.commit('setSocialPlatform',this.getNamePlatform)
+     this.$emitter.on("crawdash", (val) => {
+      this.selected = val;
+      console.log('selected',this.selected);
+    });
   },
 };
 </script>

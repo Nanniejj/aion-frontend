@@ -49,10 +49,18 @@
           >
         </section>
         <i
-          class="fas fa-print fa-2x d-inline ml-2 mr-3"
+          class="fas fa-print fa-2x d-inline ml-2 mr-2"
           style="cursor: pointer"
           @click="printWindow()"
         ></i>
+         <i
+      @click="toReport"
+      class="fas fa-file-export"
+      style="font-size:25px;margin-right:7px;cursor: pointer"
+      v-b-tooltip.hover
+      title="Export Report"
+    ></i>
+        <!-- <ExportDocx style="cursor: pointer;" :key="componentKey" @click="reloadComponent" /> -->
       </b-col>
     </b-row>
     <div
@@ -74,13 +82,16 @@
 <script>
 import { mapGetters } from "vuex";
 import moment from "moment";
+import ExportDocx from "./ExportDocx.vue";
 
 export default {
+  components: { ExportDocx },
   computed: {
     ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm"]),
   },
   data() {
     return {
+      componentKey: 0,
       valueDate: [
         moment(new Date())
           .format()
@@ -95,6 +106,15 @@ export default {
     };
   },
   methods: {
+    toReport(){
+      window.dispatchEvent(new Event('resize'))
+      this.$store.commit('setShowReport',true)
+      // this.$router.push({name:'DomainReport'})
+    },
+     reloadComponent() {
+      // เพิ่มค่า key เพื่อทำให้ Vue.js ทำการ render component ใหม่
+      this.componentKey += 1;
+    },
     selectData() {
       //console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
@@ -140,6 +160,24 @@ export default {
         offset: 0,
         domain: this.getClickDomain,
       });
+      this.$store.dispatch("fetchExportPostDomainNeg", {
+        start_date: this.start_date,
+        end_date: this.end_date,
+        // source: "twitter",
+        sentiment: -1,
+        sort_by: "engagement",
+        offset: 0,
+        domain: this.getClickDomain,
+      });
+      this.$store.dispatch("fetchExportPostDomain", {
+        start_date: this.start_date,
+        end_date: this.end_date,
+        // source: "twitter",
+        sentiment: 1,
+        sort_by: "engagement",
+        offset: 0,
+        domain: this.getClickDomain,
+      });
     },
     backDomain() {
       this.$store.commit("setPushDomainStat", false);
@@ -158,15 +196,16 @@ export default {
   mounted() {
     let date = localStorage.getItem("updated_until");
     // let datearr = date.split("T");
-    let datearr
-    if(date){
-       datearr=moment(date).add(7, 'hours').format("YYYY-MM-DD HH:mm:ss")
-
+    let datearr;
+    if (date) {
+      datearr = moment(date)
+        .add(7, "hours")
+        .format("YYYY-MM-DD HH:mm:ss");
     }
-  //  let datearr2 = new Date(datearr) 
-            
+    //  let datearr2 = new Date(datearr)
+
     // let datetime = datearr[0] + " " + datearr[1].slice(0, 5);
-  //  console.log('date',datearr,datearr2);
+    //  console.log('date',datearr,datearr2);
     this.updated_until = datearr;
   },
 };
@@ -213,7 +252,7 @@ export default {
   right: 0;
   top: 2px;
   background-color: #ede7dd;
-  z-index: 150;
+  z-index: 99;
   transform: translate(14px, 4px) rotate(45deg) !important;
   -webkit-transform: translate(10px, 4px) rotate(45deg);
   -moz-transform: translate(10px, 4px) rotate(45deg);

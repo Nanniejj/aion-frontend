@@ -29,6 +29,7 @@
                 type="file"
                 class="d-none"
                 @input="handleFileUpload"
+                accept=".csv" 
               />
               <label for="fileInput" class="btn-import">
                 <i class="fas fa-file-import"></i> import CSV

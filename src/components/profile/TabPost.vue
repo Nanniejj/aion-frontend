@@ -487,7 +487,7 @@
             </div>
           </b-col>
           <b-col>
-            <div v-if="profilePost.source == 'tiktok'&&profilePost.uid">
+            <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
               <lite-tiktok :videoid="profilePost.uid"></lite-tiktok>
 
               <!-- <iframe
@@ -503,7 +503,11 @@
               class="mb-4"
             >
               <!-- {{typeof(profilePost.photos)}} -->
-              <div v-if="profilePost.photos&&typeof profilePost.photos == 'string'">
+              <div
+                v-if="
+                  profilePost.photos && typeof profilePost.photos == 'string'
+                "
+              >
                 <img
                   class="images1"
                   :src="profilePost.photos"
@@ -1146,13 +1150,19 @@ import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
-import '@justinribeiro/lite-tiktok';
+import "@justinribeiro/lite-tiktok";
 export default {
   components: {
     VueGallerySlideshow,
     Highlighter,
   },
   props: {
+    domainKeyword:{
+      type: String,
+    },
+    crawdash:{
+      type: String,
+    },
     menu: {
       type: String,
     },
@@ -1183,11 +1193,23 @@ export default {
     btn: {
       type: Boolean,
     },
-    dateLocat:{
-      type:Array
-    }
+    dateLocat: {
+      type: Array,
+    },
   },
   watch: {
+    domainKeyword(val){
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    crawdash(val) {
+      console.log('crawdash',val);
+      this.crawdash = val;
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
     dh: function(newVal, oldVal) {
       // watch it
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
@@ -1256,7 +1278,7 @@ export default {
   },
   data() {
     return {
-      crawdash:true,
+
       objId: "",
       andkey: [],
       arrword: [],
@@ -1414,6 +1436,9 @@ export default {
       var word = [];
       if (this.checked) {
         word.push(...this.heightword);
+        if (this.domainKeyword) {
+          word.push(this.domainKeyword);
+        }
         if (this.andkey.length) {
           this.andkey.forEach(function(key) {
             // console.log("keyyyy", k, key, key.length);
@@ -1693,6 +1718,8 @@ export default {
         //Domian Menu
         if (this.pageMenu == "domain") {
           let sc, domains, dash;
+
+          console.log("keyword1", this.domainKeyword, this.getClickDomain);
           if (this.menu == "platform") {
             sc = this.getSocialPlatform;
             domains = this.getDomainArr;
@@ -1740,6 +1767,10 @@ export default {
               dashboard: dash,
             };
           }
+          if ( this.domainKeyword) {
+              // console.log("keyword2",  this.domainKeyword);
+              payload.querySearch =  this.domainKeyword;
+            }
         } else {
           if (this.statusLocat == true) {
             // let sdateLocat =this.dateLocat[0].slice(0, 16);
@@ -1790,7 +1821,7 @@ export default {
         checkApi = "fetchPostAll";
       }
       let temp = await this.$store.dispatch(checkApi, payload);
-      if (temp&&temp.length === 0) {
+      if (temp && temp.length === 0) {
         this.isInfinite = false;
       }
       this.page += 10;
@@ -1808,15 +1839,34 @@ export default {
       this.infiniteScroll();
     },
   },
+  mounted() {
+    console.log("getClickDomain", this.getClickDomain);
+    this.$emitter.on("domainKeyword2", async (val) => {
+      if (this.getClickDomain) {
+        this.page = 0;
+        this.isInfinite = true;
+
+        if (val) {
+          this.domainKeyword = val;
+          await this.infiniteScroll();
+          console.log("emitter", val);
+        } else {
+          this.domainKeyword = val;
+          await this.infiniteScroll();
+        }
+      }
+    });
+  },
   async created() {
     this.objId = localStorage.getItem("objId");
-    this.$store.dispatch("fetchListIssue");
-    this.$emitter.on("crawdash",async (val) => {
-      this.crawdash=val
-      this.page = 0;
-      await this.infiniteScroll();
-      console.log("emitter", val);
-    });
+    // this.$store.dispatch("fetchListIssue");
+    // this.$emitter.on("crawdash", async (val) => {
+    //   this.crawdash = val;
+    //   this.page = 0;
+    //   await this.infiniteScroll();
+    //   console.log("emitter", val);
+    // });
+
     console.log("page", this.$route);
     if (this.$route.name === "Domain") {
       this.pageCheck = this.$route.name;

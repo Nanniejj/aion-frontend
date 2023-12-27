@@ -1,13 +1,17 @@
 <template>
   <div>
-    <DomainBackBar />
-    <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
-      <DomainGraph class="mt-1" />
-      <StaticDomain class="mt-3"/>
-      <DomainCloud class="mt-5"/>
-      <TopUser class="mt-5" />
-      <TopPostDomain class="mt-5" />
-      <AllPostDomain class="mt-5"/>
+    <ExportDocx v-show="getShowReport" />
+    <div v-show="!getShowReport">
+      <DomainBackBar />
+      <!-- <ExportDocx/> -->
+      <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
+        <DomainGraph class="mt-1" id="statgraph" />
+        <StaticDomain class="mt-3" id="statcap" />
+        <DomainCloud class="mt-5" />
+        <TopUser class="mt-5" />
+        <TopPostDomain class="mt-5" />
+        <AllPostDomain class="mt-5" />
+      </div>
     </div>
   </div>
 </template>
@@ -20,7 +24,14 @@ import DomainCloud from "@/components/domain/DomainCloud.vue";
 import TopPostDomain from "@/components/domain/TopPostDomain.vue";
 import AllPostDomain from "@/components/domain/AllPostDomain.vue";
 import TopUser from "@/components/domain/TopUser.vue";
+// import ExportDomainDocx from "@/components/domain/ExportDomainDocx.vue";
+import ExportDocx from "./ExportDocx.vue";
+import { mapGetters } from "vuex";
+
 export default {
+  computed: {
+    ...mapGetters(["getShowReport"]),
+  },
   components: {
     DomainBackBar,
     DomainGraph,
@@ -29,6 +40,8 @@ export default {
     TopPostDomain,
     AllPostDomain,
     TopUser,
+    // ExportDomainDocx,
+    ExportDocx,
   },
   methods: {},
 };

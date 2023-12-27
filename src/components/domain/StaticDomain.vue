@@ -319,8 +319,10 @@ var config ={
         this.valpos = (this.dataStat.positiveSentiment * 100) / sum;
         this.val = (this.dataStat.neutralSentiment * 100) / sum;
         this.valnag = (this.dataStat.negativeSentiment * 100) / sum;
-
+       
         this.$store.commit("setLoadStat", false);
+        console.log('selectpic1');
+        this.$emitter.emit("statstatus", true);
       });
   },
 };
@@ -404,6 +406,7 @@ div.col.avg {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: white;
 }
 @media only screen and (min-width: 0px) and (max-width: 990px) {
   .font-icon {

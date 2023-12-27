@@ -63,9 +63,9 @@ export default {
     },
   },
   mounted() {
-    console.log('this.getShowIntro',this.getShowIntro);
+    console.log("this.getShowIntro", this.getShowIntro);
     if (this.getShowIntro) {
-      this.elementVisible=true
+      this.elementVisible = true;
       this.closeShow();
     }
   },
@@ -76,6 +76,8 @@ export default {
     //   this.elementVisible = false
     //   // this.closeShow();
     // });
+
+    
   },
 };
 </script>

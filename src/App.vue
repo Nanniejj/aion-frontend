@@ -347,7 +347,7 @@ div.right {
 }
 
 #app {
-  background-color: #ddd;
+  background-color: #ffffff;
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -775,7 +775,7 @@ div.modal-vue > div > div.modal-vue-panel.modal-fade.modal-vue-show {
   text-align: start;
 }
 #app {
-  background-color: #ddd;
+  background-color: #ffffff;
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
