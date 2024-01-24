@@ -9,10 +9,8 @@
       <h4 class="title-domain"><router-link :to="{name:'TemplateSetting'}">จัดการ Domain </router-link> 
       <i class="fas fa-angle-right"/><span id="active"> SubDomain </span> </h4> 
       <div class="mb-3 text-right">
-        <button id="export-btn" @click="printWindow()">
-          <i class="fa fa-print fa-2x" /> 
-          <b> Print</b>
-        </button>
+        <i class="fa fa-print" @click="printWindow()" style="font-size:25px;cursor: pointer;"/>
+
       </div>
       <TemplateSubDomain />
   </b-container>

@@ -127,29 +127,101 @@
         </b-row>
         <div class="posts">
           <div
-            class="text-left h5 my-2 px-4 "
+            class="text-left d-block h5 py-3 px-4 "
             style="background: #cfe7de8a;padding: 8px 10px;border-radius: 10px;color:rgb(84, 198, 157)"
           >
-            <img src="@/assets/Pos.png" style="width:22px;" />
-            <span class="ml-2"> Positive Posts</span>
+            <img class="text-left" src="@/assets/Pos.png" style="width:22px;" />
+            <span class="ml-2 text-left"> Positive Posts</span>
+            <span class="float-right no-print">
+              <b-button
+                size="sm"
+                v-if="showPost"
+                class="mx-2"
+                variant="danger"
+                @click="showAllPost('pos')"
+                >ยกเลิก</b-button
+              >
+              <b-button
+                size="sm"
+                v-if="showPost"
+                variant="success"
+                @click="showAllPost('pos','submit')"
+                >ยืนยัน</b-button
+              >
+              <span v-else>
+                <b-button
+                  size="sm"
+                  variant="outline-success"
+                  @click="showAllPost('pos')"
+                  >เลือกโพสต์</b-button
+                >
+                <i
+                  class="fa fa-refresh mx-2"
+                  style=" cursor:pointer"
+                  aria-hidden="true"
+                  @click="forceRerender('pos')"
+                ></i>
+              </span>
+            </span>
           </div>
-
+          <div class="" v-if="showPost">
+            <PostPositive  :stmpost="1" />
+            <!-- <PostPositive  :stmpost="-1" /> -->
+          </div>
           <ExportTopPostCrad
+            v-show="!showPost"
             class="mt-3 page-break"
             :typeStm="'pos'"
             id="post-pos"
             ref="captureDiv"
+            :key="componentKey"
+     
           />
+
           <div
-            class="text-left h5 my-3 px-4  mt-4 "
+            class="text-left d-block h5 py-3 px-4 mt-3"
             style="background:rgb(247 119 106 / 17%);padding: 8px 10px;
     border-radius: 10px;
     color:rgb(247, 119, 106)"
           >
             <img src="@/assets/Nag.png" style="width:22px;" />
-            <span class="ml-3">Negative Posts</span>
+            <span  class="ml-2 text-left">Negative Posts</span>
+            <span class="float-right no-print">
+              <b-button
+                size="sm"
+                v-if="showPostNeg"
+                class="mx-2"
+                variant="danger"
+                @click="showAllPost('neg')"
+                >ยกเลิก</b-button
+              >
+              <b-button
+                size="sm"
+                v-if="showPostNeg"
+                variant="success"
+                @click="showAllPost('neg','submit')"
+                >ยืนยัน</b-button
+              >
+              <span v-else>
+                <b-button
+                  size="sm"
+                  variant="outline-danger"
+                  @click="showAllPost('neg')"
+                  >เลือกโพสต์</b-button
+                >
+                <i
+                  class="fa fa-refresh mx-2"
+                  style=" cursor:pointer"
+                  aria-hidden="true"
+                  @click="forceRerender('neg')"                ></i>
+              </span>
+            </span>
           </div>
-          <ExportTopPostCrad class="my-3" :typeStm="'neg'" id="post-neg" />
+          <div class="" v-if="showPostNeg">
+            <PostPositive  :stmpost="-1" />
+            <!-- <PostPositive  :stmpost="-1" /> -->
+          </div>
+          <ExportTopPostCrad   v-show="!showPostNeg"    :key="componentKeyNeg" class="my-3" :typeStm="'neg'" id="post-neg" />
         </div>
       </div>
     </b-container>
@@ -172,6 +244,7 @@
 </template>
 
 <script>
+import PostPositive from "./PostPositive.vue";
 import StaticDomain from "@/components/domain/StaticDomain.vue";
 import BarChart from "@/components/chart/BarChart.vue";
 import pptxgen from "pptxgenjs";
@@ -216,6 +289,7 @@ export default {
     ExportTopPostCrad,
     StaticDomain,
     BarChart,
+    PostPositive,
     // StaticDomain,
   },
   watch: {
@@ -252,6 +326,8 @@ export default {
   },
   data() {
     return {
+      componentKeyNeg: 0,
+      componentKey: 0,
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
       loadding: false,
@@ -266,10 +342,30 @@ export default {
       imgData3: "",
       imgData4: "",
       imgData5: "",
+      selectedPost: [],
+      showPost: false,
+      showPostNeg: false,
     };
   },
 
   methods: {
+    forceRerender(type) {
+      if(type=='pos'){
+        this.componentKey += 1;
+      }else{
+        this.componentKeyNeg += 1;
+      }
+    },
+    showAllPost(type,data) {
+      if(type=='pos'){
+        this.showPost = !this.showPost;
+      }else{
+        this.showPostNeg = !this.showPostNeg;
+      }
+      if (data == "submit") {
+        this.$emitter.emit("submitCheck", this.selectedPost);
+      }
+    },
     async captureWebpage() {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
@@ -317,22 +413,22 @@ export default {
         const img = new Image();
         img.onload = function() {
           if (!newHeight && !newWidth) {
-        // If both newHeight and newWidth are not provided, use the original size
-        newWidth = img.width;
-        newHeight = img.height;
-      } else if (!newHeight) {
-        // Calculate the new height to maintain the aspect ratio
-        newHeight = (img.height / img.width) * newWidth;
-      } else if (!newWidth) {
-        // Calculate the new width to maintain the aspect ratio
-        newWidth = (img.width / img.height) * newHeight;
-      }
+            // If both newHeight and newWidth are not provided, use the original size
+            newWidth = img.width;
+            newHeight = img.height;
+          } else if (!newHeight) {
+            // Calculate the new height to maintain the aspect ratio
+            newHeight = (img.height / img.width) * newWidth;
+          } else if (!newWidth) {
+            // Calculate the new width to maintain the aspect ratio
+            newWidth = (img.width / img.height) * newHeight;
+          }
           const canvas = document.createElement("canvas");
           canvas.width = newWidth;
           canvas.height = newHeight;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, newWidth, newHeight);
-          dataUrl =canvas.toDataURL()
+          dataUrl = canvas.toDataURL();
           resolve(canvas.toDataURL());
         };
         return (img.src = dataUrl);
@@ -436,7 +532,7 @@ export default {
 
         let yCoordinate = 1.2;
         this.getHashtag.forEach((text, index) => {
-          slide.addText((index+1)+". " +text.name, {
+          slide.addText(index + 1 + ". " + text.name, {
             x: 7,
             y: yCoordinate, // You may need to adjust the y-coordinate based on your layout
             w: "50%",
@@ -522,8 +618,8 @@ export default {
           fontFace: "TH Sarabun New",
         });
         let yCoordinate2 = 1.5;
-        this.getExportTopPostDomain.forEach((text, index) => {
-          slide2.addText(index + 1 + " link : " + text.url_post, {
+        this.getExportTopPostDomain.forEach((x, index) => {
+          slide2.addText(index + 1 + " link : " + x.url_post, {
             x: 5.2,
             y: yCoordinate2, // You may need to adjust the y-coordinate based on your layout
             w: "90%",
@@ -532,7 +628,39 @@ export default {
             color: "363636",
             fontFace: "TH Sarabun New",
           });
-          yCoordinate2 += 0.7;
+          yCoordinate2 += 0.3;
+          if (x.photos && x.source !== "instagram") {
+            if (Array.isArray(x.photos)) {
+              // console.log(" x.photos", x.photos);
+              x.photos.map((img, idx) => {
+                if (img) {
+                  slide2.addText(idx + 1 + ".) ที่มารูป : " + img, {
+                    x: 5.2,
+                    y: yCoordinate2, // You may need to adjust the y-coordinate based on your layout
+                    w: "90%",
+                    h: 0.5,
+                    fontSize: 11,
+                    color: "363636",
+                    fontFace: "TH Sarabun New",
+                  });
+                }
+                yCoordinate2 += 0.2;
+              });
+          
+            } else {
+              slide2.addText(1 + ".) ที่มารูป : " + x.photos, {
+                x: 5.2,
+                y: yCoordinate2, // You may need to adjust the y-coordinate based on your layout
+                w: "90%",
+                h: 0.5,
+                fontSize: 11,
+                color: "363636",
+                fontFace: "TH Sarabun New",
+              });
+              yCoordinate2 += 0.3;
+            }
+          }
+          yCoordinate2 += 0.5;
         });
 
         // -----------------------------------------S3-------------------------------------------
@@ -573,8 +701,8 @@ export default {
           fontFace: "TH Sarabun New",
         });
         let yCoordinate3 = 1.5;
-        this.getExportTopPostDomainNeg.forEach((text, index) => {
-          slide3.addText(index + 1 + " link : " + text.url_post, {
+        this.getExportTopPostDomainNeg.forEach((x, index) => {
+          slide3.addText(index + 1 + " link : " + x.url_post, {
             x: 5.2,
             y: yCoordinate3, // You may need to adjust the y-coordinate based on your layout
             w: "90%",
@@ -583,7 +711,40 @@ export default {
             color: "363636",
             fontFace: "TH Sarabun New",
           });
-          yCoordinate3 += 0.7;
+          // yCoordinate3 += 0.7;
+          yCoordinate3 += 0.3;
+          if (x.photos && x.source !== "instagram") {
+            if (Array.isArray(x.photos)) {
+              // console.log(" x.photos", x.photos);
+              x.photos.map((img, idx) => {
+                if (img) {
+                  slide3.addText(idx + 1 + ".) ที่มารูป : " + img, {
+                    x: 5.2,
+                    y: yCoordinate3, // You may need to adjust the y-coordinate based on your layout
+                    w: "90%",
+                    h: 0.5,
+                    fontSize: 11,
+                    color: "363636",
+                    fontFace: "TH Sarabun New",
+                  });
+                }
+                yCoordinate2 += 0.2;
+              });
+              // yCoordinate3 += 0.3;
+            } else {
+              slide3.addText(1 + ".) ที่มารูป : " + x.photos, {
+                x: 5.2,
+                y: yCoordinate3, // You may need to adjust the y-coordinate based on your layout
+                w: "90%",
+                h: 0.5,
+                fontSize: 11,
+                color: "363636",
+                fontFace: "TH Sarabun New",
+              });
+              yCoordinate3 += 0.3;
+            }
+          }
+          yCoordinate3 += 0.5;
         });
 
         // กำหนดชื่อไฟล์ PowerPoint
@@ -735,8 +896,8 @@ export default {
       //   110
       // );
 
-      this.imgData4 = await this.captureAndResize("#post-pos", null, 600);
-      this.imgData5 = await this.captureAndResize("#post-neg", null, 600);
+      this.imgData4 = await this.captureAndResize("#post-pos", null, 500);
+      this.imgData5 = await this.captureAndResize("#post-neg", null, 500);
       // console.log(this.imgData2);
       await this.delay(1000);
 
@@ -796,7 +957,7 @@ export default {
       hash10.style.fontWeight = "bold";
       hash10.style.fontSize = "25px";
       hash10.style.fontFamily = "'TH Sarabun New', sans-serif";
-    
+
       clonedContent.appendChild(hash10);
 
       // List of hashtags
@@ -830,7 +991,7 @@ export default {
           cell2.textContent = `${i + 6}. ${hashtagsPart2[i]}`;
         }
       }
-     
+
       // Append the table to the clonedContent
       clonedContent.appendChild(table);
       const pageBreak = document.createElement("div");
@@ -855,23 +1016,72 @@ export default {
 
       const imgElement4 = document.createElement("img");
       imgElement4.src = this.imgData4;
-      imgElement4.style.width = "200px";
-      imgElement4.style.height = "200px";
+      imgElement4.style.width = 200;
+      imgElement4.style.height = 200;
       clonedContent.appendChild(imgElement4);
 
-      // const containerDiv = document.createElement("div");
-      // containerDiv.style.textAlign = "center"; // Center the content
-      // containerDiv.appendChild(imgElement4);
-      // clonedContent.appendChild(containerDiv);
-
       this.getExportTopPostDomain.map((x, i) => {
+        const pageBreak = document.createElement("div");
+        pageBreak.style.pageBreakBefore = "always";
+        clonedContent.appendChild(pageBreak);
+        const paragraph2 = document.createElement("p");
+        paragraph2.textContent = "";
+        clonedContent.appendChild(paragraph2);
+
         const url_post = document.createElement("div");
         url_post.textContent = i + 1 + ". URL : " + x.url_post;
         // url_post.style.fontWeight = "bold";
         url_post.style.fontSize = "22px";
         url_post.style.fontFamily = "'TH Sarabun New', sans-serif";
-        url_post.style.pageBreakBefore = "always";
         clonedContent.appendChild(url_post);
+
+        if (x.photos && x.source !== "instagram") {
+          const pageBreak = document.createElement("div");
+          pageBreak.style.pageBreakBefore = "always";
+          clonedContent.appendChild(pageBreak);
+          const paragraph2 = document.createElement("p");
+          paragraph2.textContent = "";
+          clonedContent.appendChild(paragraph2);
+
+          if (Array.isArray(x.photos)) {
+            x.photos.map((img, idx) => {
+              if (img) {
+                const pageBreak = document.createElement("div");
+                pageBreak.style.pageBreakBefore = "always";
+                clonedContent.appendChild(pageBreak);
+                const paragraph2 = document.createElement("p");
+                paragraph2.textContent = "";
+                clonedContent.appendChild(paragraph2);
+                const url_img = document.createElement("div");
+                url_img.textContent = idx + 1 + "). ที่มารูป : " + img;
+                console.log("link" + idx, img);
+                url_img.style.fontSize = "17px";
+                url_img.style.marginLeft = "20px";
+                if (idx == x.photos.length - 1) {
+                  url_img.style.marginBottom = "20px";
+                }
+                url_img.style.fontFamily = "'TH Sarabun New', sans-serif";
+                clonedContent.appendChild(url_img);
+              }
+            });
+          } else {
+            const pageBreak = document.createElement("div");
+            pageBreak.style.pageBreakBefore = "always";
+            clonedContent.appendChild(pageBreak);
+            const paragraph2 = document.createElement("p");
+            paragraph2.textContent = "";
+            clonedContent.appendChild(paragraph2);
+            const url_img = document.createElement("div");
+            url_img.textContent = 1 + "). ที่มารูป : " + x.photos;
+            url_img.style.fontSize = "17px";
+            url_img.style.marginLeft = "20px";
+            url_img.style.marginBottom = "20px";
+            url_img.style.fontFamily = "'TH Sarabun New', sans-serif";
+            clonedContent.appendChild(url_img);
+          }
+        }
+
+        // url_post2.style.fontWeight = "bold";
       });
 
       // Append the table to the clonedContent
@@ -910,13 +1120,92 @@ export default {
       clonedContent.appendChild(imgElement5);
 
       this.getExportTopPostDomainNeg.map((x, i) => {
+        const pageBreak = document.createElement("div");
+        pageBreak.style.pageBreakBefore = "always";
+        clonedContent.appendChild(pageBreak);
+        const paragraph2 = document.createElement("p");
+        paragraph2.textContent = "";
+        clonedContent.appendChild(paragraph2);
+
         const url_post2 = document.createElement("div");
         url_post2.textContent = i + 1 + ". URL : " + x.url_post;
         // url_post2.style.fontWeight = "bold";
         url_post2.style.fontSize = "22px";
         url_post2.style.fontFamily = "'TH Sarabun New', sans-serif";
         clonedContent.appendChild(url_post2);
+        if (x.photos && x.source !== "instagram") {
+          const pageBreak = document.createElement("div");
+          pageBreak.style.pageBreakBefore = "always";
+          clonedContent.appendChild(pageBreak);
+          const paragraph2 = document.createElement("p");
+          paragraph2.textContent = "";
+          clonedContent.appendChild(paragraph2);
+
+          if (Array.isArray(x.photos)) {
+            x.photos.map((img, idx) => {
+              if (img) {
+                const pageBreak = document.createElement("div");
+                pageBreak.style.pageBreakBefore = "always";
+                clonedContent.appendChild(pageBreak);
+                const paragraph2 = document.createElement("p");
+                paragraph2.textContent = "";
+                clonedContent.appendChild(paragraph2);
+                const url_img = document.createElement("div");
+                url_img.textContent = idx + 1 + "). ที่มารูป : " + img;
+                console.log("link" + idx, img);
+                url_img.style.fontSize = "17px";
+                url_img.style.marginLeft = "20px";
+                if (idx == x.photos.length - 1) {
+                  url_img.style.marginBottom = "20px";
+                }
+                url_img.style.fontFamily = "'TH Sarabun New', sans-serif";
+                clonedContent.appendChild(url_img);
+              }
+            });
+          } else {
+            const pageBreak = document.createElement("div");
+            pageBreak.style.pageBreakBefore = "always";
+            clonedContent.appendChild(pageBreak);
+            const paragraph2 = document.createElement("p");
+            paragraph2.textContent = "";
+            clonedContent.appendChild(paragraph2);
+            const url_img = document.createElement("div");
+            url_img.textContent = 1 + "). ที่มารูป : " + x.photos;
+            url_img.style.fontSize = "17px";
+            url_img.style.marginLeft = "20px";
+            url_img.style.marginBottom = "20px";
+            url_img.style.fontFamily = "'TH Sarabun New', sans-serif";
+            clonedContent.appendChild(url_img);
+          }
+        }
+
+        // const image = document.createElement("img");
+        // image.src = x.photos; // แทน path_to_image ด้วยที่อยู่ของรูปภาพ
+        // image.alt = "py'w'"; // แทน "py'w'" ด้วยคำอธิบายของรูปภาพ
+        // clonedContent.appendChild(image);
       });
+
+      // this.getExportTopPostDomainNeg.map((x, i) => {
+      //   const url_img2 = document.createElement("div");
+      //   if (x.photos && Array.isArray(x.photos)) {
+      //     console.log(" x.photos", x.photos);
+      //     x.photos.map((img, idx) => {
+      //       url_img2.textContent = idx + 1 + ". URL : " + img;
+      //     });
+      //   } else {
+      //     url_img2.textContent = i + 1 + ". URL : " + x.photos;
+      //   }
+
+      //   // url_post2.style.fontWeight = "bold";
+      //   url_img2.style.fontSize = "15px";
+      //   url_img2.style.fontFamily = "'TH Sarabun New', sans-serif";
+      //   clonedContent.appendChild(url_img2);
+
+      //   // const image = document.createElement("img");
+      //   // image.src = x.photos; // แทน path_to_image ด้วยที่อยู่ของรูปภาพ
+      //   // image.alt = "py'w'"; // แทน "py'w'" ด้วยคำอธิบายของรูปภาพ
+      //   // clonedContent.appendChild(image);
+      // });
 
       // Prepare the HTML content
       const preHtml =
@@ -1245,6 +1534,15 @@ export default {
   },
 };
 </script>
+<style scoped>
+@media only screen and (min-width: 0px) and (max-width: 760px) {
+ .posts > .h5{
+    font-size: 14px !important;
+  }
+  
+} 
+
+</style>
 <style>
 .d-down .btn-secondary {
   background-color: #4c412d !important;

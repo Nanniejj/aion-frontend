@@ -22,6 +22,12 @@ const routes = [
       import(/* webpackChunkName: "DomainList" */ "../views/Domain.vue")
   },
   {
+    path: "/settingsearch",
+    name: "SearchKeywordSetting",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/SearchKeywordSetting.vue")
+  },
+  {
     path: "/domainReport",
     name: "DomainReport",
     component: () =>
@@ -327,7 +333,8 @@ const routes = [
 ];
 
 const router = new VueRouter({
-  routes
+  routes,
+  mode: "hash"
 });
 
 export default router;

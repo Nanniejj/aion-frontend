@@ -2,21 +2,31 @@
   <div>
     <div style="margin: auto" class="px-lg-5">
       <b-row>
-        <b-col sm class="mb-2">
+        <!-- <b-col sm class="mb-2">
           <div class="text-left sw-date">
             <span id="text-table">
               Daily <i class="fa fa-calendar-day"></i></span
-            ><b-form-checkbox switch size="lg" @change="tab()" >
+            ><b-form-checkbox switch size="lg" @change="tab()">
               <span id="text-chart"
                 ><i class="fa fa-calendar-week"></i> Weekly</span
               ></b-form-checkbox
             >
           </div>
-        </b-col>
+        </b-col> -->
         <b-col class="text-right">
+        
           <section id="date-picker">
-            <!-- {{ valueWeek }} -->
             <date-picker
+              v-model="valueDate"
+              type="date" range
+              placeholder="เลือกช่วงเวลา"
+              :disabled-date="(date) => date >= new Date()"
+              value-type="YYYY-MM-DD"
+              format="YYYY-MM-DD"
+              @change="selectRange()"
+              >{{ valueDate }}</date-picker
+            >
+            <!-- <date-picker
               v-show="selectedTab"
               v-model="valueWeek"
               type="week"
@@ -35,7 +45,7 @@
               format="YYYY-MM-DD"
               @change="selectDay()"
               >{{ valueDate }}</date-picker
-            >
+            > -->
           </section>
           <!-- <section id="date-picker">
               <date-picker v-model="valueDate" value-type="format" format="YYYY-MM-DD" 
@@ -89,40 +99,43 @@ export default {
     };
   },
   methods: {
-    selectWeek() {
-      let start;
-      let end;
-      let weekNumber = this.valueWeek;
-      var sunday = new Date(2022, 0, 1 + (weekNumber - 1) * 7);
-      while (sunday.getDay() !== 0) {
-        sunday.setDate(sunday.getDate() - 1);
-      }
-      var date = new Date(sunday);
-      date.setDate(date.getDate() + 6);
-      if (this.valueWeek == null) {
-        start =
-          moment(new Date())
-            .format()
-            .slice(0, 10) + "T00:00:00";
-        end =
-          moment(new Date())
-            .format()
-            .slice(0, 10) + "T23:59:59";
-      } else {
-        start =
-          moment(sunday)
-            .format()
-            .slice(0, 10) + "T00:00:00";
-        end =
-          moment(date)
-            .format()
-            .slice(0, 10) + "T23:59:59";
-      }
+      
+    // selectWeek() {
+    //   const d = new Date();
+    //   let year = d.getFullYear();
+    //   let start;
+    //   let end;
+    //   let weekNumber = this.valueWeek;
+    //   var sunday = new Date(year, 0, 1 + (weekNumber - 1) * 7);
+    //   while (sunday.getDay() !== 0) {
+    //     sunday.setDate(sunday.getDate() - 1);
+    //   }
+    //   var date = new Date(sunday);
+    //   date.setDate(date.getDate() + 6);
+    //   if (this.valueWeek == null) {
+    //     start =
+    //       moment(new Date())
+    //         .format()
+    //         .slice(0, 10) + "T00:00:00";
+    //     end =
+    //       moment(new Date())
+    //         .format()
+    //         .slice(0, 10) + "T23:59:59";
+    //   } else {
+    //     start =
+    //       moment(sunday)
+    //         .format()
+    //         .slice(0, 10) + "T00:00:00";
+    //     end =
+    //       moment(date)
+    //         .format()
+    //         .slice(0, 10) + "T23:59:59";
+    //   }
 
-      this.$store.commit("setDateReport", [start, end]);
-      localStorage.setItem("dateReport", [start, end]);
-      // console.log("startdate", start, end);
-    },
+    //   this.$store.commit("setDateReport", [start, end]);
+    //   localStorage.setItem("dateReport", [start, end]);
+    //   // console.log("startdate", start, end);
+    // },
     selectDay() {
       let start = this.valueDate + "T00:00:00";
       let end = this.valueDate + "T23:59:59";
@@ -138,6 +151,26 @@ export default {
       } else {
         start = this.valueDate + "T00:00:00";
         end = this.valueDate + "T23:59:59";
+      }
+      console.log("valueDate", start, end);
+      this.$store.commit("setDateReport", [start, end]);
+      localStorage.setItem("dateReport", [start, end]);
+    },
+    selectRange() {
+      let start = this.valueDate[0] + "T00:00:00";
+      let end = this.valueDate[1] + "T23:59:59";
+      if (this.valueDate == null) {
+        start =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T00:00:00";
+        end =
+          moment(new Date())
+            .format()
+            .slice(0, 10) + "T23:59:59";
+      } else {
+        start = this.valueDate[0] + "T00:00:00";
+        end = this.valueDate[1] + "T23:59:59";
       }
       console.log("valueDate", start, end);
       this.$store.commit("setDateReport", [start, end]);

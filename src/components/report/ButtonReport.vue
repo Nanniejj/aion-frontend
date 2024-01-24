@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="text-right ">
+      <!-- <b-button @click="apiDoc">Export Excel</b-button> -->
       <b-dropdown class="m-2 btn-report" :disabled="modalShow2">
         <template #button-content>
           <vue-element-loading
@@ -11,6 +12,9 @@
           />
           <i class="fa fa-download"></i><span> Download</span>
         </template>
+        <b-dropdown-item-button @click="apiDoc"
+          >Export Excel</b-dropdown-item-button
+        >
         <b-dropdown-item-button @click="createReport"
           >All Target Tracking</b-dropdown-item-button
         >
@@ -44,6 +48,47 @@ export default {
     };
   },
   methods: {
+    apiDoc(){
+      this.modalShow2 = true;
+      const axios = require("axios").default;
+      //https://api2.cognizata.com
+      //http://139.59.103.67:3000
+      var config = {
+        method: "post",
+        url: "https://api2.cognizata.com/api/v2/user/getReport",
+        responseType: "blob",
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        data: { startDate: this.getDateReport[0]+"+07:00", endDate: this.getDateReport[1]+"+07:00" },
+      };
+      axios(config)
+        .then((response) => {
+          let s =this.getDateReport[0].slice(0,10)
+          let e =this.getDateReport[1].slice(0,10)
+          console.log('data2',response.data);
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", "TargetTracking "+s+" - "+e+".xlsx");
+          document.body.appendChild(link);
+          link.click();
+          this.modalShow2 = false;
+        })
+        .catch((error) => {
+          console.log("error", error);
+          this.modalShow2 = false;
+          this.$fire({
+            title: "Error",
+            text: "ไม่สามารถโหลดข้อมูลได้ข้อมูลมีขนาดใหญ่เกิน กรุณาลองอีกครั้ง",
+            type: "error",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+          console.log(error);
+        });
+    },
     createReport() {
       this.modalShow2 = true;
       const axios = require("axios").default;

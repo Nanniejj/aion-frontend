@@ -3,41 +3,52 @@
     <HomeNav id="navHome" />
     <!-- <vue-element-loading :active="getLoadStatus" :is-full-screen="true" size='80' 
     background-color='rgba(0, 0, 0, 0.3)' color='#fff' spinner="bar-fade-scale" /> -->
-    <div id="content" >
-  <b-container fluid id="tp-size" >
-      <h1 class="title">Setting</h1>
-      <h4 class="title-domain" ><a >จัดการ Domain</a> </h4>
-      <div class="mb-3 text-right">
-        <button id="export-btn" @click="printWindow()">
-          <i class="fa fa-print fa-2x" /> 
-          <b> Print</b>
-        </button>
-      </div>
-      <TemplateDomain />
-  </b-container>
+    <div id="content">
+      <b-container fluid id="tp-size">
+        <h1 class="title">Setting</h1>
+        <h4 class="title-domain"><a>จัดการ Domain</a></h4>
+        <div class="mb-3 text-right">
+          <!-- <TemplateSearchKeyword/> -->
+          <button class="btn export-btn" @click="$router.push({name:'SearchKeywordSetting'})">
+            <i class="fa fa-search " />
+            <span style="font-size:16px;"> ค้นหา keyword </span>
+          </button>
+          <!-- <button id="" @click="printWindow()"> -->
+            <i class="fa fa-print" @click="printWindow()" style="font-size:25px;cursor: pointer;"/>
+            <!-- <b> Print</b> -->
+          <!-- </button> -->
+        </div>
+        <TemplateDomain />
+      </b-container>
     </div>
-   
   </div>
-  
 </template>
 
 <script>
-import HomeNav from '@/components/HomeNav.vue';
-import TemplateDomain from '@/components/template/TemplateDomain2.vue';
-import { mapGetters } from 'vuex';
+import HomeNav from "@/components/HomeNav.vue";
+import TemplateDomain from "@/components/template/TemplateDomain2.vue";
+import { mapGetters } from "vuex";
+// import TemplateSearchKeyword from '../components/template/TemplateSearchKeyword.vue';
 // import TemplateDomain from '../components/setting_template/DomainSetting.vue'
 export default {
   components: {
-    HomeNav,TemplateDomain,
-    
+    HomeNav,
+    TemplateDomain,
+    // TemplateSearchKeyword
   },
   data: function() {
     return {};
   },
   computed: {
-    ...mapGetters(['getSelected','getListSubDomain','getListWord','getLoadStatus',"getToSection"]),
+    ...mapGetters([
+      "getSelected",
+      "getListSubDomain",
+      "getListWord",
+      "getLoadStatus",
+      "getToSection",
+    ]),
   },
-  methods:{
+  methods: {
     printWindow: function() {
       try {
         window.print();
@@ -45,27 +56,35 @@ export default {
         console.log(err);
       }
     },
-     print () {
-     // Pass the element id here
-      this.$htmlToPaper('content');
+    print() {
+      // Pass the element id here
+      this.$htmlToPaper("content");
     },
-  }
+  },
 };
 </script>
 
 <style scoped>
-#export-btn{
+.export-btn {
   margin: 0px 20px;
   color: #495057;
   background-color: #e9ecef;
   border-color: #e9ecef;
   border-radius: 9px;
-  box-shadow: 0 2px 5px 0 rgb(0 0 0 / 20%);  
+  box-shadow: 0 2px 5px 0 rgb(0 0 0 / 20%);
 }
-#export-btn:hover{
+#export-btn {
+  margin: 0px 20px;
+  color: #495057;
+  background-color: #e9ecef;
+  border-color: #e9ecef;
+  border-radius: 9px;
+  box-shadow: 0 2px 5px 0 rgb(0 0 0 / 20%);
+}
+#export-btn:hover {
   color: white;
-    background-color: #495057;
-    border-color:  #495057;
+  background-color: #495057;
+  border-color: #495057;
 }
 button {
   background-color: #f0f0f0;
@@ -74,13 +93,13 @@ button {
   font-size: 15px;
   border-radius: 5px;
 }
-.title-domain{
-    text-align: start;
-    margin-left: 12%;
-    margin-bottom: 20px !important;
+.title-domain {
+  text-align: start;
+  margin-left: 12%;
+  margin-bottom: 20px !important;
 }
 * {
-  font-family: 'Prompt', 'FontAwesome', sans-serif;
+  font-family: "Prompt", "FontAwesome", sans-serif;
 }
 #content {
   max-width: 93%;
@@ -92,7 +111,6 @@ button {
 #navHome {
   z-index: 1;
 }
-
 
 .text {
   background-color: #ede7dd;
@@ -164,5 +182,4 @@ button {
 }
 @media only screen and (min-width: 0px) and (max-width: 600px) {
 }
-
 </style>

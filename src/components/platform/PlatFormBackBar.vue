@@ -97,9 +97,9 @@ export default {
       ],
       start_date: "",
       end_date: "",
-      selected: true,
+      selected: "",
       options: [
-        { item: true, name: "วันที่ระบบเก็บโพสต์" },
+        { item:true, name: "วันที่ระบบเก็บโพสต์" },
         { item: "", name: "วันที่โพสต์" },
       ],
     };

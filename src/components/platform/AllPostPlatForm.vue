@@ -71,7 +71,7 @@ export default {
   data() {
     return {
       startd: "",
-      selected: true,
+      selected: "",
       endd: "",
     };
   },

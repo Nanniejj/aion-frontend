@@ -461,7 +461,6 @@ export default {
   },
   methods: {
     linkToProfile(item) {
-      console.log("dddd", item);
       this.$store.commit("setProfileData", item.account_name);
       this.$store.commit("setValSource", item.source);
       //this.$store.commit("setDomainName", item.name);
