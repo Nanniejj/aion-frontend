@@ -10,6 +10,7 @@ export default {
       crawler_news: 0,
       crawler_blockdit: 0,
       crawler_tiktok: 0,
+      crawler_threads: 0,
       preprocess_pantip: 0,
       preprocess_facebook: 0,
       preprocess_twitter: 0,
@@ -17,7 +18,8 @@ export default {
       preprocess_youtube: 0,
       preprocess_news: 0,
       preprocess_blockdit:0,
-      preprocess_tiktok:0
+      preprocess_tiktok:0,
+      preprocess_threads:0
     },
     sumdb: [],
     editData: [],
@@ -71,7 +73,12 @@ export default {
       users: 0,
       total_sentiments: { positive: 0, neutral: 0, negative: 0 },
     },
-
+    threads:{
+      post: 0,
+      comment: 0,
+      users: 0,
+      total_sentiments: { positive: 0, neutral: 0, negative: 0 },
+    },
     timelineFacebook: [],
     timelineNews: [],
     timelineTwitter: [],
@@ -135,6 +142,14 @@ export default {
       users: 0,
     },
     sumTiktok: {
+      comment: 0,
+      enddate: "",
+      post: 0,
+      source: 0,
+      startdate: "",
+      users: 0,
+    },
+    sumThreads: {
       comment: 0,
       enddate: "",
       post: 0,
@@ -252,6 +267,12 @@ export default {
     getSumTiktok: (state) => {
       return state.sumTiktok;
     },
+    getThreads: (state) => {
+      return state.threads;
+    },
+    getSumThreads: (state) => {
+      return state.sumThreads;
+    },
     getSummary: (state) => {
       return state.summary;
     },
@@ -305,6 +326,7 @@ export default {
       state.instagram = payload.instagram;
       state.blockdit = payload.blockdit;
       state.tiktok = payload.tiktok;
+      state.threads = payload.threads;
     },
     setFetchApiSumDashboard: (state, payload) => {
       //state.sumdb=payload
@@ -359,6 +381,12 @@ export default {
           summary.post = summary.post + item.post;
           summary.comment = summary.comment + item.comment;
         }
+        if (item.source === "threads") {
+          state.sumThreads = item;
+          summary.users = summary.users + item.users;
+          summary.post = summary.post + item.post;
+          summary.comment = summary.comment + item.comment;
+        }
       });
       state.summary = summary;
 
@@ -371,6 +399,12 @@ export default {
     },
     setSumBlockdit: (state, payload) => {
       state.sumBlockdit = payload;
+    },
+    setThreads: (state, payload) => {
+      state.threads = payload;
+    },
+    setSumThreads: (state, payload) => {
+      state.sumThreads = payload;
     },
     setTiktok: (state, payload) => {
       state.tiktok = payload;

@@ -24,7 +24,7 @@
           sm
           class="bold text-lg-left text-md-left text-sm-center h5"
           id="date-today"
-          >Top Influencer Tarket
+          >Top Influencer Target
         </b-col>
         <b-col
           sm
@@ -175,7 +175,7 @@ export default {
         { id: "month", value: "1 month" },
       ],
       type_selected: "day",
-      social: "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+      social: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok",
       nodeSize: 20,
       resizeListener: true,
       nodeLabels: true,
@@ -377,7 +377,7 @@ export default {
     },
     all() {
       this.social =
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok";
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok";
       document.getElementById("all").style.opacity = "1";
       document.getElementById("fb").style.opacity = "0.3";
       document.getElementById("tw").style.opacity = "0.3";

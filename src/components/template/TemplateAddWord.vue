@@ -19,9 +19,8 @@
             >คำแนะนำ : กรุณาใส่ชื่อถุงคำที่ต้องการ Keyword ให้ enter
             หากมีมากกว่า 1 คำ
             <div class="text-right mt-2">
-              <b-button @click="clear" variant="outline-danger" class="mr-3"
-                >
-               <i class="fa fa-eraser" aria-hidden="true"></i>
+              <b-button @click="clear" variant="outline-danger" class="mr-3">
+                <i class="fa fa-eraser" aria-hidden="true"></i>
                 clear</b-button
               >
               <input
@@ -29,12 +28,11 @@
                 type="file"
                 class="d-none"
                 @input="handleFileUpload"
-                accept=".csv" 
+                accept=".csv"
               />
               <label for="fileInput" class="btn-import">
                 <i class="fas fa-file-import"></i> import CSV
               </label>
-              
             </div>
           </b-col>
 
@@ -265,7 +263,7 @@ export default {
 <style scoped>
 .btn-outline-danger {
   color: #504b3c;
-    border-color:#504b3c;
+  border-color: #504b3c;
 }
 .btn-outline-danger:hover {
   color: #ffffff;

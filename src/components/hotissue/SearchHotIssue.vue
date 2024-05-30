@@ -95,6 +95,7 @@ export default {
         "instagram",
         "blockdit",
         "tiktok",
+        "threads"
       ],
     };
   },
@@ -141,6 +142,7 @@ export default {
           "instagram",
           "blockdit",
           "tiktok",
+          "threads"
         ];
       } else {
         social = this.select_social;

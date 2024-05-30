@@ -202,6 +202,42 @@
                 </b-card-body>
             </b-col>
             </b-row>
+            <div
+          class="text-left ai-box mt-2"
+          v-if="datas && datas.ocr &&username=='adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-for="(text, idx) in datas.ocr">
+            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+                       <div v-if="text.text_sort && text.text_sort.length">
+              <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text.text_sort[0] }}
+            </div>
+            <div v-if="text.face">
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
+                  <span
+                    style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                  >
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name.replace("_", " ") }}
+                    <span
+                      v-b-tooltip.hover
+                      :title="'ค่า confidence'"
+                      class="small"
+                      >({{
+                        parseFloat((face.confidence * 100).toFixed(2))
+                      }}%)</span
+                    ></span
+                  ></span
+                >
+              </span>
+            </div>
+          </div>
+        </div>
             <template #footer >
               <div class="comment-img">
              <!-- popover user comment -->
@@ -430,7 +466,9 @@ export default {
   },
 data() {
     return {
+   
        offset:0,
+       username:"",
       btnPosStyle:{
          backgroundColor:"#54c69d" ,
          color:"#ffffff" ,
@@ -686,6 +724,7 @@ methods: {
  
   },
   created(sort,offset) {
+    this.username = localStorage.getItem("username");
     offset=this.offset;
     sort =this.sort;
   this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:sort,offset:offset});    

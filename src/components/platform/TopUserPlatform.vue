@@ -80,6 +80,11 @@
                   src="@/assets/Tiktok.png"
                   class="social-img"
                 />
+                <img
+                  v-if="user.items.details.source == 'threads'"
+                  src="@/assets/Threads.png"
+                  class="social-img"
+                />
               </template> </b-avatar
           ></a>
           <div class="mt-2 textuser bold">
@@ -87,7 +92,7 @@
               user.items.details.account_name
             }}</a>
           </div>
-          <hr />
+          <!-- <hr /> -->
           <!-- ig engage -->
           <b-row
             v-if="
@@ -98,6 +103,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -143,6 +149,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -200,6 +207,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -238,6 +246,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="follower">
               <b-row>
@@ -291,6 +300,7 @@
             cols-lg="1"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -330,6 +340,7 @@
             cols-lg="1"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -369,6 +380,7 @@
             cols-lg="1"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>

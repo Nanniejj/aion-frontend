@@ -214,6 +214,8 @@ export default {
         this.colorp = ["#ff9773"];
       }else if (this.getNamePlatform == "blockdit") {
         this.colorp = ["#396eb6"];
+      }else if (this.getNamePlatform == "threads") {
+        this.colorp = ["#e75aa1"];
       }else{
         this.colorp = ["#1f0043"];
       }

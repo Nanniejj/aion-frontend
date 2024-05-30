@@ -166,7 +166,7 @@
                 <div
                   v-if="
                     getSocial ==
-                    'facebook,twitter,news,pantip,instagram,youtube'
+                    'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
                   "
                 >
                   <div style="margin-top: 30px">
@@ -229,7 +229,7 @@
                     class="my-3"
                     v-if="
                       getSocial ==
-                      'facebook,twitter,news,pantip,instagram,youtube'
+                      'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
                     "
                   >
                     <b-col>
@@ -401,7 +401,7 @@
                       id="all"
                       v-if="
                         getSocial ==
-                        'facebook,twitter,news,pantip,instagram,youtube'
+                        'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
                       "
                     >
                       <span id="day">

@@ -173,6 +173,7 @@ export default {
           localStorage.setItem("username", obj.username);
           localStorage.setItem("roleMion", obj.mion);
           localStorage.setItem("projectId", obj.projectid);
+          _this.$store.commit("setPushDomainStat", false);
           let mi =JSON.parse(localStorage.getItem("roleMion"));
           _this.$store.commit('setRoleMion',mi)
           console.log("decodedData", obj.mion);

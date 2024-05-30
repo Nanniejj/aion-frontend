@@ -441,6 +441,14 @@
                               />
                             </a>
                           </li>
+                          <li v-on:click="threads()">
+                            <a tabindex="0">
+                              <img
+                                src="@/assets/Threads.png"
+                                class="imgsocial"
+                              />
+                            </a>
+                          </li>
                         </div>
                       </ul>
                     </div>
@@ -458,7 +466,7 @@
                         <Sentimentv2 :chartData="getSentimentAll" />
                         <!-- <SentimentChart
                           :chartData="getSentimentAll"
-                          :source="'facebook,twitter,news,pantip,instagram,youtube'"
+                          :source="'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'"
                           :pageType="'WordPost'"
                         /> -->
                       </span>
@@ -592,7 +600,7 @@ export default {
       tab_selected_social: "all",
       edited: false,
       socialname:
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+        "news,twitter,facebook,youtube,instagram,pantip,threads,blockdit,tiktok",
     };
   },
   components: {
@@ -611,9 +619,14 @@ export default {
     all() {
       this.tab_selected_detail_social = "all";
       this.socialname =
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok";
+        "news,twitter,facebook,youtube,instagram,pantip,threads,blockdit,tiktok";
       //this.$store.commit("setWordCloudSocial", this.socialname);
       //// this.getStat()
+    },
+    threads() {
+      this.tab_selected_detail_social = "threads";
+      this.socialname = "threads";
+      // this.getStat()
     },
     tiktok() {
       this.tab_selected_detail_social = "tiktok";
@@ -721,7 +734,7 @@ export default {
         domainarr = "";
       }
       let socials = [
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok",
         "facebook",
         "twitter",
         "news",
@@ -730,6 +743,7 @@ export default {
         "youtube",
         "blockdit",
         "tiktok",
+        "threads"
       ];
       socials.map((x) => {
         this.$store.dispatch("fetchSentiment2", {

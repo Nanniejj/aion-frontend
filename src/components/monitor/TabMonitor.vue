@@ -147,13 +147,24 @@ export default {
     //   });
     // },
   },
-  mounted() {
+  async mounted() {
     this.apiLocation();
     console.log("doFuncFoo2", this.idChangwats);
     let idx = localStorage.getItem("tabMonitor");
 
     if (idx) {
       this.tab = Number(idx);
+    }
+    
+    if (this.getSocialMo == "") {
+      //setListProfile
+      console.log("getSocialMo", this.$route.params,this.getSocialMo);
+      await this.$store.dispatch("fatchListMonitor");
+    } else {
+      console.log("getSocialMo2", this.$route.params,this.getSocialMo);
+      await this.$store.dispatch("fatchListMonitor", {
+        source: this.social,
+      });
     }
   },
 };

@@ -86,6 +86,11 @@
                   src="@/assets/Tiktok.png"
                   class="social-img"
                 />
+                <img
+                  v-if="user.items.details.source == 'threads'"
+                  src="@/assets/Threads.png"
+                  class="social-img"
+                />
               </template> </b-avatar
           ></a>
           <div class="mt-2 textuser bold">
@@ -93,14 +98,18 @@
               user.items.details.account_name
             }}</a>
           </div>
-          <hr />
+          <!-- <hr /> -->
           <!-- ig engage -->
           <b-row
-            v-if="user.items.details.source == 'instagram'|| user.items.details.source == 'tiktok'"
+            v-if="
+              user.items.details.source == 'instagram' ||
+                user.items.details.source == 'tiktok'
+            "
             id="score-data"
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -147,6 +156,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -194,6 +204,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -232,6 +243,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="follower">
               <b-row>
@@ -286,6 +298,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -325,6 +338,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -344,6 +358,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -412,7 +427,7 @@ export default {
     ]),
   },
   watch: {
-    getArrDate: function () {
+    getArrDate: function() {
       this.startd = this.getSdateDm.slice(0, 10);
       this.endd = this.getEdateDm.slice(0, 10);
       this.selectDate();
@@ -429,7 +444,11 @@ export default {
   },
   methods: {
     linkToProfile(item) {
-      console.log("dddd", item);
+      // console.log("dddd", item);
+      // let acc = item.account_name;
+      // if (item.source == "youtube") {
+      //   acc = item.account_name.replace("@", "");
+      // }
       this.$store.commit("setProfileData", item.account_name);
       this.$store.commit("setValSource", item.source);
       //this.$store.commit("setDomainName", item.name);
@@ -503,7 +522,7 @@ export default {
           this.topuser = response.data.slice(0, 5);
           this.$store.commit("setLoadTopUser", false);
         })
-        .catch(function (error) {
+        .catch(function(error) {
           console.log(error);
           this.$store.commit("setLoadTopUser", false);
         });
@@ -511,10 +530,16 @@ export default {
   },
 
   created() {
-    this.startd = moment(new Date()).format().slice(0, 10);
-    this.endd = moment(new Date()).format().slice(0, 10);
+    this.startd = moment(new Date())
+      .format()
+      .slice(0, 10);
+    this.endd = moment(new Date())
+      .format()
+      .slice(0, 10);
     let sdate, edate, today;
-    today = moment(new Date()).format().slice(0, 10);
+    today = moment(new Date())
+      .format()
+      .slice(0, 10);
     sdate = "&start=" + today + "T00:00:00";
     edate = "&end=" + today + "T23:59:59";
     this.$store.commit("setLoadTopUser", true);
@@ -576,7 +601,7 @@ export default {
         this.topuser = response.data.slice(0, 5);
         this.$store.commit("setLoadTopUser", false);
       })
-      .catch( (error)=> {
+      .catch((error) => {
         this.$store.commit("setLoadTopUser", false);
         console.log(error);
       });

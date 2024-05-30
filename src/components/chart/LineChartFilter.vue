@@ -1,6 +1,5 @@
 <template>
-  <div id="chart" class="mt-3" >
-    
+  <div id="chart" class="mt-3">
     <apexchart
       id="chart-domain"
       type="line"
@@ -37,8 +36,8 @@ export default {
     getArrDate(val) {
       this.apiFilterChart();
       this.valdate = 0;
-      this.range=val[0]+' - '+val[1]
-      console.log('valdate',val);
+      this.range = val[0] + " - " + val[1];
+      console.log("valdate", val);
     },
     typeChart(val) {
       this.apiFilterChart();
@@ -56,7 +55,6 @@ export default {
   },
   data() {
     return {
-  
       valdate: 0,
       sentiment: [],
       source: [],
@@ -69,7 +67,6 @@ export default {
         colors: [],
         dataLabels: {
           enabled: true,
-          
         },
         series: [],
         title: {
@@ -94,7 +91,6 @@ export default {
         colors: [],
         dataLabels: {
           enabled: true,
-       
         },
         series: [],
         title: {
@@ -162,8 +158,12 @@ export default {
       let ytext = "จำนวนโพสต์";
       if (this.label == "posts") {
         ytext = "จำนวนโพสต์";
-      } else {
+      } else if (this.label == "engages") {
         ytext = "จำนวน engagement";
+      }else if (this.label == "comments") {
+        ytext = "จำนวน comments";
+      }else  {
+        ytext = "จำนวน messages";
       }
       this.chartOptions = {
         yaxis: {
@@ -239,7 +239,7 @@ export default {
             colors: ["#4c412b"],
           },
           formatter: (value) => {
-            return  this.formatCash(value)
+            return this.formatCash(value);
           },
         },
         stroke: {
@@ -257,8 +257,12 @@ export default {
       let ytext = "จำนวนโพสต์";
       if (this.label == "posts") {
         ytext = "จำนวนโพสต์";
-      } else {
+      } else if (this.label == "engages") {
         ytext = "จำนวน engagement";
+      }else if (this.label == "comments") {
+        ytext = "จำนวน comments";
+      }else  {
+        ytext = "จำนวน messages";
       }
 
       this.chartOptions = {
@@ -290,6 +294,7 @@ export default {
           },
         },
         colors: [
+          "#e75aa1",
           "#eb363a",
           "#8050be",
           "#438afe",
@@ -392,7 +397,7 @@ export default {
             colors: undefined,
           },
           formatter: (value) => {
-            return  this.formatCash(value)
+            return this.formatCash(value);
           },
         },
 
@@ -451,7 +456,7 @@ export default {
       } else {
         label = "";
       }
-
+// "https://api2.cognizata.com/api/v2/userposts/getChartDomainFilter?domain="
       var config = {
         method: "get",
         url:
@@ -468,10 +473,27 @@ export default {
       axios(config)
         .then((response) => {
           this.sentiment = response.data[0].sentiment;
-          this.source = response.data[0].source.result2;
+          // Define the order of sources
+          const order = [
+            "threads",
+            "youtube",
+            "pantip",
+            "blockdit",
+            "instagram",
+            "tiktok",
+            "facebook",
+            "twitter",
+            "news",
+          ];
+
+          // Sort the result array based on the defined order
+          let rel2 = response.data[0].source.result2.sort(
+            (a, b) => order.indexOf(a.source) - order.indexOf(b.source)
+          );
+          this.source = rel2;
           console.log("chartres", response.data);
           if (this.typeChart == "platform") {
-            this.sourceFilter(response.data[0].source.result2);
+            this.sourceFilter(rel2);
           }
           if (this.typeChart == "sentiment") {
             this.sentimentFilter(response.data[0].sentiment);
@@ -479,11 +501,11 @@ export default {
           if (this.typeChart == "domain") {
             this.domainFilter(response.data[0].data);
           }
-          console.log('this.typeChart',this.typeChart);
-          if (this.typeChart == ""|| this.typeChart==null) {
+          console.log("this.typeChart", this.typeChart);
+          if (this.typeChart == "" || this.typeChart == null) {
             this.domainFilter(response.data[0].data);
           }
-          console.log("sourceFilter", response.data[0].source.result2);
+          // console.log("sourceFilter", response.data[0].source.result2);
         })
         .catch((error) => {
           console.log(error);
@@ -493,7 +515,6 @@ export default {
 
   mounted() {
     this.apiFilterChart("start");
-   
   },
 };
 </script>

@@ -111,7 +111,6 @@ export default {
   },
   
   async created() {
-console.log('his.$route.name',this.$route.name);
 if ( this.$route.name=="Profile") {
           this.$store.commit('setTabName','profile')
           localStorage.setItem("tab", 'profile');
@@ -125,8 +124,6 @@ if ( this.$route.name=="Profile") {
 
     if (this.getToLinkProfile) {
       localStorage.setItem("router", this.getToLinkProfile);
-      console.log('this.getToLinkProfile',this.getToLinkProfile);
-      console.log('localStorage.getItem("router")',localStorage.getItem("router"));
     
     }else{
       this.$store.commit("setToLinkProfile",localStorage.getItem("router"));
@@ -134,10 +131,8 @@ if ( this.$route.name=="Profile") {
 
      
     this.$store.commit("setTabStatus", true);
-    console.log("this.getTabName",this.getTabName);
     if (localStorage.getItem("tab")== "profile") {
       if (this.getProfileData) {
-        console.log("this.getProfileData", this.getProfileData);
         localStorage.setItem("acc", this.getProfileData);
         this.$store.dispatch("fetchProfileMonitor", {
           query: this.getProfileData,

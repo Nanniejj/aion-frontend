@@ -64,12 +64,7 @@
         </b-col>
         <div class="w-100 text-right d-inline">
           <span class="text-right pr-3 d-inline">
-            <b-form-checkbox
-              id="checkbox-1"
-              v-model="status"
-              name="checkbox-1"
-            
-            >
+            <b-form-checkbox id="checkbox-1" v-model="status" name="checkbox-1">
               อ่านแล้ว
             </b-form-checkbox>
           </span>
@@ -167,6 +162,11 @@
                   src="@/assets/Tiktok.png"
                   class="social-img"
                 />
+                <img
+                  v-if="profilePost.source == 'threads'"
+                  src="@/assets/Threads.png"
+                  class="social-img"
+                />
               </span>
             </b-col>
             <b-col class="align-start w-auto" sm="8" lg="auto">
@@ -175,6 +175,16 @@
                   ><b> {{ profilePost.account_name }} </b></span
                 >
                 <a
+                  v-if="
+                    profilePost.url_post &&
+                      profilePost.url_post.includes('mbasic')
+                  "
+                  v-bind:href="profilePost.url_post.replace('mbasic.', '')"
+                  class="fa fa-external-link"
+                  target="_blank"
+                ></a>
+                <a
+                  v-else
                   v-bind:href="profilePost.url_post"
                   class="fa fa-external-link"
                   target="_blank"
@@ -457,7 +467,7 @@
             </b-card-text>
           </b-col>
           <b-col>
-            <div v-if="profilePost.source == 'tiktok'&&profilePost.uid">
+            <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
               <lite-tiktok :videoid="profilePost.uid"></lite-tiktok>
 
               <!-- <iframe
@@ -546,32 +556,73 @@
             </div>
           </b-col>
         </b-row>
+        <div
+          class="text-left ai-box mt-2"
+          v-if="profilePost && profilePost.ocr && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-for="(text, idx) in profilePost.ocr">
+            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+            <div v-if="text.text_sort && text.text_sort.length">
+              <b-avatar
+                size="18px"
+                style="font-size: 12px;background-color:#8b8787;"
+                class="mr-1"
+                >{{ idx + 1 }}
+              </b-avatar>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text.text_sort[0] }}
+            </div>
+            <div v-if="text.face">
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
+                  <span
+                    style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                  >
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name.replace("_", " ") }}
+                    <span
+                      v-b-tooltip.hover
+                      :title="'ค่า confidence'"
+                      class="small"
+                      >({{
+                        parseFloat((face.confidence * 100).toFixed(2))
+                      }}%)</span
+                    ></span
+                  ></span
+                >
+              </span>
+            </div>
+          </div>
+        </div>
         <template #footer>
           <div class="text-left">
-               <!------------- engages-------------- -->
+            <!------------- engages-------------- -->
             <span
-                    v-b-tooltip.hover
-                    title="Engagement"
-                    v-if="profilePost.source == 'pantip'"
-                  >
-                    <span style="font-size:14px;">Engages </span>
-                    {{
-                      (profilePost.engagement + profilePost.comments_count)
-                        | numFormat
-                    }}
-                  </span>
+              v-b-tooltip.hover
+              title="Engagement"
+              v-if="profilePost.source == 'pantip'"
+            >
+              <span style="font-size:14px;">Engages </span>
+              {{
+                (profilePost.engagement + profilePost.comments_count)
+                  | numFormat
+              }}
+            </span>
 
-                  <span v-b-tooltip.hover title="Engagement" v-else>
-                    <span style="font-size:14px;">Engages </span
-                    >{{ profilePost.engagement | numFormat }}
-                  </span>
+            <span v-b-tooltip.hover title="Engagement" v-else>
+              <span style="font-size:14px;">Engages </span
+              >{{ profilePost.engagement | numFormat }}
+            </span>
             <span
               v-b-toggle="'btn' + page + k"
               :aria-expanded="visible ? 'true' : 'false'"
               style="cursor: pointer"
               id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Comments"
+              v-b-tooltip.hover
+              title="Comments"
             >
               <i class="fas fa-comment"> </i>
               <span
@@ -589,7 +640,12 @@
             </span>
 
             <!-- twitter -->
-            <span v-if="profilePost.source == 'twitter'">
+            <span
+              v-if="
+                profilePost.source !== 'facebook' &&
+                  profilePost.source !== 'youtube'
+              "
+            >
               <span
                 v-if="
                   profilePost.retweets_count !== '0' &&
@@ -612,6 +668,28 @@
               >
                 <i class="fa fa-heart"></i>
                 {{ profilePost.likes_count | numFormat }}
+              </span>
+              <span
+                v-if="
+                  profilePost.shares_count !== '0' && profilePost.shares_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="Share"
+              >
+                <i class="fa fa-share"></i>
+                {{ profilePost.shares_count | numFormat }}
+              </span>
+              <span
+                v-if="
+                  profilePost.views_count !== '0' && profilePost.views_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="View"
+              >
+                <i class="fas fa-eye"></i>
+                {{ profilePost.views_count | numFormat }}
               </span>
             </span>
             <!-- share blockdit -->
@@ -941,7 +1019,10 @@
                     objId == '64a273076bce4a4d32d67120' ||
                     objId == '64a273d46bce4a4d32d67128' ||
                     objId == '64a273ff6bce4a4d32d6712e' ||
-                    objId == '64a2743f6bce4a4d32d67134'
+                    objId == '64a2743f6bce4a4d32d67134'||
+                    objId =='66346cb971596a3509b36292'||
+                    objId == '66346d6071596a3509b36293'||
+                    objId =='66346d7771596a3509b36294'
                 "
                 :datareport="[
                   k,
@@ -1017,10 +1098,7 @@
           <b-collapse
             :id="'btn' + page + k"
             class="mt-2"
-            v-if="
-              profilePost.source !== 'facebook' &&
-                profilePost.source !== 'twitter'
-            "
+            v-if="profilePost.comments && profilePost.comments.length"
           >
             <b-card id="cmt-card" class="text-left">
               <span v-if="profilePost.source == 'news' && profilePost.comments">
@@ -1056,57 +1134,57 @@
                 <div v-for="(cmt, i) in profilePost.comments" :key="i">
                   <b-row>
                     <b-col lg="1">
-                      <img
-                        v-if="profilePost.source == 'pantip'"
-                        :src="cmt.profile_image"
-                        id="img-cmt"
-                      />
-                      <img
+                      <a
+                        :href="'https://www.youtube.com/' + cmt.author_link"
+                        target="_blank"
                         v-if="profilePost.source == 'youtube'"
-                        :src="cmt.photo"
-                        id="img-cmt"
-                      />
+                      >
+                        <img :src="cmt.photo" id="img-cmt"
+                      /></a>
+                      <a :href="cmt.url" target="_blank" v-else>
+                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url"
+                      /></a>
 
                       <!-- <img v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                       <span> </span>
                     </b-col>
                     <b-col lg="11">
                       <div>
-                        <span
-                          v-if="profilePost.source == 'pantip'"
-                          class="bold"
-                          >{{ cmt.username }}</span
-                        >
-                        <span
+                        <a
+                          :href="'https://www.youtube.com/' + cmt.author_link"
+                          target="_blank"
                           v-if="profilePost.source == 'youtube'"
-                          class="bold"
-                          >{{ cmt.author }}</span
+                        >
+                          <span
+                            v-if="profilePost.source == 'youtube'"
+                            class="bold"
+                          >
+                            {{ cmt.author }}</span
+                          ></a
+                        >
+                        <a :href="cmt.url" target="_blank" v-else>
+                          <span class="bold"> {{ cmt.username }}</span></a
                         >
                         <span
-                          v-if="profilePost.source == 'pantip'&&cmt.time"
-                          class="font-weight-light"
-                          id="cmt-time"
-                          >{{ cmt.time }}</span
-                        >
-                        <span
-                          v-if="profilePost.source == 'youtube'&&cmt.time"
+                          v-if="profilePost.source == 'youtube' && cmt.time"
                           class="font-weight-light"
                           id="cmt-time"
                           >{{ cmt.time.split("T")[0] }} |
                           {{ cmt.time.split("T")[1] }}</span
                         >
+                        <span v-else class="font-weight-light" id="cmt-time">{{
+                          cmt.time
+                        }}</span>
                       </div>
-                      <div
-                        v-if="profilePost.source == 'pantip'"
-                        class="font-weight-light"
-                      >
-                        {{ cmt.content }}
-                      </div>
+
                       <div
                         v-if="profilePost.source == 'youtube'"
                         class="font-weight-light"
                       >
                         {{ cmt.text }}
+                      </div>
+                      <div v-else class="font-weight-light">
+                        {{ cmt.content }}
                       </div>
                     </b-col>
                   </b-row>
@@ -1141,7 +1219,7 @@ import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import SocialSelect from "@/components/domain/SocialSelect.vue";
 import PopupReport from "@/components/feed/PopupReport.vue";
-import '@justinribeiro/lite-tiktok';
+import "@justinribeiro/lite-tiktok";
 
 // import moment from "moment";
 export default {
@@ -1249,6 +1327,7 @@ export default {
       noData: false,
       page: 0,
       list: [],
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1697,6 +1776,7 @@ export default {
   },
 
   created() {
+    this.username = localStorage.getItem("username");
     this.objId = localStorage.getItem("objId");
     this.$store.commit("setHashtagFeed", "");
   },

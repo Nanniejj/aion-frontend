@@ -67,6 +67,7 @@
             <Instagram />
             <Blockdit />
             <Tiktok />
+            <Threads />
           </b-row>
         </b-container>
       </div>
@@ -85,6 +86,7 @@ import Instagram from "@/components/dashboard/Instagram.vue";
 import Blockdit from "@/components/dashboard/Blockdit.vue";
 import Tiktok from "@/components/dashboard/Tiktok.vue";
 import Summary from "@/components/dashboard/Summary.vue";
+import Threads from "../components/dashboard/Threads.vue";
 // import VueElementLoading from "vue-element-loading";
 import { mapGetters } from "vuex";
 import { Printd } from "printd";
@@ -130,7 +132,8 @@ export default {
     Summary,
     PlatFormMain,
     Blockdit,
-    Tiktok
+    Tiktok,
+    Threads
   },
   data: function() {
     return {

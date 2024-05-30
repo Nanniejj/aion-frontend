@@ -323,7 +323,39 @@ const routes = [
       import(
         /* webpackChunkName: "targetprofile" */ "../views/ReportProfile.vue"
       )
-  }
+  },
+  {
+    path: "/map",
+    name: "Map",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/Map.vue"
+      )
+  },
+  {
+    path: "/mappost",
+    name: "MapPost",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/MapPost.vue"
+      )
+  },
+  {
+    path: "/faceRecognition",
+    name: "FaceRecognition",
+    // props: true,
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/FaceRecognition.vue")
+  },
    // {
   //   path: "/home",
   //   name: "Section",

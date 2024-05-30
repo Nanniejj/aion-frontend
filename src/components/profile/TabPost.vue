@@ -170,6 +170,11 @@
                   src="@/assets/Tiktok.png"
                   class="social-img"
                 />
+                <img
+                  v-if="profilePost.source == 'threads'"
+                  src="@/assets/Threads.png"
+                  class="social-img"
+                />
               </span>
             </b-col>
             <b-col class="align-start w-auto" sm="8" lg="auto">
@@ -177,12 +182,23 @@
                 <span
                   ><b> {{ profilePost.account_name }} </b></span
                 >
+
                 <a
+                  v-if="
+                    profilePost.url_post &&
+                      profilePost.url_post.includes('mbasic')
+                  "
+                  v-bind:href="profilePost.url_post.replace('mbasic.', '')"
+                  class="fa fa-external-link"
+                  target="_blank"
+                ></a>
+                <a
+                  v-else
                   v-bind:href="profilePost.url_post"
                   class="fa fa-external-link"
                   target="_blank"
-                ></a
-              ></span>
+                ></a>
+              </span>
               <div class="font-weight-light small" v-if="profilePost.date">
                 {{ profilePost.date.split("T")[0] }} |
                 {{ profilePost.date.split("T")[1] }}
@@ -489,6 +505,10 @@
           <b-col>
             <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
               <lite-tiktok :videoid="profilePost.uid"></lite-tiktok>
+             
+              <!-- <div style="height: 550px;overflow: hidden;" class="vdo-tt">
+        <iframe  style="height: 900px; border: 0; vertical-align: top; overflow: hidden;" src="https://tiktok.com/embed/7362555837165964545" ></iframe>
+      </div> -->
 
               <!-- <iframe
                 width="auto"
@@ -580,6 +600,52 @@
             </div>
           </b-col>
         </b-row>
+        <div
+          class="text-left ai-box mt-2"
+          v-if="profilePost && profilePost.ocr && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-for="(text, idx) in profilePost.ocr">
+            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+            <div v-if="text.text_sort && text.text_sort.length">
+              <b-avatar
+                size="18px"
+                style="font-size: 12px;background-color:#8b8787;"
+                class="mr-1"
+                >{{ idx + 1 }}
+              </b-avatar>
+              <!-- <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar> -->
+              <span
+                style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;"
+              >
+              </span>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text.text_sort[0] }}
+            </div>
+            <div v-if="text.face">
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
+                  <span
+                    style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                  >
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name.replace("_", " ") }}
+                    <span
+                      v-b-tooltip.hover
+                      :title="'ค่า confidence'"
+                      class="small"
+                      >({{
+                        parseFloat((face.confidence * 100).toFixed(2))
+                      }}%)</span
+                    ></span
+                  ></span
+                >
+              </span>
+            </div>
+          </div>
+        </div>
         <template #footer>
           <div class="text-left md-font">
             <span
@@ -653,8 +719,26 @@
               >
             </span> -->
 
+            <span v-if="profilePost.source == 'facebook'">
+              <span
+                v-if="
+                  profilePost.likes_count !== '0' && profilePost.likes_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="Like"
+              >
+                <i class="far fa-thumbs-up" />
+                {{ profilePost.likes_count | numFormat }}
+              </span>
+            </span>
             <!-- twitter -->
-            <span v-if="profilePost.source == 'twitter'">
+            <span
+              v-if="
+                profilePost.source !== 'facebook' &&
+                  profilePost.source !== 'youtube'
+              "
+            >
               <span
                 v-if="
                   profilePost.retweets_count !== '0' &&
@@ -678,19 +762,27 @@
                 <i class="fa fa-heart"></i>
                 {{ profilePost.likes_count | numFormat }}
               </span>
-            </span>
-
-            <span v-if="profilePost.source == 'facebook'">
               <span
                 v-if="
-                  profilePost.likes_count !== '0' && profilePost.likes_count
+                  profilePost.shares_count !== '0' && profilePost.shares_count
                 "
                 id="box-reaction"
                 v-b-tooltip.hover
-                title="Like"
+                title="Share"
               >
-                <i class="far fa-thumbs-up" />
-                {{ profilePost.likes_count | numFormat }}
+                <i class="fa fa-share"></i>
+                {{ profilePost.shares_count | numFormat }}
+              </span>
+              <span
+                v-if="
+                  profilePost.views_count !== '0' && profilePost.views_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="View"
+              >
+                <i class="fas fa-eye"></i>
+                {{ profilePost.views_count | numFormat }}
               </span>
             </span>
             <!-- share blockdit -->
@@ -1009,13 +1101,11 @@
             </span>
           </div>
           <!-- comment content -->
+          <!-- {{ profilePost.comments.length }} -->
           <b-collapse
             :id="'btn' + page + k"
             class="mt-2"
-            v-if="
-              profilePost.source !== 'facebook' &&
-                profilePost.source !== 'twitter'
-            "
+            v-if="profilePost.comments && profilePost.comments.length"
           >
             <b-card id="cmt-card" class="text-left">
               <span v-if="profilePost.source == 'news' && profilePost.comments">
@@ -1052,21 +1142,14 @@
                   <b-row>
                     <b-col lg="1">
                       <a
-                        :href="cmt.url"
-                        target="_blank"
-                        v-if="profilePost.source == 'pantip'"
-                      >
-                        <img
-                          :src="cmt.profile_image"
-                          id="img-cmt"
-                          v-bind:href="cmt.url"
-                      /></a>
-                      <a
                         :href="'https://www.youtube.com/' + cmt.author_link"
                         target="_blank"
                         v-if="profilePost.source == 'youtube'"
                       >
                         <img :src="cmt.photo" id="img-cmt"
+                      /></a>
+                      <a :href="cmt.url" target="_blank" v-else>
+                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url"
                       /></a>
 
                       <!-- <img v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
@@ -1074,14 +1157,6 @@
                     </b-col>
                     <b-col lg="11">
                       <div>
-                        <a :href="cmt.url" target="_blank">
-                          <span
-                            v-if="profilePost.source == 'pantip'"
-                            class="bold"
-                          >
-                            {{ cmt.username }}</span
-                          ></a
-                        >
                         <a
                           :href="'https://www.youtube.com/' + cmt.author_link"
                           target="_blank"
@@ -1094,11 +1169,8 @@
                             {{ cmt.author }}</span
                           ></a
                         >
-                        <span
-                          v-if="profilePost.source == 'pantip' && cmt.time"
-                          class="font-weight-light"
-                          id="cmt-time"
-                          >{{ cmt.time }}</span
+                        <a :href="cmt.url" target="_blank" v-else>
+                          <span class="bold"> {{ cmt.username }}</span></a
                         >
                         <span
                           v-if="profilePost.source == 'youtube' && cmt.time"
@@ -1107,18 +1179,19 @@
                           >{{ cmt.time.split("T")[0] }} |
                           {{ cmt.time.split("T")[1] }}</span
                         >
+                        <span v-else class="font-weight-light" id="cmt-time">{{
+                          cmt.time
+                        }}</span>
                       </div>
-                      <div
-                        v-if="profilePost.source == 'pantip'"
-                        class="font-weight-light"
-                      >
-                        {{ cmt.content }}
-                      </div>
+
                       <div
                         v-if="profilePost.source == 'youtube'"
                         class="font-weight-light"
                       >
                         {{ cmt.text }}
+                      </div>
+                      <div v-else class="font-weight-light">
+                        {{ cmt.content }}
                       </div>
                     </b-col>
                   </b-row>
@@ -1146,6 +1219,7 @@
   </div>
 </template>
 <script>
+
 import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
@@ -1157,10 +1231,10 @@ export default {
     Highlighter,
   },
   props: {
-    domainKeyword:{
+    domainKeyword: {
       type: String,
     },
-    crawdash:{
+    crawdash: {
       type: String,
     },
     menu: {
@@ -1198,13 +1272,13 @@ export default {
     },
   },
   watch: {
-    domainKeyword(val){
+    domainKeyword(val) {
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
     crawdash(val) {
-      console.log('crawdash',val);
+      console.log("crawdash", val);
       this.crawdash = val;
       this.page = 0;
       this.isInfinite = true;
@@ -1278,7 +1352,8 @@ export default {
   },
   data() {
     return {
-
+      emHtml:
+        '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@scout2015/video/6718335390845095173" data-video-id="6718335390845095173" data-embed-from="oembed" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@scout2015" href="https://www.tiktok.com/@scout2015?refer=embed">@scout2015</a> <p>Scramble up ur name & I’ll try to guess it😍❤️ <a title="foryoupage" target="_blank" href="https://www.tiktok.com/tag/foryoupage?refer=embed">#foryoupage</a> <a title="petsoftiktok" target="_blank" href="https://www.tiktok.com/tag/petsoftiktok?refer=embed">#petsoftiktok</a> <a title="aesthetic" target="_blank" href="https://www.tiktok.com/tag/aesthetic?refer=embed">#aesthetic</a></p> <a target="_blank" title="♬ original sound - 𝐇𝐚𝐰𝐚𝐢𝐢𓆉" href="https://www.tiktok.com/music/original-sound-6689804660171082501?refer=embed">♬ original sound - 𝐇𝐚𝐰𝐚𝐢𝐢𓆉</a> </section> </blockquote> ',
       objId: "",
       andkey: [],
       arrword: [],
@@ -1288,6 +1363,7 @@ export default {
       checked: true,
       pageCheck: "",
       heightword: [],
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1568,12 +1644,16 @@ export default {
       this.dataPhoto = data;
     },
     async infiniteScroll(acc, sort, offset, sentiment) {
-      acc = this.getProfileData;
+      // acc = this.getProfileData;
       sort = this.selectedSort;
       offset = this.page;
       sentiment = this.selected;
       if (this.getHashtagData) {
         var hashtag = this.getHashtagData.replace("#", "");
+      }
+      acc = this.getProfileData;
+      if (this.getValSource == "youtube") {
+        acc = this.getProfileData.replace("@", "");
       }
 
       var payload;
@@ -1767,10 +1847,10 @@ export default {
               dashboard: dash,
             };
           }
-          if ( this.domainKeyword) {
-              // console.log("keyword2",  this.domainKeyword);
-              payload.querySearch =  this.domainKeyword;
-            }
+          if (this.domainKeyword) {
+            // console.log("keyword2",  this.domainKeyword);
+            payload.querySearch = this.domainKeyword;
+          }
         } else {
           if (this.statusLocat == true) {
             // let sdateLocat =this.dateLocat[0].slice(0, 16);
@@ -1840,7 +1920,12 @@ export default {
     },
   },
   mounted() {
-    console.log("getClickDomain", this.getClickDomain);
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.tiktok.com/embed.js";
+    document.body.appendChild(script);
+
+    // console.log("getClickDomain", this.getClickDomain);
     this.$emitter.on("domainKeyword2", async (val) => {
       if (this.getClickDomain) {
         this.page = 0;
@@ -1858,6 +1943,9 @@ export default {
     });
   },
   async created() {
+   
+    this.username = localStorage.getItem("username");
+
     this.objId = localStorage.getItem("objId");
     // this.$store.dispatch("fetchListIssue");
     // this.$emitter.on("crawdash", async (val) => {
@@ -1906,7 +1994,14 @@ export default {
   },
 };
 </script>
-
+<style>
+iframe body {
+  overflow: hidden;
+}
+iframe html {
+  overflow: hidden !important;
+}
+</style>
 <style scoped>
 .box-hl {
   border-radius: 10px;

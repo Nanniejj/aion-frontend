@@ -15,14 +15,15 @@
             <img src="@/assets/cig.png" class="imgs" />
             <img src="@/assets/Block.png" class="imgs" />
             <img src="@/assets/tt.png" class="imgs" />
+            <img src="@/assets/ctd.png" class="imgs" />
           </div>
         </b-col>
         <b-col cols="10">
           <apexchart
-          ref="myBarChart"
+            ref="myBarChart"
             id="chart-domain"
             type="bar"
-            height="480"
+            height="535"
             :options="chartOptions"
             :series="series"
           ></apexchart>
@@ -76,9 +77,10 @@ export default {
           "#ffa67a",
           "#336db6",
           "#3f2e4c",
+          "#e75aa1",
         ],
         chart: {
-          height: 480,
+          height: 535,
           type: "bar",
           fontFamily: "Prompt, FontAwesome, sans-serif",
         },
@@ -190,7 +192,8 @@ export default {
           tyt = 0,
           tig = 0,
           tbd = 0,
-          ttt = 0;
+          ttt = 0,
+        ttd = 0;
         this.countlist = data.map((item) => {
           if (item.source === "youtube") {
             tyt = item.count;
@@ -216,6 +219,9 @@ export default {
           if (item.source === "tiktok") {
             ttt = item.count;
           }
+          if (item.source === "threads") {
+            ttd = item.count;
+          }
         });
         //console.log('ttttt',tfb,tn,tpt,ttw,tyt,tig);
         let temp = [
@@ -227,6 +233,7 @@ export default {
           0 + tig,
           0 + tbd,
           0 + ttt,
+          0 + ttd,
         ];
         // let temp = [0 + tfb, 0 + tn, 0 + tpt, 0 + ttw, 0 + tyt, 0 + tig,0 + tbd];
 
@@ -238,7 +245,7 @@ export default {
         ];
         this.chartOptions = {
           chart: {
-            height: 480,
+            height: 535,
             type: "bar",
             fontFamily: "Prompt, FontAwesome, sans-serif",
           },
@@ -302,7 +309,8 @@ export default {
         tyt = 0,
         tig = 0,
         tbd = 0,
-        ttt = 0;
+        ttt = 0,
+      ttd = 0;
       this.countlist = data.map((item) => {
         if (item.source === "youtube") {
           tyt = item.count;
@@ -328,6 +336,9 @@ export default {
         if (item.source === "tiktok") {
           ttt = item.count;
         }
+        if (item.source === "threads") {
+          ttd = item.count;
+        }
       });
       // console.log("ttttt", tfb, tn, tpt, ttw, tyt, tig);
       let temp = [
@@ -339,6 +350,7 @@ export default {
         0 + tig,
         0 + tbd,
         0 + ttt,
+        0 + ttd,
       ];
 
       this.series = [
@@ -354,7 +366,7 @@ export default {
         },
         chart: {
           type: "bar",
-          height: 480,
+          height: 535,
         },
         grid: {
           xaxis: {
@@ -389,6 +401,7 @@ export default {
           "#f97b3e",
           "#336db6",
           "#3f2e4c",
+          "#e75aa1",
         ],
         dataLabels: {
           enabled: true,

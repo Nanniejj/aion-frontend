@@ -18,7 +18,8 @@
       <span v-for="(postDomain, k) in dataPost" :key="k">
         <b-row class="m-auto">
           <b-col lg="auto" class="d-contents num">
-            <span class="print-text d-none">อันดับ </span> <b-avatar size="2em" variant="light"> {{ k + 1 }}</b-avatar>
+            <span class="print-text d-none">อันดับ </span>
+            <b-avatar size="2em" variant="light"> {{ k + 1 }}</b-avatar>
           </b-col>
           <b-col>
             <b-card
@@ -105,6 +106,11 @@
                         src="@/assets/Tiktok.png"
                         class="social-img"
                       />
+                      <img
+                        v-if="postDomain.source == 'threads'"
+                        src="@/assets/Threads.png"
+                        class="social-img"
+                      />
                     </span>
                   </b-col>
                   <b-col class="align-start w-auto" sm="8" lg="auto">
@@ -113,12 +119,23 @@
                       <span
                         ><b> {{ postDomain.account_name }} </b></span
                       >
-                      <a
-                        v-bind:href="postDomain.url_post"
-                        class="fa fa-external-link"
-                        target="_blank"
-                      ></a
-                    ></span>
+                     
+                <a
+                  v-if="
+                    postDomain.url_post &&
+                    postDomain.url_post.includes('mbasic')
+                  "
+                  v-bind:href="postDomain.url_post.replace('mbasic.', '')"
+                  class="fa fa-external-link"
+                  target="_blank"
+                ></a>
+                <a
+                  v-else
+                  v-bind:href="postDomain.url_post"
+                  class="fa fa-external-link"
+                  target="_blank"
+                ></a>
+                  </span>
                     <div class="font-weight-light small" v-if="postDomain.date">
                       {{ postDomain.date.split("T")[0] }} |
                       {{ postDomain.date.split("T")[1] }}
@@ -477,6 +494,42 @@
                   </div>
                 </b-col>
               </b-row>
+              <div
+          class="text-left ai-box mt-2"
+          v-if="postDomain && postDomain.ocr &&username=='adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-for="(text, idx) in postDomain.ocr">
+            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+                       <div v-if="text.text_sort && text.text_sort.length">
+              <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text.text_sort[0] }}
+            </div>
+            <div v-if="text.face">
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
+                  <span
+                    style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                  >
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name.replace("_", " ") }}
+                    <span
+                      v-b-tooltip.hover
+                      :title="'ค่า confidence'"
+                      class="small"
+                      >({{
+                        parseFloat((face.confidence * 100).toFixed(2))
+                      }}%)</span
+                    ></span
+                  ></span
+                >
+              </span>
+            </div>
+          </div>
+        </div>
               <template #footer>
                 <div class="text-left md-font">
                   <!------------- engages-------------- -->
@@ -526,7 +579,7 @@
                   </span>
 
                   <!-- twitter -->
-                  <span v-if="postDomain.source == 'twitter'">
+                  <span v-if="postDomain.source !== 'facebook'&&postDomain.source !== 'youtube'">
                     <span
                       v-if="
                         postDomain.retweets_count !== '0' &&
@@ -541,7 +594,8 @@
                     </span>
                     <span
                       v-if="
-                        postDomain.likes_count !== '0' && postDomain.likes_count
+                        postDomain.likes_count !== '0' &&
+                          postDomain.likes_count
                       "
                       id="box-reaction"
                       v-b-tooltip.hover
@@ -549,6 +603,30 @@
                     >
                       <i class="fa fa-heart"></i>
                       {{ postDomain.likes_count | numFormat }}
+                    </span>
+                    <span
+                      v-if="
+                        postDomain.shares_count !== '0' &&
+                          postDomain.shares_count
+                      "
+                      id="box-reaction"
+                      v-b-tooltip.hover
+                      title="Share"
+                    >
+                      <i class="fa fa-share"></i>
+                      {{ postDomain.shares_count | numFormat }}
+                    </span>
+                    <span
+                      v-if="
+                        postDomain.views_count !== '0' &&
+                          postDomain.views_count
+                      "
+                      id="box-reaction"
+                      v-b-tooltip.hover
+                      title="View"
+                    >
+                      <i class="fas fa-eye"></i>
+                      {{ postDomain.views_count | numFormat }}
                     </span>
                   </span>
                   <!-- share blockdit -->
@@ -883,10 +961,7 @@
                 <b-collapse
                   :id="'btn' + page + k"
                   class="mt-2"
-                  v-if="
-                    postDomain.source !== 'facebook' &&
-                      postDomain.source !== 'twitter'
-                  "
+                  v-if="postDomain.comments && postDomain.comments.length"
                 >
                   <b-card id="cmt-card" class="text-left">
                     <span
@@ -924,37 +999,43 @@
                       <div v-for="(cmt, i) in postDomain.comments" :key="i">
                         <b-row>
                           <b-col lg="1">
-                            <img
-                              v-if="postDomain.source == 'pantip'"
-                              :src="cmt.profile_image"
-                              id="img-cmt"
-                            />
-                            <img
+                            <a
+                              :href="
+                                'https://www.youtube.com/' + cmt.author_link
+                              "
+                              target="_blank"
                               v-if="postDomain.source == 'youtube'"
-                              :src="cmt.photo"
-                              id="img-cmt"
-                            />
+                            >
+                              <img :src="cmt.photo" id="img-cmt"
+                            /></a>
+                            <a :href="cmt.url" target="_blank" v-else>
+                              <img
+                                :src="cmt.photo"
+                                id="img-cmt"
+                                v-bind:href="cmt.url"
+                            /></a>
 
                             <!-- <img v-if="postDomain.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                             <span> </span>
                           </b-col>
                           <b-col lg="11">
                             <div>
-                              <span
-                                v-if="postDomain.source == 'pantip'"
-                                class="bold"
-                                >{{ cmt.username }}</span
-                              >
-                              <span
+                              <a
+                                :href="
+                                  'https://www.youtube.com/' + cmt.author_link
+                                "
+                                target="_blank"
                                 v-if="postDomain.source == 'youtube'"
-                                class="bold"
-                                >{{ cmt.author }}</span
                               >
-                              <span
-                                v-if="postDomain.source == 'pantip' && cmt.time"
-                                class="font-weight-light"
-                                id="cmt-time"
-                                >{{ cmt.time }}</span
+                                <span
+                                  v-if="postDomain.source == 'youtube'"
+                                  class="bold"
+                                >
+                                  {{ cmt.author }}</span
+                                ></a
+                              >
+                              <a :href="cmt.url" target="_blank" v-else>
+                                <span class="bold"> {{ cmt.username }}</span></a
                               >
                               <span
                                 v-if="
@@ -965,18 +1046,22 @@
                                 >{{ cmt.time.split("T")[0] }} |
                                 {{ cmt.time.split("T")[1] }}</span
                               >
+                              <span
+                                v-else
+                                class="font-weight-light"
+                                id="cmt-time"
+                                >{{ cmt.time }}</span
+                              >
                             </div>
-                            <div
-                              v-if="postDomain.source == 'pantip'"
-                              class="font-weight-light"
-                            >
-                              {{ cmt.content }}
-                            </div>
+
                             <div
                               v-if="postDomain.source == 'youtube'"
                               class="font-weight-light"
                             >
                               {{ cmt.text }}
+                            </div>
+                            <div v-else class="font-weight-light">
+                              {{ cmt.content }}
                             </div>
                           </b-col>
                         </b-row>
@@ -1017,6 +1102,7 @@ export default {
       textToHighlight: "",
       accName: "",
       objId: "",
+            username:"",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1176,6 +1262,7 @@ export default {
   },
 
   async created() {
+    this.username = localStorage.getItem("username");
     this.objId = localStorage.getItem("objId");
     this.sdate =
       moment(new Date())

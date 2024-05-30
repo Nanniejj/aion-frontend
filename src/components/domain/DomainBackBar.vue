@@ -53,13 +53,13 @@
           style="cursor: pointer"
           @click="printWindow()"
         ></i>
-         <i
-      @click="toReport"
-      class="fas fa-file-export"
-      style="font-size:25px;margin-right:7px;cursor: pointer"
-      v-b-tooltip.hover
-      title="Export Report"
-    ></i>
+        <i
+          @click="toReport"
+          class="fas fa-file-export"
+          style="font-size:25px;margin-right:7px;cursor: pointer"
+          v-b-tooltip.hover
+          title="Export Report"
+        ></i>
         <!-- <ExportDocx style="cursor: pointer;" :key="componentKey" @click="reloadComponent" /> -->
       </b-col>
     </b-row>
@@ -106,12 +106,12 @@ export default {
     };
   },
   methods: {
-    toReport(){
-      window.dispatchEvent(new Event('resize'))
-      this.$store.commit('setShowReport',true)
+    toReport() {
+      window.dispatchEvent(new Event("resize"));
+      this.$store.commit("setShowReport", true);
       // this.$router.push({name:'DomainReport'})
     },
-     reloadComponent() {
+    reloadComponent() {
       // เพิ่มค่า key เพื่อทำให้ Vue.js ทำการ render component ใหม่
       this.componentKey += 1;
     },
@@ -194,6 +194,7 @@ export default {
     localStorage.removeItem("updated_until");
   },
   mounted() {
+   
     let date = localStorage.getItem("updated_until");
     // let datearr = date.split("T");
     let datearr;
@@ -207,6 +208,7 @@ export default {
     // let datetime = datearr[0] + " " + datearr[1].slice(0, 5);
     //  console.log('date',datearr,datearr2);
     this.updated_until = datearr;
+   
   },
 };
 </script>

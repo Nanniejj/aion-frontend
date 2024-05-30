@@ -362,13 +362,58 @@
             </div>
           </b-col>
         </b-row>
+        <div
+          class="text-left ai-box mt-2"
+          v-if="datas && datas.ocr &&username=='adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-for="(text, idx) in datas.ocr">
+            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+            <div v-if="text.text_sort && text.text_sort.length">
+              <b-avatar
+                size="18px"
+                style="font-size: 12px;background-color:#8b8787;"
+                class="mr-1"
+                >{{ idx + 1 }}
+              </b-avatar>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text.text_sort[0] }}
+            </div>
+            <div v-if="text.face">
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
+                  <span
+                    style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                  >
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name.replace("_", " ") }}
+                    <span
+                      v-b-tooltip.hover
+                      :title="'ค่า confidence'"
+                      class="small"
+                      >({{
+                        parseFloat((face.confidence * 100).toFixed(2))
+                      }}%)</span
+                    ></span
+                  ></span
+                >
+              </span>
+            </div>
+          </div>
+        </div>
         <template #footer>
           <div class="comment-img">
             <!-- popover user comment -->
             <popover
               :name="'foo' + k"
               id="foo"
-              v-if="datas.source !== 'facebook' && datas.source !== 'twitter'"
+              v-if="
+                datas.source !== 'facebook' &&
+                  datas.source !== 'youtube' &&
+                  datas.source !== 'twitter'
+              "
             >
               <div class="text-center">
                 <i class="fa fa-user-circle" aria-hidden="true"></i>
@@ -498,7 +543,9 @@
             </span>
 
             <!-- twitter -->
-            <span v-if="datas.source == 'twitter'">
+            <span
+              v-if="datas.source !== 'facebook' && datas.source !== 'youtube'"
+            >
               <span
                 v-if="datas.retweets_count !== '0' && datas.retweets_count"
                 id="box-reaction"
@@ -514,9 +561,29 @@
                 v-b-tooltip.hover
                 title="Like"
               >
-                <i class="fa fa-heart"></i> {{ datas.likes_count | numFormat }}
+                <i class="fa fa-heart"></i>
+                {{ datas.likes_count | numFormat }}
+              </span>
+              <span
+                v-if="datas.shares_count !== '0' && datas.shares_count"
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="Share"
+              >
+                <i class="fa fa-share"></i>
+                {{ datas.shares_count | numFormat }}
+              </span>
+              <span
+                v-if="datas.views_count !== '0' && datas.views_count"
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="View"
+              >
+                <i class="fas fa-eye"></i>
+                {{ datas.views_count | numFormat }}
               </span>
             </span>
+
             <!-- reaction-->
             <span v-if="datas.reaction">
               <span v-if="datas.reaction != ''">
@@ -781,11 +848,11 @@
             </span>
             <!-- comment content -->
             <b-collapse
-              :id="'btn' + offset + k"
+              :id="'btn' + page + k"
               class="mt-2"
-              v-if="datas.source !== 'facebook' && datas.source !== 'twitter'"
+              v-if="datas.comments && datas.comments.length"
             >
-              <b-card id="cmt-card">
+              <b-card id="cmt-card" class="text-left">
                 <span v-if="datas.source == 'news' && datas.comments">
                   <div
                     v-for="(cmtn, inx) in datas.comments.comments"
@@ -793,7 +860,11 @@
                   >
                     <b-row>
                       <b-col lg="1">
-                        <img :src="cmtn.pictureUrl" id="img-cmt" />
+                        <img
+                          :src="cmtn.pictureUrl"
+                          id="img-cmt"
+                          @error="setAltImg"
+                        />
                       </b-col>
                       <b-col lg="11">
                         <div>
@@ -815,33 +886,36 @@
                   <div v-for="(cmt, i) in datas.comments" :key="i">
                     <b-row>
                       <b-col lg="1">
-                        <img
-                          v-if="datas.source == 'pantip'"
-                          :src="cmt.profile_image"
-                          id="img-cmt"
-                        />
-                        <img
+                        <a
+                          :href="'https://www.youtube.com/' + cmt.author_link"
+                          target="_blank"
                           v-if="datas.source == 'youtube'"
-                          :src="cmt.photo"
-                          id="img-cmt"
-                        />
+                        >
+                          <img :src="cmt.photo" id="img-cmt"
+                        /></a>
+                        <a :href="cmt.url" target="_blank" v-else>
+                          <img
+                            :src="cmt.photo"
+                            id="img-cmt"
+                            v-bind:href="cmt.url"
+                        /></a>
 
                         <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                         <span> </span>
                       </b-col>
                       <b-col lg="11">
                         <div>
-                          <span v-if="datas.source == 'pantip'" class="bold">{{
-                            cmt.username
-                          }}</span>
-                          <span v-if="datas.source == 'youtube'" class="bold">{{
-                            cmt.author
-                          }}</span>
-                          <span
-                            v-if="datas.source == 'pantip' && cmt.time"
-                            class="font-weight-light"
-                            id="cmt-time"
-                            >{{ cmt.time }}</span
+                          <a
+                            :href="'https://www.youtube.com/' + cmt.author_link"
+                            target="_blank"
+                            v-if="datas.source == 'youtube'"
+                          >
+                            <span v-if="datas.source == 'youtube'" class="bold">
+                              {{ cmt.author }}</span
+                            ></a
+                          >
+                          <a :href="cmt.url" target="_blank" v-else>
+                            <span class="bold"> {{ cmt.username }}</span></a
                           >
                           <span
                             v-if="datas.source == 'youtube' && cmt.time"
@@ -850,16 +924,22 @@
                             >{{ cmt.time.split("T")[0] }} |
                             {{ cmt.time.split("T")[1] }}</span
                           >
-                          <!-- <span v-if="cmt.time" class="font-weight-light" id="cmt-time">
-                   {{new Date(cmt.time).split("T")[0] }} |
-                  {{new Date( cmt.time).split("T")[1] }}
-                  </span>  -->
+                          <span
+                            v-else
+                            class="font-weight-light"
+                            id="cmt-time"
+                            >{{ cmt.time }}</span
+                          >
                         </div>
-                        <div v-if="datas.source == 'pantip'">
-                          {{ cmt.content }}
-                        </div>
-                        <div v-if="datas.source == 'youtube'">
+
+                        <div
+                          v-if="datas.source == 'youtube'"
+                          class="font-weight-light"
+                        >
                           {{ cmt.text }}
+                        </div>
+                        <div v-else class="font-weight-light">
+                          {{ cmt.content }}
                         </div>
                       </b-col>
                     </b-row>
@@ -948,6 +1028,7 @@ export default {
   },
   data() {
     return {
+      username:"",
       dataDomain: "",
       default_avatar: "user.svg",
       visible: false,
@@ -1187,6 +1268,7 @@ export default {
     },
   },
   created(sort, offset) {
+    this.username = localStorage.getItem("username");
     let domainName = this.getShowDomain.map((key) => {
       return key.name;
     });

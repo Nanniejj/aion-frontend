@@ -2,6 +2,7 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
     <div id="content">
+      <!-- {{ valueDate }} -->
       <h1 class="title">Hashtag</h1>
       <h4 class="title-monitor">
         <router-link :to="{ name: 'Monitor' }">Monitor </router-link>
@@ -44,15 +45,19 @@ import HashtagInfo from "@/components/hashtag/HashtagInfo.vue";
 import HomeNav from "@/components/HomeNav.vue";
 import HashtagTab from "@/components/hashtag/HashtagTab.vue";
 import { mapGetters } from "vuex";
+import moment from "moment";
+
 export default {
   computed: {
-    ...mapGetters(["getCnt","getProfileData","getHashtagData"]),
+    ...mapGetters(["getCnt", "getProfileData", "getHashtagData"]),
   },
   data() {
     return {
-      valueDate: "",
+      valueDate: [this.datearre, this.datearrs],
       start_date: "",
       end_date: "",
+      datearrs: null,
+      datearre: null,
     };
   },
   components: {
@@ -60,8 +65,8 @@ export default {
     HashtagInfo,
     HashtagTab,
   },
-  methods:{
-     selectData() {
+  methods: {
+    selectData() {
       //console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         this.start_date = "";
@@ -85,33 +90,51 @@ export default {
       // });
     },
   },
- 
-   
-  async created() {
 
-      if (this.getHashtagData) {
-        var hashtag = this.getHashtagData.replace("#", "");
-        localStorage.setItem("hash", hashtag);
-        await this.$store.dispatch("fetchProfileMonitor", {
-          query: hashtag,
-          api_type: "hashtag",
-          top_type: "domain",
-          sort_by: "",
-        });
-        this.$store.commit("setCnt2", this.getCnt);
-      } else {
-        this.$store.commit("setHashtagData", localStorage.getItem("hash"));
-        await this.$store.dispatch("fetchProfileMonitor", {
-          query: localStorage.getItem("hash"),
-          api_type: "hashtag",
-          top_type: "domain",
-          sort_by: "",
-        });
-        console.log("getCnt", this.getCnt);
-        this.$store.commit("setCnt2", this.getCnt);
-      }
-  
-    
+  mounted() {},
+  async created() {
+    var currentTime = new Date();
+    currentTime.setDate(currentTime.getDate() - 6);
+    this.datearre = moment(new Date())
+      .format()
+      .slice(0, 10);
+    this.datearrs = moment(currentTime)
+      .format()
+      .slice(0, 10);
+    this.valueDate = [this.datearrs, this.datearre];
+    this.start_date = this.valueDate[0] + "T00:00:00";
+    this.end_date = this.valueDate[1] + "T23:59:59";
+    this.$store.commit("setSDateHt", this.start_date);
+    this.$store.commit("setEDateHt", this.end_date);
+    this.$store.commit("setArrDateHashtag", this.valueDate);
+    // console.log(
+    //   "     this.datearre ",
+    //   this.datearrs,
+    //   this.datearre,
+    //   this.valueDate
+    // );
+    if (this.getHashtagData) {
+      var hashtag = this.getHashtagData.replace("#", "");
+      localStorage.setItem("hash", hashtag);
+      await this.$store.dispatch("fetchProfileMonitor", {
+        query: hashtag,
+        api_type: "hashtag",
+        top_type: "domain",
+        sort_by: "",
+       
+      });
+      this.$store.commit("setCnt2", this.getCnt);
+    } else {
+      this.$store.commit("setHashtagData", localStorage.getItem("hash"));
+      await this.$store.dispatch("fetchProfileMonitor", {
+        query: localStorage.getItem("hash"),
+        api_type: "hashtag",
+        top_type: "domain",
+        sort_by: "",
+      });
+      console.log("getCnt", this.getCnt);
+      this.$store.commit("setCnt2", this.getCnt);
+    }
   },
 };
 </script>

@@ -20,7 +20,7 @@
         </div>
       </b-col>
     </b-row>
-    <b-container>
+
       <b-row>
         <b-col lg="6">
           <span class="mt-3 mb-3 box-domain">
@@ -52,6 +52,9 @@
                 </li>
                 <li v-on:click="tiktok()" id="tt">
                   <a><img src="@/assets/Tiktok.png" class="imgsocial"/></a>
+                </li>
+                <li v-on:click="threads()" id="td">
+                  <a><img src="@/assets/Threads.png" class="imgsocial"/></a>
                 </li>
               </ul>
             </div>
@@ -146,6 +149,11 @@
                     src="@/assets/Tiktok.png"
                     class="imgsocial"
                   />
+                  <img
+                    v-else-if="social == 'threads'"
+                    src="@/assets/Threads.png"
+                    class="imgsocial"
+                  />
                   <span class="all allsel" v-else> All </span>
                 </span>
               </b-col>
@@ -198,10 +206,13 @@
           </span>
         </b-col>
       </b-row>
+      
       <div>
+        <b-container>
         <RankingTab v-show="getSubmitRanking" />
+        </b-container>
       </div>
-    </b-container>
+
   </div>
 </template>
 
@@ -231,7 +242,7 @@ export default {
       tab_selected_detail_social: "all",
       // tab_selected_social: "all",
       selected: 0,
-      social: "facebook,twitter,news,pantip,instagram,youtube",
+      social: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
       datearrs: null,
       datearre: null,
       valueDate: [this.datearre, this.datearrs],
@@ -363,7 +374,7 @@ export default {
       }
     },
     all() {
-      this.social = "facebook,twitter,news,pantip,instagram,youtube";
+      this.social = "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads";
       document.getElementById("all").style.opacity = "1";
       document.getElementById("fb").style.opacity = "0.3";
       document.getElementById("tw").style.opacity = "0.3";
@@ -373,6 +384,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     facebook() {
       this.social = "facebook";
@@ -385,6 +397,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     twitter() {
       this.social = "twitter";
@@ -397,6 +410,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     pantip() {
       this.social = "pantip";
@@ -409,6 +423,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     youtube() {
       this.social = "youtube";
@@ -421,6 +436,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     instagram() {
       this.social = "instagram";
@@ -433,6 +449,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     news() {
       this.social = "news";
@@ -445,6 +462,7 @@ export default {
       document.getElementById("itg").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     blockdit() {
       this.social = "blockdit";
@@ -457,6 +475,7 @@ export default {
       document.getElementById("itg").style.opacity = "0.3";
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     tiktok() {
       this.social = "tiktok";
@@ -469,6 +488,20 @@ export default {
       document.getElementById("yt").style.opacity = "0.3";
       document.getElementById("itg").style.opacity = "0.3";
       document.getElementById("nw").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
+    },
+    threads() {
+      this.social = "threads";
+      document.getElementById("td").style.opacity = "1";
+      document.getElementById("bd").style.opacity = "0.3";
+      document.getElementById("all").style.opacity = "0.3";
+      document.getElementById("fb").style.opacity = "0.3";
+      document.getElementById("tw").style.opacity = "0.3";
+      document.getElementById("pt").style.opacity = "0.3";
+      document.getElementById("yt").style.opacity = "0.3";
+      document.getElementById("itg").style.opacity = "0.3";
+      document.getElementById("nw").style.opacity = "0.3";
+      document.getElementById("tt").style.opacity = "0.3";
     },
   },
   created: function() {

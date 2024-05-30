@@ -90,7 +90,7 @@ export default {
       ],
       selectFilter: "domain",
       select: "posts",
-      options: ["posts", "engages"],
+      options: ["posts","comments","messages", "engages"],
       startd: "",
       endd: "",
       filter: 0,

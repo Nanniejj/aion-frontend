@@ -65,9 +65,14 @@
                   src="@/assets/Blockdit.png"
                   class="social-img"
                 />
-                  <img
+                <img
                   v-if="user.items.details.source == 'tiktok'"
                   src="@/assets/Tiktok.png"
+                  class="social-img"
+                />
+                <img
+                  v-if="user.items.details.source == 'threads'"
+                  src="@/assets/Threads.png"
                   class="social-img"
                 />
               </template> </b-avatar
@@ -82,7 +87,7 @@
               user.items.details.account_name
             }}</a>
           </div>
-          <hr />
+          <!-- <hr /> -->
 
 
    <!-- tiktok engage -->
@@ -92,6 +97,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -125,6 +131,7 @@
 
            <!-- blockdit engage -->
           <b-row
+          class="d-none"
             v-if="user.items.details.source == 'blockdit'"
             id="score-data"
             cols-lg="auto"
@@ -163,6 +170,7 @@
 
  <!-- ig engage -->
           <b-row
+          class="d-none"
             v-if="user.items.details.source == 'instagram'"
             id="score-data"
             cols-lg="auto"
@@ -209,6 +217,7 @@
 
           <!-- fb engage -->
           <b-row
+          class="d-none"
             v-if="user.items.details.source == 'facebook'"
             id="score-data"
             cols-lg="auto"
@@ -272,6 +281,7 @@
             cols-lg="auto"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="follower">
               <b-row>
@@ -325,6 +335,7 @@
             cols-lg="1"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -364,6 +375,7 @@
             cols-lg="1"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>
@@ -403,6 +415,7 @@
             cols-lg="1"
             cols="1"
             cols-md="1"
+            class="d-none"
           >
             <b-col v-b-tooltip.hover title="posts">
               <b-row>

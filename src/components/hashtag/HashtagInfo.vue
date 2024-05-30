@@ -53,6 +53,11 @@
                 src="@/assets/Tiktok.png"
                 class="social-img"
               />
+              <img
+                v-if="getValSource == 'threads'"
+                src="@/assets/Threads.png"
+                class="social-img"
+              />
             </span>
           </div>
         </b-col>
@@ -66,7 +71,7 @@
               color="#fff"
               spinner=""
             />
-            {{ getCnt2 | numFormat }} โพสต์
+            {{ getCnt | numFormat }} โพสต์
           </div>
         </b-col>
       </b-row>

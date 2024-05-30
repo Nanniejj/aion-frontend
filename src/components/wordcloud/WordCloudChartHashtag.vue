@@ -456,7 +456,7 @@
                     >
                       <span id="day">
                         <Sentimentv2 :chartData="getSentimentHashtagAll" />
-                        <!-- <SentimentChart :chartData="getSentimentHashtagAll" :source="'facebook,twitter,news,pantip,instagram,youtube'" /> -->
+                        <!-- <SentimentChart :chartData="getSentimentHashtagAll" :source="'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'" /> -->
                       </span>
                     </span>
                     <span
@@ -588,7 +588,7 @@ export default {
       tab_selected_detail_social: "all",
       tab_selected_social: "all",
       edited: false,
-      socialname: "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+      socialname: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok",
     };
   },
   components: {
@@ -606,7 +606,7 @@ export default {
     // },
     all() {
       this.tab_selected_detail_social = "all";
-      this.socialname = "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok";
+      this.socialname = "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok";
       //this.$store.commit("setHashtagSocial", this.socialname);
     },
        tiktok() {
@@ -657,7 +657,7 @@ export default {
         domainarr = "";
       }
       let socials = [
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok",
         "facebook",
         "twitter",
         "news",
@@ -704,7 +704,7 @@ export default {
         domainarr = "";
       }
       let socials = [
-        "facebook,twitter,news,pantip,instagram,youtube,blockdit,tiktok",
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok",
         "facebook",
         "twitter",
         "news",

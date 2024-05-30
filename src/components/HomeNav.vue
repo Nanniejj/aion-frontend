@@ -92,6 +92,18 @@
               ></router-link
             >
           </li>
+          <li class="nav-item" id="li-nav" v-if="username =='adminatapy'||username =='squattest01'||username =='squattest02'||username =='squattest03'">
+            <router-link to="/map" tag="p"
+              ><a class="nav-link"
+                ><img
+                  src="../assets/mapx.png"
+                  alt="logo"
+                  class="img-nav"
+                  style="margin-bottom: 8px"
+                /><strong>Map</strong><span class="small"> (beta)</span></a
+              ></router-link
+            >
+          </li>
           <li class="nav-item" id="li-nav" >
             <router-link to="/influencertop" tag="p"
               ><a class="nav-link"
@@ -103,7 +115,16 @@
               ></router-link
             >
           </li>
-        
+          <li class="nav-item " id="li-nav"  v-if="username =='adminatapy'">
+          <a class="nav-link" href="https://link.cognizata.com" target="_blank"
+                ><img
+                 src="@/assets/Infurncer.png"
+                  alt="logo"
+                  class="img-nav"
+                  style="margin-bottom: 8px"
+                /><strong>Link</strong></a
+              >
+          </li>
 
           <li class="nav-item" id="li-nav" >
             <router-link to="/hotissue" tag="p"
@@ -189,7 +210,7 @@
             </div>
           </li>
           <li
-            class=" nav-item dropdown"
+            class=" nav-item dropdown d-none"
             id="li-nav"
           >
             <a
@@ -324,6 +345,17 @@
               </a>
             </router-link>
           </b-nav-item>
+          <!-- {{ username }} -->
+          <b-nav-item id="nav-con1"  class="" v-if="username =='adminatapy'||username =='squattest01'||username =='squattest02'||username =='squattest03'">
+            <router-link to="/map" tag="p">
+              <a class="nav-link">
+                <img src="@/assets/mapx.png" alt="logo" class="img-nav" />
+                <a class="nav-link titlenav">
+                  <strong>Map</strong><span class="small"> (beta)</span>
+                </a>
+              </a>
+            </router-link>
+          </b-nav-item>
           <!-- <b-nav-item id="nav-con3">
             <router-link to="/home/clustering" tag="p">
               <a class="nav-link">
@@ -343,6 +375,17 @@
                 </a>
               </a>
             </router-link>
+          </b-nav-item>
+         
+          <b-nav-item id="nav-con1" class=""  href="https://link.cognizata.com" target="_blank" v-if="username =='adminatapy'">
+            <!-- <router-link to="" tag="p"> -->
+              <a class="nav-link"  >
+                <img src="@/assets/Infurncer.png" alt="logo" class="img-nav" />
+                <div class="nav-link titlenav">
+                  <strong> Link</strong>
+                </div>
+              </a>
+            <!-- </router-link> -->
           </b-nav-item>
           <!-- <b-nav-item>
             <b-nav-item-dropdown no-caret menu-class="item-css" id="nav-con1">
@@ -488,7 +531,7 @@
             </b-nav-item-dropdown>
           </b-nav-item>
           <b-nav-item id="nav-con1" >
-            <b-nav-item-dropdown no-caret id="dp-color" class="">
+            <b-nav-item-dropdown no-caret id="dp-color" class=" d-none">
               <template slot="button-content">
                 <a
                   class="nav-link"

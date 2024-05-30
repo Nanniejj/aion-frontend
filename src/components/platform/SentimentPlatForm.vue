@@ -94,7 +94,8 @@ export default {
       "getInstagram",
       "getNamePlatform",
       "getBlockdit",
-      "getTiktok"
+      "getTiktok",
+      "getThreads"
     ]),
     getData(){
       var data;
@@ -112,6 +113,8 @@ export default {
         data = this.getBlockdit.total_sentiments;
       } else if (this.getNamePlatform == "tiktok") {
         data = this.getTiktok.total_sentiments;
+      }else if (this.getNamePlatform == "threads") {
+        data = this.getThreads.total_sentiments;
       } else {
         data = this.getInstagram.total_sentiments;
       }

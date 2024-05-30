@@ -99,6 +99,7 @@ export default {
       localStorage.removeItem("section");
       localStorage.removeItem("valmonitor");
       localStorage.removeItem("domainArr");
+      this.$store.commit("setPushDomainStat", false);
       localStorage.removeItem("issue");
       localStorage.removeItem("roleMion");
       localStorage.removeItem('tabMonitor')

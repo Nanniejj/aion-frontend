@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- {{getListMonitorProfile.targetlist.length}} -->
-    <button class="btn btn-add" @click="open = true">
+   <button class="btn btn-add" @click="open = true">
       <i class="fa fa-plus" />
       <span style="font-size: 16px" v-if="tabsMonitor == 'tabProfile'">
         เพิ่มบัญชี
@@ -369,8 +369,6 @@ td {
 
 @media only screen and (min-width: 0px) and (max-width: 600px) {
   .btn-add {
-    margin: auto;
-    display: block;
     margin-top: 20px;
   }
 }

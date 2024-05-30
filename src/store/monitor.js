@@ -1,12 +1,18 @@
 import { MonitorService } from "@/common/api.services";
 import { DomainService } from "@/common/api.services";
 import { API_V2_URL } from "@/common/config";
-
+import moment from "moment";
 export default {
   state: {
-    loadKeyword:false,
-    keywordCount:{fb:0,tw:0},
-    keywordName:"",
+    mapstatic: [],
+    loadMapstatic: false,
+    loadMapStat: false,
+    locationStat: [],
+    locationPost: [],
+    loadKeyword: false,
+    loadMapPost: false,
+    keywordCount: { fb: 0, tw: 0 },
+    keywordName: "",
     keywordPost: [],
     keywordMonitor: [],
     mapdata: [],
@@ -117,6 +123,24 @@ export default {
     socialmo: "",
   },
   getters: {
+    getMapStatic: (state) => {
+      return state.mapstatic;
+    },
+    getLocationStat: (state) => {
+      return state.locationStat;
+    },
+    getLoadMapStat: (state) => {
+      return state.loadMapStat;
+    },
+    getLoadMapStatic: (state) => {
+      return state.loadMapstatic;
+    },
+    getLoadMapPost: (state) => {
+      return state.loadMapPost;
+    },
+    getLocationPost: (state) => {
+      return state.locationPost;
+    },
     getLoadKeyword: (state) => {
       return state.loadKeyword;
     },
@@ -227,8 +251,26 @@ export default {
     },
   },
   mutations: {
+    setMapStatic: (state, payload) => {
+      state.mapstatic = payload;
+    },
+    setLocationStat: (state, payload) => {
+      state.locationStat = payload;
+    },
+    setLocationPost: (state, payload) => {
+      state.locationPost = payload;
+    },
+    setLoadMapStat: (state, payload) => {
+      state.loadMapStat = payload;
+    },
+    setLoadMapStatic: (state, payload) => {
+      state.loadMapstatic=payload
+    },
+    setLoadMapPost: (state, payload) => {
+      state.loadMapPost = payload;
+    },
     setLoadKeyword: (state, payload) => {
-     state.loadKeyword = payload;
+      state.loadKeyword = payload;
     },
     setKeywordCount: (state, payload) => {
       state.keywordCount = payload;
@@ -395,27 +437,191 @@ export default {
     },
   },
   actions: {
-    async PostsKeyword({ commit, dispatch }, payload) {
-      commit('setLoadKeyword',true)
+    async apiLocationStat({ commit, dispatch, state }, payload) {
+      commit("setLoadMapStat", true);
       var axios = require("axios");
       var config = {
         method: "get",
-        url: API_V2_URL+"/api/v2/keyword/getKeywordPosts",
-        params:payload,
+        url: API_V2_URL + "/api/v2/userposts/getLocationStat",
+        params: payload,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",
         },
       };
-     
+
       axios(config)
         .then((res) => {
-          commit('setLoadKeyword',false)
+          // handle success
+          commit("setLoadMapStat", false);
+          console.log("datastat", res.data);
+          commit("setLocationStat", res.data.result);
+          
+        })
+        .catch((error) => {
+          commit("setLoadMapStat", false);
+          // state.loadMapPost=false
+          alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+          console.log(error);
+        });
+    },
+    async apiMapStatic({ commit, dispatch, state }, payload) {
+      commit("setLoadMapStatic", true);
+      var axios = require("axios");
+      var config = {
+        method: "get",
+        url: API_V2_URL  + "/api/v2/userposts/getLocationPost",
+        params: payload,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+
+      axios(config)
+        .then((res) => {
+          // handle success
+
+          // var pair = { read: true };
+          res.data.data.map((result) => {
+            result.read = true;
+          });
+
+          var getDaysArray = function(s, e) {
+            for (
+              var a = [], d = new Date(s);
+              d <= e;
+              d.setDate(d.getDate() + 1)
+            ) {
+              a.push(new Date(d));
+            }
+            return a;
+          };
+          let Sdate = payload.start;
+          let Edate = payload.end;
+          var daylist = getDaysArray(new Date(Sdate), new Date(Edate));
+          daylist
+            .map((v) =>
+              moment(v)
+                .format()
+                .slice(0, 10)
+            )
+            .join("");
+          res.data.static.avgComment =
+            res.data.static.comments_count / daylist.length;
+          res.data.static.avgEngage =
+            res.data.static.engagement / daylist.length;
+
+          let sum =
+            res.data.static.positiveSentiment +
+            res.data.static.neutralSentiment +
+            res.data.static.negativeSentiment;
+          res.data.static.valpos =
+            (res.data.static.positiveSentiment * 100) / sum;
+          res.data.static.val = (res.data.static.neutralSentiment * 100) / sum;
+          res.data.static.valnag =
+            (res.data.static.negativeSentiment * 100) / sum;
+          commit("setLoadMapStatic", false);
+          commit("setMapStatic", res.data);
+          // state.loadMapPost=false
+        })
+        .catch((error) => {
+          commit("setLoadMapStatic", false);
+          // state.loadMapPost=false
+          alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+          console.log(error);
+        });
+    },
+    async apiLocationPost({ commit, dispatch, state }, payload) {
+      //API_V2_URL
+      commit("setLoadMapPost", true);
+      var axios = require("axios");
+      var config = {
+        method: "get",
+        url: API_V2_URL + "/api/v2/userposts/getLocationPost",
+        params: payload,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+
+      axios(config)
+        .then((res) => {
+          // handle success
+
+          // var pair = { read: true };
+          res.data.data.map((result) => {
+            result.read = true;
+          });
+
+          var getDaysArray = function(s, e) {
+            for (
+              var a = [], d = new Date(s);
+              d <= e;
+              d.setDate(d.getDate() + 1)
+            ) {
+              a.push(new Date(d));
+            }
+            return a;
+          };
+          let Sdate = payload.start;
+          let Edate = payload.end;
+          var daylist = getDaysArray(new Date(Sdate), new Date(Edate));
+          daylist
+            .map((v) =>
+              moment(v)
+                .format()
+                .slice(0, 10)
+            )
+            .join("");
+          res.data.static.avgComment =
+            res.data.static.comments_count / daylist.length;
+          res.data.static.avgEngage =
+            res.data.static.engagement / daylist.length;
+
+          let sum =
+            res.data.static.positiveSentiment +
+            res.data.static.neutralSentiment +
+            res.data.static.negativeSentiment;
+          res.data.static.valpos =
+            (res.data.static.positiveSentiment * 100) / sum;
+          res.data.static.val = (res.data.static.neutralSentiment * 100) / sum;
+          res.data.static.valnag =
+            (res.data.static.negativeSentiment * 100) / sum;
+          commit("setLoadMapPost", false);
+          console.log("datapostr", res.data);
+          commit("setLocationPost", res.data);
+          // state.loadMapPost=false
+        })
+        .catch((error) => {
+          commit("setLoadMapPost", false);
+          // state.loadMapPost=false
+          alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+          console.log(error);
+        });
+    },
+    async PostsKeyword({ commit, dispatch }, payload) {
+      commit("setLoadKeyword", true);
+      var axios = require("axios");
+      var config = {
+        method: "get",
+        url: API_V2_URL + "/api/v2/keyword/getKeywordPosts",
+        params: payload,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+
+      axios(config)
+        .then((res) => {
+          commit("setLoadKeyword", false);
           // handle success
           commit("setKeywordPost", res.data);
         })
         .catch((error) => {
-          commit('setLoadKeyword',false)
+          commit("setLoadKeyword", false);
           alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
           console.log(error);
         });
@@ -427,21 +633,27 @@ export default {
 
       var config = {
         method: "post",
-        url: API_V2_URL+"/api/v2/keyword/createKeyword",
-        data:payload,
+        url: API_V2_URL + "/api/v2/keyword/createKeyword",
+        data: payload,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",
         },
       };
-      axios(config).then(() => {
+      axios(config)
+        .then(() => {
           // handle success
           dispatch("fetchKeyword");
         })
         .catch((error) => {
-          if(error.response.data.error=='Maximum number of posts reached for this project.'){
-            alert("ไม่สามารถเพิ่มข้อมูลได้ จำกัดการเพิ่มข้อมูล 5 keywords ต่อ 1 บัญชีผู้ใช้งาน ! ");
-          }else{
+          if (
+            error.response.data.error ==
+            "Maximum number of posts reached for this project."
+          ) {
+            alert(
+              "ไม่สามารถเพิ่มข้อมูลได้ จำกัดการเพิ่มข้อมูล 5 keywords ต่อ 1 บัญชีผู้ใช้งาน ! "
+            );
+          } else {
             alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
           }
           console.log();
@@ -452,13 +664,14 @@ export default {
       var axios = require("axios");
       var config = {
         method: "DELETE",
-        url: API_V2_URL+"/api/v2/keyword/deleteKeyword?_id=" +payload._id,
+        url: API_V2_URL + "/api/v2/keyword/deleteKeyword?_id=" + payload._id,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",
         },
       };
-      axios(config).then((res) => {
+      axios(config)
+        .then((res) => {
           // handle success
           console.log("success", res);
           dispatch("fetchKeyword");
@@ -472,7 +685,7 @@ export default {
       var axios = require("axios");
       var config = {
         method: "get",
-        url: API_V2_URL+"/api/v2/keyword/getMonitorKeyword",
+        url: API_V2_URL + "/api/v2/keyword/getMonitorKeyword",
 
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),

@@ -5,7 +5,7 @@
       <!-- User Interface controls -->
 
       <SumMonitor :tabsMonitor="'tabProfile'" />
-
+      
       <b-row id="input-btn">
         <b-col lg="6" class="my-1">
           <b-form-group
@@ -29,8 +29,12 @@
             </b-input-group>
           </b-form-group>
         </b-col>
-        <b-col lg="6" class="my-1">
-          <CreateMonitor class="mb-2 text-right" :tabsMonitor="'tabProfile'" />
+        <b-col lg="" class="my-1 text-right " >
+          <div class="mb-2">
+            <ImportPlatform class="d-inline-block mr-3" />
+          <CreateMonitor class="mb-2 text-right d-inline" :tabsMonitor="'tabProfile'"  />
+          </div>
+          
         </b-col>
       </b-row>
 
@@ -233,11 +237,13 @@
 import { mapGetters } from "vuex";
 import CreateMonitor from "@/components/monitor/CreateMonitor.vue";
 import SumMonitor from "@/components/monitor/SumMonitor.vue";
+import ImportPlatform from "./ImportPlatform.vue";
 //import SelectMonitor from '@/components/monitor/SelectMonitor.vue';
 export default {
   components: {
     CreateMonitor,
     SumMonitor,
+    ImportPlatform,
   },
   data() {
     return {
@@ -252,6 +258,7 @@ export default {
       "getFieldsProfile",
       "getProfile",
       "getListMonitorProfile",
+      // "getSocialMo"
     ]),
     sortOptions() {
       // Create an options list from our fields
@@ -286,6 +293,10 @@ export default {
     },
     linkToProfile(item) {
       // console.log('item',item.source);
+      // let acc = item.uid;
+      // if (item.source == "youtube") {
+      //   acc = item.uid.replace("@", "");
+      // }
       this.$store.commit("setProfileData", item.uid);
       localStorage.setItem("profileName", item.name);
       this.$store.commit("setDomainName", item.name);
@@ -300,19 +311,22 @@ export default {
     },
   },
   async created() {
-    console.log("getSocialMo", this.$route.params);
+    console.log("getSocialMo", this.$route.params, this.getSocialMo);
     // this.$store.dispatch("fatchListMonitor", {
     //   source: this.social,
     // });
     // this.$store.dispatch("fatchListMonitor");
 
-    if (this.getSocialMo == "") {
-      await this.$store.dispatch("fatchListMonitor");
-    } else {
-      await this.$store.dispatch("fatchListMonitor", {
-        source: this.social,
-      });
-    }
+    // if (this.getSocialMo == "") {
+    //   //setListProfile
+    //   console.log("getSocialMo", this.$route.params,this.getSocialMo);
+    //   await this.$store.dispatch("fatchListMonitor");
+    // } else {
+    //   console.log("getSocialMo2", this.$route.params,this.getSocialMo);
+    //   await this.$store.dispatch("fatchListMonitor", {
+    //     source: this.social,
+    //   });
+    //}
   },
 };
 </script>

@@ -126,7 +126,7 @@ export default {
       start_date: "",
       end_date: "",
       valueDate: "",
-      selected: "true",
+      selected: "",
     };
   },
   computed: {
@@ -218,7 +218,7 @@ console.log('domainjaa',this.domain_name);
   },
   created: function () {
     this.$store.dispatch("fetchDomain");
-    this.$store.commit("setSelectedMonitor", true);
+    // this.$store.commit("setSelectedMonitor", true);
   },
 };
 </script>

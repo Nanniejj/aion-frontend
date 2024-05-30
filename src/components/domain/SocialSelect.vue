@@ -85,6 +85,15 @@
             <b-icon icon="check" :id="'i9' + idx" />Tiktok</a
           ></b-col
         >
+        <b-col cols="6" sm="6" md="3" lg="auto"
+          ><a
+            :id="'eltab10' + idx"
+            tabindex="0"
+            @click="allActive('eltab10' + idx, 'threads', 'i10' + idx)"
+          >
+            <b-icon icon="check" :id="'i10' + idx" />Threads</a
+          ></b-col
+        >
       </b-row>
     </span>
   </div>
@@ -133,7 +142,7 @@ export default {
     allActive(ele, social, check) {
       console.log(ele, social, check, this.idx);
       var active = ele;
-      var a, b, c, d, e, f, g, bd, tt;
+      var a, b, c, d, e, f, g, bd, tt,td;
       a = "eltab1" + this.idx;
       b = "eltab2" + this.idx;
       c = "eltab3" + this.idx;
@@ -143,8 +152,9 @@ export default {
       g = "eltab7" + this.idx;
       bd = "eltab8" + this.idx;
       tt = "eltab9" + this.idx;
+      td = "eltab10" + this.idx;
 
-      var h, i, j, k, l, m, n, o, p;
+      var h, i, j, k, l, m, n, o, p,q;
       h = "i1" + this.idx;
       i = "i2" + this.idx;
       j = "i3" + this.idx;
@@ -154,6 +164,7 @@ export default {
       n = "i7" + this.idx;
       o = "i8" + this.idx;
       p = "i9" + this.idx;
+      q = "i10" + this.idx;
 
       if (this.tabsocial == "post") {
         this.$store.commit("setSocialDomain", social);
@@ -183,6 +194,7 @@ export default {
       document.getElementById(g).style.borderColor = "#ffffff00";
       document.getElementById(bd).style.borderColor = "#ffffff00";
       document.getElementById(tt).style.borderColor = "#ffffff00";
+      document.getElementById(td).style.borderColor = "#ffffff00";
       if (this.tabsocial == "feed") {
         document.getElementById(active).style.borderColor = "#fed16e";
       } else {
@@ -199,6 +211,7 @@ export default {
       document.getElementById(n).style.color = "#ffffff00";
       document.getElementById(o).style.color = "#ffffff00";
       document.getElementById(p).style.color = "#ffffff00";
+      document.getElementById(q).style.color = "#ffffff00";
       //change
       document.getElementById(check).style.color = "#2c3e50";
     },
@@ -243,7 +256,7 @@ export default {
 #eltab61,
 #eltab71,
 #eltab81,
-#eltab91 {
+#eltab91 ,#eltab101{
   cursor: pointer;
   text-align: center;
   margin: 0px 10px;
@@ -264,7 +277,7 @@ export default {
 #eltab61,
 #eltab71,
 #eltab81,
-#eltab91 {
+#eltab91 ,#eltab101{
   outline-style: none;
   -webkit-box-shadow: none;
   box-shadow: none;
@@ -278,7 +291,7 @@ export default {
 #i61,
 #i71,
 #i81,
-#i91 {
+#i91,#i101 {
   color: #ffffff00;
 }
 
@@ -290,7 +303,7 @@ export default {
 #eltab62,
 #eltab72,
 #eltab82,
-#eltab92 {
+#eltab92,#eltab102 {
   cursor: pointer;
   text-align: center;
   margin: 0px 10px;
@@ -310,7 +323,7 @@ export default {
 #eltab62,
 #eltab72,
 #eltab82,
-#eltab92 {
+#eltab92 ,#eltab102{
   outline-style: none;
   -webkit-box-shadow: none;
   box-shadow: none;
@@ -324,7 +337,7 @@ export default {
 #i62,
 #i72,
 #i82,
-#i92 {
+#i92,#i102 {
   color: #ffffff00;
 }
 
@@ -396,7 +409,7 @@ export default {
   #eltab61,
   #eltab71,
   #eltab81,
-  #eltab91 {
+  #eltab91, #eltab101 {
     cursor: pointer;
     text-align: center;
     margin: 0px 2px;

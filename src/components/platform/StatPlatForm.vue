@@ -50,6 +50,11 @@
             src="@/assets/tt.png"
             class="imgstt"
           />
+          <img
+            v-if="getNamePlatform == 'threads'"
+            src="@/assets/ctd.png"
+            class="imgstt"
+          />
         </b-row>
         <b-row class="m-2">
           <b-col v-if="getNamePlatform != 'news'">
@@ -132,9 +137,17 @@
             <div class="bold">{{ getStat.comment | numFormat }}</div>
             <div>Comments</div>
           </b-col>
+          <b-col class="border-left" v-if="getNamePlatform == 'threads'">
+            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div>Posts</div>
+          </b-col>
+          <b-col class="border-left" v-if="getNamePlatform == 'threads'">
+            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div>Comments</div>
+          </b-col>
         </b-row>
         <div class="text-center mt-4 mb-2 bold">Summary</div>
-        <b-row class="comment-post">
+        <b-row class="comment-post" v-if="getSum">
           <b-col v-b-tooltip.hover title="Posts">
             <div>
               <i class="far fa-paper-plane" /> {{ getSum.post | numFormat }}
@@ -232,7 +245,9 @@ getArrDate(){
       "getNewslt",
       "getArrDate",
       "getSumBlockdit",
-      "getBlockdit"
+      "getBlockdit",
+      "getThreads",
+      "getSumThreads"
     ]),
     getStat() {
       var data;
@@ -250,6 +265,8 @@ getArrDate(){
         data = this.getInstagram;
       }else if (this.getNamePlatform == "tiktok"){
         data = this.getTiktok;
+      }else if (this.getNamePlatform == "threads"){
+        data = this.getThreads;
       }else{
          data = this.getBlockdit;
       }
@@ -271,6 +288,8 @@ getArrDate(){
         data = this.getSumInstagram;
       }else if (this.getNamePlatform == "tiktok"){
         data = this.getSumTiktok;
+      }else if (this.getNamePlatform == "threads"){
+        data = this.getSumThreads;
       }else{
         data = this.getSumBlockdit;
       }
@@ -299,6 +318,9 @@ getArrDate(){
       } else if (this.getNamePlatform == "tiktok"){
         data = this.getCraw.crawler_tiktok;
         pre = this.getCraw.preprocess_tiktok;
+      }else if (this.getNamePlatform == "threads"){
+        data = this.getCraw.crawler_threads;
+        pre = this.getCraw.preprocess_threads;
       }else{
          data = this.getCraw.crawler_blockdit;
          pre = this.getCraw.preprocess_blockdit;

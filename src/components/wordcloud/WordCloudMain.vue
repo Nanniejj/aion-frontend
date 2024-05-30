@@ -252,7 +252,6 @@ export default {
   },
   async created() {
     if (this.cloudApi) {
-      console.log('cloudApi');
       var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
       var todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
       // this.$store.commit('setWordCloudStartDate',todays)
@@ -260,8 +259,8 @@ export default {
       await this.$store.dispatch("fetchWordCloud", {
         start_date: todays,
         end_date: todaye,
-        domain: "all",
-        monitor: true,
+        // domain: "all",
+        // monitor: true,
       });
 
     }

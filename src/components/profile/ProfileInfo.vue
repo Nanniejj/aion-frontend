@@ -72,6 +72,11 @@
                   src="@/assets/Tiktok.png"
                   class="social-img"
                 />
+                <img
+                  v-if="getValSource == 'threads'"
+                  src="@/assets/Threads.png"
+                  class="social-img"
+                />
               </span>
             </span>
             <div class="text-center mt-3" v-if="getProfileMonitor">

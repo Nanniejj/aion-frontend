@@ -203,7 +203,7 @@
                   v-if="tab_selected_detail_social == 'all'"
                 >
                   <span id="day">
-                    <SentimentChart :chartData="getSentimentAll" :source="'facebook,twitter,news,pantip,instagram,youtube'" :pageType="'WordPost'"/>
+                    <SentimentChart :chartData="getSentimentAll" :source="'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'" :pageType="'WordPost'"/>
                     <!-- Post and comment/retweet founds -->
                     <b-row class="my-3">
                       <b-col>
@@ -473,7 +473,7 @@ export default {
       tab_selected_detail_social: "all",
       tab_selected_social: "all",
       edited: false,
-      socialname: "facebook,twitter,news,pantip,instagram,youtube",
+      socialname: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
     };
   },
   components: {
@@ -489,7 +489,7 @@ export default {
     // },
     all() {
       this.tab_selected_detail_social = "all";
-      this.socialname = "facebook,twitter,news,pantip,instagram,youtube";
+      this.socialname = "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads";
       //this.$store.commit("setWordCloudSocial", this.socialname);
     },
     facebook() {

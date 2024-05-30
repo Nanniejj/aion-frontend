@@ -5,18 +5,61 @@
     background-color='rgba(0, 0, 0, 0.3)' color='#fff' spinner="bar-fade-scale" /> -->
     <div id="content">
       <b-container fluid id="tp-size">
-        <h1 class="title">Setting</h1>
-        <h4 class="title-domain"><a>จัดการ Domain</a></h4>
-        <div class="mb-3 text-right">
-          <!-- <TemplateSearchKeyword/> -->
-          <button class="btn export-btn" @click="$router.push({name:'SearchKeywordSetting'})">
-            <i class="fa fa-search " />
-            <span style="font-size:16px;"> ค้นหา keyword </span>
-          </button>
-          <!-- <button id="" @click="printWindow()"> -->
-            <i class="fa fa-print" @click="printWindow()" style="font-size:25px;cursor: pointer;"/>
-            <!-- <b> Print</b> -->
-          <!-- </button> -->
+        <div class="d-flex">
+          <h1 class="title ">Setting</h1>
+
+          <div
+            class="h4 mb-3 float-right d-flex mt-3 box-menu-monitor"
+            style="position:relative;margin-left: auto; margin-right: 0;"
+          >
+            <div
+              class="mr-3 icon-monitor1"
+              @click="$router.push({ name: 'FaceRecognition' })"
+            >
+              <b-iconstack font-scale="2">
+                <b-icon stacked icon="circle"></b-icon>
+                <!-- <img
+                  src="../assets/monitor.png"
+                  alt="logo"
+                  class="img-nav"
+                  style="margin-bottom: 8px;width: 40px;"
+                /> -->
+                <b-icon stacked icon="person-bounding-box" scale="0.5"></b-icon>
+              </b-iconstack>
+              <div class="d-blocktext-center h6  my-2" >
+                Face Recognition
+              </div>
+            </div>
+            <div
+              class="mr-3 icon-monitor1"
+              @click="$router.push({ name: 'SearchKeywordSetting' })"
+            >
+              <b-iconstack font-scale="2">
+                <b-icon stacked icon="circle"></b-icon>
+                <b-icon stacked icon="search" scale="0.5"></b-icon>
+              </b-iconstack>
+              <div class="d-block h6 text-center my-2">
+                Search Keyword
+              </div>
+            </div>
+          </div>
+        </div>
+        <b-container >
+        <b-row>
+            <b-col class="text-left">
+              <h4 class=""><a>จัดการ Domain</a></h4>
+            </b-col>
+            <b-col class="text-right">
+              <i
+                class="fa fa-print"
+                @click="printWindow()"
+                style="font-size:25px;cursor: pointer;"
+              />
+            </b-col>
+          </b-row>
+        </b-container>
+        <div>
+         
         </div>
         <TemplateDomain />
       </b-container>
@@ -65,6 +108,42 @@ export default {
 </script>
 
 <style scoped>
+
+.icon-monitor1,
+.icon-monitor2 {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 20px;
+}
+/* .b-icon.bi:hover {
+    display: inline-block;
+    overflow: visible;
+    vertical-align: -0.15em;
+    background: #fed06ea4;
+    border-radius: 50%;
+} */
+.icon-monitor1:hover .h6 {
+  color: #4c412b;
+  font-weight: bold;
+}
+.icon-monitor2:hover .h6 {
+  color: #4c412b;
+  font-weight: bold;
+}
+.icon-monitor1:hover .b-icon.bi {
+  color: #4c412b;
+  background-color: #fed06ea4;
+  border-radius: 50%;
+  -webkit-transition: 0.3s ease-in-out;
+  transition: 0.3s ease-in-out;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.icon-monitor2:hover .b-icon.bi {
+  color: #4c412b;
+  background-color: #fed06ea4;
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
 .export-btn {
   margin: 0px 20px;
   color: #495057;
