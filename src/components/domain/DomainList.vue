@@ -10,7 +10,7 @@
             background-color="rgba(255, 255, 255, 0.8)"
             color="#b6ac9a"
           />
-          {{ domain.name }}
+         <span class="truncate-text-1">{{ domain.name }}</span> 
         </span>
       </b-col>
       <b-col>
@@ -56,6 +56,7 @@ export default {
 };
 </script>
 <style scoped >
+
 #box-domain {
   width: 100%;
   height: 150px;

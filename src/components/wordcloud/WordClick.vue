@@ -172,7 +172,7 @@
                       </li>
                       <li v-on:click="pantip()">
                         <a tabindex="0">
-                          <img src="@/assets/Pantip.png" class="imgsocial" />
+                          <img src="@/assets/board.png" class="imgsocial" />
                         </a>
                       </li>
                       <li v-on:click="news()">

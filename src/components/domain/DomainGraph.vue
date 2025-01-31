@@ -1,5 +1,9 @@
 <template>
   <div class="mt-4">
+    <!-- <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/5Zlwu2g4rzTNfyu28L1bWv?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <iframe style="border-radius:12px" src="https://open.spotify.com/track/5Zlwu2g4rzTNfyu28L1bWv?si=71c2e60ee36243f0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe> -->
+    <!-- https://open.spotify.com/track/5Zlwu2g4rzTNfyu28L1bWv?si=71c2e60ee36243f0 -->
+
     <b-row>
       <b-col lg="8" class="text-left">
         <div class="mb-sm-4">
@@ -32,7 +36,7 @@
             ></b-col>
           </b-row>
         </div>
-    
+
         <LineChartFilter :typeChart="selectFilter" :label="select" />
         <!-- <LineChart /> -->
       </b-col>
@@ -90,7 +94,7 @@ export default {
       ],
       selectFilter: "domain",
       select: "posts",
-      options: ["posts","comments","messages", "engages"],
+      options: ["posts", "comments", "messages", "engages", "views"],
       startd: "",
       endd: "",
       filter: 0,

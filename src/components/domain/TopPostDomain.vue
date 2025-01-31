@@ -108,7 +108,7 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: this.getDomainArr,
+          domain: 'All',
           dashboard: true,
         };
       } else {
@@ -118,10 +118,14 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: this.getDomainArr,
+          domain: 'All',
         };
       }
-      this.$store.dispatch("fetchPostDomain", objtop);
+      if (this.$route.name!=='Domain') {
+        this.$store.dispatch("fetchAllPostPlatform", objtop);
+      }else{
+        this.$store.dispatch("fetchPostDomain", objtop);
+      }
 
       // this.$emitter.emit("clickSelect", this.selected);
     },

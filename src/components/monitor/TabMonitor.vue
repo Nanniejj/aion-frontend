@@ -27,7 +27,7 @@
         <HashtagMonitor :tabsMonitor="'tabHashtag'" />
       </b-tab>
       <!-- ----------------------------------tab3 --------------------------------------------------->
-      <b-tab @click="toTab('location')">
+      <!-- <b-tab @click="toTab('location')">
         <template #title id="title-tab">
           <span id="title-tab">
             <i class="fas fa-map-marker-alt" />
@@ -39,7 +39,7 @@
           id="tablo"
           @id-changwats="doFuncFoo"
         />
-      </b-tab>
+      </b-tab> -->
       <!-- ----------------------------------tab4 --------------------------------------------------->
       
       <!-- <b-tab @click="toTab('keyword')" >

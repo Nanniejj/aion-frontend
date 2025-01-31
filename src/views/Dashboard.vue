@@ -258,11 +258,13 @@ export default {
         this.$store.dispatch("fetchSentimentStatDashboard", {
           start_date: this.start_date,
           end_date: this.end_date,
-          domain: this.domainData
+          domain:'All'
+          // domain: this.domainData
         });
         this.$store.dispatch("fetchAllstats", {
           start_date: this.start_date,
-          end_date: this.end_date
+          end_date: this.end_date,
+            domain: 'All'
         });
       } else {
         let today = moment(new Date())
@@ -273,11 +275,13 @@ export default {
         this.$store.dispatch("fetchSentimentStatDashboard", {
           start_date: this.start_date,
           end_date: this.end_date,
-          domain: this.domainData
+          domain:'All'
+          // domain: this.domainData
         });
         this.$store.dispatch("fetchAllstats", {
           start_date: this.start_date,
-          end_date: this.end_date
+          end_date: this.end_date,
+            domain: 'All'
         });
       }
     },
@@ -298,7 +302,8 @@ export default {
     this.$store.commit("setRageEnddate", this.end_date);
     this.$store.dispatch("fetchAllstats", {
       start_date: this.start_date,
-      end_date: this.end_date
+      end_date: this.end_date,
+        domain: 'All'
     });
     await this.$store.dispatch("fetchDomain");
     let domainName = this.getShowDomain.map(key => {
@@ -310,7 +315,8 @@ export default {
     await this.$store.dispatch("fetchSentimentStatDashboard", {
       start_date: this.start_date,
       end_date: this.end_date,
-      domain: domainName
+      domain:'All'
+      // domain: domainName
     });
   }
 };

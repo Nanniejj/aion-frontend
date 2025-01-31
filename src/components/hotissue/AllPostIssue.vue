@@ -107,11 +107,19 @@
                 :src="imgfb"
                 class="social-img"
               />
-              <img
-                v-if="datas.source === 'pantip'"
-                :src="imgpt"
-                class="social-img"
-              />
+              <span v-if="datas.source == 'pantip'">
+                <img
+                  v-if="datas.platform == 'dek-d'"
+                  src="@/assets/dekd.png"
+                  class="social-img"
+                />
+                <img
+                  v-else-if="datas.platform == 'lemon8'"
+                  src="@/assets/lemon8.png"
+                  class="social-img"
+                />
+                <img v-else src="@/assets/Pantip.png" class="social-img" />
+              </span>
               <img
                 v-if="datas.source === 'youtube'"
                 :src="imgyt"
@@ -146,12 +154,9 @@
             <b-col style="text-align: initial">
               <!-- {{username(datas.account_name)}} -->
               <span id="user-name">
-              <b>{{ datas.account_name }}</b> 
+                <b>{{ datas.account_name }}</b>
                 <a
-                  v-if="
-                    datas.url_post &&
-                    datas.url_post.includes('mbasic')
-                  "
+                  v-if="datas.url_post && datas.url_post.includes('mbasic')"
                   v-bind:href="datas.url_post.replace('mbasic.', '')"
                   class="fa fa-external-link"
                   target="_blank"
@@ -399,6 +404,13 @@
           <b-col lg="12">
             <b-card-body>
               <b-card-text class="box-contents">
+                <div
+                  v-if="datas && datas.title"
+                  class="title-news text-left my-2"
+                >
+                  {{ datas.title }}
+                </div>
+
                 <!-- <Highlighter
                   class="my-highlight md-font"
                   :style="{
@@ -442,7 +454,12 @@
           </b-col>
           <b-col>
             <div v-if="datas.source == 'tiktok' && datas.uid">
-              <lite-tiktok :videoid="datas.uid"></lite-tiktok>
+              <a v-bind:href="datas.url_post" target="_blank">
+                <lite-tiktok
+                  :videoid="datas.uid"
+                  style=" pointer-events: none; "
+                ></lite-tiktok
+              ></a>
 
               <!-- <iframe
                 width="auto"
@@ -537,13 +554,18 @@
         </b-row>
         <div
           class="text-left ai-box mt-2"
-          v-if="datas && datas.ocr &&username=='adminatapy'"
+          v-if="datas && datas.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-for="(text, idx) in datas.ocr">
             <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
-                       <div v-if="text.text_sort && text.text_sort.length">
-              <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar>
+            <div v-if="text.text_sort && text.text_sort.length">
+              <b-avatar
+                size="18px"
+                style="font-size: 12px;background-color:#8b8787;"
+                class="mr-1"
+                >{{ idx + 1 }}
+              </b-avatar>
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text.text_sort[0] }}
             </div>
@@ -571,6 +593,30 @@
             </div>
           </div>
         </div>
+        <div v-if="datas && datas.location && datas.location.length && username == 'adminatapy'"
+          class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
+          <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+    border-radius: 33px;
+">
+            <!-- {{ geo.toString() }} -->
+            <span v-if="geo.toString() && geo.toString().length == 2">
+              {{ matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 4">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 6">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? 'แขวง' + matchGeocode(geo).name_th : 'ต.' +
+                matchGeocode(geo).name_th }}
+            </span>
+          </span>
+        </div>
         <template #footer>
           <div class="comment-img text-left md-font">
             <!------------- engages-------------- -->
@@ -592,7 +638,11 @@
             <popover
               :name="'foo' + k"
               id="foo"
-              v-if="datas.source !== 'facebook'&&datas.source !== 'youtube' && datas.source !== 'twitter'"
+              v-if="
+                datas.source !== 'facebook' &&
+                  datas.source !== 'youtube' &&
+                  datas.source !== 'twitter'
+              "
             >
               <div class="text-center">
                 <i class="fa fa-user-circle" aria-hidden="true"></i>
@@ -724,7 +774,9 @@
             </span>
 
             <!-- twitter -->
-            <span v-if="datas.source !== 'facebook'&&datas.source !== 'youtube'">
+            <span
+              v-if="datas.source !== 'facebook' && datas.source !== 'youtube'"
+            >
               <span
                 v-if="datas.retweets_count !== '0' && datas.retweets_count"
                 id="box-reaction"
@@ -1035,123 +1087,106 @@
             </span>
             <!-- comment content -->
             <b-collapse
-            :id="'btn' + page + k"
-            class="mt-2"
-            v-if="datas.comments&&datas.comments.length"
-          >
-       
-            <b-card id="cmt-card" class="text-left">
-              <span v-if="datas.source == 'news' && datas.comments">
-                <div
-                  v-for="(cmtn, inx) in datas.comments.comments"
-                  :key="inx"
-                >
-                  <b-row>
-                    <b-col lg="1">
-                      <img
-                        :src="cmtn.pictureUrl"
-                        id="img-cmt"
-                        @error="setAltImg"
-                      />
-                    </b-col>
-                    <b-col lg="11">
-                      <div>
-                        <span class="bold">{{ cmtn.displayName }}</span>
-                        <span class="font-weight-light" id="cmt-time">{{
-                          cmtn.time
-                        }}</span>
-                      </div>
-
-                      <div v-for="(text, i) in cmtn.contents" :key="i">
-                        {{ text.extData.content }}
-                      </div>
-                    </b-col>
-                  </b-row>
-                  <hr />
-                </div>
-              </span>
-              <span v-else>
-                <div v-for="(cmt, i) in datas.comments" :key="i">
-                  <b-row>
-                    <b-col lg="1">
-
-                      <a
-                        :href="'https://www.youtube.com/' + cmt.author_link"
-                        target="_blank"
-                        v-if="datas.source == 'youtube'"
-                      >
-                        <img :src="cmt.photo" id="img-cmt"
-                      /></a>
-                      <a
-                        :href="cmt.url"
-                        target="_blank"
-                        v-else
-                      >
+              :id="'btn' + page + k"
+              class="mt-2"
+              v-if="datas.comments && datas.comments.length"
+            >
+              <b-card id="cmt-card" class="text-left">
+                <span v-if="datas.source == 'news' && datas.comments">
+                  <div
+                    v-for="(cmtn, inx) in datas.comments.comments"
+                    :key="inx"
+                  >
+                    <b-row>
+                      <b-col lg="1">
                         <img
-                          :src="cmt.photo"
+                          :src="cmtn.pictureUrl"
                           id="img-cmt"
-                          v-bind:href="cmt.url"
-                      /></a>
+                          @error="setAltImg"
+                        />
+                      </b-col>
+                      <b-col lg="11">
+                        <div>
+                          <span class="bold">{{ cmtn.displayName }}</span>
+                          <span class="font-weight-light" id="cmt-time">{{
+                            cmtn.time
+                          }}</span>
+                        </div>
 
-                      <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
-                      <span> </span>
-                    </b-col>
-                    <b-col lg="11">
-                      <div>
+                        <div v-for="(text, i) in cmtn.contents" :key="i">
+                          {{ text.extData.content }}
+                        </div>
+                      </b-col>
+                    </b-row>
+                    <hr />
+                  </div>
+                </span>
+                <span v-else>
+                  <div v-for="(cmt, i) in datas.comments" :key="i">
+                    <b-row>
+                      <b-col lg="1">
                         <a
                           :href="'https://www.youtube.com/' + cmt.author_link"
                           target="_blank"
                           v-if="datas.source == 'youtube'"
                         >
-                          <span
-                            v-if="datas.source == 'youtube'"
-                            class="bold"
-                          >
-                            {{ cmt.author }}</span
-                          ></a
-                        >
+                          <img :src="cmt.photo" id="img-cmt"
+                        /></a>
                         <a :href="cmt.url" target="_blank" v-else>
-                          <span
-                            class="bold"
+                          <img
+                            :src="cmt.photo"
+                            id="img-cmt"
+                            v-bind:href="cmt.url"
+                        /></a>
+
+                        <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                        <span> </span>
+                      </b-col>
+                      <b-col lg="11">
+                        <div>
+                          <a
+                            :href="'https://www.youtube.com/' + cmt.author_link"
+                            target="_blank"
+                            v-if="datas.source == 'youtube'"
                           >
-                            {{ cmt.username }}</span
-                          ></a
-                        >
-                        <span
-                          v-if="datas.source == 'youtube' && cmt.time"
+                            <span v-if="datas.source == 'youtube'" class="bold">
+                              {{ cmt.author }}</span
+                            ></a
+                          >
+                          <a :href="cmt.url" target="_blank" v-else>
+                            <span class="bold"> {{ cmt.username }}</span></a
+                          >
+                          <span
+                            v-if="datas.source == 'youtube' && cmt.time"
+                            class="font-weight-light"
+                            id="cmt-time"
+                            >{{ cmt.time.split("T")[0] }} |
+                            {{ cmt.time.split("T")[1] }}</span
+                          >
+                          <span
+                            v-else
+                            class="font-weight-light"
+                            id="cmt-time"
+                            >{{ cmt.time }}</span
+                          >
+                        </div>
+
+                        <div
+                          v-if="datas.source == 'youtube'"
                           class="font-weight-light"
-                          id="cmt-time"
-                          >{{ cmt.time.split("T")[0] }} |
-                          {{ cmt.time.split("T")[1] }}</span
                         >
-                        <span
-                          v-else
-                          class="font-weight-light"
-                          id="cmt-time"
-                          >{{ cmt.time }}</span
-                        >
-                       
-                      </div>
-                    
-                      <div
-                        v-if="datas.source == 'youtube'"
-                        class="font-weight-light"
-                      >
-                        {{ cmt.text }}
-                      </div>
-                      <div
-                        v-else
-                        class="font-weight-light"
-                      >
-                        {{ cmt.content }}
-                      </div>
-                    </b-col>
-                  </b-row>
-                  <hr />
-                </div>
-              </span>
-            </b-card>
-          </b-collapse>
+                          {{ cmt.text }}
+                        </div>
+                        <div v-else class="font-weight-light">
+                          {{ cmt.content }}
+                        </div>
+                      </b-col>
+                    </b-row>
+                    <hr />
+                  </div>
+                </span>
+              </b-card>
+            </b-collapse>
           </div>
         </template>
       </b-card>
@@ -1205,6 +1240,10 @@ import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
 import "@justinribeiro/lite-tiktok";
+import { API_V2_URL } from "@/common/config";
+import provinces from "@/components/map/provinces.json";
+import districts from "@/components/map/districts.json";
+import subdistricts from "@/components/map/subdistricts.json";
 
 export default {
   props: {
@@ -1217,7 +1256,8 @@ export default {
     },
     social: {
       type: String,
-      default: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+      default:
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
     },
     type: {
       type: String,
@@ -1262,7 +1302,7 @@ export default {
       end_date: "",
       valueDate: "",
       offset: 0,
-            username:"",
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1291,7 +1331,7 @@ export default {
       img: "",
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
-      imgpt: require("@/assets/Pantip.png"),
+      imgpt: require("@/assets/board.png"),
       imgig: require("@/assets/Instagram.png"),
       imgnw: require("@/assets/News.png"),
       imgyt: require("@/assets/Youtube.png"),
@@ -1358,6 +1398,44 @@ export default {
     },
   },
   methods: {
+    filterNumbers(numbers) {
+      // Create a copy of the numbers array and sort by length
+      const filtered = [...numbers].sort(
+        (a, b) => a.toString().length - b.toString().length
+      );
+
+      for (let i = 0; i < filtered.length; i++) {
+        for (let j = i + 1; j < filtered.length; j++) {
+          const num1 = filtered[i].toString();
+          const num2 = filtered[j].toString();
+
+          // If num1 matches the start of num2, remove num1
+          if (num2.startsWith(num1)) {
+            filtered.splice(i, 1); // Remove num1
+            i--; // Adjust index after removal
+            break; // Restart the inner loop
+          }
+        }
+      }
+
+      return filtered; // Return filtered array
+    },
+    matchGeocode(geocode) {
+      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+      let found = null;
+
+      // กรองข้อมูลตามความยาว geocode
+      if (geocodeStr.length === 2) {
+        found = provinces[geocodeStr]
+      } else if (geocodeStr.length === 4) {
+        found = districts[geocodeStr]
+      } else if (geocodeStr.length === 6) {
+        found = subdistricts[geocodeStr]
+      }
+
+      // Return the found location or a fallback message
+      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
     selectSort() {
       this.offset = 0;
       this.currentPage = 1;
@@ -1392,7 +1470,8 @@ export default {
         // "https://api2.cognizata.com/api/v2/userposts/getPostHotissue?source="
         //http://139.59.103.67:3000/api/v2/userposts/getPostHotissue2
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getPostHotissue?source=" +
+          API_V2_URL +
+          "/api/v2/userposts/getPostHotissue?source=" +
           social +
           "&offset=" +
           offset +
@@ -1443,38 +1522,6 @@ export default {
             return { ...result, ...pair };
           });
 
-          // -------------------------------------------translateuid-----------------------------------------------------------
-          posts.map((result) => {
-            // console.log('API',result);
-            if (result.source == "facebook" || result.source == "youtube") {
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.account_name,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.account_name = response.data.name;
-                    // console.log('2',result);
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            } else {
-              return result;
-            }
-          });
           this.dataIssue = posts;
           // console.log("dataaaa", this.dataIssue);
           this.$store.commit("setLoadAllPostIssue", false);
@@ -1733,6 +1780,7 @@ export default {
       "instagram",
       "blockdit",
       "tiktok",
+      "threads",
     ];
     this.$store.commit("setSocialIssue", social);
     this.$store.commit("setSelectIssue", name);

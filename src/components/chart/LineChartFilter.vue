@@ -160,9 +160,9 @@ export default {
         ytext = "จำนวนโพสต์";
       } else if (this.label == "engages") {
         ytext = "จำนวน engagement";
-      }else if (this.label == "comments") {
+      } else if (this.label == "comments") {
         ytext = "จำนวน comments";
-      }else  {
+      } else {
         ytext = "จำนวน messages";
       }
       this.chartOptions = {
@@ -259,9 +259,9 @@ export default {
         ytext = "จำนวนโพสต์";
       } else if (this.label == "engages") {
         ytext = "จำนวน engagement";
-      }else if (this.label == "comments") {
+      } else if (this.label == "comments") {
         ytext = "จำนวน comments";
-      }else  {
+      } else {
         ytext = "จำนวน messages";
       }
 
@@ -270,13 +270,6 @@ export default {
           text: ytext + " วันที่ " + this.range,
           align: "left",
           fontFamily: "Prompt",
-        },
-        yaxis: {
-          labels: {
-            formatter: (value) => {
-              return Number(value).toLocaleString();
-            },
-          },
         },
         chart: {
           fontFamily: "Prompt, FontAwesome, sans-serif",
@@ -339,29 +332,34 @@ export default {
     },
     sentimentFilter(data) {
       console.log("เข้า sentiment ", data);
+
+      // Define colors based on sentiment
+      const sentimentColors = {
+        positive: "#3cb185",
+        neutral: "#1b678f",
+        negative: "#d94b39",
+      };
+
+      // Map the series and assign color based on sentiment
       this.series = [...data].map((x) => {
-        if (x.sentiment == 0) {
-          x.stm = "neutral";
-        }
         if (x.sentiment == 1) {
           x.stm = "positive";
-        }
-        if (x.sentiment == -1) {
+        } else if (x.sentiment == 0) {
+          x.stm = "neutral";
+        } else if (x.sentiment == -1) {
           x.stm = "negative";
         }
         return { name: x.stm, data: x.y };
       });
+
+      // console.log('colors ', this.series.map((s) => sentimentColors[s.name]));
+      
       let datearr = data[0].x;
       console.log("this.series", this.series, datearr);
-      //   this.chartOptions.xaxis.categories=data[0].data
-      //   this.chartOptions=this.chartOptions
-      let ytext = "จำนวนโพสต์";
-      if (this.label == "posts") {
-        ytext = "จำนวนโพสต์";
-      } else {
-        ytext = "จำนวน engagement";
-      }
 
+      let ytext = this.label == "posts" ? "จำนวนโพสต์" : "จำนวน engagement";
+
+      // Update the chart options with dynamic colors
       this.chartOptions = {
         title: {
           text: ytext + " วันที่ " + this.range,
@@ -390,7 +388,8 @@ export default {
             opacity: 0.2,
           },
         },
-        colors: ["#3cb185", "#1b678f", "#d94b39"],
+        // Use the mapped colors
+        colors: this.series.map((s) => sentimentColors[s.name]),
         dataLabels: {
           enabled: true,
           style: {
@@ -400,14 +399,13 @@ export default {
             return this.formatCash(value);
           },
         },
-
         grid: {
           row: {
-            colors: ["#ffffff", "transparent"], // takes an array which will be repeated on columns
+            colors: ["#ffffff", "transparent"],
             opacity: 0.5,
           },
           padding: {
-            left: 30, // or whatever value that works
+            left: 30,
           },
         },
         xaxis: {
@@ -415,13 +413,10 @@ export default {
         },
         tooltip: {
           enabled: true,
-          enabledOnSeries: undefined,
           shared: true,
           followCursor: false,
           intersect: false,
           inverseOrder: false,
-          custom: undefined,
-          fillSeriesColor: false,
           y: {
             formatter: (value) => {
               return Number(value).toLocaleString();
@@ -429,8 +424,10 @@ export default {
           },
         },
       };
-      console.log("this.series", this.series, data[0].data);
+
+      console.log("this.series", this.series);
     },
+
     apiFilterChart(start) {
       // console.log('this.typeChart',this.typeChart);
       if (this.series.length !== 0) {
@@ -456,7 +453,7 @@ export default {
       } else {
         label = "";
       }
-// "https://api2.cognizata.com/api/v2/userposts/getChartDomainFilter?domain="
+      // "https://api2.cognizata.com/api/v2/userposts/getChartDomainFilter?domain="
       var config = {
         method: "get",
         url:

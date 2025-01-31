@@ -36,7 +36,7 @@
                   <a><img src="@/assets/Twitter.png" class="imgsocial"/></a>
                 </li>
                 <li v-on:click="pantip()" id="pt">
-                  <a><img src="@/assets/Pantip.png" class="imgsocial"/></a>
+                  <a><img src="@/assets/board.png" class="imgsocial"/></a>
                 </li>
                 <li v-on:click="youtube()" id="yt">
                   <a><img src="@/assets/Youtube.png" class="imgsocial"/></a>
@@ -97,7 +97,7 @@
                 :disabled-date="(date) => date >= new Date()"
                 value-type="format"
                 format="YYYY-MM-DD"
-                @change="selectData()"
+                @change="checkDateRange()"
                 >{{ valueDate }}</date-picker
               >
             </section>
@@ -121,7 +121,7 @@
                   />
                   <img
                     v-else-if="social == 'pantip'"
-                    src="@/assets/Pantip.png"
+                    src="@/assets/board.png"
                     class="imgsocial"
                   />
                   <img
@@ -267,6 +267,19 @@ export default {
     ]),
   },
   methods: {
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+
+      const diffDays = endDate.diff(startDate, 'days');
+
+      if (diffDays > 31) {
+        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
+        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+      }else{
+        this.selectData(); // Call your existing method
+      }
+    },
     printWindow: function() {
       try {
         window.print();

@@ -154,6 +154,30 @@
             </div>
           </div>
         </div>
+        <div v-if="datas && datas.location && datas.location.length && username == 'adminatapy'"
+          class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
+          <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+    border-radius: 33px;
+">
+            <!-- {{ geo.toString() }} -->
+            <span v-if="geo.toString() && geo.toString().length == 2">
+              {{ matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 4">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 6">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? 'แขวง' + matchGeocode(geo).name_th : 'ต.' +
+                matchGeocode(geo).name_th }}
+            </span>
+          </span>
+        </div>
             <template #footer >
               <span >
                 <i class="fas fa-comment" v-popover.top="{ name: 'foo'+ k}" style="cursor:pointer;" /> 
@@ -258,6 +282,9 @@
 <script>
 import { mapGetters } from "vuex";
 //import Post from '@/components/dashboard/Post.vue';
+import provinces from "@/components/map/provinces.json";
+import districts from "@/components/map/districts.json";
+import subdistricts from "@/components/map/subdistricts.json";
 export default {
     components:{
     // Post,
@@ -279,7 +306,7 @@ export default {
       img: "",
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
-      imgpt: require("@/assets/Pantip.png"),
+      imgpt: require("@/assets/board.png"),
       imgig: require("@/assets/Instagram.png"),
       imgnw: require("@/assets/News.png"),
       imgyt: require("@/assets/Youtube.png"),
@@ -328,6 +355,44 @@ computed:{
     },
 },
 methods: {
+  filterNumbers(numbers) {
+      // Create a copy of the numbers array and sort by length
+      const filtered = [...numbers].sort(
+        (a, b) => a.toString().length - b.toString().length
+      );
+
+      for (let i = 0; i < filtered.length; i++) {
+        for (let j = i + 1; j < filtered.length; j++) {
+          const num1 = filtered[i].toString();
+          const num2 = filtered[j].toString();
+
+          // If num1 matches the start of num2, remove num1
+          if (num2.startsWith(num1)) {
+            filtered.splice(i, 1); // Remove num1
+            i--; // Adjust index after removal
+            break; // Restart the inner loop
+          }
+        }
+      }
+
+      return filtered; // Return filtered array
+    },
+    matchGeocode(geocode) {
+      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+      let found = null;
+
+      // กรองข้อมูลตามความยาว geocode
+      if (geocodeStr.length === 2) {
+        found = provinces[geocodeStr]
+      } else if (geocodeStr.length === 4) {
+        found = districts[geocodeStr]
+      } else if (geocodeStr.length === 6) {
+        found = subdistricts[geocodeStr]
+      }
+
+      // Return the found location or a fallback message
+      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
   page() {
       var pageNumber;
       if (parseInt(this.gotopage) > Math.ceil(this.getSentimentPost.count / 10)||this.gotopage.includes('-')) {

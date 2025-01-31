@@ -39,7 +39,7 @@
         :current-page="currentPage"
         :per-page="perPage"
         :filter="filter"
-        :filter-included-fields="filterOn"
+        :filter-included-fields="['name','keywords']" 
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
         :sort-direction="sortDirection"
@@ -181,7 +181,9 @@
               id="input-small3"
               placeholder=""
               v-model="textWord"
+               maxlength="50"
             ></b-form-input>
+            <small class="text-muted">{{ textWord.length }} / 50 ตัวอักษร</small>
           </b-col>
           <b-col sm="12">
             <br />
@@ -253,7 +255,7 @@
                 >ปิดหน้าต่าง</b-button
               >
               <b-button class="btn btn-save" size="sm" @click="EditWord"
-                >บันทึก</b-button
+              :disabled="textWord.trim().length === 0||textKeyword.length==0" >บันทึก</b-button
               >
             </b-col>
           </b-row>

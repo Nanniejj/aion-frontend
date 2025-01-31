@@ -27,7 +27,7 @@
             tabindex="0"
             @click="allActive('eltab3' + idx, 'twitter', 'i3' + idx)"
           >
-            <b-icon icon="check" :id="'i3' + idx" />Twitter</a
+            <b-icon icon="check" :id="'i3' + idx" />X</a
           ></b-col
         >
         <b-col cols="6" sm="6" md="3" lg="auto"
@@ -36,7 +36,7 @@
             tabindex="0"
             @click="allActive('eltab4' + idx, 'pantip', 'i4' + idx)"
           >
-            <b-icon icon="check" :id="'i4' + idx" />Pantip</a
+            <b-icon icon="check" :id="'i4' + idx" />Board</a
           ></b-col
         >
         <b-col cols="6" sm="6" md="3" lg="auto"

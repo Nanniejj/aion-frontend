@@ -17,12 +17,11 @@
       <div class="mt-3 mb-3 box-domain">
         <b-row v-if="getNamePlatform" class="mb-1">
           <b-col md="8" lg="8" class="m-auto my-1">
-            <h5 class="bold text-lg-left text-md-left txx">{{ getNamePlatform }}</h5>
+            <h5 class="bold text-lg-left text-md-left txx"><span v-if="getNamePlatform=='twitter'"> X </span> <span v-else>{{ getNamePlatform }} </span></h5>
           </b-col>
           <b-col md="4" lg="4" class="text-lg-right my-1">
             <span id="post-comment">
               <i class="far fa-paper-plane" />
-
               <b>
                 <span v-if="getCountAllPost !== 0">
                   {{ getCountAllPost | numFormat }} </span

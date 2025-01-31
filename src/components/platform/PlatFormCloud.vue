@@ -102,6 +102,10 @@ export default {
       edate: "",
     };
   },
+  destroyed() {
+    this.$store.commit('setWordCloudImg','')
+    this.$store.commit('setWordCloudHash','')
+  },
   created() {
     // console.log('dddddd',this.getNamePlatform);
     this.startd = moment(new Date()).format().slice(0,10);
@@ -113,7 +117,7 @@ export default {
        start_date: this.sdate,
       end_date: this.edate,
       source:this.getNamePlatform,
-      domain: this.getDomainArr,
+      domain: 'All',
       dashboard:true
       
     });

@@ -17,7 +17,9 @@
       </b-col>
     </b-row>
     <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3">
-      <TopUserSum class="p-3" />
+      <!-- <div v-for="(s,k) in socials" :key="k"> -->
+      <TopUserSum class="mb-2" />
+    <!-- </div> -->
 
       <b-row id="date-day" class="mt-0 mb-2">
         <b-col
@@ -42,7 +44,7 @@
               :disabled-date="(date) => date >= new Date()"
               value-type="format"
               format="YYYY-MM-DD"
-              @change="selectData()"
+              @change="checkDateRange()"
               >{{ valueDate }}</date-picker
             >
           </section>
@@ -69,7 +71,7 @@
           </b-col>
           <b-col cols="1" align-h="center">
             <li v-on:click="pantip()" id="pt">
-              <a><img src="@/assets/Pantip.png" class="imgsocial"/></a>
+              <a><img src="@/assets/board.png" class="imgsocial"/></a>
             </li>
           </b-col>
           <b-col cols="1" align-h="center">
@@ -96,6 +98,11 @@
             <li v-on:click="tiktok()" id="tt">
               <a><img src="@/assets/Tiktok.png" class="imgsocial"/></a>
             </li>
+          </b-col>
+          <b-col cols="1" align-h="center">
+            <li v-on:click="threads()" id="td">
+                  <a><img src="@/assets/Threads.png" class="imgsocial"/></a>
+                </li>
           </b-col>
         </b-row>
       </ul>
@@ -175,7 +182,8 @@ export default {
         { id: "month", value: "1 month" },
       ],
       type_selected: "day",
-      social: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok",
+      social: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+      socials:['news','twitter','facebook','youtube','tiktok','blockdit','instagram','pantip','threads'],
       nodeSize: 20,
       resizeListener: true,
       nodeLabels: true,
@@ -229,6 +237,19 @@ export default {
     onOptionsChange: function() {
       this.$store.commit("changeDataChoice", { choice: this.type_selected });
     },
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+
+      const diffDays = endDate.diff(startDate, 'days');
+
+      if (diffDays > 31) {
+        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
+        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+      }else{
+        this.selectData(); // Call your existing method
+      }
+    },
     selectData() {
       console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
@@ -273,10 +294,10 @@ export default {
       //http://139.59.103.67:3000/api/v2/userposts/getInfluencerTarget?
       //http://139.59.103.67:3000/api/userposts_test/getInfluencerTarget
       //http://139.59.103.67:3000/api/v2/userposts/getTopInfluencerTarket?source=
+      //https://api2.cognizata.com/api/v2/userposts/getTopInfluencerTarket?source=
       var config = {
         method: "get",
-        url:
-          "https://api2.cognizata.com/api/v2/userposts/getTopInfluencerTarket?source=" +
+        url:"https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?source=" +
           this.social +
           "&start=" +
           this.start_date +
@@ -293,81 +314,7 @@ export default {
       };
       this.axios(config)
         .then((response) => {
-          console.log("Toppp10 response.data", response.data);
-          var data = response.data;
-
-          // -------------------------------------------translateuid-----------------------------------------------------------
-          if (this.social == "youtube") {
-            data.map((result) => {
-              // console.log("API", result.items.details.account_name);
-              Object.assign(result.items.details, {
-                name: result.items.details.account_name,
-              });
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.items.details.account_name,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  // console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.items.details.name = response.data.name;
-                    // console.log('2',result);
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-
-              return { result };
-            });
-          }
-          // ---------------------------------------------------------------------------------------------------------
-          // console.log('vvvvv',response.data);
           this.$store.commit("setTopInfluencer", response.data);
-          // if (this.social == "twitter") {
-          //   this.$store.commit(
-          //     "setTopInfluencer",
-          //     response.data[0].detailsTwitter
-          //   );
-          // } else if (this.social == "facebook") {
-          //   this.$store.commit(
-          //     "setTopInfluencer",
-          //     response.data[0].detailsFacebook
-          //   );
-          // } else if (this.social == "pantip") {
-          //   this.$store.commit(
-          //     "setTopInfluencer",
-          //     response.data[0].detailsPantip
-          //   );
-          // } else if (this.social == "youtube") {
-          //   this.$store.commit(
-          //     "setTopInfluencer",
-          //     response.data[0].detailsYoutube
-          //   );
-          // } else if (this.social == "news") {
-          //   this.$store.commit(
-          //     "setTopInfluencer",
-          //     response.data[0].detailsNews
-          //   );
-          // } else  if (this.social == "blockdit") {
-          //   this.$store.commit(
-          //     "setTopInfluencer",
-          //     response.data[0].detailsBlockdit
-          //   );}
-          //   else{
-          //   this.$store.commit("setTopInfluencer", []);
-          // }
-
           this.$store.commit("setLoadTopUserPf", false);
         })
         .catch(function(error) {
@@ -377,7 +324,7 @@ export default {
     },
     all() {
       this.social =
-        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,blockdit,tiktok";
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads";
       document.getElementById("all").style.opacity = "1";
       document.getElementById("fb").style.opacity = "0.3";
       document.getElementById("tw").style.opacity = "0.3";
@@ -387,6 +334,8 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
+
     },
     facebook() {
       this.social = "facebook";
@@ -399,6 +348,8 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
+
     },
     twitter() {
       this.social = "twitter";
@@ -411,6 +362,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     pantip() {
       this.social = "pantip";
@@ -423,6 +375,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     youtube() {
       this.social = "youtube";
@@ -435,6 +388,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     instagram() {
       this.social = "instagram";
@@ -447,6 +401,7 @@ export default {
       document.getElementById("nw").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     news() {
       this.social = "news";
@@ -459,6 +414,7 @@ export default {
       document.getElementById("itg").style.opacity = "0.3";
       document.getElementById("bd").style.opacity = "0.3";
       document.getElementById("tt").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     blockdit() {
       this.social = "blockdit";
@@ -471,6 +427,7 @@ export default {
       document.getElementById("yt").style.opacity = "0.3";
       document.getElementById("itg").style.opacity = "0.3";
       document.getElementById("nw").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
     },
     tiktok() {
       this.social = "tiktok";
@@ -483,6 +440,20 @@ export default {
       document.getElementById("yt").style.opacity = "0.3";
       document.getElementById("itg").style.opacity = "0.3";
       document.getElementById("nw").style.opacity = "0.3";
+      document.getElementById("td").style.opacity = "0.3";
+    },
+    threads() {
+      this.social = "threads";
+      document.getElementById("td").style.opacity = "1";
+      document.getElementById("bd").style.opacity = "0.3";
+      document.getElementById("all").style.opacity = "0.3";
+      document.getElementById("fb").style.opacity = "0.3";
+      document.getElementById("tw").style.opacity = "0.3";
+      document.getElementById("pt").style.opacity = "0.3";
+      document.getElementById("yt").style.opacity = "0.3";
+      document.getElementById("itg").style.opacity = "0.3";
+      document.getElementById("nw").style.opacity = "0.3";
+      document.getElementById("tt").style.opacity = "0.3";
     },
   },
   created: function() {
@@ -770,7 +741,7 @@ td {
 }
 
 #menu {
-  padding-top: 10px;
+  /* padding-top: 10px; */
 }
 
 #menu ul {

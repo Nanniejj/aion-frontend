@@ -43,7 +43,7 @@
       :current-page="currentPage"
       :per-page="perPage"
       :filter="filter"
-      :filter-included-fields="filterOn"
+      :filter-included-fields="['name']" 
       :sort-by.sync="sortBy"
       :sort-desc.sync="sortDesc"
       :sort-direction="sortDirection"
@@ -114,9 +114,9 @@
         <hr />
         <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
         <div>
-          <b-form-input v-model="textSubDomain" placeholder="">
+          <b-form-input v-model="textSubDomain" placeholder=""  maxlength="50">
             <b>{{ textSubDomain }}</b></b-form-input
-          >
+          ><small class="text-muted">{{ textSubDomain.length }} / 50 ตัวอักษร</small>
           <br />
           <b-row class="my-1">
             <b-col sm="12" style="text-align:right;">
@@ -125,7 +125,7 @@
                 >ปิดหน้าต่าง</b-button
               >
               <b-button class="btn btn-save" size="sm" @click="editSubDomain"
-                >บันทึก</b-button
+              :disabled="textSubDomain.trim().length === 0"  >บันทึก</b-button
               >
             </b-col>
           </b-row>

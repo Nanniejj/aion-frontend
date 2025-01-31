@@ -1,343 +1,254 @@
 <template>
-  <div>
-    <div class="table" v-if="getSummaryAvatar">
-      <b-row class="mb-3">
-        <b-col lg="6" class="my-1">
-          <b-form-group
-            label-for="filter-input"
-            label-cols-sm="0"
-            label-align-sm="right"
-            label-size="md"
-            class="mb-0"
-          >
-            <b-input-group size="md">
-              <b-form-input
-                v-if="selected == 'twActive'"
-                id="filter-input"
-                v-model="filterTw"
-                type="search"
-                placeholder="ค้นหา"
-              ></b-form-input>
-              <b-form-input
-                v-else
-                id="filter-input"
-                v-model="filterFb"
-                type="search"
-                placeholder="ค้นหา"
-              ></b-form-input>
-            </b-input-group>
-          </b-form-group>
-        </b-col>
-        <b-col lg="2" class="my-1">
-          <b-form-select
-            v-model="selected"
-            :options="options"
-            @change="selectChange"
-          ></b-form-select>
-        </b-col>
-        <b-col class="my-1">
-          <button
-            class="btn btn-add pl-3 pr-3 font-weight-bold"
-            @click="goAvatarTeam"
-          >
-            <i class="fas fa-user-cog " />
-            <span style="font-size:16px;"> การจัดการ Avatar </span>
-          </button>
-          <!-- <CreateMonitor class="text-right" :tabsMonitor="'tabAvatar'" /> -->
-        </b-col>
-      </b-row>
-      <b-row
-        class="mb-4 mt-4"
-        cols="2"
-        cols-md="4"
-        cols-lg="4"
-        v-if="selected == 'twActive'"
-      >
-        <b-col>
-          <i class="fa fa-twitter"></i>
-          <div>
-            <b>{{ getSummaryAvatar.twitter.tweet | numFormat }}</b> Tweets
-          </div>
-        </b-col>
-        <b-col>
-          <i class="fa fa-retweet"></i>
-          <div>
-            <b>{{ getSummaryAvatar.twitter.retweet | numFormat }}</b> Retweets
-          </div>
-        </b-col>
-        <b-col>
-          <i class="fas fa-reply"></i>
-          <div>
-            <b>{{ getSummaryAvatar.twitter.reply | numFormat }}</b> Reply
-          </div>
-        </b-col>
-        <b-col>
-          <i class="fas fa-heart"></i>
-          <div>
-            <b>{{ getSummaryAvatar.twitter.favourites | numFormat }}</b> Likes
-          </div>
-        </b-col>
-        <!-- <b-col>
-          <i class="fas fa-quote-right"></i>
-         <div><b>{{getSummaryAvatar.twitter.quote |numFormat}}</b> quote</div>
-       </b-col> -->
-      </b-row>
-      <b-row class="mb-4 mt-4" v-else cols="3" cols-md="3" cols-lg="3">
-        <b-col>
-          <i class="fa fa-facebook"></i>
-          <div>
-            <b>{{ getSummaryAvatar.facebook.post | numFormat }}</b> Posts
-          </div>
-        </b-col>
-        <b-col>
-          <i class="fa fa-comments"></i>
-          <div>
-            <b>{{ getSummaryAvatar.facebook.comment | numFormat }}</b> Comments
-          </div>
-        </b-col>
-        <b-col>
-          <i class="fas fa-share"></i>
-          <div>
-            <b>{{ getSummaryAvatar.facebook.share | numFormat }}</b> Share
-          </div>
-        </b-col>
-      </b-row>
-    </div>
-    <div v-if="getAvatar && getAvatar.length != 0">
-      <!-- --------------------------twitter table-------------------------------------------------------------- -->
-      <b-table
-        v-if="selected == 'twActive'"
-        responsive
-        :items="getAvatar"
-        :fields="FieldsTwitter"
-        :current-page="currentPage"
-        :per-page="perPage"
-        :filter="filterTw"
-        :filter-included-fields="filterOn"
-        :empty-filtered-text="empData"
-        stacked="lg"
-        show-empty
-        small
-        @filtered="onFiltered"
-        head-variant="dark"
-        class="text-break"
-        id="tb-profile"
-      >
-        <template #cell(id)="row">
-          {{ row.index + 1 + 20 * (currentPage - 1) }}
-        </template>
-        <template #cell(name)="row">
-          <b>{{ row.item.name }}</b>
-        </template>
-        <template #cell(total_account)="row">
-          {{ row.item.twitter.total_account | numFormat }}
-        </template>
-        <template #cell(active)="row">
-          <div id="btn-active">
-            <div>{{ row.item.twitter.total_account_active | numFormat }}</div>
-            <b-button
-              size="sm"
-              @click="row.toggleDetails"
-              id="btn-show"
-              class="ml-3"
-            >
-              {{ row.detailsShowing ? "Hide" : "Show" }} User
-            </b-button>
-          </div>
-        </template>
-        <template #row-details="rows">
-          <div v-if="rows.item.twitter.export_data.length" class="user-card">
-            <b-table
-              id="user-table"
-              :bordered="false"
-              :borderless="true"
-              :items="rows.item.twitter.export_data"
-              :fields="fields"
-              stacked="lg"
-              class="text-left"
-            >
-              <template #cell(id)="row">
-                <span style="color:#aeb0b3;">{{ row.index + 1 }}</span>
-              </template>
-              <template #cell(account_name)="row">
-                <span v-if="row.item.profile_image">
-                  <img :src="row.item.profile_image" id="profile-pic" />
-                </span>
-                <span v-else>
-                  <b-avatar class="mr-3"></b-avatar>
-                </span>
-
-                {{ row.value }}
-              </template>
-              <template #cell(follower)="row">
-                {{ row.value | numFormat }}
-              </template>
-              <template #cell(tweet)="row">
-                {{ row.value | numFormat }}
-              </template>
-              <template #cell(retweet)="row">
-                {{ row.value | numFormat }}
-              </template>
-              <template #cell(likes_count)="row">
-                {{ row.value | numFormat }}
-              </template>
-              <template #cell(view)="row">
-                <span
-                  class="fas fa-list-ul float-right"
-                  v-b-tooltip.hover
-                  title="ดูข้อมูล"
-                  size="sm"
-                  @click="
-                    open = true;
-                    info(row.item, rows.item.name);
-                  "
-                ></span>
-              </template>
-              <template #cell(hashtags)="row">
-                <div v-if="row.value.length">
-                  <div v-for="(tag, i) in row.value" :key="i">{{ tag }}</div>
-                </div>
-                <div v-else>
-                  -
-                </div>
-              </template>
-            </b-table>
-          </div>
-          <div v-else>
-            ไม่พบข้อมูล
-          </div>
-        </template>
-        <template #cell(tweet)="row">
-          {{ row.item.twitter.tweet | numFormat }}
-        </template>
-        <template #cell(retweet)="row">
-          {{ row.item.twitter.retweet | numFormat }}
-        </template>
-        <template #cell(reply)="row">
-          {{ row.item.twitter.reply | numFormat }}
-        </template>
-        <template #cell(likes)="row">
-          {{ row.item.twitter.favourites | numFormat }}
-        </template>
-        <template #cell(top3_hashtag)="row">
-          <div v-if="row.item.twitter.top3_hashtag.name != ''">
-            <span v-if="row.item.twitter.top3_hashtag.name[0]"
-              ><b>1 </b>{{ row.item.twitter.top3_hashtag.name[0] }}</span
-            >
-            <br /><span v-if="row.item.twitter.top3_hashtag.name[1]"
-              ><b>2 </b>{{ row.item.twitter.top3_hashtag.name[1] }}</span
-            >
-            <br /><span v-if="row.item.twitter.top3_hashtag.name[2]"
-              ><b>3 </b>{{ row.item.twitter.top3_hashtag.name[2] }}
-            </span>
-          </div>
-          <div v-else style="color:#83878a;">ไม่มี #Top3</div>
-        </template>
-      </b-table>
-
-      <!-- -----------------------------------facebook table---------------------------------------------------- -->
-
-      <b-table
-        hover
-        v-else
-        responsive
-        :items="getAvatar"
-        :fields="FieldsFacebook"
-        :current-page="currentPage"
-        :per-page="perPage"
-        :filter="filterFb"
-        :filter-included-fields="filterOn"
-        :empty-filtered-text="empData"
-        stacked="lg"
-        show-empty
-        small
-        @filtered="onFiltered"
-        head-variant="dark"
-        class="text-break"
-        id="tb-profile"
-      >
+  <div class="mt-4">
+    <!-- {{ getAvatarSource }} -->
+    <b-row class="mb-3">
+      <b-col md="6" class="my-1">
+        <b-form-group
+          label-for="filter-input"
+          label-cols-sm="0"
+          label-align-sm="right"
+          label-size="md"
+          class="mb-0"
         >
-
-        <template #cell(id)="row">
-          {{ row.index + 1 + (currentPage - 1) * currentPage * 10 }}
-        </template>
-        <template #cell(name)="row">
-          <b>{{ row.item.name }}</b>
-        </template>
-        <template #cell(total_account)="row">
-          {{ row.item.facebook.total_account | numFormat }}
-        </template>
-        <template #cell(post)="row">
-          {{ row.item.facebook.post | numFormat }}
-        </template>
-        <template #cell(comment)="row">
-          {{ row.item.facebook.comment | numFormat }}
-        </template>
-        <template #cell(share)="row">
-          {{ row.item.facebook.share | numFormat }}
-        </template>
-      </b-table>
-      <!-- paginate -->
-      <b-row class="mt-5 text-center mb-4">
-        <b-col
-          sm="7"
-          md="6"
-          class="my-1 m-auto "
-          id="page"
-          v-if="filterTw || filterFb"
+          <b-input-group size="md">
+            <b-form-input
+              id="filter-input"
+              v-model="filterTw"
+              type="search"
+              placeholder="ค้นหา"
+            ></b-form-input>
+          </b-input-group>
+        </b-form-group>
+      </b-col>
+      <b-col md="" class="my-1">
+        <b-form-select
+          v-model="selected"
+          :options="options"
+          @change="selectChange(selected)"
+        ></b-form-select>
+      </b-col>
+      <b-col class="my-1" md="">
+        <button
+          class="btn btn-add pl-3 pr-3 font-weight-bold"
+          @click="goAvatarTeam"
         >
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="this.totalRows"
-            :per-page="perPage"
-            align="fill"
+          <i class="fas fa-user-cog " />
+          <span style="font-size:16px;"> การจัดการ Avatar </span>
+        </button>
+        <!-- <CreateMonitor class="text-right" :tabsMonitor="'tabAvatar'" /> -->
+      </b-col>
+    </b-row>
+    <b-table
+      v-if="
+        getDataListAvatar &&
+          getDataListAvatar.avatar &&
+          getDataListAvatar.avatar.length
+      "
+      :filter="filterTw"
+      responsive
+      :items="getDataListAvatar.avatar"
+      :fields="selcectFields"
+      head-variant="dark"
+      class="text-break"
+      id="tb-profile"
+      stacked="lg"
+    >
+      <template #cell(id)="row">
+        {{ row.index + 1 + 20 * (currentPage - 1) }}
+      </template>
+      <template #cell(postCount)="row">
+        {{ row.value | numFormat }}
+      </template>
+      <template #cell(viewsCountSum)="row">
+        {{ row.value | numFormat }}
+      </template>
+      <template #cell(retweetsCountSum)="row">
+        {{ row.value | numFormat }}
+      </template>
+      <template #cell(likesCountSum)="row">
+        {{ row.value | numFormat }}
+      </template>
+      <template #cell(engagementSum)="row">
+        {{ row.value | numFormat }}
+      </template>
+      <template #cell(topHashtags)="row">
+        <div v-if="row.item.topHashtags.length">
+          <div v-for="(hashtag, k) in row.item.topHashtags">
+            {{ k + 1 }} {{ hashtag.hashtag }}
+          </div>
+        </div>
+        <div v-else>
+          ไม่พบข้อมูล #
+        </div>
+      </template>
+      <template #cell(active)="row">
+        <div id="btn-active">
+          <div>{{ row.item.activeAccountsCount | numFormat }}</div>
+          <b-button
             size="sm"
-            class="my-0"
-          ></b-pagination>
-        </b-col>
-        <b-col sm="7" md="6" class="my-1 m-auto " id="page" v-else>
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="getAvatar.length"
-            :per-page="perPage"
-            align="fill"
-            size="sm"
-            class="my-0"
-          ></b-pagination>
-        </b-col>
-      </b-row>
-    </div>
+            @click="row.toggleDetails"
+            id="btn-show"
+            class="ml-3"
+          >
+            {{ row.detailsShowing ? "Hide" : "Show" }} User
+          </b-button>
+        </div>
+      </template>
+      <template #row-details="rows">
+        <div v-if="rows.item" class="user-card">
+          <b-table
+            id="user-table"
+            :bordered="false"
+            :borderless="true"
+            :items="rows.item.data"
+            :fields="fields"
+            stacked="lg"
+            class="text-left"
+          >
+            <template #cell(id)="row">
+              <span style="color:#aeb0b3;">{{ row.index + 1 }}</span>
+            </template>
+            <template #cell(account_name)="row">
+              <span v-if="row.item.profile_image">
+                <img :src="row.item.profile_image" id="profile-pic" />
+              </span>
+              <span v-else>
+                <b-avatar class="mr-3"></b-avatar>
+              </span>
 
+              {{ row.value }}
+            </template>
+            <template #cell(engagement)="row">
+              {{ row.value | numFormat }}
+            </template>
+            <template #cell(urls)="row">
+              {{ row.value.length | numFormat }}
+            </template>
+            <template #cell(retweets_count)="row">
+              {{ row.value | numFormat }}
+            </template>
+            <template #cell(likes_count)="row">
+              {{ row.value | numFormat }}
+            </template>
+            <!-- <template #cell(likes_count)="row">
+              {{ row.value | numFormat }}
+            </template> -->
+            <template #cell(view)="row">
+              <span
+                class="fas fa-list-ul float-right"
+                v-b-tooltip.hover
+                title="ดูข้อมูล"
+                size="sm"
+                @click="
+                  open = true;
+                  info(row.item, rows.item.name,rows.item.team);
+                "
+              ></span>
+            </template>
+            <template #cell(hashtags)="row">
+              <div v-if="row.value.length">
+                <div v-for="(tag, i) in row.value" :key="i">{{ tag }}</div>
+              </div>
+              <div v-else>
+                -
+              </div>
+            </template>
+          </b-table>
+        </div>
+        <div v-else>
+          ไม่พบข้อมูล
+        </div>
+      </template>
+    </b-table>
+    <div v-else> <b-card class="py-5">ไม่พบข้อมูล</b-card>  </div>
+    <b-row class="mt-5 text-center mb-4">
+      <b-col sm="7" md="6" class="my-1 m-auto " id="page">
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="this.totalRows"
+          :per-page="perPage"
+          align="fill"
+          size="sm"
+          class="my-0"
+          v-if="
+        getDataListAvatar &&
+          getDataListAvatar.avatar &&
+          getDataListAvatar.avatar.length
+      "
+        ></b-pagination>
+      </b-col>
+    </b-row>
     <!-- ----------------------------------------------Info modal--------------------------------------------- -->
     <vue-modaltor
       :visible="open"
       @hide="hideModal"
-      :resize-width="{ 3500: '50%', 1500: '70%', 992: '70%', 768: '90%' }"
+      :resize-width="{ 3500: '70%', 1500: '70%', 992: '70%', 768: '90%' }"
       :animation-panel="'modal-slide-top'"
       class="hei-popup"
     >
       <b-container fluid>
-        <div v-if="selected == 'twActive'">
+        <!-- {{ dataInfo }} -->
+        <div
+          v-if="
+              dataInfo &&
+              dataInfo._id &&
+              dataInfo._id.source
+          "
+        >
+          <!-- {{ dataInfo._id.source}} -->
           <div class="hh">
-            <a
-              :href="'https://twitter.com/' + dataInfo.account_name"
-              target="_blank"
-              id="acclink"
-            >
+            <a :href="dataInfo.account_url" target="_blank" id="acclink">
               <span class="bold h5">
                 <span v-if="dataInfo.profile_image"
-                  ><img :src="dataInfo.profile_image" id="profile-pic"
-                /></span>
+                  ><img :src="dataInfo.profile_image" id="profile-pic-1"/>
+                  <span v-if="dataInfo && dataInfo._id && dataInfo._id.source">
+                    <img
+                      v-if="dataInfo._id.source === 'twitter'"
+                      :src="imgtw"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'facebook'"
+                      :src="imgfb"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'pantip'"
+                      :src="imgpt"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'youtube'"
+                      :src="imgyt"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'news'"
+                      :src="imgnw"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'instagram'"
+                      :src="imgig"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'blockdit'"
+                      :src="imgbd"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'tiktok'"
+                      src="@/assets/Tiktok.png"
+                      class="social-img"/>
+                    <img
+                      v-if="dataInfo._id.source === 'threads'"
+                      src="@/assets/Threads.png"
+                      class="social-img"/></span
+                ></span>
                 <span v-else><b-avatar class="mr-3"></b-avatar></span>
                 {{ dataInfo.account_name }}
               </span>
               <i class="fa fa-external-link mr-2" />
             </a>
             <span class="h6">
-              <b-badge id="box-team">{{ teamName }}</b-badge></span
+              <b-badge id="box-team">{{ dataInfo.team }}</b-badge></span
             >
           </div>
-          <hr />
+          <!-- <hr /> -->
           <b-row
             class="text-center"
             cols="2"
@@ -345,28 +256,55 @@
             cols-md="2"
             cols-lg="4"
           >
-            <b-col>
+            <!-- <b-col>
               <div>
                 <i class="fa fa-users" style="color: rgb(100, 103, 105);"></i>
               </div>
               <div>
                 <b>{{ dataInfo.follower | numFormat }}</b> Followers
               </div>
+            </b-col> -->
+            <b-col>
+              <div>
+                <i
+                  class="fa fa-paper-plane"
+                  style="color: #2a3a8f;"
+                ></i>
+              </div>
+              <div v-if="dataInfo.urls && dataInfo.urls.length">
+                <b>{{ dataInfo.urls.length | numFormat }}</b> Posts
+              </div>
             </b-col>
             <b-col>
               <div>
-                <i class="fa fa-twitter" style="color: rgb(29, 161, 242);"></i>
+                <i class="fa fa-comment" style="color:#45a5df;"></i>
               </div>
-              <div>
-                <b>{{ dataInfo.tweet | numFormat }}</b> Tweets
+              <div v-if="dataInfo ">
+                <b>{{ dataInfo.comments_count | numFormat }}</b> comments
               </div>
             </b-col>
-            <b-col>
+            <b-col v-if="dataInfo._id.source === 'tiktok'">
+              <div>
+                <i class="fa fa-eye" style="color: #673ab7;"></i>
+              </div>
+              <div>
+                <b>{{ dataInfo.views_count | numFormat }}</b> Likes
+              </div>
+            </b-col>
+            <b-col  v-if="dataInfo._id.source === 'twitter'">
               <div>
                 <i class="fa fa-retweet" style="color:rgb(23, 191, 99);"></i>
               </div>
               <div>
-                <b>{{ dataInfo.retweet | numFormat }}</b> Retweets
+                <b>{{ dataInfo.retweets_count | numFormat }}</b> Reposts
+              </div>
+            </b-col>
+            <b-col  v-else>
+              <div>
+                <i class="fa fa-share" style="color:rgb(23, 191, 99);"></i>
+              </div>
+              <div>
+                <b>{{ dataInfo.shares_count | numFormat }}</b> Shares
               </div>
             </b-col>
             <b-col>
@@ -382,41 +320,35 @@
             <div class="bold mt-3 ">
               Hashtags
               <span class="small"
-                >( total : <b>{{ dataHash.length | numFormat }}</b> hashtags
-                )</span
+                >( total :
+                <b>{{ getSortedHashtags(dataHash).length | numFormat }}</b>
+                hashtags )</span
               >
             </div>
-            <div id="col-hash" v-if="dataHash.length">
-              <div v-for="(hash, k) in dataHash" :key="k" class="text-left">
+            <!-- {{ getSortedHashtags(dataHash) }} -->
+            <div id="col-hash" v-if="getSortedHashtags(dataHash).length">
+              <div
+                v-for="(hash, k) in getSortedHashtags(dataHash)"
+                :key="k"
+                class="text-left"
+              >
                 {{ k + 1 }}. {{ hash }}
               </div>
             </div>
             <div v-else>ไม่พบข้อมูล Hashtag</div>
 
             <div class="mt-3 bold">
-              Tweets
-              <span class="small"
-                >( total : <b>{{ uidLink.length | numFormat }}</b> tweets
+              Posts
+              <span class="small" v-if="dataInfo.urls && dataInfo.urls.length"
+                >( total : <b>{{ dataInfo.urls.length | numFormat }}</b> tweets
                 )</span
               >
             </div>
-            <span v-if="uidLink.length">
-              <div v-for="(post, k) in uidLink" :key="k">
-                <a
-                  id="box-links"
-                  class="mt-2"
-                  :href="
-                    'https://twitter.com/' +
-                      dataInfo.account_name +
-                      '/status/' +
-                      post
-                  "
-                  target="_blank"
-                >
+            <span v-if="dataInfo.urls && dataInfo.urls.length">
+              <div v-for="(post, k) in dataInfo.urls" :key="k">
+                <a id="box-links" class="mt-2" :href="post.replace('mbasic.','')" target="_blank">
                   <span>{{ k + 1 }}. </span>
-                  https://twitter.com/{{ dataInfo.account_name }}/status/{{
-                    post
-                  }}
+                  {{ post.replace('mbasic.',"") }}
                   <i class="fa fa-external-link"
                 /></a>
               </div>
@@ -436,6 +368,13 @@ export default {
     // CreateMonitor,
   },
   watch: {
+   
+    getDataListAvatar: {
+      handler(val) {
+        console.log("val", val);
+      },
+      deep: true,
+    },
     totalRows: function(newVal, oldVal) {
       // watch it
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
@@ -443,6 +382,13 @@ export default {
   },
   data: function() {
     return {
+      imgtw: require("@/assets/Twitter.png"),
+      imgfb: require("@/assets/Facebook.png"),
+      imgpt: require("@/assets/board.png"),
+      imgig: require("@/assets/Instagram.png"),
+      imgnw: require("@/assets/News.png"),
+      imgyt: require("@/assets/Youtube.png"),
+      imgbd: require("@/assets/Blockdit.png"),
       teamShow: "",
       uidLink: [],
       teamName: "",
@@ -452,16 +398,18 @@ export default {
       fields: [
         { key: "id", label: "#" },
         { key: "account_name", label: "Account" },
-        "follower",
-        "tweet",
-        "retweet",
+        { key: "urls", label: "Posts" },
+        { key: "retweets_count", label: "Reposts" },
         { key: "likes_count", label: "Likes" },
+        { key: "engagement", label: "Engages" },
         { key: "view", label: "" },
       ],
-      selected: "twActive",
+      selected: "twitter",
       options: [
-        { value: "twActive", text: "Twitter" },
-        { value: "fbActive", text: "Facebook" },
+        { value: "twitter", text: "Twitter" },
+        { value: "facebook", text: "Facebook" },
+        { value: "instagram", text: "Instagram" },
+        { value: "tiktok", text: "Tiktiok" },
       ],
       totalRows: 1,
       currentPage: 1,
@@ -474,39 +422,105 @@ export default {
       filterOn: [],
       FieldsTwitter: [
         { key: "id", label: "#" },
-        { key: "name", label: "Team" },
-        { key: "total_account", label: "Accounts" },
-        { key: "tweet", label: "Tweets" },
-        { key: "retweet", label: "Retweets" },
-        { key: "reply", label: "Reply" },
-        { key: "likes", label: "Likes" },
-        { key: "top3_hashtag", label: "#Top3" },
+        { key: "team", label: "Team" },
+        { key: "totalAccountsCount", label: "Accounts" },
+        { key: "postCount", label: "Posts" },
+        { key: "commentsCountSum", label: "Comments" },
+        { key: "retweetsCountSum", label: "Reposts" },
+        { key: "likesCountSum", label: "Likes" },
+        { key: "engagementSum", label: "Engages" },
+        { key: "topHashtags", label: "#Top3" },
         { key: "active", label: "Active" },
       ],
       FieldsFacebook: [
         { key: "id", label: "#" },
-        { key: "name", label: "Team" },
-        { key: "total_account", label: "Accounts" },
-        { key: "post", label: "Posts" },
-        { key: "comment", label: "Comments" },
-        { key: "share", label: "Share" },
-        //{ key: 'favourites', label: 'favourites', sortable: true, },
+        { key: "team", label: "Team" },
+        { key: "totalAccountsCount", label: "Accounts" },
+        { key: "postCount", label: "Posts" },
+        { key: "commentsCountSum", label: "Comments" },
+        { key: "sharesCountSum", label: "Shares" },
+        { key: "likesCountSum", label: "Likes" },
+        { key: "engagementSum", label: "Engages" },
+        { key: "topHashtags", label: "#Top3" },
+        { key: "active", label: "Active" },
+      ],
+      FieldsTiktok: [
+        { key: "id", label: "#" },
+        { key: "team", label: "Team" },
+        { key: "totalAccountsCount", label: "Accounts" },
+        { key: "postCount", label: "Posts" },
+        { key: "commentsCountSum", label: "Comments" },
+        { key: "viewsCountSum", label: "Views" },
+        { key: "sharesCountSum", label: "Shares" },
+        { key: "likesCountSum", label: "Likes" },
+        { key: "engagementSum", label: "Engages" },
+       
+        { key: "topHashtags", label: "#Top3" },
+        { key: "active", label: "Active" },
       ],
       empData: "ไม่พบข้อมูล",
     };
   },
   computed: {
-    ...mapGetters(["getAvatar", "getSummaryAvatar"]),
+    ...mapGetters([
+      "getAvatar",
+      "getSummaryAvatar",
+      "getDataListAvatar",
+      "getAvatarSource",
+    ]),
     total() {
       var row = this.totalRows;
-      row = this.getAvatar.length;
+      row = this.getDataListAvatar.avatar.length;
       return row;
+    },
+    selcectFields() {
+      let f = [];
+      if (this.selected == "twitter") {
+        f = this.FieldsTwitter;
+        
+      this.$store.commit("setAvatarSource", this.selected );
+      } 
+      if (this.selected == "facebook") {
+        f = this.FieldsFacebook;
+        this.$store.commit("setAvatarSource", this.selected );
+      }
+      if (this.selected == "instagram") {
+        f = this.FieldsFacebook;
+        this.$store.commit("setAvatarSource", this.selected );
+      }
+      if (this.selected == "tiktok") {
+        f = this.FieldsTiktok;
+        this.$store.commit("setAvatarSource", this.selected );
+      }
+      return f
     },
   },
   methods: {
-    info(item, team) {
+    getSortedHashtags(hashtags) {
+      // สร้าง object เพื่อเก็บจำนวนความถี่ของแต่ละ hashtag
+      const hashtagFrequency = {};
+
+      // นับความถี่ของแต่ละ hashtag
+      hashtags.forEach((group) => {
+        group.forEach((hashtag) => {
+          if (hashtagFrequency[hashtag]) {
+            hashtagFrequency[hashtag]++;
+          } else {
+            hashtagFrequency[hashtag] = 1;
+          }
+        });
+      });
+
+      // สร้าง array ของ [hashtag, frequency]
+      const sortedHashtags = Object.entries(hashtagFrequency)
+        .sort((a, b) => b[1] - a[1]) // เรียงลำดับความถี่จากมากไปน้อย
+        .map((entry) => entry[0]); // ดึงค่า hashtag ออกมา
+
+      return sortedHashtags;
+    },
+    info(item, team,data) {
       this.teamName = team;
-      this.dataInfo = item;
+      this.dataInfo = {...item,team:data};
       var duplicates = item.hashtags;
       //  console.log('duplicates',duplicates);
       var unique = duplicates.filter(function(elem, pos) {
@@ -529,18 +543,35 @@ export default {
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },
-    selectChange() {
+    selectChange(val) {
       this.currentPage = 1;
+      console.log("val", val);
+
+      this.$store.commit("setAvatarSource", val);
     },
     hideModal() {
       this.open = false;
     },
   },
+  mounted() {
+    // this.$store.commit("setAvatarSource", this.selected )
+    // this.$store.dispatch('fetchListAvatar')
+  },
 };
 </script>
 <style scoped>
+.social-img {
+  width: 35px;
+  position: relative;
+  right: 21px;
+  bottom: -10px;
+}
 #profile-pic {
   width: 40px;
+  border-radius: 50%;
+}
+#profile-pic-1 {
+  width: 50px;
   border-radius: 50%;
 }
 .user-card {
@@ -579,7 +610,7 @@ a#acclink {
   color: white;
 }
 .fa-list-ul {
-  background: #fed16e8a ;
+  background: #fed16e8a;
   padding: 7px;
   border-radius: 50%;
   box-shadow: 1px 1px 3px #666666;
@@ -706,7 +737,7 @@ tbody tr td:nth-child(7) {
   border-radius: 6px;
 }
 .table {
-  width: 80%;
+  /* width: 80%; */
   color: #2c3e50;
   margin: auto;
 }

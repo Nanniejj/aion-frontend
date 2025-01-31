@@ -289,7 +289,7 @@ export const RankingService = {
   getSubDomainRanking(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.get(`/v1/subdomain-list/${payload.domain}/`);
+    return ApiService.get(`/v1/subdomain-list/${payload.domain}/?limit=100000`);
   },
   getRanking(payload) {
     Vue.axios.defaults.baseURL = API_URL;
@@ -620,7 +620,7 @@ export const MonitorService = {
     }
     ApiService.setHeader();
     return ApiService.get(
-      `v1/searchLocation/?sort_by=${payload.sort_by}&offset=${payload.offset}` +
+      `v1/searchLocation/?sort_by=${payload.sort_by}&offset=${payload.offset}&source=${payload.source}` +
         query +
         account +
         sentiment+sdate+edate
@@ -667,7 +667,7 @@ export const MonitorService = {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(
-      `v1/getMonitor/?query=${payload.query}&api_type=${payload.api_type}&top_type=${payload.top_type}&sort_by=${payload.sort_by}`
+      `v1/getMonitor/?query=${payload.query}&api_type=${payload.api_type}&top_type=${payload.top_type}&sort_by=${payload.sort_by}&source=${payload.source}`
     );
   },
   getPostAllMonitor(payload) {
@@ -752,7 +752,7 @@ export const LoginService = {
   },
 };
 export const DomainService = {
-  getPostDomain(payload) {
+  getPostDomainv1(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dm = "",
@@ -787,6 +787,47 @@ export const DomainService = {
     }
     return ApiService.get(
       `/v1/getsentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
+        stm +
+        dm +
+        source +
+        dash+findkey
+    );
+  },
+  getPostDomain(payload) {
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
+    ApiService.setHeader();
+    var dm = "",
+      stm = "",
+      source = "",
+      dash = "",
+      findkey =""
+      if(payload.querySearch){
+        findkey=`&querySearch=${payload.querySearch}`
+      }else{
+        findkey=""
+      }
+    if (payload.dashboard) {
+      dash = `&dashboard=${payload.dashboard}`;
+    } else {
+      dash = "";
+    }
+    if (payload.domain) {
+      dm = `&domain=${payload.domain}`;
+    } else {
+      dm = "";
+    }
+    if (payload.source) {
+      source = `&source=${payload.source}`;
+    } else {
+      source = "";
+    }
+    if (payload.sentiment) {
+      stm = `&sentiment=${payload.sentiment}`;
+    } else {
+      stm = "";
+    }
+    return ApiService.get(
+      `/v2/userposts/getSentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
         stm +
         dm +
         source +

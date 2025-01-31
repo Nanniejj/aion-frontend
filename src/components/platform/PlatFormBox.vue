@@ -106,7 +106,7 @@ export default {
           let today= moment(new Date()).format().slice(0,10);
           this.start_date = today+"T00:00:00"
           this.end_date =  today+"T23:59:59"
-           this.$store.dispatch("fetchAllstats",{start_date:this.start_date,end_date:this.end_date});
+           this.$store.dispatch("fetchAllstats",{start_date:this.start_date,end_date:this.end_date,  domain: 'All'});
     }
 
 };

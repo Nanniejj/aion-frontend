@@ -1,6 +1,6 @@
 <template>
   <span>
-    <button class="btn btn-add d-inline" @click="open = true" >
+    <button class="btn btn-add d-inline" @click="open = true">
       <i class="fa fa-file-import" />
       <span style="font-size: 16px">
         import CSV
@@ -28,9 +28,11 @@
                 blockdit.length
             "
           >
+
             <b-button
               variant="success"
-              class="btn btn-save  mt-2 "
+              class="btn btn-save mt-2"
+              :loading="true"
               @click="addRowTarget()"
               :disabled="
                 facebook.length == 0 &&
@@ -39,10 +41,15 @@
                   instagram.length == 0 &&
                   twitter.length == 0 &&
                   pantip.length == 0 &&
-                  blockdit.length == 0
+                  blockdit.length == 0||loading
               "
-              >บันทึก</b-button
-            >
+              ><vue-element-loading
+              :active="loading"
+              size="45"
+              background-color="rgba(255, 255, 255, 0.4)"
+              color="#b6ac9a"
+            />บันทึก
+            </b-button>
           </span>
 
           <b-button @click="clear" variant="outline-danger" class="mr-2  mt-2 ">
@@ -152,21 +159,30 @@
           <b-button class="btn btn-close mr-2" @click="hideModal()"
             >ปิดหน้าต่าง</b-button
           >
-          <b-button
-            variant="success"
-            class="btn btn-save"
-            @click="addRowTarget()"
-            :disabled="
-              facebook.length == 0 &&
-                tiktok.length == 0 &&
-                youtube.length == 0 &&
-                instagram.length == 0 &&
-                twitter.length == 0 &&
-                pantip.length == 0 &&
-                blockdit.length == 0
-            "
-            >บันทึก</b-button
-          >
+ 
+            <div class="d-inline "> 
+            <b-button
+              variant="success"
+              class="btn btn-save"
+              :loading="true"
+              @click="addRowTarget()"
+              :disabled="
+                facebook.length == 0 &&
+                  tiktok.length == 0 &&
+                  youtube.length == 0 &&
+                  instagram.length == 0 &&
+                  twitter.length == 0 &&
+                  pantip.length == 0 &&
+                  blockdit.length == 0||loading
+              "
+              ><vue-element-loading
+              :active="loading"
+              size="45"
+              background-color="rgba(255, 255, 255, 0.4)"
+              color="#b6ac9a"
+            />บันทึก
+            </b-button></div>
+           
         </b-col>
       </b-row>
     </vue-modaltor>
@@ -178,6 +194,7 @@ import Papa from "papaparse";
 export default {
   data() {
     return {
+      loading: false,
       open: false,
       urls: [],
       facebook: [],
@@ -217,6 +234,7 @@ export default {
         );
     },
     clear() {
+
       this.facebook = [];
       this.tiktok = [];
       this.youtube = [];
@@ -230,6 +248,7 @@ export default {
       }
     },
     async addRowTarget() {
+      this.loading = true;
       const promises = [];
 
       if (this.facebook.length) {
@@ -292,6 +311,7 @@ export default {
       try {
         await Promise.all(promises);
         this.showAlert("เพิ่มบัญชีเรียบร้อย!");
+        this.loading = false;
         this.clear();
         // promises = []
         this.hideModal();
@@ -313,7 +333,7 @@ export default {
         const newURL = `https://facebook.com/${userID}`;
         return newURL;
       } else {
-        return originalURL
+        return originalURL;
       }
     },
     handleFileUpload(event) {
@@ -353,8 +373,8 @@ export default {
                 );
               })
               .map((url) => {
-                if(url.includes("facebook")){
-                  url = this.simplifyFacebookURL(url)
+                if (url.includes("facebook")) {
+                  url = this.simplifyFacebookURL(url);
                 }
                 // ทำการแปลง URL ตามเงื่อนไข
                 return url

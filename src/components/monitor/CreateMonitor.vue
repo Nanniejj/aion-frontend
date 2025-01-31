@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- {{getListMonitorProfile.targetlist.length}} -->
-   <button class="btn btn-add" @click="open = true">
+    <button class="btn btn-add" @click="open = true">
       <i class="fa fa-plus" />
       <span style="font-size: 16px" v-if="tabsMonitor == 'tabProfile'">
         เพิ่มบัญชี
@@ -105,6 +105,10 @@
               >ตัวอย่างการใส่ข้อมูล <br />
               เช่น https://www.tiktok.com/@username
             </b-alert>
+            <b-alert v-else-if="selectSource == 'threads'" show
+              >ตัวอย่างการใส่ข้อมูล <br />
+              เช่น https://www.threads.net/@ch7hd
+            </b-alert>
             <b-form-select
               v-if="$route.name == 'Avatar'"
               v-model="selectSource"
@@ -145,6 +149,7 @@
             size="md"
             placeholder="Enter เพื่อเพิ่มแฮชแท็ก"
             remove-on-delete
+            separator=" ,;"
           ></b-form-tags>
         </b-col>
         <!--------------------------------------------------addKeyword --------------------------------------------------------------->
@@ -198,7 +203,36 @@
           <b-button class="btn btn-close" size="sm" @click="hideModal()"
             >ปิดหน้าต่าง</b-button
           >
-          <b-button class="btn btn-save" size="sm" @click="addRowTarget()"
+          <b-button
+            class="btn btn-save"
+            size="sm"
+            @click="addRowTarget()"
+            v-if="tabsMonitor == 'tabProfile'"
+            :disabled="addTarget.length == 0"
+            >บันทึก</b-button
+          >
+          <b-button
+            class="btn btn-save"
+            size="sm"
+            @click="addRowTarget()"
+            v-else-if="tabsMonitor == 'tabHashtag'"
+            :disabled="addHashtag.length == 0"
+            >บันทึก</b-button
+          >
+          <b-button
+            class="btn btn-save"
+            size="sm"
+            @click="addRowTarget()"
+            v-else-if="tabsMonitor == 'tabKeyword'"
+            :disabled="addKeyword.length == 0"
+            >บันทึก</b-button
+          >
+          <b-button
+            class="btn btn-save"
+            size="sm"
+            @click="addRowTarget()"
+            v-else
+            :disabled="addAvatar.length == 0"
             >บันทึก</b-button
           >
         </b-col>
@@ -241,25 +275,32 @@ export default {
         { value: "twitter", text: "Twitter" },
         { value: "youtube", text: "Youtube" },
         { value: "instagram", text: "Instagram" },
-        { value: "news", text: "News" },
+        // { value: "news", text: "News" },
         { value: "pantip", text: "Pantip" },
         { value: "blockdit", text: "Blockdit" },
         { value: "tiktok", text: "Tiktok" },
+        { value: "threads", text: "Threads" },
       ],
       optionsAV: [
         { value: null, text: "กรุณาเลือก source", disabled: true },
         { value: "twitter", text: "Twitter" },
-        //  { value: "facebook", text: "Facebook" },
+        { value: "facebook", text: "Facebook" },
         // { value: "youtube", text: "Youtube" },
-        // { value: "instagram", text: "Instagram" },
+        { value: "instagram", text: "Instagram" },
         // { value: "news", text: "News" },
         // { value: "pantip", text: "Pantip" },
         // { value: "blockdit", text: "Blockdit" },
-        // { value: "tiktok", text: "Tiktok" },
+        { value: "tiktok", text: "Tiktok" },
       ],
       optionsHash: [
         { value: null, text: "กรุณาเลือก source", disabled: true },
+        { value: "facebook", text: "Facebook" },
         { value: "twitter", text: "Twitter" },
+        { value: "youtube", text: "Youtube" },
+        { value: "instagram", text: "Instagram" },
+        { value: "news", text: "News" },
+        { value: "pantip", text: "Pantip" },
+        { value: "blockdit", text: "Blockdit" },
         { value: "tiktok", text: "Tiktok" },
       ],
       optionsKeyword: [
@@ -281,6 +322,8 @@ export default {
         return tag.includes("https://youtube.com/");
       } else if (this.selectSource == "tiktok") {
         return tag.includes("https://www.tiktok.com/@");
+      } else if (this.selectSource == "threads") {
+        return tag.includes("https://www.threads.net/");
       } else {
         return tag;
       }
@@ -317,7 +360,7 @@ export default {
       this.addHashtag = [];
       this.addTarget = [];
       this.addAvatar = [];
-      this.addKeyword=""
+      this.addKeyword = "";
       this.open = false;
       if (this.tabsMonitor !== "tabKeyword") {
         await this.$store.dispatch("fatchListMonitorUpdate", "test");
@@ -326,6 +369,12 @@ export default {
     hideModal() {
       this.open = false;
     },
+  },
+  mounted() {
+    this.username = localStorage.getItem("username");
+    if (this.username == "adminatapy") {
+      this.options.push({ value: "news", text: "News" });
+    }
   },
 };
 </script>

@@ -399,10 +399,12 @@
                           </li>
                           <li v-on:click="pantip()">
                             <a tabindex="0">
-                              <img
+                              <img src="@/assets/board.png" class="imgsocial" />
+
+                              <!-- <img
                                 src="@/assets/Pantip.png"
                                 class="imgsocial"
-                              />
+                              /> -->
                             </a>
                           </li>
                           <li v-on:click="news()">

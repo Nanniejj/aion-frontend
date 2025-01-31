@@ -45,7 +45,9 @@
               id="input-small"
               placeholder=""
               v-model="addWord"
+               maxlength="50"
             ></b-form-input>
+            <small class="text-muted">{{ addWord.length }} / 50 ตัวอักษร</small>
           </b-col>
           <b-col sm="12">
             <br />
@@ -123,7 +125,7 @@
               class="btn btn-save"
               size="sm"
               @click="addRowWord"
-              :disabled="!addWord && !addWord"
+              :disabled="addWord.trim().length === 0||addKeyword.length==0"
               >บันทึก</b-button
             >
           </b-col>
@@ -143,7 +145,7 @@ export default {
       parseCsv: null,
       csv: null,
       open: false,
-      addWord: null,
+      addWord: "",
       addKeyword: [],
       addInclude: [],
       addExclude: [],

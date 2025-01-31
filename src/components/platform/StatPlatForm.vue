@@ -22,7 +22,7 @@
           />
           <img
             v-if="getNamePlatform == 'pantip'"
-            src="@/assets/cpt.png"
+            src="@/assets/cboard.png"
             class="imgs"
           />
           <img
@@ -161,7 +161,7 @@
           <b-col class="border-left" v-b-tooltip.hover title="Users">
             <div><i class="fas fa-users" /> {{ getSum.users | numFormat }}</div>
           </b-col>
-          <b-col class="border-left" v-b-tooltip.hover title="Crawler">
+          <!-- <b-col class="border-left" v-b-tooltip.hover title="Crawler">
             <div>
               <i class="fas fa-cloud-download-alt" />
               {{ craw.data | numFormat }}
@@ -169,7 +169,7 @@
           </b-col>
           <b-col class="border-left" v-b-tooltip.hover title="Preprocess">
             <div><i class="fas fa-database" /> {{ craw.pre | numFormat }}</div>
-          </b-col>
+          </b-col> -->
         </b-row>
       </b-container>
     </div>
@@ -422,12 +422,13 @@ getArrDate(){
     this.$store.dispatch("fetchAllstats", {
       start_date: this.start_date,
       end_date: this.end_date,
+        domain: 'All'
     });
 
     await this.$store.dispatch("fetchSentimentStatDashboard", {
       start_date: this.start_date,
       end_date: this.end_date,
-      domain: this.getDomainArr,
+      domain: 'All',
     });
   },
 };

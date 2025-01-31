@@ -14,14 +14,15 @@
               <label for="input-small1"><b>Domain </b></label>
             </b-col>
             <b-col sm="12">
-              <b-form-input id="input-small1" placeholder="" v-model="addDomain"></b-form-input>
-              <!-- {{addDomain}} -->
+              <b-form-input id="input-small1" placeholder="" v-model="addDomain"  maxlength="50" ></b-form-input>
+              <small class="text-muted">{{ addDomain.length }} / 50 ตัวอักษร</small>
+
             </b-col>
           </b-row>
           <b-row class="my-1">
             <b-col sm="12" style="text-align:right;">
                 <br>
-              <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button>  <b-button class="btn btn-save" size="sm" @click="addRowDomain()" >บันทึก</b-button>
+              <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button>  <b-button class="btn btn-save" size="sm" @click="addRowDomain()" :disabled="isAddDomainInvalid">บันทึก</b-button>
             </b-col>
           </b-row>
      </b-container>
@@ -56,6 +57,9 @@ methods: {
     },
     computed: {
     ...mapGetters(['getAddDomain']),
+    isAddDomainInvalid() {
+      return this.addDomain.trim().length === 0;
+    },
   },
 }
 </script>

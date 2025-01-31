@@ -13,14 +13,16 @@
               <label for="input-small2"><b>SubDomain  </b></label>
             </b-col>
             <b-col sm="12">
-              <b-form-input id="input-small2"  placeholder="" v-model="addSubDomain" focus></b-form-input>
+              <b-form-input id="input-small2"  placeholder=""  maxlength="50"  v-model="addSubDomain" focus></b-form-input>
+              <small class="text-muted">{{ addSubDomain.length }} / 50 ตัวอักษร</small>
+
               <!-- {{addSubDomain}} -->
             </b-col>
           </b-row>
           <b-row class="my-1">
             <b-col sm="12" style="text-align:right;">
                 <br>
-              <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button>  <b-button class="btn btn-save" size="sm" @click="addRowSubDomain" >บันทึก</b-button>
+              <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button>  <b-button class="btn btn-save" size="sm" @click="addRowSubDomain" :disabled="addSubDomain.trim().length === 0">บันทึก</b-button>
             </b-col>
           </b-row>
      </b-container>

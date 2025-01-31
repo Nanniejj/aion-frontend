@@ -119,23 +119,23 @@
                       <span
                         ><b> {{ postDomain.account_name }} </b></span
                       >
-                     
-                <a
-                  v-if="
-                    postDomain.url_post &&
-                    postDomain.url_post.includes('mbasic')
-                  "
-                  v-bind:href="postDomain.url_post.replace('mbasic.', '')"
-                  class="fa fa-external-link"
-                  target="_blank"
-                ></a>
-                <a
-                  v-else
-                  v-bind:href="postDomain.url_post"
-                  class="fa fa-external-link"
-                  target="_blank"
-                ></a>
-                  </span>
+
+                      <a
+                        v-if="
+                          postDomain.url_post &&
+                            postDomain.url_post.includes('mbasic')
+                        "
+                        v-bind:href="postDomain.url_post.replace('mbasic.', '')"
+                        class="fa fa-external-link"
+                        target="_blank"
+                      ></a>
+                      <a
+                        v-else
+                        v-bind:href="postDomain.url_post"
+                        class="fa fa-external-link"
+                        target="_blank"
+                      ></a>
+                    </span>
                     <div class="font-weight-light small" v-if="postDomain.date">
                       {{ postDomain.date.split("T")[0] }} |
                       {{ postDomain.date.split("T")[1] }}
@@ -400,7 +400,12 @@
                 </b-col>
                 <b-col>
                   <div v-if="postDomain.source == 'tiktok' && postDomain.uid">
-                    <lite-tiktok :videoid="postDomain.uid"></lite-tiktok>
+                    <a v-bind:href="postDomain.url_post" target="_blank">
+                      <lite-tiktok
+                        :videoid="postDomain.uid"
+                        style=" pointer-events: none; "
+                      ></lite-tiktok
+                    ></a>
 
                     <!-- <iframe
                       width="auto"
@@ -495,40 +500,69 @@
                 </b-col>
               </b-row>
               <div
-          class="text-left ai-box mt-2"
-          v-if="postDomain && postDomain.ocr &&username=='adminatapy'"
-          style="font-size: 15px;font-weight: 500;"
-        >
-          <div v-for="(text, idx) in postDomain.ocr">
-            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
-                       <div v-if="text.text_sort && text.text_sort.length">
-              <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar>
-              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
-              {{ text.text_sort[0] }}
-            </div>
-            <div v-if="text.face">
-              <span v-for="(face, idx) in text.face">
-                <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
-                  <span
-                    style="background: #e5e5e5;
+                class="text-left ai-box mt-2"
+                v-if="postDomain && postDomain.ocr && username == 'adminatapy'"
+                style="font-size: 15px;font-weight: 500;"
+              >
+                <div v-for="(text, idx) in postDomain.ocr">
+                  <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+                  <div v-if="text.text_sort && text.text_sort.length">
+                    <b-avatar
+                      size="18px"
+                      style="font-size: 12px;background-color:#8b8787;"
+                      class="mr-1"
+                      >{{ idx + 1 }}
+                    </b-avatar>
+                    <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+                    {{ text.text_sort[0] }}
+                  </div>
+                  <div v-if="text.face">
+                    <span v-for="(face, idx) in text.face">
+                      <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
+                        <span
+                          style="background: #e5e5e5;
     padding: 0px 6px;
     border-radius: 13px;"
-                  >
-                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                    {{ face.person_name.replace("_", " ") }}
-                    <span
-                      v-b-tooltip.hover
-                      :title="'ค่า confidence'"
-                      class="small"
-                      >({{
-                        parseFloat((face.confidence * 100).toFixed(2))
-                      }}%)</span
-                    ></span
-                  ></span
-                >
-              </span>
-            </div>
-          </div>
+                        >
+                          <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                          {{ face.person_name.replace("_", " ") }}
+                          <span
+                            v-b-tooltip.hover
+                            :title="'ค่า confidence'"
+                            class="small"
+                            >({{
+                              parseFloat((face.confidence * 100).toFixed(2))
+                            }}%)</span
+                          ></span
+                        ></span
+                      >
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="postDomain && postDomain.location && postDomain.location.length && username == 'adminatapy'"
+          class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
+          <span v-for="(geo, k) in filterNumbers(postDomain.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+    border-radius: 33px;
+">
+            <!-- {{ geo.toString() }} -->
+            <span v-if="geo.toString() && geo.toString().length == 2">
+              {{ matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 4">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 6">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? 'แขวง' + matchGeocode(geo).name_th : 'ต.' +
+                matchGeocode(geo).name_th }}
+            </span>
+          </span>
         </div>
               <template #footer>
                 <div class="text-left md-font">
@@ -579,7 +613,12 @@
                   </span>
 
                   <!-- twitter -->
-                  <span v-if="postDomain.source !== 'facebook'&&postDomain.source !== 'youtube'">
+                  <span
+                    v-if="
+                      postDomain.source !== 'facebook' &&
+                        postDomain.source !== 'youtube'
+                    "
+                  >
                     <span
                       v-if="
                         postDomain.retweets_count !== '0' &&
@@ -594,8 +633,7 @@
                     </span>
                     <span
                       v-if="
-                        postDomain.likes_count !== '0' &&
-                          postDomain.likes_count
+                        postDomain.likes_count !== '0' && postDomain.likes_count
                       "
                       id="box-reaction"
                       v-b-tooltip.hover
@@ -618,8 +656,7 @@
                     </span>
                     <span
                       v-if="
-                        postDomain.views_count !== '0' &&
-                          postDomain.views_count
+                        postDomain.views_count !== '0' && postDomain.views_count
                       "
                       id="box-reaction"
                       v-b-tooltip.hover
@@ -1087,6 +1124,9 @@ import VueGallerySlideshow from "vue-gallery-slideshow";
 import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import moment from "moment";
+import provinces from "@/components/map/provinces.json";
+import districts from "@/components/map/districts.json";
+import subdistricts from "@/components/map/subdistricts.json";
 export default {
   components: { VueGallerySlideshow, Highlighter },
   props: {
@@ -1102,7 +1142,7 @@ export default {
       textToHighlight: "",
       accName: "",
       objId: "",
-            username:"",
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1162,6 +1202,44 @@ export default {
     },
   },
   methods: {
+    filterNumbers(numbers) {
+      // Create a copy of the numbers array and sort by length
+      const filtered = [...numbers].sort(
+        (a, b) => a.toString().length - b.toString().length
+      );
+
+      for (let i = 0; i < filtered.length; i++) {
+        for (let j = i + 1; j < filtered.length; j++) {
+          const num1 = filtered[i].toString();
+          const num2 = filtered[j].toString();
+
+          // If num1 matches the start of num2, remove num1
+          if (num2.startsWith(num1)) {
+            filtered.splice(i, 1); // Remove num1
+            i--; // Adjust index after removal
+            break; // Restart the inner loop
+          }
+        }
+      }
+
+      return filtered; // Return filtered array
+    },
+    matchGeocode(geocode) {
+      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+      let found = null;
+
+      // กรองข้อมูลตามความยาว geocode
+      if (geocodeStr.length === 2) {
+        found = provinces[geocodeStr]
+      } else if (geocodeStr.length === 4) {
+        found = districts[geocodeStr]
+      } else if (geocodeStr.length === 6) {
+        found = subdistricts[geocodeStr]
+      }
+
+      // Return the found location or a fallback message
+      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
     getTheSelected(k, v, uid) {
       var err;
       if (v == 1) {

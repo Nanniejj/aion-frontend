@@ -93,7 +93,7 @@
         />
         <!-- <img src="@/assets/Twitter.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="tw"
-          ><div class="h5">Twitter</div>
+          ><div class="h5">X</div>
           <div id="tw1" class="m-auto small" v-if="tabsMonitor == 'tabProfile'">
             {{ getSumMonitor.summary.target.twitter | numFormat }}
             Users
@@ -116,7 +116,7 @@
         />
         <!-- <img src="@/assets/Pantip.png" class="socialogo m-auto pb-2" /> -->
         <b-card id="pt">
-          <div class="h5">Pantip</div>
+          <div class="h5">Board</div>
           <div id="pt1" class="m-auto small" v-if="tabsMonitor == 'tabProfile'">
             {{ getSumMonitor.summary.target.pantip | numFormat }}
             Users
@@ -255,6 +255,32 @@
         </b-card>
       </li>
     </b-col>
+    <b-col>
+      <li v-on:click="threads()">
+        <vue-element-loading
+          :active="getLoadStatus"
+          size="80"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
+        <!-- <img src="@/assets/Instagram.png" class="socialogo m-auto pb-2" /> -->
+        <b-card id="th">
+          <div class="h5">Threads</div>
+          <div
+            id="itg1"
+            class="m-auto small"
+            v-if="tabsMonitor == 'tabProfile'"
+          >
+            {{ getSumMonitor.summary.target.threads | numFormat }}
+            Users
+          </div>
+          <div id="itg1" class="m-auto small" v-else>
+            {{ getSumMonitor.summary.hashtag.threads | numFormat }}
+            hashtag
+          </div>
+        </b-card>
+      </li>
+    </b-col>
   </b-row>
 </template>
 
@@ -294,6 +320,7 @@ export default {
       document.getElementById("bd").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
     },
     twitter() {
       this.social = "twitter";
@@ -330,6 +357,7 @@ export default {
       document.getElementById("bd").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
     },
     facebook() {
       this.social = "facebook";
@@ -362,6 +390,7 @@ export default {
       document.getElementById("bd").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
     },
     pantip() {
       this.social = "pantip";
@@ -394,6 +423,7 @@ export default {
       document.getElementById("bd").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
     },
     youtube() {
       this.social = "youtube";
@@ -426,6 +456,7 @@ export default {
       document.getElementById("bd").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
     },
     instagram() {
       this.social = "instagram";
@@ -458,6 +489,7 @@ export default {
       document.getElementById("bd").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
     },
     blockdit() {
       this.social = "blockdit";
@@ -489,6 +521,7 @@ export default {
       document.getElementById("itg").style.background = "#ffffff";
       document.getElementById("bd").style.background = "#fed269a3";
       document.getElementById("nw").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#ffffff";
     },
     tiktok() {
@@ -521,6 +554,7 @@ export default {
       document.getElementById("itg").style.background = "#ffffff";
       document.getElementById("bd").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
       document.getElementById("tt").style.background = "#fed269a3";
     },
     news() {
@@ -552,8 +586,42 @@ export default {
       document.getElementById("yt").style.background = "#ffffff";
       document.getElementById("itg").style.background = "#ffffff";
       document.getElementById("bd").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#ffffff";
       document.getElementById("nw").style.background = "#fed269a3";
       document.getElementById("tt").style.background = "#ffffff";
+    },
+    threads() {
+      this.social = "threads";
+      if (this.tabsMonitor == "tabProfile") {
+        const found = this.getListMonitor.targetlist.filter(
+          (element) => element.source === "threads"
+        );
+        this.$store.commit("setListProfile", {
+          targetlist: found,
+          summary: this.getListMonitor.summary,
+          hashtaglist: this.getListMonitor.hashtaglist,
+        });
+      } else {
+        const found = this.getListMonitor.hashtaglist.filter(
+          (element) => element.source === "threads"
+        );
+        this.$store.commit("setListProfile", {
+          hashtaglist: found,
+          summary: this.getListMonitor.summary,
+          targetlist: this.getListMonitor.targetlist,
+        });
+      }
+      this.$store.commit("setCurrentPage", 1);
+      document.getElementById("all").style.background = "#ffffff";
+      document.getElementById("tw").style.background = "#ffffff";
+      document.getElementById("fb").style.background = "#ffffff";
+      document.getElementById("pt").style.background = "#ffffff";
+      document.getElementById("yt").style.background = "#ffffff";
+      document.getElementById("itg").style.background = "#ffffff";
+      document.getElementById("bd").style.background = "#ffffff";
+      document.getElementById("nw").style.background = "#ffffff";
+      document.getElementById("tt").style.background = "#ffffff";
+      document.getElementById("th").style.background = "#fed269a3";
     },
   },
 };
@@ -588,6 +656,9 @@ export default {
 }
 #fb {
   color: #3555aa;
+}
+#th {
+  color: #000000;
 }
 .card {
   border: none;

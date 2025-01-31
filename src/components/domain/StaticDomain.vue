@@ -101,7 +101,7 @@
                 </b-col>
               </b-row>
             </b-col>
-
+           
             <!-- <b-col>
               <b-row>
                 <b-col cols="auto"><i class="fas fa-heart fa-2x"></i> </b-col>
@@ -113,8 +113,18 @@
                 </b-col>
               </b-row>
             </b-col> -->
-
-            <b-col class="avg">
+            <b-col >
+              <b-row>
+                <b-col cols="auto"><i class="fas fa-eye fa-2x"></i> </b-col>
+                <b-col cols="auto">
+                  <div class="text-icon">
+                    <b>{{ dataStat.views_count | numFormat }} </b><br />
+                    Views
+                  </div>
+                </b-col>
+              </b-row>
+            </b-col>
+            <!-- <b-col >
               <b-row>
                 <b-col cols="auto"
                   ><i class="fas fa-comment-dots fa-2x"></i>
@@ -122,13 +132,13 @@
                 <b-col cols="auto">
                   <div class="text-icon">
                     <b>{{ avgComment | numFormat }}</b> <br />
-                    Average Comments /Day
+                    Average <br>Comments /Day
                   </div>
                 </b-col>
               </b-row>
-            </b-col>
+            </b-col> -->
 
-            <b-col class="avg">
+            <b-col >
               <b-row>
                 <b-col cols="auto"
                   ><i class="fas fa-chart-line fa-2x"></i>
@@ -136,7 +146,7 @@
                 <b-col cols="auto">
                   <div class="text-icon">
                     <b>{{ avgEngage | numFormat }}</b> <br />
-                    Average Engages /Day
+                    Average <br> Engages /Day
                   </div>
                 </b-col>
               </b-row>

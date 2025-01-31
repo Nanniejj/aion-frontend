@@ -12,7 +12,9 @@
       </b-row>
       <DomainList v-if="!getPushDomainStat" />
       <DomainMain v-if="getPushDomainStat" />
+      <!-- <FooterHome/> -->
     </div>
+
   </div>
 </template>
 <script>
@@ -22,6 +24,7 @@ import DomainList from "@/components/domain/DomainList.vue";
 import DomainMain from "@/components/domain/DomainMain.vue";
 // import Map from "@/components/map/Map.vue";
 import { mapGetters } from "vuex";
+import FooterHome from "@/components/FooterHome.vue";
 
 export default {
   components: {
@@ -29,6 +32,7 @@ export default {
     DomainList,
     DomainMain,
     TitleLogo,
+    FooterHome
     // Map
   },
   data() {

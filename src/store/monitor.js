@@ -736,44 +736,7 @@ export default {
         var posts = post.map((result) => {
           return { ...result, ...pair };
         });
-        // -------------------------------------------translateuid-----------------------------------------------------------
-        posts.map((result) => {
-          // console.log('API',result);
-          if (result.source == "facebook" || result.source == "youtube") {
-            var axios = require("axios");
-            var config = {
-              method: "get",
-              url:
-                "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                result.account_name,
-              headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
-              },
-            };
-            axios(config)
-              .then((response) => {
-                // console.log("Object.keys", Object.keys(response.data).length);
-                if (Object.keys(response.data).length) {
-                  result.account_name = response.data.name;
-                  // console.log('2',result);
-                } else {
-                  return;
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          } else {
-            return result;
-          }
-
-          return { result };
-        });
-        // console.log('postName',postName);
-        // console.log('post',posts);
-        // ---------------------------------------------------------------------------------------------------------
-        if (payload.offset === 0) {
+           if (payload.offset === 0) {
           commit("setPostLocation", posts);
         } else {
           commit("addPostLocation", posts);
@@ -806,51 +769,7 @@ export default {
           ...new Map(array.profile.map((item) => [item[key], item])).values(),
         ];
         Object.assign(res.data, { profile: arrayUniqueByKey });
-        // console.log(arrayUniqueByKey, { profile: arrayUniqueByKey }, res.data);
-        // -------------------------------------------translateuid-----------------------------------------------------------
-
-        res.data.profile.map((result) => {
-          //  console.log('API',result);
-          if (result.source == "facebook" || result.source == "youtube") {
-            if (result.name) {
-              return;
-            } else {
-              Object.assign(result, {
-                name: result.uid,
-              });
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.uid,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  // console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.name = response.data.name;
-                    // console.log('2',result);
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            }
-          }
-
-          return { result };
-        });
-        // console.log('postName',postName);
-
-        // ---------------------------------------------------------------------------------------------------------
-        commit("setProfileMonitor", res.data);
+          commit("setProfileMonitor", res.data);
         // commit("setCountPost", res.data.posts);
         commit("setLoadStatus2", false);
       } catch (error) {
@@ -884,43 +803,6 @@ export default {
         commit("setLoadPostTab", false);
         commit("setCnt", res.data.count);
         var posts = res.data.data;
-        // -------------------------------------------translateuid-----------------------------------------------------------
-        posts.map((result) => {
-          // console.log('API',result);
-          if (result.source == "facebook" || result.source == "youtube") {
-            var axios = require("axios");
-            var config = {
-              method: "get",
-              url:
-                "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                result.account_name,
-              headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
-              },
-            };
-            axios(config)
-              .then((response) => {
-                // console.log("Object.keys", Object.keys(response.data).length);
-                if (Object.keys(response.data).length) {
-                  result.account_name = response.data.name;
-                  // console.log('2',result);
-                } else {
-                  return;
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          } else {
-            return result;
-          }
-
-          return { result };
-        });
-        // console.log('postName',postName);
-        // console.log('post',posts);
-        // ---------------------------------------------------------------------------------------------------------
         if (payload.offset === 0) {
           commit("setPostAllMonitor", posts);
         } else {
@@ -955,46 +837,6 @@ export default {
         try {
           const res = await MonitorService.getListMonitor(payload);
           var data = res.data[0];
-          // -------------------------------------------translateuid-----------------------------------------------------------
-
-          data.targetlist.map((result) => {
-            // console.log('API',result);
-            if (result.source == "facebook" || result.source == "youtube") {
-              if (result.name) {
-                return;
-              } else {
-                var axios = require("axios");
-                var config = {
-                  method: "get",
-                  url:
-                    "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                    result.uid,
-                  headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                  },
-                };
-                axios(config)
-                  .then((response) => {
-                    // console.log("Object.keys", Object.keys(response.data).length);
-                    if (Object.keys(response.data).length) {
-                      result["name"] = response.data.name;
-                      // console.log('2',result);
-                    } else {
-                      return;
-                    }
-                  })
-                  .catch((error) => {
-                    console.log(error);
-                  });
-              }
-            }
-
-            return { result };
-          });
-          // console.log('postName',postName);
-
-          // ---------------------------------------------------------------------------------------------------------
           commit("setListProfile", data);
           commit("setSumMonitor", res.data[0]);
           commit("setListMonitor", res.data[0]);
@@ -1045,6 +887,7 @@ export default {
         console.log(error.response);
       }
     },
+    
     async fetchAllPostDomain({ commit }, payload) {
       commit("setLoadPostTab", true);
       try {
@@ -1055,41 +898,6 @@ export default {
         var pair = { read: true };
         var posts = post.map((result) => {
           return { ...result, ...pair };
-        });
-        // -------------------------------------------translateuid-----------------------------------------------------------
-        posts.map((result) => {
-          // console.log('API',result);
-          if (result.source == "youtube") {
-            var axios = require("axios");
-            var config = {
-              method: "get",
-              url:
-                "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                result.account_name,
-              headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
-              },
-            };
-            axios(config)
-              .then((response) => {
-                // console.log("Object.keys", Object.keys(response.data).length);
-                if (Object.keys(response.data).length) {
-                  result.account_name = response.data.name;
-                  // console.log('2',result);
-                } else {
-                  return;
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-                return result;
-              });
-          } else {
-            return result;
-          }
-
-          return { result };
         });
 
         // console.log('post',posts);
@@ -1108,5 +916,76 @@ export default {
         console.log(error.response);
       }
     },
+    async fetchAllPostPlatform({ commit }, payload) {
+      commit("setLoadPostTab", true);
+      try {
+        const res = await DomainService.getPostDomainv1(payload);
+        // console.log('payload',payload);
+        commit("setLoadPostTab", false);
+        var post = res.data.data;
+        var pair = { read: true };
+        var posts = post.map((result) => {
+          return { ...result, ...pair };
+        });
+
+        // console.log('post',posts);
+        // ---------------------------------------------------------------------------------------------------------
+        if (payload.offset === 0) {
+          commit("setAllPostDomain", posts);
+        } else {
+          commit("addAllPost", posts);
+        }
+        commit("setCountAllPost", res.data.count);
+        commit("setLoadPostTab", false);
+        return res.data.data;
+      } catch (error) {
+        alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+        commit("setLoadPostTab", false);
+        console.log(error.response);
+      }
+    },
+
+    // async fetchAllPostDomain({ commit }, payload) {
+    //   commit("setLoadPostTab", true);
+    //   var axios = require("axios");
+    //   const config = {
+    //     method: "get",
+    //     url: "http://localhost:3000/api/v2/userposts/getSentimentDetail",
+    //     params: payload,
+    //     headers: {
+    //       Authorization: "Bearer " + localStorage.getItem("token"),
+    //       "Content-Type": "application/json",
+    //     },
+    //   };
+    
+    //   try {
+    //     const response = await axios(config);
+    //     const res = response.data;
+    
+    //     commit("setLoadPostTab", false);
+        
+    //     var post = res.data;
+    //     var pair = { read: true };
+    //     var posts = post.map((result) => {
+    //       return { ...result, ...pair };
+    //     });
+    
+    //     // Check offset and commit appropriate mutations
+    //     if (payload.offset === 0) {
+    //       commit("setAllPostDomain", posts);
+    //     } else {
+    //       commit("addAllPost", posts);
+    //     }
+    
+    //     commit("setCountAllPost", res.count);
+    //     return res.data;
+    //   } catch (error) {
+    //     alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    //     commit("setLoadPostTab", false);
+    //     console.log(error.response);
+    //   }
+    // },
+    
+    
   },
 };

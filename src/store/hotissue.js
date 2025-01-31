@@ -8,8 +8,22 @@ export default {
     dateissue: [],
     socialissue:"",
     statusSearch:[],
+    chartDataIssue: [
+      {
+        name: "Posts",
+        data: [  0, 0, 0, 0, 0,0, 0, 0]
+      },
+      {
+        name: "Comments",
+        data: [ 0, 0, 0, 0,0,0, 0,0]
+      },
+     
+    ] 
   },
   getters: {
+    getChartDataIssue: (state) => {
+      return state.chartDataIssue;
+    },
     getStatusSearch: (state) => {
       return state.statusSearch;
     },
@@ -31,6 +45,9 @@ export default {
   },
 
   mutations: {
+    setChartDataIssue: (state,payload) =>{
+  state.chartDataIssue=payload
+    },
     setStatusSearch: (state,payload) => {
      state.statusSearch= payload;
     },

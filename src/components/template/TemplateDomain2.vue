@@ -43,7 +43,7 @@
         :current-page="currentPage"
         :per-page="perPage"
         :filter="filter"
-        :filter-included-fields="filterOn"
+        :filter-included-fields="['name']" 
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
         :sort-direction="sortDirection"
@@ -136,9 +136,9 @@
           <hr />
           <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
           <div>
-            <b-form-input v-model="textDomain" placeholder="">
+            <b-form-input v-model="textDomain" placeholder=""   maxlength="50" >
               <b>{{ textDomain }}</b></b-form-input
-            >
+            > <small class="text-muted">{{ textDomain.length }} / 50 ตัวอักษร</small>
             <br />
             <b-form-group v-slot="{ ariaDescribedby }">
               <b-form-radio-group
@@ -155,7 +155,7 @@
                   >ปิดหน้าต่าง</b-button
                 >
                 <b-button class="btn btn-save" size="sm" @click="editDomain()"
-                  >บันทึก</b-button
+                :disabled="textDomain.trim().length === 0" >บันทึก</b-button
                 >
               </b-col>
             </b-row>

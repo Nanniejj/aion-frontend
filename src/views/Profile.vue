@@ -12,7 +12,6 @@
         </span>
         <i class="fas fa-angle-right" /><span id="active">Profile </span>
       </h4>
-
       <b-container>
         <b-row>
           <b-col md="12" lg="4">
@@ -39,7 +38,7 @@
                 :disabled-date="(date) => date >= new Date()"
                 value-type="format"
                 format="YYYY-MM-DD"
-                @change="selectData()"
+                @change="checkDateRange"
                 id="date-domain"
                 >{{ valueDate }}</date-picker
               >
@@ -60,7 +59,7 @@ import ProflieTab from "@/components/profile/ProfileTab.vue";
 import ProflieInfo from "@/components/profile/ProfileInfo.vue";
 import HomeNav from "@/components/HomeNav.vue";
 import { mapGetters } from "vuex";
-// import moment from "moment";
+import moment from "moment";
 export default {
   components: {
     HomeNav,
@@ -78,6 +77,19 @@ export default {
     ...mapGetters(["getProfileMonitor", "getProfileData", "getLoadStatus","getToLinkProfile","getValSource","getTabName"]),
   },
   methods: {
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+
+      const diffDays = endDate.diff(startDate, 'days');
+
+      if (diffDays > 31) {
+        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
+        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+      }else{
+        this.selectData(); // Call your existing method
+      }
+    },
     back(){
       if (this.getToLinkProfile=="Monitor") {
         this.$router.push({name:'Monitor'})
@@ -141,7 +153,7 @@ if ( this.$route.name=="Profile") {
           sort_by: "",
           source: this.getValSource,
         });
-        this.$store.dispatch('fetchProfileHash',{query:this.getProfileData,api_type:"account",top_type:"hashtag", sort_by: "",})
+        this.$store.dispatch('fetchProfileHash',{query:this.getProfileData,api_type:"account",top_type:"hashtag", sort_by: "",  source: this.getValSource})
       } else {
         console.log("F5", localStorage.getItem("acc"));
         this.$store.commit("setProfileData", localStorage.getItem("acc"));
@@ -152,7 +164,7 @@ if ( this.$route.name=="Profile") {
           sort_by: "",
           source: this.getValSource,
         });
-         this.$store.dispatch('fetchProfileHash',{query:localStorage.getItem("acc"),api_type:"account",top_type:"hashtag", sort_by: "",})
+         this.$store.dispatch('fetchProfileHash',{query:localStorage.getItem("acc"),api_type:"account",top_type:"hashtag", sort_by: "",  source: this.getValSource,})
       }
   // this.$store.commit('setTabStatus',false)
   // await this.$store.dispatch('fetchProfileHash',{query:this.getProfileData,api_type:"account",top_type:"hashtag", sort_by: "",})
@@ -166,6 +178,7 @@ if ( this.$route.name=="Profile") {
           api_type: "hashtag",
           top_type: "domain",
           sort_by: "",
+          source: this.getValSource,
         });
         this.$store.commit("setCnt2", this.getCnt);
       } else {
@@ -175,6 +188,7 @@ if ( this.$route.name=="Profile") {
           api_type: "hashtag",
           top_type: "domain",
           sort_by: "",
+          source: this.getValSource,
         });
         console.log("getCnt", this.getCnt);
         this.$store.commit("setCnt2", this.getCnt);

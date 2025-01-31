@@ -52,129 +52,175 @@
       v-if="getTopInfluencer.length"
     >
       <b-col v-for="(user, k) in datalist" :key="k">
-        <!-- {{user.items.details}} -->
-        <div
-          class="box-topuser mb-3"
-          @click="linkToProfile(user.items.details)"
-        >
-          <div class="text-right">
-            <img
-              v-if="user.items.details.sentiment == 1"
-              src="@/assets/Positive.png"
-              class="stm-img"
-            />
-            <img
-              v-if="user.items.details.sentiment == -1"
-              src="@/assets/Negative.png"
-              class="stm-img"
-            />
-            <img
-              v-if="user.items.details.sentiment == 0"
-              src="@/assets/Neutral.png"
-              class="stm-img"
-            />
-          </div>
-
+        <div class="box-topuser mb-3">
           <div class="mb-3">
             <b-avatar size="2em" variant="light" class="mt-2">{{
               k + 1
             }}</b-avatar>
           </div>
 
-          <a :href="user.items.details.url_post" target="_blank">
+          <a :href="user.url_post" target="_blank">
             <b-avatar
               badge-variant="info"
               variant="light"
-              :src="user.items.details.profile_image"
-              :size="70"
+              :src="user.profile_image"
+              :size="50"
               class="shadow-sm rounded"
             >
               <template #badge id="bb">
+                <div class="text-right">
+                  <img
+                    v-if="user.sentiment_type == 'positive'"
+                    src="@/assets/Positive.png"
+                    class="stm-img"
+                  />
+                  <img
+                    v-if="user.sentiment_type == 'negative'"
+                    src="@/assets/Negative.png"
+                    class="stm-img"
+                  />
+                  <img
+                    v-if="user.sentiment_type == 'neutral'"
+                    src="@/assets/Neutral.png"
+                    class="stm-img"
+                  />
+                </div>
                 <img
-                  v-if="user.items.details.source == 'facebook'"
+                  v-if="user.source == 'facebook'"
                   src="@/assets/Facebook.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'twitter'"
+                  v-if="user.source == 'twitter'"
                   src="@/assets/Twitter.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'news'"
+                  v-if="user.source == 'news'"
                   src="@/assets/News.png"
                   class="social-img"
                 />
+                <span v-if="user.source == 'pantip'">
+                  <img
+                    v-if="user.platform == 'dek-d'"
+                    src="@/assets/dekd.png"
+                    class="social-img"
+                  />
+                  <img
+                    v-else-if="user.platform == 'lemon8'"
+                    src="@/assets/lemon8.png"
+                    class="social-img"
+                  />
+                  <img v-else src="@/assets/Pantip.png" class="social-img" />
+                </span>
                 <img
-                  v-if="user.items.details.source == 'pantip'"
-                  src="@/assets/Pantip.png"
-                  class="social-img"
-                />
-                <img
-                  v-if="user.items.details.source == 'instagram'"
+                  v-if="user.source == 'instagram'"
                   src="@/assets/Instagram.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'youtube'"
+                  v-if="user.source == 'youtube'"
                   src="@/assets/Youtube.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'blockdit'"
+                  v-if="user.source == 'blockdit'"
                   src="@/assets/Blockdit.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'tiktok'"
+                  v-if="user.source == 'tiktok'"
                   src="@/assets/Tiktok.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'threads'"
+                  v-if="user.source == 'threads'"
                   src="@/assets/Threads.png"
                   class="social-img"
                 />
               </template> </b-avatar
           ></a>
-          <div class="mt-2 textuser bold" v-if="user.items.details.name">
-            <a :href="user.items.details.url_post" target="_blank">{{
-              user.items.details.name
-            }}</a>
+          <div class="mt-2 textuser bold">
+            <a :href="user.url_post" target="_blank">{{ user.account_name }}</a>
           </div>
-          <div class="mt-2 textuser bold" v-else>
-            <a :href="user.items.details.url_post" target="_blank">{{
-              user.items.details.account_name
-            }}</a>
-          </div>
-          <!-- <hr /> -->
-
-                <!-- tiktok engage -->
-          <b-row
-            v-if="user.items.details.source == 'tiktok'"
-            id="score-data"
-            cols-lg="auto"
-            cols="1"
-            cols-md="1"
-            class="d-none"
+          <span
+            class="badge badge-pill badge-dark px-2 py-1"
+            @click="linkToProfile(user)"
+            style="font-size: 13px;background-color: #4c412b;cursor: pointer;"
+            >ดูโปรไฟล์</span
           >
-            <b-col v-b-tooltip.hover title="posts">
+          <div
+            class="mt-3"
+            v-if="
+              user.source !== 'news' &&
+                user.source !== 'blockdit' &&
+                user.source !== 'threads'
+            "
+          >
+            <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+            <span class="mx-2">{{ user.postCount | numFormat }}</span
+            >posts
+          </div>
+          <hr />
+
+          <b-row cols="1">
+            <!-- <b-col > 
               <b-row>
+                <b-col > 
+            <b >Total</b>  </b-col>
+            
+            </b-row>
+            </b-col> -->
+
+            <b-col v-b-tooltip.hover title="posts">
+              <b-row
+                v-if="
+                  user.source == 'news' ||
+                    user.source == 'blockdit' ||
+                    user.source == 'threads'
+                "
+              >
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
+                  {{ user.postCount | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
-            <b-col v-b-tooltip.hover title="comments">
+            <b-col
+              v-b-tooltip.hover
+              title="retweet"
+              v-if="user.source == 'twitter'"
+            >
               <b-row>
+                <b-col> <i class="fa fa-retweet" aria-hidden="true"></i></b-col>
+                <b-col class="text-left">
+                  {{ user.sumRetweets | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col
+              v-b-tooltip.hover
+              title="reply"
+              v-if="user.source == 'twitter'"
+            >
+              <b-row cols="12">
                 <b-col
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.sumComments | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="comments" v-else>
+              <b-row cols="12">
+                <b-col
+                  ><i class="fa fa-comments-o" aria-hidden="true"></i
+                ></b-col>
+                <b-col class="text-left">
+                  {{ user.sumComments | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -182,15 +228,42 @@
               <b-row>
                 <b-col> <i class="fa fa-heart" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.sumLikes | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="shares">
+              <b-row>
+                <b-col> <i class="fa fa-share" aria-hidden="true"></i></b-col>
+                <b-col class="text-left">
+                  {{ user.sumShares | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col
+              v-b-tooltip.hover
+              title="emotion"
+              v-if="user.source == 'pantip'"
+            >
+              <b-row>
+                <b-col> emotion </b-col>
+                <b-col class="text-left">
+                  {{ user.sumReaction | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="engages">
+              <b-row>
+                <b-col> Total </b-col>
+                <b-col class="text-left">
+                  {{ user.totalEngagePost | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
           </b-row>
-
           <!-- ig engage -->
           <b-row
-            v-if="user.items.details.source == 'instagram'"
+            v-if="user.source == 'instagram' || user.source == 'tiktok'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -203,7 +276,7 @@
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
+                  {{ user.postCount | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -213,7 +286,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -221,53 +294,23 @@
               <b-row>
                 <b-col> <i class="fa fa-heart" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.likes_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
-          </b-row>
-          <!-- bd engage -->
-          <b-row
-            v-if="user.items.details.source == 'blockdit'"
-            id="score-data"
-            cols-lg="auto"
-            cols="1"
-            cols-md="1"
-            class="d-none"
-          >
-            <b-col v-b-tooltip.hover title="posts">
+            <!-- <b-col v-b-tooltip.hover title="engagement">
               <b-row>
-                <b-col
-                  ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
-                ></b-col>
+                <b-col> engage </b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
+                  {{ user.engagement | numFormat }}</b-col
                 >
               </b-row>
-            </b-col>
-            <b-col v-b-tooltip.hover title="comments">
-              <b-row>
-                <b-col
-                  ><i class="fa fa-comments-o" aria-hidden="true"></i
-                ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
-                >
-              </b-row>
-            </b-col>
-            <b-col v-b-tooltip.hover title="engagement">
-              <b-row>
-                <b-col>engage</b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.engagement | numFormat }}</b-col
-                >
-              </b-row>
-            </b-col>
+            </b-col> -->
           </b-row>
 
           <!-- fb engage -->
           <b-row
-            v-if="user.items.details.source == 'facebook'"
+            v-if="user.source == 'facebook'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -279,9 +322,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -290,7 +331,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -298,7 +339,7 @@
               <b-row>
                 <b-col> engage </b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.engagement | numFormat }}</b-col
+                  {{ user.engagement | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -308,15 +349,51 @@
                   <i class="fa fa-share-alt-square" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left"
-                  >{{ user.items.details.share_total | numFormat }}
+                  >{{ user.share_total | numFormat }}
                 </b-col>
               </b-row>
             </b-col> -->
           </b-row>
+          <!-- blockdit engage -->
+          <b-row
+            v-if="user.source == 'blockdit'"
+            id="score-data"
+            cols-lg="auto"
+            cols="1"
+            cols-md="1"
+            class="d-none"
+          >
+            <b-col v-b-tooltip.hover title="posts">
+              <b-row>
+                <b-col
+                  ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
+                ></b-col>
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="comments">
+              <b-row>
+                <b-col
+                  ><i class="fa fa-comments-o" aria-hidden="true"></i
+                ></b-col>
+                <b-col class="text-left">
+                  {{ user.comments_count | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="engagement">
+              <b-row>
+                <b-col>engage</b-col>
+                <b-col class="text-left">
+                  {{ user.engagement | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+          </b-row>
 
           <!-- tw engage -->
           <b-row
-            v-if="user.items.details.source == 'twitter'"
+            v-if="user.source == 'twitter'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -327,7 +404,7 @@
               <b-row>
                 <b-col><i class="fa fa-users" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.follower | numFormat }}</b-col
+                  {{ user.follower | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -336,9 +413,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -347,7 +422,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -355,7 +430,7 @@
               <b-row>
                 <b-col> <i class="fa fa-heart" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.likes_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -363,7 +438,7 @@
               <b-row>
                 <b-col> <i class="fa fa-retweet" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.retweets_count | numFormat }}</b-col
+                  {{ user.retweets_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -371,7 +446,7 @@
 
           <!-- news pantip -->
           <b-row
-            v-if="user.items.details.source == 'pantip'"
+            v-if="user.source == 'pantip'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -383,9 +458,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -394,7 +467,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -404,14 +477,14 @@
                   <i class="fa fa-thumbs-up" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.likes_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
           </b-row>
           <!-- News --------------->
           <b-row
-            v-if="user.items.details.source == 'news'"
+            v-if="user.source == 'news'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -423,15 +496,13 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
           </b-row>
           <!-- youtube -->
           <b-row
-            v-if="user.items.details.source == 'youtube'"
+            v-if="user.source == 'youtube'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -443,9 +514,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -454,7 +523,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -464,7 +533,7 @@
                   ><i class="fa fa-thumbs-up" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.likes_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -474,7 +543,7 @@
                   <i class="fa fa-thumbs-down" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.dislike_total | numFormat }}</b-col
+                  {{ user.dislike_total | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -484,6 +553,7 @@
         </div>
       </b-col>
     </b-row>
+
     <b-row v-else>
       <div class="box-topuser mb-3 mt-3 p-3">ไม่พบข้อมูล</div>
     </b-row>
@@ -557,18 +627,25 @@ export default {
       this.$router.push({ name: "Profile" });
     },
     topData() {
-      this.startd = moment(new Date()).format().slice(0, 10);
-      this.endd = moment(new Date()).format().slice(0, 10);
+      this.startd = moment(new Date())
+        .format()
+        .slice(0, 10);
+      this.endd = moment(new Date())
+        .format()
+        .slice(0, 10);
       let sdate, edate, today;
-      today = moment(new Date()).format().slice(0, 10);
+      today = moment(new Date())
+        .format()
+        .slice(0, 10);
       sdate = "&start=" + today + "T00:00:00";
       edate = "&end=" + today + "T23:59:59";
       this.$store.commit("setLoadTopUserPf", true);
       //http://139.59.103.67:3000/api/v2/userposts/getInfluencerTarget?
+      //https://api2.cognizata.com/api/v2/userposts/getInfluencerTarget?source=
       var config = {
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getInfluencerTarget?source=" +
+          "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?source=" +
           this.getSocialTop +
           sdate +
           edate +
@@ -586,7 +663,7 @@ export default {
           this.topuser = response.data.slice(0, 10);
           this.$store.commit("setLoadTopUserPf", false);
         })
-        .catch(function (error) {
+        .catch(function(error) {
           console.log(error);
           this.$store.commit("setLoadTopUserPf", false);
         });
@@ -644,7 +721,6 @@ a {
   border: #4c412b solid 1px;
 }
 .box-topuser {
-  cursor: pointer;
   width: 100%;
   height: 95%;
   padding: 10px 10px;
@@ -654,7 +730,6 @@ a {
 }
 .box-topuser:hover {
   background: #fed16e47;
-  cursor: pointer;
 }
 .box-domain {
   width: 100%;

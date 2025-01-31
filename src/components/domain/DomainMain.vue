@@ -7,8 +7,11 @@
       <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
         <DomainGraph class="mt-1" id="statgraph" />
         <StaticDomain class="mt-3" id="statcap" />
+        <SlideSpotNews class="mt-5" v-if="username =='adminatapy'"/>
         <DomainCloud class="mt-5" />
         <TopUser class="mt-5" />
+        <TopUserFreq class="mt-1" />
+        <!-- <TopUser2 class="mt-5" /> -->
         <TopPostDomain class="mt-5" />
         <AllPostDomain class="mt-5" />
       </div>
@@ -24,6 +27,9 @@ import DomainCloud from "@/components/domain/DomainCloud.vue";
 import TopPostDomain from "@/components/domain/TopPostDomain.vue";
 import AllPostDomain from "@/components/domain/AllPostDomain.vue";
 import TopUser from "@/components/domain/TopUser.vue";
+import TopUserFreq from "./TopUserFreq.vue";
+import TopUser2 from "@/components/domain/TopUser2.vue";
+ import SlideSpotNews from "./SlideSpotNews.vue";
 // import ExportDomainDocx from "@/components/domain/ExportDomainDocx.vue";
 import ExportDocx from "./ExportDocx.vue";
 import { mapGetters } from "vuex";
@@ -31,6 +37,11 @@ import { mapGetters } from "vuex";
 export default {
   computed: {
     ...mapGetters(["getShowReport"]),
+  },
+  data() {
+    return {
+      username:""
+    }
   },
   components: {
     DomainBackBar,
@@ -40,10 +51,18 @@ export default {
     TopPostDomain,
     AllPostDomain,
     TopUser,
+    TopUser2,
+
+    TopUserFreq,
     // ExportDomainDocx,
     ExportDocx,
+  SlideSpotNews
   },
   methods: {},
+  created() {
+    this.username = localStorage.getItem("username");
+  
+  },
 };
 </script>
 

@@ -9,17 +9,21 @@
         </b-row>
     <LoginForm/>
     <Footer/>
+    <!-- <FooterHome/> -->
+
    </div>
 </template>
 
 <script>
+import FooterHome from "@/components/FooterHome.vue";
+
 // import LoginAdmin from '@/components/login/LoginAdmin.vue';
 import LoginForm from '@/components/login/LoginForm.vue';
 import Footer from '@/components/login/Footer.vue';
 export default {
 name: 'Login',
 components:{
-    Footer,LoginForm //LoginAdmin
+    Footer,LoginForm,FooterHome //LoginAdmin
 },
 data() {
     return {

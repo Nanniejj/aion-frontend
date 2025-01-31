@@ -18,7 +18,7 @@
         background-color="rgba(255, 255, 255, 0.5)"
         color="#b6ac9a"
       />
-      <b-row class="w-100">
+      <b-row class="w-100" >
         <b-col class="text-left" lg="6">
           <div class="card-tt">Wordcloud</div>
           <div class="font-weight-normal m-3" v-if="!getWordCloudImg">
@@ -112,10 +112,10 @@ export default {
       //   monitor: this.selected
     });
   },
-  // destroyed() {
-  //   this.$store.commit("setWordCloudImg", "");
-  //   this.$store.commit("setWordCloudHash", "");
-  // },
+  destroyed() {
+    this.$store.commit("setWordCloudImg", "");
+    this.$store.commit("setWordCloudHash", "");
+  },
 };
 </script>
 

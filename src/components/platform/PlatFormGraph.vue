@@ -4,7 +4,8 @@
       <b-col lg="12" class="text-left" >
         <div>
           <span class="h5 mr-3">Post</span>
-          <span id="domain-tag" class="txx">{{ getNamePlatform }}</span>
+          <span id="domain-tag" class="txx"><span v-if="getNamePlatform=='twitter'"> X </span>  <span v-else-if="getNamePlatform == 'pantip'"> board </span>
+          <span v-else>{{ getNamePlatform }} </span></span>
         </div>
         <!-- <SocialSelect :tabsocial="'graph'" /> -->
         <LineChart />

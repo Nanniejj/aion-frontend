@@ -181,42 +181,7 @@ export default {
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
-          // -------------------------------------------translateuid-----------------------------------------------------------
-          posts.slice(0, 3).map((result) => {
-            if (result.source == "youtube") {
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.account_name,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.account_name = response.data.name;
-                    // console.log('2',result);
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            } else {
-              return result;
-            }
-
-            return { result };
-          });
-
-          // ---------------------------------------------------------------------------------------------------------
-
+     
           commit("setTopPostDomain", posts.slice(0, 3));
           console.log("temp", [...temp]);
         } else {
@@ -228,6 +193,53 @@ export default {
         console.log(error.response);
       }
     },
+
+// TopPostNews
+  // async fetchPostDomain({ commit }, payload) {
+  //   commit("setLoadTopPost", true);
+  //   var axios = require("axios");
+  //   const config = {
+  //     method: "get",
+  //     url: "http://localhost:3000/api/v2/userposts/getSentimentDetail",
+  //     params: payload,
+  //     headers: {
+  //       Authorization: "Bearer " + localStorage.getItem("token"),
+  //       "Content-Type": "application/json",
+  //     },
+  //   };
+
+  //   try {
+  //     const response = await axios(config);
+  //     const res = response.data;
+
+  //     if (res.data.length) {
+  //       let temp = res.data;
+  //       console.log("temp", temp);
+
+  //       const ids = temp.map((o) => o.full_text);
+  //       const filtered = temp.filter(
+  //         ({ full_text }, index) => !ids.includes(full_text, index + 1)
+  //       );
+
+  //       var post = filtered;
+  //       var pair = { read: true };
+  //       var posts = post.map((result) => {
+  //         return { ...result, ...pair };
+  //       });
+
+  //       commit("setTopPostDomain", posts.slice(0, 3));
+  //       console.log("temp", [...temp]);
+  //     } else {
+  //       commit("setTopPostDomain", []);
+  //     }
+
+  //     commit("setLoadTopPost", false);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // },
+
+
     //Export
     async fetchExportPostDomain({ commit }, payload) {
       commit("setLoadTopPost", true);
@@ -246,42 +258,7 @@ export default {
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
-          // -------------------------------------------translateuid-----------------------------------------------------------
-          posts.slice(0, 2).map((result) => {
-            if (result.source == "youtube") {
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.account_name,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.account_name = response.data.name;
-                    // console.log('2',result);
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            } else {
-              return result;
-            }
-
-            return { result };
-          });
-
-          // ---------------------------------------------------------------------------------------------------------
-
+         
           commit("setExportTopPostDomain", posts.slice(0, 2));
           console.log("temp", [...temp]);
         } else {
@@ -310,42 +287,7 @@ export default {
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
-          // -------------------------------------------translateuid-----------------------------------------------------------
-          posts.slice(0, 2).map((result) => {
-            if (result.source == "youtube") {
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.account_name,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.account_name = response.data.name;
-                    // console.log('2',result);
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            } else {
-              return result;
-            }
-
-            return { result };
-          });
-
-          // ---------------------------------------------------------------------------------------------------------
-
+        
           commit("setExportTopPostDomainNeg", posts.slice(0, 2));
           console.log("temp", [...temp]);
         } else {

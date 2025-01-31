@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-row align-h="center">
+    <b-row align-h="center" class="mb-2">
       <!-- {{getStatusSearch}} -->
       <!-- {{ select_issue }}{{ getListIssue }} -->
       <b-col sm="12" md="6" lg="4">
@@ -18,7 +18,7 @@
             :disabled-date="(date) => date >= new Date()"
             value-type="format"
             format="YYYY-MM-DD"
-            @change="selectData()"
+            @change="checkDateRange()"
             id="date-domain"
             class="my-1"
             >{{ valueDate }}</date-picker
@@ -38,7 +38,8 @@
         ></v-select>
       </b-col>
       <b-col sm="12" md="6" lg="4">
-        <div class="text-left">Social</div>
+        <div class="text-left">Platform</div>
+        <!-- {{ select_social }} -->
         <v-select
           multiple
           :options="itemSocial"
@@ -47,6 +48,8 @@
           class="subdomain my-1"
           placeholder="Select Platform"
           @input="clickSocial"
+          label="text"
+          :reduce="(country) => country.value"
         ></v-select>
       </b-col>
 
@@ -60,7 +63,7 @@
         >
       </b-col>
     </b-row>
-    <hr class="m-3 mt-5" />
+    <!-- <hr class="m-3 mt-3" /> -->
   </div>
 </template>
 
@@ -85,21 +88,48 @@ export default {
           .format()
           .slice(0, 10),
       ],
+      // itemSocial: [
+      //   "All",
+      //   "facebook",
+      //   "twitter",
+      //   "pantip",
+      //   "news",
+      //   "youtube",
+      //   "instagram",
+      //   "blockdit",
+      //   "tiktok",
+      //   "threads"
+      // ],
       itemSocial: [
-        "All",
-        "facebook",
-        "twitter",
-        "pantip",
-        "news",
-        "youtube",
-        "instagram",
-        "blockdit",
-        "tiktok",
-        "threads"
+        {
+          text: "All Platform",
+          value:
+            "All",
+        },
+        { text: "facebook", value: "facebook" },
+        { text: "twitter", value: "twitter" },
+        { text: "board", value: "pantip" },
+        { text: "news", value: "news" },
+        { text: "youtube", value: "youtube" },
+        { text: "instagram", value: "instagram" },
+        { text: "blockdit", value: "blockdit" },
+        { text: "tiktok", value: "tiktok" },
+        { text: "threads", value: "threads" },
       ],
     };
   },
   methods: {
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+
+      const diffDays = endDate.diff(startDate, "days");
+
+      if (diffDays > 31) {
+        alert("กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน");
+        this.valueDate[1] = startDate.add(31, "days").format("YYYY-MM-DD");
+      }
+    },
     clickSocial() {
       const result = this.select_social.filter((word) => word == "All");
       let rs = String(result);
@@ -142,7 +172,7 @@ export default {
           "instagram",
           "blockdit",
           "tiktok",
-          "threads"
+          "threads",
         ];
       } else {
         social = this.select_social;

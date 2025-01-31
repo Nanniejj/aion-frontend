@@ -1,8 +1,7 @@
 <template>
   <div>
     <div class="text-left">
-      <span class="h5 mr-3">Top Influencers</span>
-      <div class="d-inline-block">
+      <div class="d-inline-block mb-3">
         <div v-if="startd === endd" class="text-left onedate">
           <i class="far fa-calendar-alt"></i> {{ startd }}
         </div>
@@ -11,6 +10,11 @@
         </div>
       </div>
     </div>
+    <div class="text-left">
+      <span class="h5 mr-1">Top Influencers</span>
+      <!-- <span class="mr-2">| สื่อสังคมออนไลน์</span> -->
+      <span class="domain-tag mr-3">สื่อสังคมออนไลน์</span>
+    </div>
     <vue-element-loading
       :active="getLoadTopUser"
       size="80"
@@ -18,6 +22,7 @@
       color="#b6ac9a"
     />
     <!-- <div class="mt-3 mb-3 box-domain"> -->
+    <!-- {{ topuser }} -->
     <b-row
       class="mt-3"
       cols-sm="2"
@@ -27,107 +32,135 @@
       v-if="topuser.length"
     >
       <b-col v-for="(user, k) in topuser" :key="k">
-        <div
-          class="box-topuser mb-3"
-          @click="linkToProfile(user.items.details)"
-        >
+        <div class="box-topuser mb-3">
           <div class="mb-3">
             <b-avatar size="2em" variant="light" class="mt-2">{{
               k + 1
             }}</b-avatar>
           </div>
 
-          <a :href="user.items.details.url_post" target="_blank">
+          <a :href="user.url_post" target="_blank">
             <b-avatar
               badge-variant="info"
               variant="light"
-              :src="user.items.details.profile_image"
-              :size="70"
+              :src="user.profile_image"
+              :size="50"
               class="shadow-sm rounded"
             >
               <template #badge id="bb">
                 <img
-                  v-if="user.items.details.source == 'facebook'"
+                  v-if="user.source == 'facebook'"
                   src="@/assets/Facebook.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'twitter'"
+                  v-if="user.source == 'twitter'"
                   src="@/assets/Twitter.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'news'"
+                  v-if="user.source == 'news'"
                   src="@/assets/News.png"
                   class="social-img"
                 />
+                <span v-if="user.source == 'pantip'">
+                  <img
+                    v-if="user.platform == 'dek-d'"
+                    src="@/assets/dekd.png"
+                    class="social-img"
+                  />
+                  <img
+                  v-else-if="user.platform == 'lemon8'"
+                    src="@/assets/lemon8.png"
+                    class="social-img"
+                  />
+                  <img v-else src="@/assets/Pantip.png" class="social-img" />
+                </span>
                 <img
-                  v-if="user.items.details.source == 'pantip'"
-                  src="@/assets/Pantip.png"
-                  class="social-img"
-                />
-                <img
-                  v-if="user.items.details.source == 'instagram'"
+                  v-if="user.source == 'instagram'"
                   src="@/assets/Instagram.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'youtube'"
+                  v-if="user.source == 'youtube'"
                   src="@/assets/Youtube.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'blockdit'"
+                  v-if="user.source == 'blockdit'"
                   src="@/assets/Blockdit.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'tiktok'"
+                  v-if="user.source == 'tiktok'"
                   src="@/assets/Tiktok.png"
                   class="social-img"
                 />
                 <img
-                  v-if="user.items.details.source == 'threads'"
+                  v-if="user.source == 'threads'"
                   src="@/assets/Threads.png"
                   class="social-img"
                 />
               </template> </b-avatar
           ></a>
           <div class="mt-2 textuser bold">
-            <a :href="user.items.details.url_post" target="_blank">{{
-              user.items.details.account_name
-            }}</a>
+            <a :href="user.url_post" target="_blank">{{ user.account_name }}</a>
           </div>
-          <!-- <hr /> -->
-          <!-- ig engage -->
-          <b-row
-            v-if="
-              user.items.details.source == 'instagram' ||
-                user.items.details.source == 'tiktok'
-            "
-            id="score-data"
-            cols-lg="auto"
-            cols="1"
-            cols-md="1"
-            class="d-none"
+          <span
+            class="badge badge-pill badge-dark px-2 py-1"
+            @click="linkToProfile(user)"
+            style="font-size: 13px;background-color: #4c412b;cursor: pointer;"
+            >ดูโปรไฟล์</span
           >
-            <b-col v-b-tooltip.hover title="posts">
+          <div class="mt-3">
+            <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+            <span class="mx-2">{{ user.postCount | numFormat }}</span
+            >posts
+          </div>
+          <hr />
+
+          <b-row cols="1">
+            <!-- <b-col > 
               <b-row>
-                <b-col
-                  ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
-                ></b-col>
+                <b-col > 
+            <b >Total</b>  </b-col>
+            
+            </b-row>
+            </b-col> -->
+
+            <b-col
+              v-b-tooltip.hover
+              title="retweet"
+              v-if="user.source == 'twitter'"
+            >
+              <b-row>
+                <b-col> <i class="fa fa-retweet" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
+                  {{ user.sumRetweets | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
-            <b-col v-b-tooltip.hover title="comments">
-              <b-row>
+            <b-col
+              v-b-tooltip.hover
+              title="reply"
+              v-if="user.source == 'twitter'"
+            >
+              <b-row cols="12">
                 <b-col
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.sumComments | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="comments" v-else>
+              <b-row cols="12">
+                <b-col
+                  ><i class="fa fa-comments-o" aria-hidden="true"></i
+                ></b-col>
+                <b-col class="text-left">
+                  {{ user.sumComments | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -135,23 +168,42 @@
               <b-row>
                 <b-col> <i class="fa fa-heart" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.sumLikes | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
-            <!-- <b-col v-b-tooltip.hover title="engagement">
+            <b-col v-b-tooltip.hover title="shares">
               <b-row>
-                <b-col> engage </b-col>
+                <b-col> <i class="fa fa-share" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.engagement | numFormat }}</b-col
+                  {{ user.sumShares | numFormat }}</b-col
                 >
               </b-row>
-            </b-col> -->
+            </b-col>
+            <b-col
+              v-b-tooltip.hover
+              title="emotion"
+              v-if="user.source == 'pantip'"
+            >
+              <b-row>
+                <b-col> emotion </b-col>
+                <b-col class="text-left">
+                  {{ user.sumReaction | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="engages">
+              <b-row>
+                <b-col> Total </b-col>
+                <b-col class="text-left">
+                  {{ user.totalEngagePost | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
           </b-row>
-
-          <!-- fb engage -->
+          <!-- ig engage -->
           <b-row
-            v-if="user.items.details.source == 'facebook'"
+            v-if="user.source == 'instagram' || user.source == 'tiktok'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -164,7 +216,7 @@
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
+                  {{ user.postCount | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -174,7 +226,52 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="likes">
+              <b-row>
+                <b-col> <i class="fa fa-heart" aria-hidden="true"></i></b-col>
+                <b-col class="text-left">
+                  {{ user.likes_count | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <!-- <b-col v-b-tooltip.hover title="engagement">
+              <b-row>
+                <b-col> engage </b-col>
+                <b-col class="text-left">
+                  {{ user.engagement | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col> -->
+          </b-row>
+
+          <!-- fb engage -->
+          <b-row
+            v-if="user.source == 'facebook'"
+            id="score-data"
+            cols-lg="auto"
+            cols="1"
+            cols-md="1"
+            class="d-none"
+          >
+            <b-col v-b-tooltip.hover title="posts">
+              <b-row>
+                <b-col
+                  ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
+                ></b-col>
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="comments">
+              <b-row>
+                <b-col
+                  ><i class="fa fa-comments-o" aria-hidden="true"></i
+                ></b-col>
+                <b-col class="text-left">
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -182,7 +279,7 @@
               <b-row>
                 <b-col> engage </b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.engagement | numFormat }}</b-col
+                  {{ user.engagement | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -192,14 +289,14 @@
                   <i class="fa fa-share-alt-square" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left"
-                  >{{ user.items.details.share_total | numFormat }}
+                  >{{ user.share_total | numFormat }}
                 </b-col>
               </b-row>
             </b-col> -->
           </b-row>
           <!-- blockdit engage -->
           <b-row
-            v-if="user.items.details.source == 'blockdit'"
+            v-if="user.source == 'blockdit'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -211,9 +308,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -222,7 +317,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -230,7 +325,7 @@
               <b-row>
                 <b-col>engage</b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.engagement | numFormat }}</b-col
+                  {{ user.engagement | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -238,7 +333,7 @@
 
           <!-- tw engage -->
           <b-row
-            v-if="user.items.details.source == 'twitter'"
+            v-if="user.source == 'twitter'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -249,7 +344,7 @@
               <b-row>
                 <b-col><i class="fa fa-users" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.follower | numFormat }}</b-col
+                  {{ user.follower | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -258,9 +353,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -269,7 +362,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -277,7 +370,7 @@
               <b-row>
                 <b-col> <i class="fa fa-heart" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.likes_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -285,7 +378,7 @@
               <b-row>
                 <b-col> <i class="fa fa-retweet" aria-hidden="true"></i></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.retweets_count | numFormat }}</b-col
+                  {{ user.retweets_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -293,7 +386,7 @@
 
           <!-- news pantip -->
           <b-row
-            v-if="user.items.details.source == 'pantip'"
+            v-if="user.source == 'pantip'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -305,9 +398,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -316,7 +407,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -326,14 +417,14 @@
                   <i class="fa fa-thumbs-up" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.likes_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
           </b-row>
           <!-- News --------------->
           <b-row
-            v-if="user.items.details.source == 'news'"
+            v-if="user.source == 'news'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -345,15 +436,13 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
           </b-row>
           <!-- youtube -->
           <b-row
-            v-if="user.items.details.source == 'youtube'"
+            v-if="user.source == 'youtube'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -365,9 +454,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.items.details.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -376,7 +463,7 @@
                   ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.comments_count | numFormat }}</b-col
+                  {{ user.comments_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -386,7 +473,7 @@
                   ><i class="fa fa-thumbs-up" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.likes_count | numFormat }}</b-col
+                  {{ user.likes_count | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -396,7 +483,7 @@
                   <i class="fa fa-thumbs-down" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.items.details.dislike_total | numFormat }}</b-col
+                  {{ user.dislike_total | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
@@ -467,8 +554,9 @@ export default {
       var config = {
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain=" +
+          "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain=" +
           this.getClickDomain +
+          "&source=twitter,facebook,youtube,tiktok,instagram,pantip,threads,blockdit" +
           sdate +
           edate,
         // +"&source="+this.source,
@@ -480,45 +568,6 @@ export default {
       this.axios(config)
         .then((response) => {
           console.log("Toppp response.data", response.data);
-          // -------------------------------------------translateuid-----------------------------------------------------------
-          response.data.map((result) => {
-            console.log("API", result.items.details.account_name);
-            if (
-              result.items.details.source == "facebook" ||
-              result.items.details.source == "youtube"
-            ) {
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.items.details.account_name,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.items.details.account_name = response.data.name;
-                    // console.log('2',result);
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            } else {
-              return result;
-            }
-
-            return { result };
-          });
-
-          // ---------------------------------------------------------------------------------------------------------
           this.topuser = response.data.slice(0, 5);
           this.$store.commit("setLoadTopUser", false);
         })
@@ -546,8 +595,9 @@ export default {
     var config = {
       method: "get",
       url:
-        "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain=" +
+        "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain=" +
         this.getClickDomain +
+        "&source=twitter,facebook,youtube,tiktok,instagram,pantip,threads,blockdit" +
         sdate +
         edate,
       // +"&source="+this.source,
@@ -558,45 +608,6 @@ export default {
     };
     this.axios(config)
       .then((response) => {
-        console.log("Toppp response.data", response.data);
-        // -------------------------------------------translateuid-----------------------------------------------------------
-        response.data.map((result) => {
-          // console.log("API", result.items.details.account_name);
-          if (
-            result.items.details.source == "facebook" ||
-            result.items.details.source == "youtube"
-          ) {
-            var axios = require("axios");
-            var config = {
-              method: "get",
-              url:
-                "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                result.items.details.account_name,
-              headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
-              },
-            };
-            axios(config)
-              .then((response) => {
-                console.log("Object.keys", Object.keys(response.data).length);
-                if (Object.keys(response.data).length) {
-                  result.items.details.account_name = response.data.name;
-                  // console.log('2',result);
-                } else {
-                  return;
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          } else {
-            return result;
-          }
-
-          return { result };
-        });
-
         // ---------------------------------------------------------------------------------------------------------
         this.topuser = response.data.slice(0, 5);
         this.$store.commit("setLoadTopUser", false);
@@ -610,9 +621,16 @@ export default {
 </script>
 
 <style scoped>
+.domain-tag {
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: #fed16e;
+  box-shadow: 2px 2px 4px 0 rgb(0 0 0 / 20%);
+  /* font-weight: 600; */
+}
 .box-topuser:hover {
   background: #fed16e47;
-  cursor: pointer;
+  /* cursor: pointer; */
 }
 .d-contents {
   display: contents !important;

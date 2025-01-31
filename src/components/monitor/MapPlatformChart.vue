@@ -63,7 +63,7 @@ export default {
         labels: [
           "facebook",
           "twitter",
-          "pantip",
+          "board",
           "news",
           "youtube",
           "instagram",

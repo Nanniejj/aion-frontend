@@ -92,7 +92,7 @@
               ></router-link
             >
           </li>
-          <li class="nav-item" id="li-nav" v-if="username =='adminatapy'||username =='squattest01'||username =='squattest02'||username =='squattest03'">
+          <li class="nav-item" id="li-nav" v-if="username =='adminatapy'|| username =='adminpeach'||username =='squattest01'||username =='squattest02'||username =='squattest03'">
             <router-link to="/map" tag="p"
               ><a class="nav-link"
                 ><img
@@ -115,7 +115,7 @@
               ></router-link
             >
           </li>
-          <li class="nav-item " id="li-nav"  v-if="username =='adminatapy'">
+          <li class="nav-item " id="li-nav"  v-if="username =='adminatapy'|| username =='adminpeach'">
           <a class="nav-link" href="https://link.cognizata.com" target="_blank"
                 ><img
                  src="@/assets/Infurncer.png"
@@ -210,7 +210,8 @@
             </div>
           </li>
           <li
-            class=" nav-item dropdown d-none"
+          v-if="username =='adminatapy'|| username =='adminpeach'||username =='ac01'|| username =='ac02'||username =='ac03'|| username =='ac04'|| username =='ac05'" 
+            class=" nav-item dropdown"
             id="li-nav"
           >
             <a
@@ -346,7 +347,7 @@
             </router-link>
           </b-nav-item>
           <!-- {{ username }} -->
-          <b-nav-item id="nav-con1"  class="" v-if="username =='adminatapy'||username =='squattest01'||username =='squattest02'||username =='squattest03'">
+          <b-nav-item id="nav-con1"  class="" v-if="username =='adminatapy'|| username =='adminpeach'||username =='squattest01'||username =='squattest02'||username =='squattest03'">
             <router-link to="/map" tag="p">
               <a class="nav-link">
                 <img src="@/assets/mapx.png" alt="logo" class="img-nav" />
@@ -377,7 +378,7 @@
             </router-link>
           </b-nav-item>
          
-          <b-nav-item id="nav-con1" class=""  href="https://link.cognizata.com" target="_blank" v-if="username =='adminatapy'">
+          <b-nav-item id="nav-con1" class=""  href="https://link.cognizata.com" target="_blank" v-if="username =='adminatapy'|| username =='adminpeach'">
             <!-- <router-link to="" tag="p"> -->
               <a class="nav-link"  >
                 <img src="@/assets/Infurncer.png" alt="logo" class="img-nav" />
@@ -531,7 +532,7 @@
             </b-nav-item-dropdown>
           </b-nav-item>
           <b-nav-item id="nav-con1" >
-            <b-nav-item-dropdown no-caret id="dp-color" class=" d-none">
+            <b-nav-item-dropdown no-caret id="dp-color" class="" v-if="username =='adminatapy'|| username =='adminpeach'||username =='ac01'|| username =='ac02'||username =='ac03'|| username =='ac04'|| username =='ac05'" >
               <template slot="button-content">
                 <a
                   class="nav-link"

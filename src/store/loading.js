@@ -25,6 +25,7 @@ export default {
     loadHashIssue: false,
     loadPostIssue: false,
     loadAllPostIssue: false,
+    loadTopUserF:false
   },
   getters: {
     getShowIntro: (state) => {
@@ -74,6 +75,9 @@ export default {
     },
     getLoadTopUser: (state) => {
       return state.loadTopUser;
+    },
+    getLoadTopUserF: (state) => {
+      return state.loadTopUserF;
     },
     getLoadTopUserPf: (state) => {
       return state.loadTopUserPf;
@@ -152,6 +156,9 @@ export default {
     },
     setLoadTopUser: (state, payload) => {
       state.loadTopUser = payload;
+    },
+    setLoadTopUserF: (state, payload) => {
+      state.loadTopUserF = payload;
     },
     setLoadTopUserPf: (state, payload) => {
       state.loadTopUserPf = payload;

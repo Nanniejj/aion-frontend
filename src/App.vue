@@ -5,6 +5,16 @@
 </template>
 
 <style>
+.truncate-text-1 {
+  white-space: nowrap; /* ทำให้ข้อความไม่แยกบรรทัด */
+  overflow: hidden; /* ซ่อนข้อความที่เกินออกจากกล่อง */
+  text-overflow: ellipsis; /* เพิ่ม ... ที่ท้ายข้อความ */
+  width: 90%;
+}
+ tbody > tr> td:nth-child(2), tbody > tr> td:nth-child(3){
+  max-width: 150px;
+    overflow-x: auto
+}
 .custom-switch.b-custom-control-lg .custom-control-label::before,
 .input-group-lg .custom-switch .custom-control-label::before {
   cursor: pointer !important;
@@ -365,6 +375,10 @@ div.right {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  tbody > tr> td:nth-child(2), tbody > tr> td:nth-child(3){
+  max-width: unset;
+    overflow-x: auto
+}
   lite-tiktok {
     display: block;
     width: 300px !important;

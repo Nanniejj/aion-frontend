@@ -27,7 +27,7 @@
                 :disabled-date="(date) => date >= new Date()"
                 value-type="format"
                 format="YYYY-MM-DD"
-                @change="selectData()"
+                @change="checkDateRange()"
                 id="date-domain"
                 >{{ valueDate }}</date-picker
               >
@@ -49,7 +49,7 @@ import moment from "moment";
 
 export default {
   computed: {
-    ...mapGetters(["getCnt", "getProfileData", "getHashtagData"]),
+    ...mapGetters(["getCnt", "getProfileData", "getHashtagData","getValSource"]),
   },
   data() {
     return {
@@ -66,6 +66,19 @@ export default {
     HashtagTab,
   },
   methods: {
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+
+      const diffDays = endDate.diff(startDate, 'days');
+
+      if (diffDays > 31) {
+        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
+        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+      }else{
+        this.selectData(); // Call your existing method
+      }
+    },
     selectData() {
       //console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
@@ -121,6 +134,7 @@ export default {
         api_type: "hashtag",
         top_type: "domain",
         sort_by: "",
+        source: this.getValSource
        
       });
       this.$store.commit("setCnt2", this.getCnt);
@@ -131,6 +145,7 @@ export default {
         api_type: "hashtag",
         top_type: "domain",
         sort_by: "",
+        source: this.getValSource
       });
       console.log("getCnt", this.getCnt);
       this.$store.commit("setCnt2", this.getCnt);

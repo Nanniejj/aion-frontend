@@ -6,24 +6,7 @@
         <b-row >
         <b-col class="text-left"  cols="sm"> <h1 class="title">Hot Issue</h1></b-col>
          <b-col class="text-lg-right mt-sm-4 mt-md-4 mt-lg-4 mr-lg-2">
-        <section
-          id="date-picker"
-          class="d-none position-relative align-bottom"
-        >
-          <date-picker
-            v-model="valueDate"
-            type="date"
-            range
-            placeholder="เลือกช่วงเวลา"
-            size="sm"
-            :disabled-date="(date) => date >= new Date()"
-            value-type="format"
-            format="YYYY-MM-DD"
-            @change="selectData()"
-            id="date-domain"
-            >{{ valueDate }}</date-picker
-          >
-        </section>
+       
         <i
           class="fas fa-print fa-2x d-inline ml-2"
           style="cursor: pointer"

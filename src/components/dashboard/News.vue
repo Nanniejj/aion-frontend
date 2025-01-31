@@ -44,8 +44,8 @@
             <div><i class="far fa-paper-plane" /></div>
             <div><i class="far fa-comments" /></div>
             <div><i class="fas fa-users" /></div>
-            <div><i class="fas fa-cloud-download-alt" /></div>
-            <div><i class="fas fa-database" /></div>
+            <!-- <div><i class="fas fa-cloud-download-alt" /></div>
+            <div><i class="fas fa-database" /></div> -->
             <!-- <div>Start</div>
                 <div>End</div> -->
           </b-col>
@@ -63,14 +63,14 @@
               <span class="prt">Users : </span>
               {{ Number(getSumNews.users) | numFormat  }}
             </div>
-            <div>
+            <!-- <div>
               <span class="prt">ข้อมูลที่ไปเก็บ : </span
               >{{ getCraw.crawler_news | numFormat  }}
             </div>
             <div>
               <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
               >{{ getCraw.preprocess_news | numFormat  }}
-            </div>
+            </div> -->
 
             <!-- <div  class="md-font"> {{ startFormat}} </div>
                 <div  class="md-font"> {{ endFormat}} </div> -->

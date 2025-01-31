@@ -147,11 +147,19 @@
                   :src="imgfb"
                   class="social-img"
                 />
-                <img
-                  v-if="datas.source === 'pantip'"
-                  :src="imgpt"
-                  class="social-img"
-                />
+                <span v-if="datas.source == 'pantip'">
+                  <img
+                    v-if="datas.platform == 'dek-d'"
+                    src="@/assets/dekd.png"
+                    class="social-img"
+                  />
+                  <img
+                    v-else-if="datas.platform == 'lemon8'"
+                    src="@/assets/lemon8.png"
+                    class="social-img"
+                  />
+                  <img v-else src="@/assets/Pantip.png" class="social-img" />
+                </span>
                 <img
                   v-if="datas.source === 'youtube'"
                   :src="imgyt"
@@ -178,33 +186,30 @@
                   class="social-img"
                 />
                 <img
-                v-if="datas.source === 'threads'"
-                :src="imgtd"
-                class="social-img"
-              />
+                  v-if="datas.source === 'threads'"
+                  :src="imgtd"
+                  class="social-img"
+                />
               </b-col>
               <b-col style="text-align: initial">
                 <span id="txt-name">
-                <span
-                  ><b> {{ datas.account_name }} </b></span
-                >
+                  <span
+                    ><b> {{ datas.account_name }} </b></span
+                  >
 
-                <a
-                  v-if="
-                    datas.url_post &&
-                    datas.url_post.includes('mbasic')
-                  "
-                  v-bind:href="datas.url_post.replace('mbasic.', '')"
-                  class="fa fa-external-link"
-                  target="_blank"
-                ></a>
-                <a
-                  v-else
-                  v-bind:href="datas.url_post"
-                  class="fa fa-external-link"
-                  target="_blank"
-                ></a>
-              </span>
+                  <a
+                    v-if="datas.url_post && datas.url_post.includes('mbasic')"
+                    v-bind:href="datas.url_post.replace('mbasic.', '')"
+                    class="fa fa-external-link"
+                    target="_blank"
+                  ></a>
+                  <a
+                    v-else
+                    v-bind:href="datas.url_post"
+                    class="fa fa-external-link"
+                    target="_blank"
+                  ></a>
+                </span>
                 <!-- Time -->
                 <div id="text-date" style="text-align: start" class="md-font">
                   <span v-if="datas.date"
@@ -441,6 +446,12 @@
               <b-card-body>
                 <!-- {{ datas}}dddddd -->
                 <b-card-text class="box-contents">
+                  <div
+                    v-if="datas && datas.title"
+                    class="title-news text-left my-2"
+                  >
+                    {{ datas.title }}
+                  </div>
                   <Highlighter
                     class="my-highlight md-font"
                     :style="{
@@ -472,7 +483,12 @@
             </b-col>
             <b-col>
               <div v-if="datas.source == 'tiktok' && datas.uid">
-                <lite-tiktok :videoid="datas.uid"></lite-tiktok>
+                <a v-bind:href="datas.url_post" target="_blank">
+                  <lite-tiktok
+                    :videoid="datas.uid"
+                    style=" pointer-events: none; "
+                  ></lite-tiktok
+                ></a>
 
                 <!-- <iframe
                   width="auto"
@@ -565,40 +581,69 @@
             </b-col>
           </b-row>
           <div
-          class="text-left ai-box mt-2"
-          v-if="datas && datas.ocr &&username=='adminatapy'"
-          style="font-size: 15px;font-weight: 500;"
-        >
-          <div v-for="(text, idx) in datas.ocr">
-            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
-                       <div v-if="text.text_sort && text.text_sort.length">
-              <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar>
-              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
-              {{ text.text_sort[0] }}
-            </div>
-            <div v-if="text.face">
-              <span v-for="(face, idx) in text.face">
-                <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
-                  <span
-                    style="background: #e5e5e5;
+            class="text-left ai-box mt-2"
+            v-if="datas && datas.ocr && username == 'adminatapy'"
+            style="font-size: 15px;font-weight: 500;"
+          >
+            <div v-for="(text, idx) in datas.ocr">
+              <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+              <div v-if="text.text_sort && text.text_sort.length">
+                <b-avatar
+                  size="18px"
+                  style="font-size: 12px;background-color:#8b8787;"
+                  class="mr-1"
+                  >{{ idx + 1 }}
+                </b-avatar>
+                <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+                {{ text.text_sort[0] }}
+              </div>
+              <div v-if="text.face">
+                <span v-for="(face, idx) in text.face">
+                  <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
+                    <span
+                      style="background: #e5e5e5;
     padding: 0px 6px;
     border-radius: 13px;"
-                  >
-                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                    {{ face.person_name.replace("_", " ") }}
-                    <span
-                      v-b-tooltip.hover
-                      :title="'ค่า confidence'"
-                      class="small"
-                      >({{
-                        parseFloat((face.confidence * 100).toFixed(2))
-                      }}%)</span
+                    >
+                      <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                      {{ face.person_name.replace("_", " ") }}
+                      <span
+                        v-b-tooltip.hover
+                        :title="'ค่า confidence'"
+                        class="small"
+                        >({{
+                          parseFloat((face.confidence * 100).toFixed(2))
+                        }}%)</span
+                      ></span
                     ></span
-                  ></span
-                >
-              </span>
+                  >
+                </span>
+              </div>
             </div>
           </div>
+          <div v-if="datas && datas.location && datas.location.length && username == 'adminatapy'"
+          class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
+          <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+    border-radius: 33px;
+">
+            <!-- {{ geo.toString() }} -->
+            <span v-if="geo.toString() && geo.toString().length == 2">
+              {{ matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 4">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+            </span>
+            <span v-if="geo.toString() && geo.toString().length == 6">
+              {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
+                matchGeocode(geo).name_th }}
+              {{ geo.toString().substring(0, 2) == '10' ? 'แขวง' + matchGeocode(geo).name_th : 'ต.' +
+                matchGeocode(geo).name_th }}
+            </span>
+          </span>
         </div>
           <template #footer>
             <div class="comment-img text-left md-font">
@@ -620,7 +665,11 @@
               <popover
                 :name="'foo' + k"
                 id="foo"
-                v-if="datas.source !== 'facebook'&&datas.source !== 'youtube' && datas.source !== 'twitter'"
+                v-if="
+                  datas.source !== 'facebook' &&
+                    datas.source !== 'youtube' &&
+                    datas.source !== 'twitter'
+                "
               >
                 <div class="text-center">
                   <i class="fa fa-user-circle" aria-hidden="true"></i>
@@ -767,45 +816,46 @@
               </span>
 
               <!-- twitter -->
-              <span v-if="datas.source !== 'facebook'&&datas.source !== 'youtube'">
               <span
-                v-if="datas.retweets_count !== '0' && datas.retweets_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="Retweet"
+                v-if="datas.source !== 'facebook' && datas.source !== 'youtube'"
               >
-                <i class="fal fa-retweet"></i>
-                {{ datas.retweets_count | numFormat }}
+                <span
+                  v-if="datas.retweets_count !== '0' && datas.retweets_count"
+                  id="box-reaction"
+                  v-b-tooltip.hover
+                  title="Retweet"
+                >
+                  <i class="fal fa-retweet"></i>
+                  {{ datas.retweets_count | numFormat }}
+                </span>
+                <span
+                  v-if="datas.likes_count !== '0' && datas.likes_count"
+                  id="box-reaction"
+                  v-b-tooltip.hover
+                  title="Like"
+                >
+                  <i class="fa fa-heart"></i>
+                  {{ datas.likes_count | numFormat }}
+                </span>
+                <span
+                  v-if="datas.shares_count !== '0' && datas.shares_count"
+                  id="box-reaction"
+                  v-b-tooltip.hover
+                  title="Share"
+                >
+                  <i class="fa fa-share"></i>
+                  {{ datas.shares_count | numFormat }}
+                </span>
+                <span
+                  v-if="datas.views_count !== '0' && datas.views_count"
+                  id="box-reaction"
+                  v-b-tooltip.hover
+                  title="View"
+                >
+                  <i class="fas fa-eye"></i>
+                  {{ datas.views_count | numFormat }}
+                </span>
               </span>
-              <span
-                v-if="datas.likes_count !== '0' && datas.likes_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="Like"
-              >
-                <i class="fa fa-heart"></i>
-                {{ datas.likes_count | numFormat }}
-              </span>
-              <span
-                v-if="datas.shares_count !== '0' && datas.shares_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="Share"
-              >
-                <i class="fa fa-share"></i>
-                {{ datas.shares_count | numFormat }}
-              </span>
-              <span
-                v-if="datas.views_count !== '0' && datas.views_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="View"
-              >
-                <i class="fas fa-eye"></i>
-                {{ datas.views_count | numFormat }}
-              </span>
-            </span>
-
 
               <span v-if="datas.source == 'facebook'">
                 <span
@@ -1262,10 +1312,13 @@ import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
 import KeywordStat from "./KeywordStat.vue";
+import provinces from "@/components/map/provinces.json";
+import districts from "@/components/map/districts.json";
+import subdistricts from "@/components/map/subdistricts.json";
 
 export default {
   props: {
-    typeMap:{
+    typeMap: {
       type: String,
     },
     sdate: {
@@ -1294,7 +1347,8 @@ export default {
     },
     social: {
       type: String,
-      default: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+      default:
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
     },
     type: {
       type: String,
@@ -1326,7 +1380,7 @@ export default {
       end_date: "",
       valueDate: null,
       offset: 0,
-            username:"",
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1355,7 +1409,7 @@ export default {
       img: "",
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
-      imgpt: require("@/assets/Pantip.png"),
+      imgpt: require("@/assets/board.png"),
       imgig: require("@/assets/Instagram.png"),
       imgnw: require("@/assets/News.png"),
       imgyt: require("@/assets/Youtube.png"),
@@ -1388,7 +1442,7 @@ export default {
         },
         { text: "facebook", value: "facebook" },
         { text: "twitter", value: "twitter" },
-        { text: "pantip", value: "pantip" },
+        { text: "board", value: "pantip" },
         { text: "news", value: "news" },
         { text: "youtube", value: "youtube" },
         { text: "instagram", value: "instagram" },
@@ -1417,12 +1471,15 @@ export default {
       "getSelectedMonitor",
       "getLoadMapPost",
       "getKeywordName",
-
     ]),
     arrKeyword() {
       let arr = [];
       if (this.checked) {
-        if (this.getLocationPost&&this.getLocationPost.static.keyword.length || this.keyword.length) {
+        if (
+          (this.getLocationPost &&
+            this.getLocationPost.static.keyword.length) ||
+          this.keyword.length
+        ) {
           if (this.keyword) {
             arr = [...this.getLocationPost.static.keyword, ...this.keyword];
             // arr.push(this.keyword);
@@ -1433,7 +1490,7 @@ export default {
       } else {
         arr = [];
       }
-      console.log("arr", arr,this.getLocationPost.static.keyword);
+      console.log("arr", arr, this.getLocationPost.static.keyword);
       return arr;
     },
 
@@ -1468,6 +1525,44 @@ export default {
     },
   },
   methods: {
+    filterNumbers(numbers) {
+      // Create a copy of the numbers array and sort by length
+      const filtered = [...numbers].sort(
+        (a, b) => a.toString().length - b.toString().length
+      );
+
+      for (let i = 0; i < filtered.length; i++) {
+        for (let j = i + 1; j < filtered.length; j++) {
+          const num1 = filtered[i].toString();
+          const num2 = filtered[j].toString();
+
+          // If num1 matches the start of num2, remove num1
+          if (num2.startsWith(num1)) {
+            filtered.splice(i, 1); // Remove num1
+            i--; // Adjust index after removal
+            break; // Restart the inner loop
+          }
+        }
+      }
+
+      return filtered; // Return filtered array
+    },
+    matchGeocode(geocode) {
+      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+      let found = null;
+
+      // กรองข้อมูลตามความยาว geocode
+      if (geocodeStr.length === 2) {
+        found = provinces[geocodeStr]
+      } else if (geocodeStr.length === 4) {
+        found = districts[geocodeStr]
+      } else if (geocodeStr.length === 6) {
+        found = subdistricts[geocodeStr]
+      }
+
+      // Return the found location or a fallback message
+      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
     highlightText(full_text, data) {
       var word = [];
       if (this.checked) {
@@ -1570,7 +1665,7 @@ export default {
         sentiment: this.selected,
         source: this.select_social,
         offset: offset,
-        type:this.typeMap
+        type: this.typeMap,
       });
       // querySearch = this.getQuerySearch;
       // this.$store.dispatch("PostsKeyword", {
@@ -1728,10 +1823,10 @@ export default {
       this.selected = payload.sentiment;
       this.sdate = payload.start;
       this.edate = payload.end;
-      this.typeMap =payload.type
+      this.typeMap = payload.type;
       this.currentPage = 1;
       this.$store.dispatch("apiLocationPost", payload);
-      console.log('payload',payload);
+      console.log("payload", payload);
       payload.sentiment = "1,0,-1";
       this.$store.dispatch("apiMapStatic", payload);
     }

@@ -124,7 +124,8 @@
             >
           </div>
           <div v-if="row.item.source == 'facebook'" class="w-auto m-auto">
-            <img src="@/assets/Facebook.png" class="twicon" /> {{ row.value }}
+            <a :href="row.value" target="_blank" id="link_tw">
+            <img src="@/assets/Facebook.png" class="twicon" /> {{ row.value }}</a>
           </div>
           <div v-if="row.item.source == 'pantip'" class="w-auto m-auto">
             <img src="@/assets/Pantip.png" class="twicon" /> {{ row.value }}
@@ -135,8 +136,13 @@
           <div v-if="row.item.source == 'youtube'" class="w-auto m-auto">
             <img src="@/assets/Youtube.png" class="twicon" /> {{ row.value }}
           </div>
+          <div v-if="row.item.source == 'tiktok'" class="w-auto m-auto">
+            <a :href="row.value" target="_blank" id="link_tw">
+            <img src="@/assets/Tiktok.png" class="twicon" /> {{ row.value }}</a>
+          </div>
           <div v-if="row.item.source == 'instagram'" class="w-auto m-auto">
-            <img src="@/assets/Instagram.png" class="twicon" /> {{ row.value }}
+            <a :href="row.value" target="_blank" id="link_tw">
+            <img src="@/assets/Instagram.png" class="twicon" /> {{ row.value }}</a>
           </div>
         </template>
 

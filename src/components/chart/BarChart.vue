@@ -9,7 +9,7 @@
           <div class="g-social">
             <img src="@/assets/cfb.png" class="imgs" />
             <img src="@/assets/ctw.png" class="imgs" />
-            <img src="@/assets/cpt.png" class="imgs" />
+            <img src="@/assets/cboard.png" class="imgs" />
             <img src="@/assets/cn.png" class="imgs" />
             <img src="@/assets/cyt.png" class="imgs" />
             <img src="@/assets/cig.png" class="imgs" />
@@ -57,7 +57,7 @@ export default {
       sourcelist: [
         "facebook",
         "twitter",
-        "pantip",
+        "board",
         "news",
         "youtube",
         "instagram",

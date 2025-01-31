@@ -451,40 +451,6 @@ export default {
         var posts= post.map((result) => {
         return {...result, ...pair}
       });
-           // -------------------------------------------translateuid-----------------------------------------------------------
-           posts.map((result) => {
-            if (result.source == "facebook" || result.source == "youtube") {
-              var axios = require("axios");
-              var config = {
-                method: "get",
-                url:
-                  "https://api2.cognizata.com/api/v2/object/translateuid?uid=" +
-                  result.account_name,
-                headers: {
-                  Authorization: "Bearer " + localStorage.getItem("token"),
-                  "Content-Type": "application/json",
-                },
-              };
-              axios(config)
-                .then((response) => {
-                  console.log("Object.keys", Object.keys(response.data).length);
-                  if (Object.keys(response.data).length) {
-                    result.account_name = response.data.name;
-                  } else {
-                    return;
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            } else {
-              return result;
-            }
-  
-            return { result };
-          });
-
-          // ---------------------------------------------------------------------------------------------------------
         commit("setSentimentDetailRanking", res.data);
         commit("setDetailPostRanking",posts)
         console.log(posts);

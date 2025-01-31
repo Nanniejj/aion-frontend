@@ -250,7 +250,13 @@ export default {
       return domains;
     },
   },
+  destroyed() {
+    this.$store.commit('setWordCloudImg','')
+    this.$store.commit('setWordCloud','')
+  },
   async created() {
+    this.$store.commit('setWordCloudImg','')
+    this.$store.commit('setWordCloud','')
     if (this.cloudApi) {
       var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
       var todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";

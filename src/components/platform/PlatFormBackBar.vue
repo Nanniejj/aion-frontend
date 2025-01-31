@@ -8,7 +8,12 @@
             <h5 class="title-domain">
               <span @click="backPlatform"> Platform </span>
               <i class="fas fa-angle-right" />
-              <span id="active"> {{ getNamePlatform }} </span>
+              <span id="active">
+                <span v-if="getNamePlatform == 'twitter'"> X </span>
+                <span v-else-if="getNamePlatform == 'pantip'"> board </span>
+                <span v-else>{{ getNamePlatform }} </span>
+                </span
+              >
             </h5>
           </div>
         </div>
@@ -24,7 +29,12 @@
           </div>
           <div class="leftt rightt hov active" style="cursor: pointer">
             <a style="margin-left: 18px"
-              ><span class="txx">{{ getNamePlatform }}</span>
+              ><span class="txx"
+                ><span v-if="getNamePlatform == 'twitter'"> X </span>
+                <span v-else-if="getNamePlatform == 'pantip'"> board </span>
+
+                <span v-else>{{ getNamePlatform }} </span></span
+              >
             </a>
           </div>
         </span>
@@ -43,7 +53,7 @@
             :disabled-date="(date) => date >= new Date()"
             value-type="format"
             format="YYYY-MM-DD"
-            @change="selectData()"
+            @change="checkDateRange()"
             id="date-domain"
             >{{ valueDate }}</date-picker
           >
@@ -99,12 +109,25 @@ export default {
       end_date: "",
       selected: "",
       options: [
-        { item:true, name: "วันที่ระบบเก็บโพสต์" },
+        { item: true, name: "วันที่ระบบเก็บโพสต์" },
         { item: "", name: "วันที่โพสต์" },
       ],
     };
   },
   methods: {
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+      const diffDays = endDate.diff(startDate, "days");
+
+      if (diffDays > 31) {
+        alert("กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน");
+        this.valueDate[1] = startDate.add(31, "days").format("YYYY-MM-DD");
+      } else {
+        // console.log('datePlatform');
+        this.selectData();
+      }
+    },
     selectData() {
       this.$emitter.emit("crawdash", this.selected);
       console.log(this.valueDate[0], this.valueDate[1]);
@@ -146,7 +169,7 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: this.getDomainArr,
+          domain: 'All',
           dashboard: true,
         };
       } else {
@@ -156,7 +179,7 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: this.getDomainArr,
+          domain: 'All',
         };
       }
       //wordcloud
@@ -164,7 +187,7 @@ export default {
         start_date: this.start_date,
         end_date: this.end_date,
         source: this.getNamePlatform,
-        domain: this.getDomainArr,
+        domain: 'All',
         dashboard: true,
       };
       this.$store.dispatch("fetchWordCloud", objword);
@@ -187,11 +210,12 @@ export default {
       this.$store.dispatch("fetchSentimentStatDashboard", {
         start_date: this.start_date,
         end_date: this.end_date,
-        domain: this.getDomainArr,
+        domain: 'All'
       });
       this.$store.dispatch("fetchAllstats", {
         start_date: this.start_date,
         end_date: this.end_date,
+          domain: 'All'
       });
     },
     backPlatform() {
@@ -211,6 +235,7 @@ export default {
       this.$store.dispatch("fetchAllstats", {
         start_date: this.start_date,
         end_date: this.end_date,
+          domain: 'All'
       });
       // await this.$store.dispatch("fetchDomain");
       // let domainName = this.getShowDomain.map((key) => {
@@ -222,7 +247,7 @@ export default {
       this.$store.dispatch("fetchSentimentStatDashboard", {
         start_date: this.start_date,
         end_date: this.end_date,
-        domain: this.getDomainArr,
+        domain: 'All',
       });
     },
     printWindow: function() {

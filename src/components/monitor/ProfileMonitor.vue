@@ -5,7 +5,7 @@
       <!-- User Interface controls -->
 
       <SumMonitor :tabsMonitor="'tabProfile'" />
-      
+
       <b-row id="input-btn">
         <b-col lg="6" class="my-1">
           <b-form-group
@@ -29,12 +29,14 @@
             </b-input-group>
           </b-form-group>
         </b-col>
-        <b-col lg="" class="my-1 text-right " >
+        <b-col lg="" class="my-1 text-right ">
           <div class="mb-2">
             <ImportPlatform class="d-inline-block mr-3" />
-          <CreateMonitor class="mb-2 text-right d-inline" :tabsMonitor="'tabProfile'"  />
+            <CreateMonitor
+              class="mb-2 text-right d-inline"
+              :tabsMonitor="'tabProfile'"
+            />
           </div>
-          
         </b-col>
       </b-row>
 
@@ -121,9 +123,21 @@
             <span v-else-if="row.value === 'twitter'"
               ><img src="@/assets/Twitter.png" class="socialogo2"
             /></span>
-            <span v-else-if="row.value === 'pantip'"
-              ><img src="@/assets/Pantip.png" class="socialogo2"
-            /></span>
+            <span v-else-if="row.value === 'pantip'">
+              <span>
+                <img
+                  v-if="row.item.platform == 'dek-d'"
+                  src="@/assets/dekd.png"
+                  class="socialogo2"
+                />
+                <img
+                  v-else-if="row.item.platform == 'lemon8'"
+                  src="@/assets/lemon8.png"
+                  class="social-img"
+                />
+                <img v-else src="@/assets/Pantip.png" class="socialogo2" />
+              </span>
+            </span>
             <span v-else-if="row.value === 'news'"
               ><img src="@/assets/News.png" class="socialogo2"
             /></span>

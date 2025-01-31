@@ -9,7 +9,7 @@
     />
     <div class="box" id="pantip" @click="toPlatform">
       <div class="left"></div>
-      <img src="@/assets/Pantip.png" class="socialogo" />
+      <img src="@/assets/board.png" class="socialogo" />
       <div class="md-font">
         กระทู้ที่เกี่ยวข้อง
         <span class="total-all"> {{ getPantip.post | numFormat }} </span>
@@ -39,8 +39,8 @@
             <div><i class="far fa-paper-plane" /></div>
             <div><i class="far fa-comments" /></div>
             <div><i class="fas fa-users" /></div>
-            <div><i class="fas fa-cloud-download-alt" /></div>
-            <div><i class="fas fa-database" /></div>
+            <!-- <div><i class="fas fa-cloud-download-alt" /></div>
+            <div><i class="fas fa-database" /></div> -->
             <!-- <div>Start</div>
               <div>End</div> -->
           </b-col>
@@ -57,14 +57,14 @@
               <span class="prt">Users : </span>
               {{ Number(getSumPantip.users) | numFormat }}
             </div>
-            <div>
+            <!-- <div>
               <span class="prt">ข้อมูลที่ไปเก็บ : </span
               >{{ getCraw.crawler_pantip | numFormat }}
             </div>
             <div>
               <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
               >{{ getCraw.preprocess_pantip | numFormat }}
-            </div>
+            </div> -->
 
             <!-- <div>{{startFormat }}</div>
               <div>{{endFormat}}</div> -->

@@ -86,6 +86,7 @@
                   v-model="valueDate"
                   type="date"
                   range
+                  @change="checkDateRange"
                   placeholder="เลือกช่วงเวลา"
                   :disabled-date="(date) => date >= new Date()"
                   value-type="format"
@@ -222,6 +223,7 @@
                   :disabled-date="(date) => date >= new Date()"
                   value-type="format"
                   format="YYYY-MM-DD"
+                  @change="checkDateRange"
                   >{{ valueDate }}</date-picker
                 >
               </section>
@@ -626,6 +628,18 @@ export default {
     },
   },
   methods: {
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+
+      const diffDays = endDate.diff(startDate, 'days');
+console.log('diffDays',diffDays);
+
+      if (diffDays > 1) {
+        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 2 วัน');
+        this.valueDate[0] = startDate.add(2, 'days').format('YYYY-MM-DD');
+      }
+    },
     getColors(posval, neuval, negval) {
       let red = new Color("#ff040469");
       let blue = new Color("#fed16e94");

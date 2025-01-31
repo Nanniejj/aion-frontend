@@ -66,11 +66,11 @@ export default {
 
   methods: {
     getColors(posval, neuval, negval) {
-      let red = new Color("#ff040469");
-      let blue = new Color("#fed16e94");
-      let green = new Color("#27aa13a1");
-      let rb = red.range(blue);
-      let bg = blue.range(green);
+      let red = new Color("#ff040469"); //ลบ
+      let yellow = new Color("#fed16e94");//กลาง
+      let green = new Color("#27aa13a1");//บวก
+      let rb = red.range(yellow);
+      let bg = yellow.range(green);
       function getColor(pos, neg, neu) {
         let percent = (pos + neu / 2) / (pos + neg + neu);
         percent = percent * 2 - 1;

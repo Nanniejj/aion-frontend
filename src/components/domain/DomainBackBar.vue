@@ -22,9 +22,9 @@
             <a>Domain</a>
             <span class="prt"> /</span>
           </div>
-          <div class="leftt rightt hov active" style="cursor: pointer">
+          <div class="leftt rightt hov active pr-5"  style="max-width: 250px;cursor: pointer">
             <a style="margin-left: 18px"
-              ><span>{{ getClickDomain }}</span>
+              ><span class="truncate-text-1">{{ getClickDomain }}</span>
             </a>
           </div>
         </span>
@@ -43,7 +43,7 @@
             :disabled-date="(date) => date >= new Date()"
             value-type="format"
             format="YYYY-MM-DD"
-            @change="selectData()"
+            @change="checkDateRange()"
             id="date-domain"
             >{{ valueDate }}</date-picker
           >
@@ -106,6 +106,19 @@ export default {
     };
   },
   methods: {
+    checkDateRange() {
+      const startDate = moment(this.valueDate[0]);
+      const endDate = moment(this.valueDate[1]);
+
+      const diffDays = endDate.diff(startDate, 'days');
+
+      if (diffDays > 31) {
+        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
+        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+      }else{
+        this.selectData(); // Call your existing method
+      }
+    },
     toReport() {
       window.dispatchEvent(new Event("resize"));
       this.$store.commit("setShowReport", true);

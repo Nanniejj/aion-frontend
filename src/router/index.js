@@ -21,6 +21,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "DomainList" */ "../views/Domain.vue")
   },
+ 
   {
     path: "/settingsearch",
     name: "SearchKeywordSetting",
@@ -355,6 +356,22 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "login" */ "../views/FaceRecognition.vue")
+  },
+  {
+    path: "/charttest",
+    name: "ChartTest",
+    // props: true,
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/ChartTest.vue")
+  },
+  {
+    path: "/spotnewspost",
+    name: "SpotNewsPost",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/SpotNewsPost.vue")
   },
    // {
   //   path: "/home",

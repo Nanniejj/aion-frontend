@@ -142,6 +142,7 @@ export default {
       "instagram",
       "blockdit",
       "tiktok",
+      "threads",
     ];
     this.getData(name, arrdate, social);
   },
