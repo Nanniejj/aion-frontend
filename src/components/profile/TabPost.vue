@@ -320,8 +320,8 @@
           class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
           <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
           <div v-for="(geo, k) in filterNumbers(profilePost.location)" :key="k" class="mr-1 my-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;display: inline-flex;text-align: center;
-    border-radius: 33px;
-">
+                border-radius: 33px;
+            ">
             <span v-if="geo">
               <!-- {{ geo.toString() }} -->
               <span v-if="geo.toString() && geo.toString().length == 2">

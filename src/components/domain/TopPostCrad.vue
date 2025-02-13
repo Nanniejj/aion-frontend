@@ -1,6 +1,8 @@
 <template>
   <div>
+  <!-- {{ getTopPostDomain }} -->
     <div v-if="getTopPostDomain.length">
+      <!-- {{ getTopPostDomain }} -->
       <!-- Highlight -->
       <b-form-checkbox
         switch
@@ -1365,6 +1367,7 @@ export default {
         domain: this.getClickDomain,
       });
     } else {
+      this.$store.commit("setTopPostDomain", "");
       this.$store.dispatch("fetchAllPostPlatform", {
         start_date: this.sdate,
         end_date: this.edate,

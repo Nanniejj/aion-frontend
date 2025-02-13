@@ -932,6 +932,7 @@ export default {
         // ---------------------------------------------------------------------------------------------------------
         if (payload.offset === 0) {
           commit("setAllPostDomain", posts);
+          commit("setTopPostDomain", posts.slice(0, 3));
         } else {
           commit("addAllPost", posts);
         }
