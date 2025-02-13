@@ -25,7 +25,14 @@ margin-right: 0;"
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Monitor</div>
           </div>
-          <div class="icon-monitor2" @click="toMonitor('Report')">
+          <div class="icon-monitor2" @click="$router.push('/politician')"> 
+            <b-iconstack font-scale="2">
+              <b-icon stacked icon="circle"></b-icon>
+              <b-icon stacked icon="person-lines-fill" scale="0.5"></b-icon>
+            </b-iconstack>
+            <div class="d-block h6 text-center my-0">Politician</div>
+          </div>
+          <div class="icon-monitor3" @click="toMonitor('Report')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
               <b-icon
@@ -76,6 +83,10 @@ export default {
   cursor: pointer;
   padding: 6px 10px;
   border-radius: 20px;
+}.icon-monitor3 {
+  cursor: pointer;
+  padding: 6px 15px;
+  border-radius: 20px;
 }
 /* .b-icon.bi:hover {
     display: inline-block;
@@ -92,6 +103,10 @@ export default {
   color: #4c412b;
   font-weight: bold;
 }
+.icon-monitor3:hover .h6 {
+  color: #4c412b;
+  font-weight: bold;
+}
 .icon-monitor1:hover .b-icon.bi {
   color: #4c412b;
   background-color: #fed06ea4;
@@ -101,6 +116,12 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 .icon-monitor2:hover .b-icon.bi {
+  color: #4c412b;
+  background-color: #fed06ea4;
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.icon-monitor3:hover .b-icon.bi {
   color: #4c412b;
   background-color: #fed06ea4;
   border-radius: 50%;

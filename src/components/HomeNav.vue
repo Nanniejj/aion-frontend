@@ -206,6 +206,14 @@
                 id="nav-router"
                 ><center><strong>Report</strong></center></router-link
               >
+              <router-link
+                to="/politician"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive13 }"
+                id="nav-router"
+                ><center><strong>Politician</strong></center></router-link
+              >
+
               <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
             </div>
           </li>
@@ -509,6 +517,16 @@
                   >Monitor</router-link
                 >
               </b-dropdown-item>
+              <b-dropdown-item  to="/politician">
+                <router-link
+                  to="/politician"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive13}"
+                  id="dp-txt"
+                  >Politician</router-link
+                >
+              </b-dropdown-item>
               <b-dropdown-item  to="/feed">
                 <router-link
                   to="/feed"
@@ -713,7 +731,7 @@ export default {
       console.log('this.$route.name',   this.$route.name);
       return (
         this.$route.name === "Monitor" ||
-        this.$route.name === "Feed" ||this.$route.name === "Report"
+        this.$route.name === "Feed" ||this.$route.name === "Report"||this.$route.name === "politician"
       );
     },
     // isActive2() {
@@ -751,6 +769,9 @@ export default {
     },
     isActive12() {
       return this.$route.name === "Report";
+    },
+    isActive13() {
+      return this.$route.name === "Candidates";
     },
   },
   created() {

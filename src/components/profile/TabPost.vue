@@ -1,8 +1,12 @@
 <template>
   <div>
     <!-- {{heightword}} -->
-    <vue-element-loading :active="getLoadPostTab" size="80" background-color="rgba(255, 255, 255, 0.3)"
-      color="#b6ac9a" />
+    <vue-element-loading
+      :active="getLoadPostTab"
+      size="80"
+      background-color="rgba(255, 255, 255, 0.3)"
+      color="#b6ac9a"
+    />
     <div>
       <!-- {{heightword.data[0].Keywords}} -->
       <div class="h5 text-left bold" v-if="api !== 'location'">
@@ -19,12 +23,23 @@
       <b-form-group label="" v-slot="{ ariaDescribedby }">
         <b-row>
           <b-col sm="12" md="6">
-            <b-form-radio-group v-model="selected" :options="options" :aria-describedby="ariaDescribedby"
-              name="radio-inline" class="mt-1 mb-2 text-left ml-2" @change="selectSentiment"></b-form-radio-group>
+            <b-form-radio-group
+              v-model="selected"
+              :options="options"
+              :aria-describedby="ariaDescribedby"
+              name="radio-inline"
+              class="mt-1 mb-2 text-left ml-2"
+              @change="selectSentiment"
+            ></b-form-radio-group>
           </b-col>
           <b-col sm="12" md="6" class="text-right">
-            <b-form-select v-model="selectedSort" :options="optionSort" size="sm" class="mb-2 select-sort"
-              @change="selectSort"></b-form-select>
+            <b-form-select
+              v-model="selectedSort"
+              :options="optionSort"
+              size="sm"
+              class="mb-2 select-sort"
+              @change="selectSort"
+            ></b-form-select>
           </b-col>
         </b-row>
       </b-form-group>
@@ -32,50 +47,115 @@
     <!-- {{getPostAllMonitor}} -->
     <div id="profile-page" v-if="getPostAllMonitor.length != 0">
       <!-- Highlight -->
-      <b-form-checkbox switch size="lg" class="text-right" v-model="checked" v-if="pageCheck == 'Domain'">
-        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
+      <b-form-checkbox
+        switch
+        size="lg"
+        class="text-right"
+        v-model="checked"
+        v-if="pageCheck == 'Domain'"
+      >
+        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2"
+          >Highlight</span
+        >
         <span v-else class="box-hl pl-2 pr-2">Highlight</span>
       </b-form-checkbox>
-      <b-form-checkbox switch size="lg" class="text-right" v-model="checked"
-        v-if="api == 'location' && pageMenu !== 'domain'">
-        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
+      <b-form-checkbox
+        switch
+        size="lg"
+        class="text-right"
+        v-model="checked"
+        v-if="api == 'location' && pageMenu !== 'domain'"
+      >
+        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2"
+          >Highlight</span
+        >
         <span v-else class="box-hl pl-2 pr-2">Highlight</span>
       </b-form-checkbox>
       <!-- {{getPostAllMonitor[1]}} -->
-      <b-card class="mb-4" style="border: none" id="box-content" footer-tag="footer" header-tag="header"
-        v-for="(profilePost, k) in getPostAllMonitor" :key="k">
+      <b-card
+        class="mb-4"
+        style="border: none"
+        id="box-content"
+        footer-tag="footer"
+        header-tag="header"
+        v-for="(profilePost, k) in getPostAllMonitor"
+        :key="k"
+      >
         <template #header v-if="profilePost">
           <b-row>
-            <b-col md="12" v-if="
-              getProfileData && profilePost.account_name && api == 'profile'
-            ">
-              <div v-if="
-                getProfileData.toLowerCase() !==
-                profilePost.account_name.toLowerCase() &&
-                profilePost.source == 'twitter'
-              " class="text-left mb-1 box-retweet">
+            <b-col
+              md="12"
+              v-if="
+                getProfileData && profilePost.account_name && api == 'profile'
+              "
+            >
+              <div
+                v-if="
+                  getProfileData.toLowerCase() !==
+                    profilePost.account_name.toLowerCase() &&
+                    profilePost.source == 'twitter'
+                "
+                class="text-left mb-1 box-retweet"
+              >
                 <i class="fa fa-retweet" /> {{ getProfileData }} Retweet
               </div>
             </b-col>
             <b-col class="align-start col-lg-auto w-auto" sm="auto" lg="auto">
               <span class="left">
                 <span v-if="profilePost.profile_image">
-                  <b-avatar @error="setAltImg" size="47px" :src="profilePost.profile_image" loading="lazy"
-                    class="imgpro" v-if="profilePost.source != 'blockdit'"></b-avatar>
-                  <b-avatar @error="setAltImg" size="47px" :src="profilePost.profile_image" loading="lazy"
-                    v-else></b-avatar>
+                  <b-avatar
+                    @error="setAltImg"
+                    size="47px"
+                    :src="profilePost.profile_image"
+                    loading="lazy"
+                    class="imgpro"
+                    v-if="profilePost.source != 'blockdit'"
+                  ></b-avatar>
+                  <b-avatar
+                    @error="setAltImg"
+                    size="47px"
+                    :src="profilePost.profile_image"
+                    loading="lazy"
+                    v-else
+                  ></b-avatar>
                 </span>
                 <span v-else>
-                  <b-avatar @error="setAltImg" size="47px" :src="profilePost.photos" loading="lazy" class="imgpro"
-                    v-if="profilePost.source == 'tiktok'"></b-avatar>
+                  <b-avatar
+                    @error="setAltImg"
+                    size="47px"
+                    :src="profilePost.photos"
+                    loading="lazy"
+                    class="imgpro"
+                    v-if="profilePost.source == 'tiktok'"
+                  ></b-avatar>
                   <b-avatar size="45px" v-else></b-avatar>
                 </span>
-                <img v-if="profilePost.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
-                <img v-else-if="profilePost.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
-                <img v-if="profilePost.source == 'news'" src="@/assets/News.png" class="social-img" />
+                <img
+                  v-if="profilePost.source == 'twitter'"
+                  src="@/assets/Twitter.png"
+                  class="social-img"
+                />
+                <img
+                  v-else-if="profilePost.source == 'facebook'"
+                  src="@/assets/Facebook.png"
+                  class="social-img"
+                />
+                <img
+                  v-if="profilePost.source == 'news'"
+                  src="@/assets/News.png"
+                  class="social-img"
+                />
                 <span v-if="profilePost.source == 'pantip'">
-                  <img v-if="profilePost.platform == 'dek-d'" src="@/assets/dekd.png" class="social-img" />
-                  <img v-else-if="profilePost.platform == 'lemon8'" src="@/assets/lemon8.png" class="social-img" />
+                  <img
+                    v-if="profilePost.platform == 'dek-d'"
+                    src="@/assets/dekd.png"
+                    class="social-img"
+                  />
+                  <img
+                    v-else-if="profilePost.platform == 'lemon8'"
+                    src="@/assets/lemon8.png"
+                    class="social-img"
+                  />
                   <img v-else src="@/assets/Pantip.png" class="social-img" />
                 </span>
                 <!-- <img
@@ -83,23 +163,54 @@
                   src="@/assets/Pantip.png"
                   class="social-img"
                 /> -->
-                <img v-if="profilePost.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
-                <img v-if="profilePost.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
-                <img v-if="profilePost.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
-                <img v-if="profilePost.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
-                <img v-if="profilePost.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                <img
+                  v-if="profilePost.source == 'instagram'"
+                  src="@/assets/Instagram.png"
+                  class="social-img"
+                />
+                <img
+                  v-if="profilePost.source == 'youtube'"
+                  src="@/assets/Youtube.png"
+                  class="social-img"
+                />
+                <img
+                  v-if="profilePost.source == 'blockdit'"
+                  src="@/assets/Blockdit.png"
+                  class="social-img"
+                />
+                <img
+                  v-if="profilePost.source == 'tiktok'"
+                  src="@/assets/Tiktok.png"
+                  class="social-img"
+                />
+                <img
+                  v-if="profilePost.source == 'threads'"
+                  src="@/assets/Threads.png"
+                  class="social-img"
+                />
               </span>
             </b-col>
             <b-col class="align-start w-auto" sm="8" lg="auto">
               <span id="txt-name">
-                <span><b> {{ profilePost.account_name }} </b></span>
+                <span
+                  ><b> {{ profilePost.account_name }} </b></span
+                >
 
-                <a v-if="
-                  profilePost.url_post &&
-                  profilePost.url_post.includes('mbasic')
-                " v-bind:href="profilePost.url_post.replace('mbasic.', '')" class="fa fa-external-link"
-                  target="_blank"></a>
-                <a v-else v-bind:href="profilePost.url_post" class="fa fa-external-link" target="_blank"></a>
+                <a
+                  v-if="
+                    profilePost.url_post &&
+                      profilePost.url_post.includes('mbasic')
+                  "
+                  v-bind:href="profilePost.url_post.replace('mbasic.', '')"
+                  class="fa fa-external-link"
+                  target="_blank"
+                ></a>
+                <a
+                  v-else
+                  v-bind:href="profilePost.url_post"
+                  class="fa fa-external-link"
+                  target="_blank"
+                ></a>
               </span>
               <div class="font-weight-light small" v-if="profilePost.date">
                 {{ profilePost.date.split("T")[0] }} |
@@ -109,70 +220,220 @@
             <b-col class="text-md-right" sm="12" lg="" md="">
               <div class="mt-1">
                 <img class="images1 d-none" :src="profilePost.snapshot" />
-                <i v-if="profilePost.snapshot" class="fas fa-camera mr-2" @click="onClick(0, [profilePost.snapshot])" />
+                <i
+                  v-if="profilePost.snapshot"
+                  class="fas fa-camera mr-2"
+                  @click="onClick(0, [profilePost.snapshot])"
+                />
                 <span v-if="profilePost.user_sentiment">
-                  <span v-if="
-                    profilePost.user_sentiment[objId] == 0 ||
-                    profilePost.user_sentiment[objId]
-                  ">
-                    <b-button-group size="sm" id="btn-group" v-if="profilePost.user_sentiment[objId] == 1">
-                      <b-button id="btn-pos" :style="btnPosStyle"
-                        @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                  <span
+                    v-if="
+                      profilePost.user_sentiment[objId] == 0 ||
+                        profilePost.user_sentiment[objId]
+                    "
+                  >
+                    <b-button-group
+                      size="sm"
+                      id="btn-group"
+                      v-if="profilePost.user_sentiment[objId] == 1"
+                    >
+                      <b-button
+                        id="btn-pos"
+                        :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, profilePost.uid)"
+                        >Positive</b-button
+                      >
+                      <b-button
+                        id="btn-nue"
+                        @click="getTheSelected(k, 0, profilePost.uid)"
+                        >Neutral</b-button
+                      >
+                      <b-button
+                        id="btn-neg"
+                        @click="getTheSelected(k, -1, profilePost.uid)"
+                        >Negative</b-button
+                      >
                     </b-button-group>
-                    <b-button-group size="sm" id="btn-group" v-if="profilePost.user_sentiment[objId] == 0">
-                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                      <b-button id="btn-nue" :style="btnNeuStyle"
-                        @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    <b-button-group
+                      size="sm"
+                      id="btn-group"
+                      v-if="profilePost.user_sentiment[objId] == 0"
+                    >
+                      <b-button
+                        id="btn-pos"
+                        @click="getTheSelected(k, 1, profilePost.uid)"
+                        >Positive</b-button
+                      >
+                      <b-button
+                        id="btn-nue"
+                        :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, profilePost.uid)"
+                        >Neutral</b-button
+                      >
+                      <b-button
+                        id="btn-neg"
+                        @click="getTheSelected(k, -1, profilePost.uid)"
+                        >Negative</b-button
+                      >
                     </b-button-group>
-                    <b-button-group size="sm" id="btn-group" v-if="profilePost.user_sentiment[objId] == -1">
-                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                      <b-button id="btn-neg" :style="btnNegStyle"
-                        @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    <b-button-group
+                      size="sm"
+                      id="btn-group"
+                      v-if="profilePost.user_sentiment[objId] == -1"
+                    >
+                      <b-button
+                        id="btn-pos"
+                        @click="getTheSelected(k, 1, profilePost.uid)"
+                        >Positive</b-button
+                      >
+                      <b-button
+                        id="btn-nue"
+                        @click="getTheSelected(k, 0, profilePost.uid)"
+                        >Neutral</b-button
+                      >
+                      <b-button
+                        id="btn-neg"
+                        :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, profilePost.uid)"
+                        >Negative</b-button
+                      >
                     </b-button-group>
                   </span>
                   <span v-else>
-                    <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 1">
-                      <b-button id="btn-pos" :style="btnPosStyle"
-                        @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    <b-button-group
+                      size="sm"
+                      id="btn-group"
+                      v-if="profilePost.sentiment == 1"
+                    >
+                      <b-button
+                        id="btn-pos"
+                        :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, profilePost.uid)"
+                        >Positive</b-button
+                      >
+                      <b-button
+                        id="btn-nue"
+                        @click="getTheSelected(k, 0, profilePost.uid)"
+                        >Neutral</b-button
+                      >
+                      <b-button
+                        id="btn-neg"
+                        @click="getTheSelected(k, -1, profilePost.uid)"
+                        >Negative</b-button
+                      >
                     </b-button-group>
-                    <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 0">
-                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                      <b-button id="btn-nue" :style="btnNeuStyle"
-                        @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    <b-button-group
+                      size="sm"
+                      id="btn-group"
+                      v-if="profilePost.sentiment == 0"
+                    >
+                      <b-button
+                        id="btn-pos"
+                        @click="getTheSelected(k, 1, profilePost.uid)"
+                        >Positive</b-button
+                      >
+                      <b-button
+                        id="btn-nue"
+                        :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, profilePost.uid)"
+                        >Neutral</b-button
+                      >
+                      <b-button
+                        id="btn-neg"
+                        @click="getTheSelected(k, -1, profilePost.uid)"
+                        >Negative</b-button
+                      >
                     </b-button-group>
-                    <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == -1">
-                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                      <b-button id="btn-neg" :style="btnNegStyle"
-                        @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    <b-button-group
+                      size="sm"
+                      id="btn-group"
+                      v-if="profilePost.sentiment == -1"
+                    >
+                      <b-button
+                        id="btn-pos"
+                        @click="getTheSelected(k, 1, profilePost.uid)"
+                        >Positive</b-button
+                      >
+                      <b-button
+                        id="btn-nue"
+                        @click="getTheSelected(k, 0, profilePost.uid)"
+                        >Neutral</b-button
+                      >
+                      <b-button
+                        id="btn-neg"
+                        :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, profilePost.uid)"
+                        >Negative</b-button
+                      >
                     </b-button-group>
                   </span>
                 </span>
                 <span v-else>
-                  <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 1">
-                    <b-button id="btn-pos" :style="btnPosStyle"
-                      @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                    <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                    <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                  <b-button-group
+                    size="sm"
+                    id="btn-group"
+                    v-if="profilePost.sentiment == 1"
+                  >
+                    <b-button
+                      id="btn-pos"
+                      :style="btnPosStyle"
+                      @click="getTheSelected(k, 1, profilePost.uid)"
+                      >Positive</b-button
+                    >
+                    <b-button
+                      id="btn-nue"
+                      @click="getTheSelected(k, 0, profilePost.uid)"
+                      >Neutral</b-button
+                    >
+                    <b-button
+                      id="btn-neg"
+                      @click="getTheSelected(k, -1, profilePost.uid)"
+                      >Negative</b-button
+                    >
                   </b-button-group>
-                  <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 0">
-                    <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                    <b-button id="btn-nue" :style="btnNeuStyle"
-                      @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                    <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                  <b-button-group
+                    size="sm"
+                    id="btn-group"
+                    v-if="profilePost.sentiment == 0"
+                  >
+                    <b-button
+                      id="btn-pos"
+                      @click="getTheSelected(k, 1, profilePost.uid)"
+                      >Positive</b-button
+                    >
+                    <b-button
+                      id="btn-nue"
+                      :style="btnNeuStyle"
+                      @click="getTheSelected(k, 0, profilePost.uid)"
+                      >Neutral</b-button
+                    >
+                    <b-button
+                      id="btn-neg"
+                      @click="getTheSelected(k, -1, profilePost.uid)"
+                      >Negative</b-button
+                    >
                   </b-button-group>
-                  <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == -1">
-                    <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
-                    <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
-                    <b-button id="btn-neg" :style="btnNegStyle"
-                      @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                  <b-button-group
+                    size="sm"
+                    id="btn-group"
+                    v-if="profilePost.sentiment == -1"
+                  >
+                    <b-button
+                      id="btn-pos"
+                      @click="getTheSelected(k, 1, profilePost.uid)"
+                      >Positive</b-button
+                    >
+                    <b-button
+                      id="btn-nue"
+                      @click="getTheSelected(k, 0, profilePost.uid)"
+                      >Neutral</b-button
+                    >
+                    <b-button
+                      id="btn-neg"
+                      :style="btnNegStyle"
+                      @click="getTheSelected(k, -1, profilePost.uid)"
+                      >Negative</b-button
+                    >
                   </b-button-group>
                 </span>
               </div>
@@ -186,38 +447,73 @@
               {{ profilePost.title }}
             </div>
             <div v-if="pageCheck == 'Domain'" class="box-contents">
-              <Highlighter class="my-highlight" :style="{
-                textAlign: 'justify',
-                fontSize: '17px',
-                padding: '10px',
-              }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
-                :textToHighlight="profilePost.read
-                  ? profilePost.full_text.slice(0, 450)
-                  : profilePost.full_text
-                  " />
-              <div v-if="profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
-                id="readmore">
-                <span v-if="profilePost.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
+              <Highlighter
+                class="my-highlight"
+                :style="{
+                  textAlign: 'justify',
+                  fontSize: '17px',
+                  padding: '10px',
+                }"
+                highlightClassName="highlight2"
+                :searchWords="highlightText(profilePost.full_text)"
+                :autoEscape="true"
+                :textToHighlight="
+                  profilePost.read
+                    ? profilePost.full_text.slice(0, 450)
+                    : profilePost.full_text
+                "
+              />
+              <div
+                v-if="profilePost.full_text.length > 450"
+                @click="profilePost.read = !profilePost.read"
+                id="readmore"
+              >
+                <span v-if="profilePost.read == true">... อ่านต่อ</span
+                ><span v-else>ย่อบทความ</span>
               </div>
             </div>
-            <div v-else-if="api == 'location' && pageMenu !== 'domain'" class="box-contents">
-              <Highlighter class="my-highlight" :style="{
-                textAlign: 'left',
-                fontSize: '17px',
-                padding: '10px',
-              }" highlightClassName="highlight2" :searchWords="highlightText2" :autoEscape="true" :textToHighlight="profilePost.read
-                ? profilePost.full_text.slice(0, 450)
-                : profilePost.full_text
-                " />
-              <div v-if="profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
-                id="readmore">
-                <span v-if="profilePost.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
+            <div
+              v-else-if="api == 'location' && pageMenu !== 'domain'"
+              class="box-contents"
+            >
+              <Highlighter
+                class="my-highlight"
+                :style="{
+                  textAlign: 'left',
+                  fontSize: '17px',
+                  padding: '10px',
+                }"
+                highlightClassName="highlight2"
+                :searchWords="highlightText2"
+                :autoEscape="true"
+                :textToHighlight="
+                  profilePost.read
+                    ? profilePost.full_text.slice(0, 450)
+                    : profilePost.full_text
+                "
+              />
+              <div
+                v-if="profilePost.full_text.length > 450"
+                @click="profilePost.read = !profilePost.read"
+                id="readmore"
+              >
+                <span v-if="profilePost.read == true">... อ่านต่อ</span
+                ><span v-else>ย่อบทความ</span>
               </div>
             </div>
             <div v-else>
-              <div id="txt-cmt" class="font-weight-normal" v-if="profilePost.full_text">
-                <read-more more-str="อ่านต่อ" :text="profilePost.full_text" link="#" less-str="ย่อบทความ"
-                  :max-chars="450"></read-more>
+              <div
+                id="txt-cmt"
+                class="font-weight-normal"
+                v-if="profilePost.full_text"
+              >
+                <read-more
+                  more-str="อ่านต่อ"
+                  :text="profilePost.full_text"
+                  link="#"
+                  less-str="ย่อบทความ"
+                  :max-chars="450"
+                ></read-more>
                 <!-- {{ profilePost.full_text }} -->
               </div>
             </div>
@@ -225,7 +521,11 @@
           <b-col>
             <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
               <a v-bind:href="profilePost.url_post" target="_blank">
-                <lite-tiktok :videoid="profilePost.uid" style=" pointer-events: none; "></lite-tiktok></a>
+                <lite-tiktok
+                  :videoid="profilePost.uid"
+                  style=" pointer-events: none; "
+                ></lite-tiktok
+              ></a>
 
               <!-- <div style="height: 550px;overflow: hidden;" class="vdo-tt">
         <iframe  style="height: 900px; border: 0; vertical-align: top; overflow: hidden;" src="https://tiktok.com/embed/7362555837165964545" ></iframe>
@@ -238,51 +538,108 @@
                 allowfullscreen
               ></iframe> -->
             </div>
-            <div id="photo-grid" v-if="profilePost.photos && profilePost.source !== 'tiktok'" class="mb-4">
+            <div
+              id="photo-grid"
+              v-if="profilePost.photos && profilePost.source !== 'tiktok'"
+              class="mb-4"
+            >
               <!-- {{typeof(profilePost.photos)}} -->
-              <div v-if="
-                profilePost.photos && typeof profilePost.photos == 'string'
-              ">
-                <img class="images1" :src="profilePost.photos" @click="onClick(0, [profilePost.photos])"
-                  onerror="this.style.display='none'" />
+              <div
+                v-if="
+                  profilePost.photos && typeof profilePost.photos == 'string'
+                "
+              >
+                <img
+                  class="images1"
+                  :src="profilePost.photos"
+                  @click="onClick(0, [profilePost.photos])"
+                  onerror="this.style.display='none'"
+                />
               </div>
               <div v-else>
                 <div v-if="profilePost.photos.length == 1" class="p-20">
-                  <img class="d-none images1" v-for="(image, i) in profilePost.photos" :src="profilePost.photos"
-                    @click="onClick(i, profilePost.photos)" :key="i" />
-                  <img class="images1" v-for="(image, i) in profilePost.photos" :src="profilePost.photos"
-                    @click="onClick(i, profilePost.photos)" :key="`A-${i}`" onerror="this.style.display='none'" />
+                  <img
+                    class="d-none images1"
+                    v-for="(image, i) in profilePost.photos"
+                    :src="profilePost.photos"
+                    @click="onClick(i, profilePost.photos)"
+                    :key="i"
+                  />
+                  <img
+                    class="images1"
+                    v-for="(image, i) in profilePost.photos"
+                    :src="image"
+                    @click="onClick(i, profilePost.photos)"
+                    :key="`A-${i}`"
+                    onerror="this.style.display='none'"
+                  />
                 </div>
                 <div v-else-if="profilePost.photos.length == 2" class="p-20">
-                  <img class="images2" v-for="(image, i) in profilePost.photos" :src="image"
-                    @click="onClick(i, profilePost.photos)" :key="`ฺB-${i}`" onerror="this.style.display='none'" />
+                  <img
+                    class="images2"
+                    v-for="(image, i) in profilePost.photos"
+                    :src="image"
+                    @click="onClick(i, profilePost.photos)"
+                    :key="`ฺB-${i}`"
+                    onerror="this.style.display='none'"
+                  />
                 </div>
                 <div v-else-if="profilePost.photos.length == 3" class="p-20">
-                  <img class="images3" v-for="(image, i) in profilePost.photos" :src="image"
-                    @click="onClick(i, profilePost.photos)" :key="`C-${i}`" onerror="this.style.display='none'" />
+                  <img
+                    class="images3"
+                    v-for="(image, i) in profilePost.photos"
+                    :src="image"
+                    @click="onClick(i, profilePost.photos)"
+                    :key="`C-${i}`"
+                    onerror="this.style.display='none'"
+                  />
                 </div>
                 <div v-else class="p-20 col2">
-                  <img class="images4" v-for="(image, i) in profilePost.photos.slice(0, 4)" :src="image"
-                    @click="onClick(i, profilePost.photos)" :key="`D-${i}`" onerror="this.style.display='none'" />
-                  <div v-if="profilePost.photos.length > 4" id="picmore" @click="onClick(3, profilePost.photos)"
-                    onerror="this.style.display='none'">
+                  <img
+                    class="images4"
+                    v-for="(image, i) in profilePost.photos.slice(0, 4)"
+                    :src="image"
+                    @click="onClick(i, profilePost.photos)"
+                    :key="`D-${i}`"
+                    onerror="this.style.display='none'"
+                  />
+                  <div
+                    v-if="profilePost.photos.length > 4"
+                    id="picmore"
+                    @click="onClick(3, profilePost.photos)"
+                    onerror="this.style.display='none'"
+                  >
                     +{{ profilePost.photos.length - 4 }}
                   </div>
                 </div>
               </div>
-              <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
+              <vue-gallery-slideshow
+                :images="dataPhoto"
+                :index="index"
+                @close="index = null"
+              ></vue-gallery-slideshow>
             </div>
           </b-col>
         </b-row>
-        <div class="text-left ai-box mt-2" v-if="profilePost && profilePost.ocr && username == 'adminatapy'"
-          style="font-size: 15px;font-weight: 500;">
+       
+        <div
+          class="text-left ai-box mt-2"
+          v-if="profilePost && profilePost.ocr && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
           <div v-for="(text, idx) in profilePost.ocr">
             <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
             <div v-if="text.text_sort && text.text_sort.length">
-              <b-avatar size="18px" style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx + 1 }}
+              <b-avatar
+                size="18px"
+                style="font-size: 12px;background-color:#8b8787;"
+                class="mr-1"
+                >{{ idx + 1 }}
               </b-avatar>
               <!-- <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar> -->
-              <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
+              <span
+                style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;"
+              >
               </span>
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text.text_sort[0] }}
@@ -290,38 +647,76 @@
             <div v-if="text.face">
               <span v-for="(face, idx) in text.face">
                 <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
-                  <span style="background: #e5e5e5;
+                  <span
+                    style="background: #e5e5e5;
     padding: 0px 6px;
-    border-radius: 13px;">
+    border-radius: 13px;"
+                  >
                     <b-icon icon="person-bounding-box" scale="1"></b-icon>
                     {{ face.person_name.replace("_", " ") }}
-                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
-                      parseFloat((face.confidence * 100).toFixed(2))
-                      }}%)</span></span></span>
+                    <span
+                      v-b-tooltip.hover
+                      :title="'ค่า confidence'"
+                      class="small"
+                      >({{
+                        parseFloat((face.confidence * 100).toFixed(2))
+                      }}%)</span
+                    ></span
+                  ></span
+                >
               </span>
             </div>
           </div>
         </div>
 
         <div class="tag-domain text-left" v-if="$route.name == 'Profile' || $route.name == 'Dashboard'">
-          <span style="font-size: small;" v-if="
-            filterDomain(profilePost.domain) &&
-            filterDomain(profilePost.domain).length
-          ">domain tags :
+          <span
+            style="font-size: small;"
+            v-if="
+              filterDomain(profilePost.domain) &&
+                filterDomain(profilePost.domain).length
+            "
+            >domain tags :
           </span>
-          <span v-for="(name, i) in filterDomain(profilePost.domain)" :key="i" class="mx-1 py-2">
-            <b-badge pill variant="light" style="color: #2c3e50;
-             background-color: #ddddddad !important;">
+          <span
+            v-for="(name, i) in filterDomain(profilePost.domain)"
+            :key="i"
+            class="mx-1 py-2"
+          >
+            <b-badge
+              pill
+              variant="light"
+              style="color: #2c3e50;
+             background-color: #ddddddad !important;"
+            >
               {{ name }}
-            </b-badge></span>
+            </b-badge></span
+          >
         </div>
 
-        <div v-if="profilePost && profilePost.location && profilePost.location.length && username == 'adminatapy'"
-          class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
-          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
-          <div v-for="(geo, k) in filterNumbers(profilePost.location)" :key="k" class="mr-1 my-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;display: inline-flex;text-align: center;
+        <div
+          v-if="
+            profilePost &&
+              profilePost.location &&
+              profilePost.location.length &&
+              username == 'adminatapy'
+          "
+          class="text-left ai-box mt-3 text-small "
+          style="font-size: 13px;font-weight: 500; color: #2c3e50;"
+        >
+          <i
+            class="fa fa-map-marker mr-1"
+            aria-hidden="true"
+            style="font-size: 15px;"
+          ></i>
+          <div
+            v-for="(geo, k) in filterNumbers(profilePost.location)"
+            :key="k"
+            class="mr-1 my-1"
+            style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;display: inline-flex;text-align: center;
     border-radius: 33px;
-">
+"
+          >
             <span v-if="geo">
               <!-- {{ geo.toString() }} -->
               <span v-if="geo.toString() && geo.toString().length == 2">
@@ -329,44 +724,94 @@
               </span>
               <span v-if="geo.toString() && geo.toString().length == 4">
                 {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
-                {{ geo.toString().substring(0, 2) == '10' ? ' เขต' + matchGeocode(geo).name_th : ' อ.' +
-                  matchGeocode(geo).name_th }}
+                {{
+                  geo.toString().substring(0, 2) == "10"
+                    ? " เขต" + matchGeocode(geo).name_th
+                    : " อ." + matchGeocode(geo).name_th
+                }}
               </span>
               <span v-if="geo.toString() && geo.toString().length == 6">
                 {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
-                {{ geo.toString().substring(0, 2) == '10' ? ' เขต' + matchGeocode(geo.toString().substring(0, 4)).name_th
-                  : ' อ.'
-                  +
-                  matchGeocode(geo.toString().substring(0, 4)).name_th }}
-                {{ geo.toString().substring(0, 2) == '10' ? 'แขวง' + matchGeocode(geo).name_th : 'ต.' +
-                  matchGeocode(geo).name_th }}
-              </span></span>
+                {{
+                  geo.toString().substring(0, 2) == "10"
+                    ? " เขต" +
+                      matchGeocode(geo.toString().substring(0, 4)).name_th
+                    : " อ." +
+                      matchGeocode(geo.toString().substring(0, 4)).name_th
+                }}
+                {{
+                  geo.toString().substring(0, 2) == "10"
+                    ? "แขวง" + matchGeocode(geo).name_th
+                    : "ต." + matchGeocode(geo).name_th
+                }}
+              </span></span
+            >
+          </div>
+        </div>
+         <div
+          class="text-left ai-box mt-2"
+          v-if="
+            profilePost && profilePost.face_detect && username == 'adminatapy'
+          "
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-if="profilePost.face_detect&&profilePost.person_name.length">
+            <span v-for="(face, idx) in profilePost.person_name">
+              <span class="mr-2 mt-1" v-if="face">
+                <span
+                  style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                >
+                  <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                  {{ face }}
+                </span></span
+              >
+            </span>
           </div>
         </div>
         <template #footer>
           <div class="text-left md-font">
-            <span v-b-tooltip.hover title="Engagement" v-if="profilePost.source == 'pantip'">
+            <span
+              v-b-tooltip.hover
+              title="Engagement"
+              v-if="profilePost.source == 'pantip'"
+            >
               <span style="font-size:14px;">Engages </span>
               {{
                 (profilePost.engagement + profilePost.comments_count)
-                | numFormat
+                  | numFormat
               }}
             </span>
 
             <span v-b-tooltip.hover title="Engagement" v-else>
-              <span style="font-size:14px;">Engages </span>{{ profilePost.engagement | numFormat }}
+              <span style="font-size:14px;">Engages </span
+              >{{ profilePost.engagement | numFormat }}
             </span>
 
-            <span v-b-toggle="'btn' + page + k" id="box-reaction" v-b-tooltip.hover title="Comments">
-              <i class="fas fa-comment" :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer">
+            <span
+              v-b-toggle="'btn' + page + k"
+              id="box-reaction"
+              v-b-tooltip.hover
+              title="Comments"
+            >
+              <i
+                class="fas fa-comment"
+                :aria-expanded="visible ? 'true' : 'false'"
+                style="cursor: pointer"
+              >
               </i>
-              <span class="md-font" v-if="
-                profilePost.comments_count && profilePost.source == 'news'
-              ">
+              <span
+                class="md-font"
+                v-if="
+                  profilePost.comments_count && profilePost.source == 'news'
+                "
+              >
                 {{ profilePost.comments.comments.length | numFormat }}&nbsp;
               </span>
               <span v-else class="md-font">
-                {{ profilePost.comments_count | numFormat }}&nbsp;</span>
+                {{ profilePost.comments_count | numFormat }}&nbsp;</span
+              >
               <!-- <span  class="md-font" v-if="profilePost.comments_count==''&&profilePost.source == 'twitter'"> 0 </span> -->
             </span>
 
@@ -399,40 +844,67 @@
             </span> -->
 
             <span v-if="profilePost.source == 'facebook'">
-              <span v-if="
-                profilePost.likes_count !== '0' && profilePost.likes_count
-              " id="box-reaction" v-b-tooltip.hover title="Like">
+              <span
+                v-if="
+                  profilePost.likes_count !== '0' && profilePost.likes_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="Like"
+              >
                 <i class="far fa-thumbs-up" />
                 {{ profilePost.likes_count | numFormat }}
               </span>
             </span>
             <!-- twitter -->
-            <span v-if="
-              profilePost.source !== 'facebook' &&
-              profilePost.source !== 'youtube'
-            ">
-              <span v-if="
-                profilePost.retweets_count !== '0' &&
-                profilePost.retweets_count
-              " id="box-reaction" v-b-tooltip.hover title="Retweet">
+            <span
+              v-if="
+                profilePost.source !== 'facebook' &&
+                  profilePost.source !== 'youtube'
+              "
+            >
+              <span
+                v-if="
+                  profilePost.retweets_count !== '0' &&
+                    profilePost.retweets_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="Retweet"
+              >
                 <i class="fal fa-retweet"></i>
                 {{ profilePost.retweets_count | numFormat }}
               </span>
-              <span v-if="
-                profilePost.likes_count !== '0' && profilePost.likes_count
-              " id="box-reaction" v-b-tooltip.hover title="Like">
+              <span
+                v-if="
+                  profilePost.likes_count !== '0' && profilePost.likes_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="Like"
+              >
                 <i class="fa fa-heart"></i>
                 {{ profilePost.likes_count | numFormat }}
               </span>
-              <span v-if="
-                profilePost.shares_count !== '0' && profilePost.shares_count
-              " id="box-reaction" v-b-tooltip.hover title="Share">
+              <span
+                v-if="
+                  profilePost.shares_count !== '0' && profilePost.shares_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="Share"
+              >
                 <i class="fa fa-share"></i>
                 {{ profilePost.shares_count | numFormat }}
               </span>
-              <span v-if="
-                profilePost.views_count !== '0' && profilePost.views_count
-              " id="box-reaction" v-b-tooltip.hover title="View">
+              <span
+                v-if="
+                  profilePost.views_count !== '0' && profilePost.views_count
+                "
+                id="box-reaction"
+                v-b-tooltip.hover
+                title="View"
+              >
                 <i class="fas fa-eye"></i>
                 {{ profilePost.views_count | numFormat }}
               </span>
@@ -456,8 +928,12 @@
               <span v-if="profilePost.reaction != ''">
                 <!-- pt -->
                 <span v-if="profilePost.reaction.Good">
-                  <span v-if="profilePost.reaction.Good !== '0'" id="box-reaction" v-b-tooltip.hover
-                    title="Good Content">
+                  <span
+                    v-if="profilePost.reaction.Good !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Good Content"
+                  >
                     <i class="fa fa-plus"></i>
                     <span class="md-font">
                       {{ profilePost.reaction.Good | numFormat }}
@@ -465,9 +941,21 @@
                   </span>
                 </span>
                 <span v-if="profilePost.reaction.Horror">
-                  <span v-if="profilePost.reaction.Horror !== '0'" id="box-reaction" v-b-tooltip.hover title="Horror">
-                    <img v-if="profilePost.reaction.Horror !== '0'" src="@/assets/horror.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Horror !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Horror !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Horror"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Horror !== '0'"
+                      src="@/assets/horror.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Horror !== '0'"
+                    >
                       {{ profilePost.reaction.Horror | numFormat }}
                     </span>
                   </span>
@@ -476,113 +964,256 @@
                 <!-- fb -->
 
                 <span v-if="profilePost.reaction.Likes">
-                  <span v-if="profilePost.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                    <img v-if="profilePost.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Likes !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Likes !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Like"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Likes !== '0'"
+                      src="@/assets/fb_like.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Likes !== '0'"
+                    >
                       {{ profilePost.reaction.Likes | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.like">
-                  <span v-if="profilePost.reaction.like !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                    <img v-if="profilePost.reaction.like !== '0'" src="@/assets/fb_like.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.like !== '0'">
+                  <span
+                    v-if="profilePost.reaction.like !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Like"
+                  >
+                    <img
+                      v-if="profilePost.reaction.like !== '0'"
+                      src="@/assets/fb_like.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.like !== '0'"
+                    >
                       {{ profilePost.reaction.like | numFormat }}
                     </span>
-                  </span></span>
+                  </span></span
+                >
 
                 <span v-if="profilePost.reaction.share">
-                  <span v-if="profilePost.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
-                    <i class="fa fa-share" v-if="profilePost.reaction.share !== '0'"></i>
-                    <span class="md-font" v-if="profilePost.reaction.share !== '0'">
+                  <span
+                    v-if="profilePost.reaction.share !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Share"
+                  >
+                    <i
+                      class="fa fa-share"
+                      v-if="profilePost.reaction.share !== '0'"
+                    ></i>
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.share !== '0'"
+                    >
                       {{ profilePost.reaction.share | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.shares">
-                  <span v-if="profilePost.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
-                    <i class="fa fa-share" v-if="profilePost.reaction.shares !== '0'"></i>
-                    <span class="md-font" v-if="profilePost.reaction.shares !== '0'">
+                  <span
+                    v-if="profilePost.reaction.shares !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Share"
+                  >
+                    <i
+                      class="fa fa-share"
+                      v-if="profilePost.reaction.shares !== '0'"
+                    ></i>
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.shares !== '0'"
+                    >
                       {{ profilePost.reaction.shares | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.Love">
-                  <span v-if="profilePost.reaction.Love !== '0'" id="box-reaction" v-b-tooltip.hover title="Love">
-                    <img v-if="profilePost.reaction.Love !== '0'" src="@/assets/love.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Love !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Love !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Love"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Love !== '0'"
+                      src="@/assets/love.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Love !== '0'"
+                    >
                       {{ profilePost.reaction.Love | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.Wow">
-                  <span v-if="profilePost.reaction.Wow !== '0'" id="box-reaction" v-b-tooltip.hover title="Wow">
-                    <img v-if="profilePost.reaction.Wow !== '0'" src="@/assets/wow.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Wow !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Wow !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Wow"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Wow !== '0'"
+                      src="@/assets/wow.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Wow !== '0'"
+                    >
                       {{ profilePost.reaction.Wow | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.Haha">
-                  <span v-if="profilePost.reaction.Haha !== '0'" id="box-reaction" v-b-tooltip.hover title="Haha">
-                    <img v-if="profilePost.reaction.Haha !== '0'" src="@/assets/haha.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Haha !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Haha !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Haha"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Haha !== '0'"
+                      src="@/assets/haha.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Haha !== '0'"
+                    >
                       {{ profilePost.reaction.Haha | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.Sad">
-                  <span v-if="profilePost.reaction.Sad !== '0'" id="box-reaction" v-b-tooltip.hover title="Sad">
-                    <img v-if="profilePost.reaction.Sad !== '0'" src="@/assets/sad.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Sad !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Sad !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Sad"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Sad !== '0'"
+                      src="@/assets/sad.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Sad !== '0'"
+                    >
                       {{ profilePost.reaction.Sad | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.Angry">
-                  <span v-if="profilePost.reaction.Angry !== '0'" id="box-reaction" v-b-tooltip.hover title="Angry">
-                    <img v-if="profilePost.reaction.Angry !== '0'" src="@/assets/angry.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Angry !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Angry !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Angry"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Angry !== '0'"
+                      src="@/assets/angry.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Angry !== '0'"
+                    >
                       {{ profilePost.reaction.Angry | numFormat }}
                     </span>
                   </span>
                 </span>
                 <span v-if="profilePost.reaction.Hug">
-                  <span v-if="profilePost.reaction.Hug !== '0'" id="box-reaction" v-b-tooltip.hover title="Hug">
-                    <img v-if="profilePost.reaction.Hug !== '0'" src="@/assets/hug.png" id="emoji" />
-                    <span class="md-font" v-if="profilePost.reaction.Hug !== '0'">
+                  <span
+                    v-if="profilePost.reaction.Hug !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Hug"
+                  >
+                    <img
+                      v-if="profilePost.reaction.Hug !== '0'"
+                      src="@/assets/hug.png"
+                      id="emoji"
+                    />
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.Hug !== '0'"
+                    >
                       {{ profilePost.reaction.Hug | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <!-- yt -->
-                <span v-if="profilePost.reaction.view_count" v-b-tooltip.hover title="Views">
-                  <span v-if="profilePost.reaction.view_count !== ''" id="box-reaction"><i class="fas fa-eye"></i>
-                    <span class="md-font" v-if="profilePost.reaction.view_count !== ''">
+                <span
+                  v-if="profilePost.reaction.view_count"
+                  v-b-tooltip.hover
+                  title="Views"
+                >
+                  <span
+                    v-if="profilePost.reaction.view_count !== ''"
+                    id="box-reaction"
+                    ><i class="fas fa-eye"></i>
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.view_count !== ''"
+                    >
                       {{ profilePost.reaction.view_count | numFormat }}
                     </span>
                   </span>
                 </span>
                 <span v-if="profilePost.reaction.likes">
-                  <span v-if="profilePost.reaction.likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                    <img v-if="profilePost.reaction.likes !== '0'" /><i class="far fa-thumbs-up"></i>
-                    <span class="md-font" v-if="profilePost.reaction.likes !== '0'">
+                  <span
+                    v-if="profilePost.reaction.likes !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Like"
+                  >
+                    <img v-if="profilePost.reaction.likes !== '0'" /><i
+                      class="far fa-thumbs-up"
+                    ></i>
+                    <span
+                      class="md-font"
+                      v-if="profilePost.reaction.likes !== '0'"
+                    >
                       {{ profilePost.reaction.likes | numFormat }}
                     </span>
                   </span>
                 </span>
 
                 <span v-if="profilePost.reaction.dislikes">
-                  <span v-if="profilePost.reaction.dislikes !== '0'" id="box-reaction" v-b-tooltip.hover
-                    title="Dislike">
+                  <span
+                    v-if="profilePost.reaction.dislikes !== '0'"
+                    id="box-reaction"
+                    v-b-tooltip.hover
+                    title="Dislike"
+                  >
                     <i class="far fa-thumbs-down"></i>
                     <span class="md-font">
                       {{ profilePost.reaction.dislikes | numFormat }}
@@ -595,13 +1226,24 @@
           </div>
           <!-- comment content -->
           <!-- {{ profilePost.comments.length }} -->
-          <b-collapse :id="'btn' + page + k" class="mt-2" v-if="profilePost.comments && profilePost.comments.length">
+          <b-collapse
+            :id="'btn' + page + k"
+            class="mt-2"
+            v-if="profilePost.comments && profilePost.comments.length"
+          >
             <b-card id="cmt-card" class="text-left">
               <span v-if="profilePost.source == 'news' && profilePost.comments">
-                <div v-for="(cmtn, inx) in profilePost.comments.comments" :key="inx">
+                <div
+                  v-for="(cmtn, inx) in profilePost.comments.comments"
+                  :key="inx"
+                >
                   <b-row>
                     <b-col lg="1">
-                      <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                      <img
+                        :src="cmtn.pictureUrl"
+                        id="img-cmt"
+                        @error="setAltImg"
+                      />
                     </b-col>
                     <b-col lg="11">
                       <div>
@@ -623,32 +1265,53 @@
                 <div v-for="(cmt, i) in profilePost.comments" :key="i">
                   <b-row>
                     <b-col lg="1">
-                      <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
-                        v-if="profilePost.source == 'youtube'">
-                        <img :src="cmt.photo" id="img-cmt" /></a>
+                      <a
+                        :href="'https://www.youtube.com/' + cmt.author_link"
+                        target="_blank"
+                        v-if="profilePost.source == 'youtube'"
+                      >
+                        <img :src="cmt.photo" id="img-cmt"
+                      /></a>
                       <a :href="cmt.url" target="_blank" v-else>
-                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" /></a>
+                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url"
+                      /></a>
 
                       <!-- <img v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                       <span> </span>
                     </b-col>
                     <b-col lg="11">
                       <div>
-                        <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
-                          v-if="profilePost.source == 'youtube'">
-                          <span v-if="profilePost.source == 'youtube'" class="bold">
-                            {{ cmt.author }}</span></a>
+                        <a
+                          :href="'https://www.youtube.com/' + cmt.author_link"
+                          target="_blank"
+                          v-if="profilePost.source == 'youtube'"
+                        >
+                          <span
+                            v-if="profilePost.source == 'youtube'"
+                            class="bold"
+                          >
+                            {{ cmt.author }}</span
+                          ></a
+                        >
                         <a :href="cmt.url" target="_blank" v-else>
-                          <span class="bold"> {{ cmt.username }}</span></a>
-                        <span v-if="profilePost.source == 'youtube' && cmt.time" class="font-weight-light"
-                          id="cmt-time">{{ cmt.time.split("T")[0] }} |
-                          {{ cmt.time.split("T")[1] }}</span>
+                          <span class="bold"> {{ cmt.username }}</span></a
+                        >
+                        <span
+                          v-if="profilePost.source == 'youtube' && cmt.time"
+                          class="font-weight-light"
+                          id="cmt-time"
+                          >{{ cmt.time.split("T")[0] }} |
+                          {{ cmt.time.split("T")[1] }}</span
+                        >
                         <span v-else class="font-weight-light" id="cmt-time">{{
                           cmt.time
                         }}</span>
                       </div>
 
-                      <div v-if="profilePost.source == 'youtube'" class="font-weight-light">
+                      <div
+                        v-if="profilePost.source == 'youtube'"
+                        class="font-weight-light"
+                      >
                         {{ cmt.text }}
                       </div>
                       <div v-else class="font-weight-light">
@@ -663,8 +1326,12 @@
           </b-collapse>
         </template>
       </b-card>
-      <infinite-loading v-if="isInfinite" spinner="spiral" :identifier="infiniteId"
-        @infinite="infiniteScroll"></infinite-loading>
+      <infinite-loading
+        v-if="isInfinite"
+        spinner="spiral"
+        :identifier="infiniteId"
+        @infinite="infiniteScroll"
+      ></infinite-loading>
     </div>
 
     <div v-else>
@@ -745,21 +1412,21 @@ export default {
       this.isInfinite = true;
       this.infiniteScroll();
     },
-    dh: function (newVal, oldVal) {
+    dh: function(newVal, oldVal) {
       // watch it
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
-    statusLocat: function (newVal, oldVal) {
+    statusLocat: function(newVal, oldVal) {
       // watch it
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
-    changwats: function (newVal, oldVal) {
+    changwats: function(newVal, oldVal) {
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
@@ -770,26 +1437,26 @@ export default {
       this.isInfinite = true;
       this.infiniteScroll();
     },
-    amphoes: function (newVal, oldVal) {
+    amphoes: function(newVal, oldVal) {
       console.log("Prop changed amphoes: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
     },
-    users: function (newVal, oldVal) {
+    users: function(newVal, oldVal) {
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
     },
-    getSocialDomain: function (newVal, oldVal) {
+    getSocialDomain: function(newVal, oldVal) {
       // watch it
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
-    getArrDate: function () {
+    getArrDate: function() {
       this.page = 0;
       this.selectedSort = "";
       this.selected = "";
@@ -953,11 +1620,11 @@ export default {
 
       // กรองข้อมูลตามความยาว geocode
       if (geocodeStr.length === 2) {
-        found = provinces[geocodeStr]
+        found = provinces[geocodeStr];
       } else if (geocodeStr.length === 4) {
-        found = districts[geocodeStr]
+        found = districts[geocodeStr];
       } else if (geocodeStr.length === 6) {
-        found = subdistricts[geocodeStr]
+        found = subdistricts[geocodeStr];
       }
 
       // Return the found location or a fallback message
@@ -977,7 +1644,7 @@ export default {
           word.push(this.domainKeyword);
         }
         if (this.andkey.length) {
-          this.andkey.forEach(function (key) {
+          this.andkey.forEach(function(key) {
             // console.log("keyyyy", k, key, key.length);
             if (
               key.length == 2 &&
@@ -1043,7 +1710,7 @@ export default {
             },
           };
           this.axios(config)
-            .then(function (response) {
+            .then(function(response) {
               console.log(response);
               if (_this.selected == "") {
                 if (v == 1) {
@@ -1065,7 +1732,7 @@ export default {
                 }
               }
             })
-            .catch(function (response) {
+            .catch(function(response) {
               console.log("errrrrrr", response.message);
             });
           // if (v != this.getPostAllMonitor[k].sentiment) {
@@ -1356,10 +2023,8 @@ export default {
         if (this.pageMenu == "domain") {
           if (this.menu == "platform") {
             checkApi = "fetchAllPostPlatform";
-
-          }else{
+          } else {
             checkApi = "fetchAllPostDomain";
-
           }
         } else {
           checkApi = "fetchLocation";
@@ -1428,7 +2093,7 @@ export default {
       await this.axios
         .get(
           "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-          this.getClickDomain
+            this.getClickDomain
         )
         .then((response) => (this.arrword = response.data[0]));
 
@@ -1655,7 +2320,7 @@ iframe html {
   width: 80%;
 }
 
-.tab-content>.active {
+.tab-content > .active {
   display: block;
   height: 80vh !important;
   overflow: auto !important;
@@ -1690,7 +2355,7 @@ a {
   background: #f1f1f1;
 }
 
-#content>div>div>div.col-lg-9 {
+#content > div > div > div.col-lg-9 {
   overflow: auto;
 }
 

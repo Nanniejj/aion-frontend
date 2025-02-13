@@ -215,10 +215,7 @@
                 >
 
                 <a
-                  v-if="
-                    datas.url_post &&
-                    datas.url_post.includes('mbasic')
-                  "
+                  v-if="datas.url_post && datas.url_post.includes('mbasic')"
                   v-bind:href="datas.url_post.replace('mbasic.', '')"
                   class="fa fa-external-link"
                   target="_blank"
@@ -493,14 +490,13 @@
             </b-card-body>
           </b-col>
           <b-col>
-            <div v-if="datas.source == 'tiktok'&&datas.uid">
+            <div v-if="datas.source == 'tiktok' && datas.uid">
               <a v-bind:href="datas.url_post" target="_blank">
-                    <lite-tiktok
-                      :videoid="datas.uid"
-                      style=" pointer-events: none; "
-                    ></lite-tiktok
-                  ></a>
-
+                <lite-tiktok
+                  :videoid="datas.uid"
+                  style=" pointer-events: none; "
+                ></lite-tiktok
+              ></a>
 
               <!-- <iframe
                 width="auto"
@@ -595,13 +591,18 @@
         </b-row>
         <div
           class="text-left ai-box mt-2"
-          v-if="datas && datas.ocr &&username=='adminatapy'"
+          v-if="datas && datas.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-for="(text, idx) in datas.ocr">
             <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
-                       <div v-if="text.text_sort && text.text_sort.length">
-              <b-avatar size="18px"  style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx+1 }} </b-avatar>
+            <div v-if="text.text_sort && text.text_sort.length">
+              <b-avatar
+                size="18px"
+                style="font-size: 12px;background-color:#8b8787;"
+                class="mr-1"
+                >{{ idx + 1 }}
+              </b-avatar>
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text.text_sort[0] }}
             </div>
@@ -629,29 +630,75 @@
             </div>
           </div>
         </div>
-        <div v-if="datas && datas.location && datas.location.length && username == 'adminatapy'"
-          class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
-          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
-          <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+        <div
+          v-if="
+            datas &&
+              datas.location &&
+              datas.location.length &&
+              username == 'adminatapy'
+          "
+          class="text-left ai-box mt-3 text-small "
+          style="font-size: 13px;font-weight: 500; color: #2c3e50;"
+        >
+          <i
+            class="fa fa-map-marker mr-1"
+            aria-hidden="true"
+            style="font-size: 15px;"
+          ></i>
+          <span
+            v-for="(geo, k) in filterNumbers(datas.location)"
+            :key="k"
+            class="mr-1"
+            style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
     border-radius: 33px;
-">
+"
+          >
             <!-- {{ geo.toString() }} -->
             <span v-if="geo.toString() && geo.toString().length == 2">
               {{ matchGeocode(geo).name_th }}
             </span>
             <span v-if="geo.toString() && geo.toString().length == 4">
               {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
-              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
-                matchGeocode(geo).name_th }}
+              {{
+                geo.toString().substring(0, 2) == "10"
+                  ? " ข." + matchGeocode(geo).name_th
+                  : " อ." + matchGeocode(geo).name_th
+              }}
             </span>
             <span v-if="geo.toString() && geo.toString().length == 6">
               {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
-              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
-                matchGeocode(geo).name_th }}
-              {{ geo.toString().substring(0, 2) == '10' ? 'แขวง' + matchGeocode(geo).name_th : 'ต.' +
-                matchGeocode(geo).name_th }}
+              {{
+                geo.toString().substring(0, 2) == "10"
+                  ? " ข." + matchGeocode(geo).name_th
+                  : " อ." + matchGeocode(geo).name_th
+              }}
+              {{
+                geo.toString().substring(0, 2) == "10"
+                  ? "แขวง" + matchGeocode(geo).name_th
+                  : "ต." + matchGeocode(geo).name_th
+              }}
             </span>
           </span>
+        </div>
+        <div
+          class="text-left ai-box mt-2"
+          v-if="datas && datas.face_detect && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-if="datas.face_detect && datas.person_name.length">
+            <span v-for="(face, idx) in datas.person_name">
+              <span class="mr-2 mt-1" v-if="face">
+                <span
+                  style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                >
+                  <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                  {{ face }}
+                </span></span
+              >
+            </span>
+          </div>
         </div>
         <template #footer>
           <div class="comment-img text-left md-font">
@@ -673,7 +720,11 @@
             <popover
               :name="'foo' + k"
               id="foo"
-              v-if="datas.source !== 'facebook'&&datas.source !== 'youtube' && datas.source !== 'twitter'"
+              v-if="
+                datas.source !== 'facebook' &&
+                  datas.source !== 'youtube' &&
+                  datas.source !== 'twitter'
+              "
             >
               <div class="text-center">
                 <i class="fa fa-user-circle" aria-hidden="true"></i>
@@ -844,7 +895,9 @@
             </span>
 
             <!-- twitter -->
-            <span v-if="datas.source !== 'facebook'&&datas.source !== 'youtube'">
+            <span
+              v-if="datas.source !== 'facebook' && datas.source !== 'youtube'"
+            >
               <span
                 v-if="datas.retweets_count !== '0' && datas.retweets_count"
                 id="box-reaction"
@@ -1156,123 +1209,106 @@
             </span>
             <!-- comment content -->
             <b-collapse
-            :id="'btn' + page + k"
-            class="mt-2"
-            v-if="datas.comments&&datas.comments.length"
-          >
-       
-            <b-card id="cmt-card" class="text-left">
-              <span v-if="datas.source == 'news' && datas.comments">
-                <div
-                  v-for="(cmtn, inx) in datas.comments.comments"
-                  :key="inx"
-                >
-                  <b-row>
-                    <b-col lg="1">
-                      <img
-                        :src="cmtn.pictureUrl"
-                        id="img-cmt"
-                        @error="setAltImg"
-                      />
-                    </b-col>
-                    <b-col lg="11">
-                      <div>
-                        <span class="bold">{{ cmtn.displayName }}</span>
-                        <span class="font-weight-light" id="cmt-time">{{
-                          cmtn.time
-                        }}</span>
-                      </div>
-
-                      <div v-for="(text, i) in cmtn.contents" :key="i">
-                        {{ text.extData.content }}
-                      </div>
-                    </b-col>
-                  </b-row>
-                  <hr />
-                </div>
-              </span>
-              <span v-else>
-                <div v-for="(cmt, i) in datas.comments" :key="i">
-                  <b-row>
-                    <b-col lg="1">
-
-                      <a
-                        :href="'https://www.youtube.com/' + cmt.author_link"
-                        target="_blank"
-                        v-if="datas.source == 'youtube'"
-                      >
-                        <img :src="cmt.photo" id="img-cmt"
-                      /></a>
-                      <a
-                        :href="cmt.url"
-                        target="_blank"
-                        v-else
-                      >
+              :id="'btn' + page + k"
+              class="mt-2"
+              v-if="datas.comments && datas.comments.length"
+            >
+              <b-card id="cmt-card" class="text-left">
+                <span v-if="datas.source == 'news' && datas.comments">
+                  <div
+                    v-for="(cmtn, inx) in datas.comments.comments"
+                    :key="inx"
+                  >
+                    <b-row>
+                      <b-col lg="1">
                         <img
-                          :src="cmt.photo"
+                          :src="cmtn.pictureUrl"
                           id="img-cmt"
-                          v-bind:href="cmt.url"
-                      /></a>
+                          @error="setAltImg"
+                        />
+                      </b-col>
+                      <b-col lg="11">
+                        <div>
+                          <span class="bold">{{ cmtn.displayName }}</span>
+                          <span class="font-weight-light" id="cmt-time">{{
+                            cmtn.time
+                          }}</span>
+                        </div>
 
-                      <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
-                      <span> </span>
-                    </b-col>
-                    <b-col lg="11">
-                      <div>
+                        <div v-for="(text, i) in cmtn.contents" :key="i">
+                          {{ text.extData.content }}
+                        </div>
+                      </b-col>
+                    </b-row>
+                    <hr />
+                  </div>
+                </span>
+                <span v-else>
+                  <div v-for="(cmt, i) in datas.comments" :key="i">
+                    <b-row>
+                      <b-col lg="1">
                         <a
                           :href="'https://www.youtube.com/' + cmt.author_link"
                           target="_blank"
                           v-if="datas.source == 'youtube'"
                         >
-                          <span
-                            v-if="datas.source == 'youtube'"
-                            class="bold"
-                          >
-                            {{ cmt.author }}</span
-                          ></a
-                        >
+                          <img :src="cmt.photo" id="img-cmt"
+                        /></a>
                         <a :href="cmt.url" target="_blank" v-else>
-                          <span
-                            class="bold"
+                          <img
+                            :src="cmt.photo"
+                            id="img-cmt"
+                            v-bind:href="cmt.url"
+                        /></a>
+
+                        <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                        <span> </span>
+                      </b-col>
+                      <b-col lg="11">
+                        <div>
+                          <a
+                            :href="'https://www.youtube.com/' + cmt.author_link"
+                            target="_blank"
+                            v-if="datas.source == 'youtube'"
                           >
-                            {{ cmt.username }}</span
-                          ></a
-                        >
-                        <span
-                          v-if="datas.source == 'youtube' && cmt.time"
+                            <span v-if="datas.source == 'youtube'" class="bold">
+                              {{ cmt.author }}</span
+                            ></a
+                          >
+                          <a :href="cmt.url" target="_blank" v-else>
+                            <span class="bold"> {{ cmt.username }}</span></a
+                          >
+                          <span
+                            v-if="datas.source == 'youtube' && cmt.time"
+                            class="font-weight-light"
+                            id="cmt-time"
+                            >{{ cmt.time.split("T")[0] }} |
+                            {{ cmt.time.split("T")[1] }}</span
+                          >
+                          <span
+                            v-else
+                            class="font-weight-light"
+                            id="cmt-time"
+                            >{{ cmt.time }}</span
+                          >
+                        </div>
+
+                        <div
+                          v-if="datas.source == 'youtube'"
                           class="font-weight-light"
-                          id="cmt-time"
-                          >{{ cmt.time.split("T")[0] }} |
-                          {{ cmt.time.split("T")[1] }}</span
                         >
-                        <span
-                          v-else
-                          class="font-weight-light"
-                          id="cmt-time"
-                          >{{ cmt.time }}</span
-                        >
-                       
-                      </div>
-                    
-                      <div
-                        v-if="datas.source == 'youtube'"
-                        class="font-weight-light"
-                      >
-                        {{ cmt.text }}
-                      </div>
-                      <div
-                        v-else
-                        class="font-weight-light"
-                      >
-                        {{ cmt.content }}
-                      </div>
-                    </b-col>
-                  </b-row>
-                  <hr />
-                </div>
-              </span>
-            </b-card>
-          </b-collapse>
+                          {{ cmt.text }}
+                        </div>
+                        <div v-else class="font-weight-light">
+                          {{ cmt.content }}
+                        </div>
+                      </b-col>
+                    </b-row>
+                    <hr />
+                  </div>
+                </span>
+              </b-card>
+            </b-collapse>
           </div>
         </template>
       </b-card>
@@ -1325,7 +1361,7 @@ import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
-import '@justinribeiro/lite-tiktok';
+import "@justinribeiro/lite-tiktok";
 import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
@@ -1350,7 +1386,8 @@ export default {
     },
     social: {
       type: String,
-      default: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+      default:
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
     },
     type: {
       type: String,
@@ -1380,7 +1417,7 @@ export default {
       end_date: "",
       valueDate: "",
       offset: 0,
-            username:"",
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1516,11 +1553,11 @@ export default {
 
       // กรองข้อมูลตามความยาว geocode
       if (geocodeStr.length === 2) {
-        found = provinces[geocodeStr]
+        found = provinces[geocodeStr];
       } else if (geocodeStr.length === 4) {
-        found = districts[geocodeStr]
+        found = districts[geocodeStr];
       } else if (geocodeStr.length === 6) {
-        found = subdistricts[geocodeStr]
+        found = subdistricts[geocodeStr];
       }
 
       // Return the found location or a fallback message
