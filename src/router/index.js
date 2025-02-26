@@ -4,6 +4,8 @@ import Dashboard from "../views/Dashboard.vue";
 import axios from "axios";
 import store from "@/store";
 // import { API_URL } from '@/common/config';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import '@mdi/font/css/materialdesignicons.css';
 
 Vue.use(VueRouter);
 
@@ -15,7 +17,12 @@ const routes = [
   //   component: () => import(/* webpackChunkName: "PlatForm" */ '../views/PlatForm.vue'),
   // },
  
-  
+  {
+    path: "/setting",
+    name: "Setting",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/Setting.vue")
+  },
   {
     path: "/politician",
     name: "Candidates",
