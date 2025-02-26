@@ -1,9 +1,14 @@
 <template>
-  <div id="overflow-page">
+    <!-- <div>
+      <HomeNav />
+      <CandidatesHead />
+      <CandidatesMonitor/>
+    </div> -->
+    <div id="overflow-page">
     <HomeNav id="navHome" />
     <div id="content">
       <div class="d-flex">
-        <h1 class="title ">Report</h1>
+        <h1 class="title ">Politician</h1>
         <div
           class="h4 mb-5 float-right d-flex mt-3 box-menu-monitor"
           style="position:relative;margin-left: auto; 
@@ -12,22 +17,10 @@ margin-right: 0;"
           <div class="mr-3 icon-monitor1" @click="toMonitor('Monitor')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
-              <!-- <img
-                  src="../assets/monitor.png"
-                  alt="logo"
-                  class="img-nav"
-                  style="margin-bottom: 8px;width: 40px;"
-                /> -->
+    
               <b-icon stacked icon="cast" scale="0.5"></b-icon>
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Monitor</div>
-          </div>
-          <div class="icon-monitor1" @click="$router.push('/politician')"> 
-            <b-iconstack font-scale="2" > 
-              <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="person-lines-fill" scale="0.5"></b-icon> 
-            </b-iconstack>
-            <div class="d-block h6 text-center my-0">Politician</div>
           </div>
           <div class="mr-3 icon-monitor1" @click="toMonitor('Feed')">
             <b-iconstack font-scale="2">
@@ -36,64 +29,85 @@ margin-right: 0;"
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Feed</div>
           </div>
+          <div class="icon-monitor2" @click="toMonitor('Report')">
+            <b-iconstack font-scale="2">
+              <b-icon stacked icon="circle"></b-icon>
+              <b-icon
+                stacked
+                icon="file-earmark-bar-graph"
+                scale="0.5"
+              ></b-icon>
+            </b-iconstack>
+            <div class="d-block h6 text-center my-0">Report</div>
+          </div>
           
         </div>
       </div>
-      <ReportStat />
+      <CandidatesMonitor/>
     </div>
   </div>
-</template>
+  </template>
+  
+  <script>
+  import HomeNav from "@/components/HomeNav.vue";
+  import CandidatesHead from "@/components/politician/CandidatesHead.vue";
+  import CandidatesMonitor from "../components/politician/CandidatesMonitor.vue";
+  import TabMonitor from "@/components/monitor/TabMonitor.vue";
+  import { mapGetters } from "vuex";
 
-<script>
-import HomeNav from "@/components/HomeNav.vue";
-import ReportStat from "@/components/report/ReportStat.vue";
-import moment from "moment";
-
-import { mapGetters } from "vuex";
-export default {
-  components: {
-    HomeNav,
-    ReportStat,
-  },
-  watch: {
-    getDateReport() {
-      this.$store.dispatch("fetchListTargetReport", {
-        start: this.getDateReport[0],
-        end: this.getDateReport[1],
-      });
+  export default {
+    name: "Candidates",
+    components: {
+      HomeNav,
+      CandidatesHead,
+      CandidatesMonitor,
+      TabMonitor
     },
+    data:  function() {
+      return {
+        
+      };
+    },
+    computed: {
+    ...mapGetters([
+      "getLoadStatus",
+      "getSocialMo",
+      "getToSection",
+      "getItemsProfile",
+      "getFieldsProfile",
+      "getProfile",
+      "getListMonitorProfile",
+    ]),
   },
-  data: function() {
-    return {};
-  },
-  computed: {
-    ...mapGetters(["getLoadStatus", "getRoleMion", "getDateReport"]),
-  },
-  methods: {
+    methods: {
     toMonitor(name) {
       this.$router.push({ name: name });
     },
   },
-
-  created() {
-    let sdate =
-      moment(new Date())
-        .format()
-        .slice(0, 10) + "T00:00:00";
-    let edate =
-      moment(new Date())
-        .format()
-        .slice(0, 10) + "T23:59:59";
-    this.$store.dispatch("fetchListTargetReport", { start: sdate, end: edate });
+  async mounted() {
+    // if (this.getSocialMo == "") {
+    //     await this.$store.dispatch("fatchListMonitor");
+    //   } else {
+    //     await this.$store.dispatch("fatchListMonitor", {
+    //       source: this.social,
+    //     });
+    //   }
   },
-};
-</script>
+  };
+  </script>
 
-<style scoped>
+  
+<style>
+
 .icon-monitor1,
 .icon-monitor2 {
   cursor: pointer;
-  padding: 6px 10px;
+  padding: 6px 15px;
+  border-radius: 20px;
+}
+.icon-monitor3 {
+  cursor: pointer;
+  padding: 6px 15px;
   border-radius: 20px;
 }
 /* .b-icon.bi:hover {
@@ -111,6 +125,10 @@ export default {
   color: #4c412b;
   font-weight: bold;
 }
+.icon-monitor3:hover .h6 {
+  color: #4c412b;
+  font-weight: bold;
+}
 .icon-monitor1:hover .b-icon.bi {
   color: #4c412b;
   background-color: #fed06ea4;
@@ -120,6 +138,12 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 .icon-monitor2:hover .b-icon.bi {
+  color: #4c412b;
+  background-color: #fed06ea4;
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.icon-monitor3:hover .b-icon.bi {
   color: #4c412b;
   background-color: #fed06ea4;
   border-radius: 50%;
@@ -140,7 +164,7 @@ export default {
   max-width: 93%;
   margin: auto;
   background: white;
-  min-height: 100vh;
+  /* min-height: 100vh; */
   padding: 0;
   overflow: auto;
 }
@@ -179,4 +203,4 @@ export default {
     border-radius: 10px;
   }
 }
-</style>
+</style> 

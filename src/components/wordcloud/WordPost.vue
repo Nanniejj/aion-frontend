@@ -453,7 +453,12 @@
           <b-col lg="12">
             <b-card-body>
               <b-card-text class="box-contents">
-                <div v-if="datas&&datas.title" class="title-news text-left my-2">{{datas.title}}</div>
+                <div
+                  v-if="datas && datas.title"
+                  class="title-news text-left my-2"
+                >
+                  {{ datas.title }}
+                </div>
                 <Highlighter
                   class="my-highlight md-font"
                   :style="{
@@ -484,11 +489,11 @@
           <b-col>
             <div v-if="datas.source == 'tiktok' && datas.uid">
               <a v-bind:href="datas.url_post" target="_blank">
-                    <lite-tiktok
-                      :videoid="datas.uid"
-                      style=" pointer-events: none; "
-                    ></lite-tiktok
-                  ></a>
+                <lite-tiktok
+                  :videoid="datas.uid"
+                  style=" pointer-events: none; "
+                ></lite-tiktok
+              ></a>
               <!-- <iframe
                 width="auto"
                 height="750"
@@ -581,7 +586,7 @@
         </b-row>
         <div
           class="text-left ai-box mt-2"
-          v-if="datas && datas.ocr &&username=='adminatapy'"
+          v-if="datas && datas.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-for="(text, idx) in datas.ocr">
@@ -620,29 +625,75 @@
             </div>
           </div>
         </div>
-        <div v-if="datas && datas.location && datas.location.length && username == 'adminatapy'"
-          class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
-          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
-          <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+        <div
+          v-if="
+            datas &&
+              datas.location &&
+              datas.location.length &&
+              username == 'adminatapy'
+          "
+          class="text-left ai-box mt-3 text-small "
+          style="font-size: 13px;font-weight: 500; color: #2c3e50;"
+        >
+          <i
+            class="fa fa-map-marker mr-1"
+            aria-hidden="true"
+            style="font-size: 15px;"
+          ></i>
+          <span
+            v-for="(geo, k) in filterNumbers(datas.location)"
+            :key="k"
+            class="mr-1"
+            style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
     border-radius: 33px;
-">
+"
+          >
             <!-- {{ geo.toString() }} -->
             <span v-if="geo.toString() && geo.toString().length == 2">
               {{ matchGeocode(geo).name_th }}
             </span>
             <span v-if="geo.toString() && geo.toString().length == 4">
               {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
-              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
-                matchGeocode(geo).name_th }}
+              {{
+                geo.toString().substring(0, 2) == "10"
+                  ? " ข." + matchGeocode(geo).name_th
+                  : " อ." + matchGeocode(geo).name_th
+              }}
             </span>
             <span v-if="geo.toString() && geo.toString().length == 6">
               {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
-              {{ geo.toString().substring(0, 2) == '10' ? ' ข.' + matchGeocode(geo).name_th : ' อ.' +
-                matchGeocode(geo).name_th }}
-              {{ geo.toString().substring(0, 2) == '10' ? 'แขวง' + matchGeocode(geo).name_th : 'ต.' +
-                matchGeocode(geo).name_th }}
+              {{
+                geo.toString().substring(0, 2) == "10"
+                  ? " ข." + matchGeocode(geo).name_th
+                  : " อ." + matchGeocode(geo).name_th
+              }}
+              {{
+                geo.toString().substring(0, 2) == "10"
+                  ? "แขวง" + matchGeocode(geo).name_th
+                  : "ต." + matchGeocode(geo).name_th
+              }}
             </span>
           </span>
+        </div>
+        <div
+          class="text-left ai-box mt-2"
+          v-if="datas && datas.face_detect && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;"
+        >
+          <div v-if="datas.face_detect && datas.person_name.length">
+            <span v-for="(face, idx) in datas.person_name">
+              <span class="mr-2 mt-1" v-if="face">
+                <span
+                  style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;"
+                >
+                  <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                  {{ face }}
+                </span></span
+              >
+            </span>
+          </div>
         </div>
         <template #footer>
           <div class="comment-img text-left md-font">
@@ -1308,7 +1359,8 @@ export default {
     },
     social: {
       type: String,
-      default: "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+      default:
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
     },
     type: {
       type: String,
@@ -1346,7 +1398,7 @@ export default {
       end_date: "",
       valueDate: "",
       offset: 0,
-            username:"",
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -1477,11 +1529,11 @@ export default {
 
       // กรองข้อมูลตามความยาว geocode
       if (geocodeStr.length === 2) {
-        found = provinces[geocodeStr]
+        found = provinces[geocodeStr];
       } else if (geocodeStr.length === 4) {
-        found = districts[geocodeStr]
+        found = districts[geocodeStr];
       } else if (geocodeStr.length === 6) {
-        found = subdistricts[geocodeStr]
+        found = subdistricts[geocodeStr];
       }
 
       // Return the found location or a fallback message

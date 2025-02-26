@@ -15,6 +15,26 @@ const routes = [
   //   component: () => import(/* webpackChunkName: "PlatForm" */ '../views/PlatForm.vue'),
   // },
  
+  
+  {
+    path: "/politician",
+    name: "Candidates",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/PoliticianMonitor.vue")
+  },  
+  {
+    path: "/politicianpost",
+    name: "CandidatesPost",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/PoliticianPost.vue")
+  },
+  {
+    path: "/createpolitician",
+    name: "CreateCandidates",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/PoliticianCreate.vue")
+  },
+
   {
     path: "/domain",
     name: "Domain",
