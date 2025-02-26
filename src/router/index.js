@@ -14,7 +14,12 @@ const routes = [
   //   name: 'PlatForm',
   //   component: () => import(/* webpackChunkName: "PlatForm" */ '../views/PlatForm.vue'),
   // },
- 
+  {
+    path: "/setting",
+    name: "Setting",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/Setting.vue")
+  },  
   
   {
     path: "/politician",

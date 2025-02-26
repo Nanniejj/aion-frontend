@@ -3,144 +3,82 @@
     <div class="text-left">
       <span class="h5 mr-4 d-inline-block">Spot News</span>
       <div class="d-inline-block">
-        <div
-          v-if="items && items[selectIndex] && items[selectIndex].data_date"
-          class="text-left onedate"
-        >
+        <div v-if="items && items[selectIndex] && items[selectIndex].data_date" class="text-left onedate">
           <i class="far fa-calendar-alt"></i>
           {{ items[selectIndex].data_date.split("T")[0] }}
         </div>
       </div>
     </div>
     <div class="py-2 mx-0 box-spot-bg">
-      <vue-element-loading
-        :active="load"
-        size="80"
-        background-color="rgba(255, 255, 255, 0.5)"
-        color="#b6ac9a"
-      />
+      <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.5)" color="#b6ac9a" />
 
       <div class="slider-container" v-if="items && items.length">
-        <b-button class="slider-button btn-left" @click="scrollLeft"
-          ><i class="fa fa-chevron-left "></i
-        ></b-button>
+        <b-button class="slider-button btn-left" @click="scrollLeft"><i class="fa fa-chevron-left "></i></b-button>
         <div class="slider " ref="slider">
           <b-row>
             <span class="d-flex" style="width:85vw;padding: 0px 20px;">
-              <b-card
-                img-alt="Image"
-                img-top
-                class="box-spotnews black slider-item mx-2 p-1 position-relative"
-                v-for="(item, index) in items[selectIndex].data"
-                :key="index"
-                v-if="item.posts && item.posts.length"
-              >
-                <div
-                  class="position-relative"
-                  v-if="item && item.posts && item.posts[0]"
-                >
-                  <b-card-img
-                    cover
-                    :src="item.posts[0].photos[0]"
-                    v-if="
-                      item &&
-                        item.posts &&
-                        item.posts[0] &&
-                        item.posts[0].photos &&
-                        item.posts[0].photos.length
-                    "
-                  >
+              <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative"
+                v-for="(item, index) in items[selectIndex].data" :key="index" v-if="item.posts && item.posts.length">
+                <div class="position-relative" v-if="item && item.posts && item.posts[0]">
+                  <b-card-img cover :src="item.posts[0].photos[0]" v-if="
+                    item &&
+                    item.posts &&
+                    item.posts[0] &&
+                    item.posts[0].photos &&
+                    item.posts[0].photos.length
+                  ">
                   </b-card-img>
-                  <div
-                    v-if="
-                      item &&
-                      item.posts &&
-                      item.posts[0] &&
-                      item.posts[0].photos &&
-                      item.posts[0].photos.length == 0"
-                  >
-                    <div
-                      class="h5 text-center "
-                      style=" height: 200px !important;
+                  <div v-if="
+                    item &&
+                    item.posts &&
+                    item.posts[0] &&
+                    item.posts[0].photos &&
+                    item.posts[0].photos.length == 0">
+                    <div class="h5 text-center " style=" height: 200px !important;
                       background-color:rgb(237 231 221);
                       display: flex;
                       flex-direction: column;
                       justify-content: center; 
-                      align-items: center; "
-                    >
+                      align-items: center; ">
                       <i class="fa fa-newspaper-o fa-2x" aria-hidden="true"></i>
                       {{ items[selectIndex].domain }}
                     </div>
                   </div>
-                  <div
-                    class="bold h6 position-absolute mt-1 text-right"
-                    style="bottom: -6px; left: 1px;"
-                  >
+                  <div class="bold h6 position-absolute mt-1 text-right" style="bottom: -6px; left: 1px;">
                     <span class="d-inline-block  box-link">
-                      <a
-                        v-bind:href="item.posts[0].url_post"
-                        class="fa fa-external-link"
-                        target="_blank"
-                      >
-                        <span> Link </span></a
-                      ></span
-                    >
-                    <span
-                      class="d-inline-block  box-link"
-                      @click="
-                        toPost(
-                          item,
-                          items[selectIndex]._id,
-                          items[selectIndex].domain
-                        )
-                      "
-                    >
-                      <i class="far fa-paper-plane" /> All
+                      <a v-bind:href="item.posts[0].url_post" class="fa fa-external-link" target="_blank">
+                        <span> Link </span></a></span>
+                    <span class="d-inline-block  box-link" @click="
+                      toPost(
+                        item,
+                        items[selectIndex]._id,
+                        items[selectIndex].domain
+                      )
+                      ">
+                      <i class="far fa-paper-plane" /> <span class="bold">{{ item.count | numFormat }}</span> Posts
                     </span>
                   </div>
 
-                  <div
-                    class="position-absolute pl-1 pt-1 pb-1"
-                    style="bottom: 0px; right: 0; background-color: white; border-top-left-radius: 50%; border-bottom-left-radius: 50%;"
-                  >
-                    <b-avatar
-                      variant="success"
-                      icon="emoji-smile"
-                      v-if="item.sentiment == 'positive'"
-                    ></b-avatar>
-                    <b-avatar
-                      variant="primary"
-                      icon="emoji-neutral"
-                      v-if="item.sentiment == 'neutral'"
-                    ></b-avatar>
-                    <b-avatar
-                      variant="danger"
-                      icon="emoji-frown"
-                      v-if="item.sentiment == 'negative'"
-                    ></b-avatar>
+                  <div class="position-absolute pl-1 pt-1 pb-1"
+                    style="bottom: 0px; right: 0; background-color: white; border-top-left-radius: 50%; border-bottom-left-radius: 50%;">
+                    <b-avatar variant="success" icon="emoji-smile" v-if="item.sentiment == 'positive'"></b-avatar>
+                    <b-avatar variant="primary" icon="emoji-neutral" v-if="item.sentiment == 'neutral'"></b-avatar>
+                    <b-avatar variant="danger" icon="emoji-frown" v-if="item.sentiment == 'negative'"></b-avatar>
                   </div>
                 </div>
 
                 <!-- ตัดข้อความและมีปุ่มอ่านเพิ่มเติม -->
-                <div
-                  class="my-2 py-3"
-                  style="height: 120px;overflow-y: auto;"
-                  v-if="item && item.posts && item.posts[0]"
-                >
+                <div class="my-2 py-3" style="height: 120px;overflow-y: auto;"
+                  v-if="item && item.posts && item.posts[0]">
                   <div>
                     <!-- {{ item.title }} -->
                   </div>
                   <div>{{ item.posts[0].title }}</div>
-                </div>
 
-                <div
-                  class="bold h6 position-absolute"
-                  style="bottom: 15px; left: 50%; transform: translateX(-50%);"
-                >
-                  <b-avatar
-                    variant="primary"
-                    style="background-color: rgb(238 238 238) !important;color: rgb(89 89 89)"
-                  >
+                </div>
+                <div class="bold h6 position-absolute" style="bottom: 15px; left: 50%; transform: translateX(-50%);">
+                  <b-avatar variant="primary"
+                    style="background-color: rgb(238 238 238) !important;color: rgb(89 89 89)">
                     <b> {{ index + 1 }}</b>
                   </b-avatar>
                 </div>
@@ -148,9 +86,7 @@
             </span>
           </b-row>
         </div>
-        <b-button class="slider-button btn-right" @click="scrollRight"
-          ><i class="fa fa-chevron-right "></i
-        ></b-button>
+        <b-button class="slider-button btn-right" @click="scrollRight"><i class="fa fa-chevron-right "></i></b-button>
       </div>
       <div v-else>
         <div v-if="load == false" class="py-8">
@@ -175,13 +111,8 @@
 
         <b-col v-if="items.length !== 1 && items.length !== 0">
           <div class="text-center box-date scroll-container">
-            <b-button
-              class="d-inline mx-1 btn-date-box"
-              v-for="(cluster, k) in items"
-              :key="k._id"
-              @click="selectIndex = k"
-              :variant="selectIndex === k ? 'dark' : 'light'"
-            >
+            <b-button class="d-inline mx-1 btn-date-box" v-for="(cluster, k) in items" :key="k._id"
+              @click="selectIndex = k" :variant="selectIndex === k ? 'dark' : 'light'">
               <!-- <div> {{ cluster.data_date.split("T")[0] }}</div> -->
               <div class="" v-if="cluster && cluster.data_date">
                 <div class="small  py-0 my-0">
@@ -327,11 +258,13 @@ export default {
 </script>
 <style scoped>
 .fa-external-link {
-  display: inline-block; /* ทำให้ขอบครอบคลุมตัวไอคอน */
+  display: inline-block;
+  /* ทำให้ขอบครอบคลุมตัวไอคอน */
   /* background-color: #ffffff; */
   color: #2c3e50 !important;
   text-decoration: none;
 }
+
 .box-link {
   /* height: 18px; */
   cursor: pointer;
@@ -343,13 +276,16 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   border-radius: 10px;
 }
+
 .box-link:hover {
   background-color: #fed16e;
 }
+
 .h3 {
   font-size: 25px !important;
   font-weight: 700;
 }
+
 .onedate,
 .twodate {
   font-size: small;
@@ -360,16 +296,19 @@ export default {
   width: fit-content;
   border-radius: 10px;
 }
+
 .card-img {
   width: 100% !important;
   height: auto !important;
   object-fit: cover !important;
   object-position: center !important;
 }
+
 .title-limited {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2; /* จำกัด 3 บรรทัด */
+  -webkit-line-clamp: 2;
+  /* จำกัด 3 บรรทัด */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
@@ -379,14 +318,17 @@ export default {
   color: #fff;
   background-color: #4dac89 !important;
 }
+
 .badge-primary {
   color: #fff;
   background-color: #347ea5 !important;
 }
+
 .badge-danger {
   color: #fff;
   background-color: #d3675a !important;
 }
+
 .scroll-container {
   /* display: flex;  */
   overflow-x: auto;
@@ -398,27 +340,34 @@ export default {
 
 /* ปรับแต่ง scrollbar สำหรับ WebKit (Chrome, Edge, Safari) */
 .scroll-container::-webkit-scrollbar {
-  height: 8px; /* ความสูงของ scrollbar */
+  height: 8px;
+  /* ความสูงของ scrollbar */
 }
 
 .scroll-container::-webkit-scrollbar-thumb {
-  background-color: #cac6c6ce; /* สีของ thumb */
-  border-radius: 4px; /* มุมมน */
+  background-color: #cac6c6ce;
+  /* สีของ thumb */
+  border-radius: 4px;
+  /* มุมมน */
 }
 
 .scroll-container::-webkit-scrollbar-thumb:hover {
-  background-color: #cac6c6ce; /* สีเมื่อ hover */
+  background-color: #cac6c6ce;
+  /* สีเมื่อ hover */
 }
 
 .scroll-container::-webkit-scrollbar-track {
-  background: #f1f1f1; /* สีพื้นหลังของ scrollbar */
+  background: #f1f1f1;
+  /* สีพื้นหลังของ scrollbar */
   border-radius: 4px;
 }
 
 /* สำหรับ Firefox */
 .scroll-container {
-  scrollbar-width: thin; /* ความกว้างของ scrollbar (thin, auto, none) */
-  scrollbar-color: #cac6c6ce #f1f1f1; /* สีของ thumb และ track */
+  scrollbar-width: thin;
+  /* ความกว้างของ scrollbar (thin, auto, none) */
+  scrollbar-color: #cac6c6ce #f1f1f1;
+  /* สีของ thumb และ track */
 }
 
 .btn-dark {
@@ -427,23 +376,28 @@ export default {
   border-color: #fed16e;
   border-radius: 10px;
 }
+
 .btn-light {
   background-color: #eee;
   border-radius: 10px;
   color: #42586e !important;
 }
+
 .box-spot-bg {
   min-height: 300px !important;
   background-color: #ffffff;
   /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);*/
   border-radius: 11px;
 }
+
 .box-date {
   margin: 0px 15px;
 }
+
 .small {
   font-size: 11px;
 }
+
 .btn-date-box {
   border: 0px;
   box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
@@ -452,10 +406,12 @@ export default {
   /* background-color: black;
  color: #ffffff; */
 }
+
 .card-img,
 .card-img-top {
   height: 200px !important;
 }
+
 .box-spotnews {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   border: 0px;
@@ -464,18 +420,25 @@ export default {
   margin-bottom: 20px;
   border-radius: 20px;
 }
+
 .slider {
   display: flex;
-  flex-wrap: nowrap; /* ป้องกันการขึ้นบรรทัดใหม่ */
-  overflow-x: auto; /* เปิดใช้งานการเลื่อนในแนวนอน */
-  scroll-behavior: smooth; /* ทำให้เลื่อนนุ่มนวล */
-  gap: 10px; /* เพิ่มระยะห่างระหว่างการ์ด */
+  flex-wrap: nowrap;
+  /* ป้องกันการขึ้นบรรทัดใหม่ */
+  overflow-x: auto;
+  /* เปิดใช้งานการเลื่อนในแนวนอน */
+  scroll-behavior: smooth;
+  /* ทำให้เลื่อนนุ่มนวล */
+  gap: 10px;
+  /* เพิ่มระยะห่างระหว่างการ์ด */
   width: 100%;
 }
 
 .slider-item {
-  flex: 0 0 auto; /* การ์ดแต่ละอันมีขนาดคงที่ */
-  width: 25%; /* ขนาดการ์ด 4 ชิ้นใน 100% */
+  flex: 0 0 auto;
+  /* การ์ดแต่ละอันมีขนาดคงที่ */
+  width: 25%;
+  /* ขนาดการ์ด 4 ชิ้นใน 100% */
   flex-wrap: nowrap;
 }
 
@@ -504,8 +467,10 @@ export default {
 }
 
 .slider::-webkit-scrollbar {
-  display: none; /* ซ่อน scrollbar */
+  display: none;
+  /* ซ่อน scrollbar */
 }
+
 /* width */
 ::-webkit-scrollbar {
   width: 5px;
@@ -527,20 +492,24 @@ export default {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
 /* จอใหญ่ Desktop */
 @media only screen and (min-width: 0px) and (max-width: 1500px) {
   .slider-item {
     width: 33.33%;
   }
+
   /* จอ iPad หรือแท็บเล็ต */
   @media only screen and (min-width: 0px) and (max-width: 1024px) {
     .slider {
       padding: 10px;
     }
+
     .slider-item {
       width: 48%;
     }
   }
+
   /* จอมือถือ */
   @media only screen and (min-width: 0px) and (max-width: 800px) {
     .title-spot {
@@ -548,19 +517,24 @@ export default {
       margin-right: 5px;
       font-size: 20px !important;
     }
+
     .h3 {
       display: inline;
       font-size: 20px !important;
     }
+
     .slider {
       padding: 0px 20px;
     }
+
     .card-body {
       padding: 7px;
     }
+
     .slider-item {
       width: 290px;
     }
+
     .slider-button.btn-left {
       position: absolute;
       z-index: 99999;
@@ -568,6 +542,7 @@ export default {
       background: #fed16e;
       color: white;
     }
+
     .slider-button.btn-right {
       position: absolute;
       z-index: 99999;
