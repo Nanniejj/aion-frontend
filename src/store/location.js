@@ -6985,7 +6985,7 @@ getChangwats:(state)=>{
    let result = Object.keys(state.changwats).map((key) => {
     return {name:state.changwats[key].name.th,id:key}
    });
-    //  console.log(result);
+    console.log(result);
     return result
  },
 getAmphoes:(state)=>{

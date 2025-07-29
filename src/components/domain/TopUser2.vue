@@ -42,7 +42,7 @@
               badge-variant="info"
               variant="light"
               :src="user.items.details.profile_image"
-              :size="70"
+              :size="80"
               class="shadow-sm rounded"
             >
               <template #badge id="bb">
@@ -444,7 +444,7 @@ export default {
   },
   methods: {
     linkToProfile(item) {
-      // console.log("dddd", item);
+      console.log("dddd", item);
       // let acc = item.account_name;
       // if (item.source == "youtube") {
       //   acc = item.account_name.replace("@", "");

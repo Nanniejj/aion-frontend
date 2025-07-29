@@ -4,16 +4,13 @@
     <div id="content">
       <div class="d-flex">
         <h1 class="title ">Monitor</h1>
-        <div
-          class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor"
-          style="position:relative;margin-left: auto; 
-margin-right: 0;"
-        > 
-        <!-- ในหน้า monitor -->
-        <div class="icon-monitor1" @click="$router.push('/politician')"> 
-          <b-iconstack font-scale="2" > 
+        <div class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor" style="position:relative;margin-left: auto; 
+margin-right: 0;">
+          <!-- ในหน้า monitor -->
+          <div class="icon-monitor1" @click="$router.push('/politician')">
+            <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="person-lines-fill" scale="0.5"></b-icon> 
+              <b-icon stacked icon="person-lines-fill" scale="0.5"></b-icon>
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Politician</div>
           </div>
@@ -28,15 +25,11 @@ margin-right: 0;"
           <div class="icon-monitor3" @click="toMonitor('Report')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
-              <b-icon
-                stacked
-                icon="file-earmark-bar-graph"
-                scale="0.5"
-              ></b-icon>
+              <b-icon stacked icon="file-earmark-bar-graph" scale="0.5"></b-icon>
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Report</div>
           </div>
-          
+
         </div>
       </div>
       <!-- <h4 class="title-monitor" ><a>Monitor</a></h4> -->
@@ -56,7 +49,7 @@ export default {
     HomeNav,
     TabMonitor, //ProfileMonitor
   },
-  data: function() {
+  data: function () {
     return {};
   },
   computed: {
@@ -94,11 +87,13 @@ export default {
   padding: 6px 15px;
   border-radius: 20px;
 }
+
 .icon-monitor3 {
   cursor: pointer;
   padding: 6px 15px;
   border-radius: 20px;
 }
+
 /* .b-icon.bi:hover {
     display: inline-block;
     overflow: visible;
@@ -110,14 +105,17 @@ export default {
   color: #4c412b;
   font-weight: bold;
 }
+
 .icon-monitor2:hover .h6 {
   color: #4c412b;
   font-weight: bold;
 }
+
 .icon-monitor3:hover .h6 {
   color: #4c412b;
   font-weight: bold;
 }
+
 .icon-monitor1:hover .b-icon.bi {
   color: #4c412b;
   background-color: #fed06ea4;
@@ -126,29 +124,35 @@ export default {
   transition: 0.3s ease-in-out;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
+
 .icon-monitor2:hover .b-icon.bi {
   color: #4c412b;
   background-color: #fed06ea4;
   border-radius: 50%;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
+
 .icon-monitor3:hover .b-icon.bi {
   color: #4c412b;
   background-color: #fed06ea4;
   border-radius: 50%;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
+
 .title-monitor {
   text-align: start;
   margin-left: 9%;
   margin-bottom: 20px !important;
 }
+
 .imgsocial {
   width: 40px;
 }
+
 * {
   font-family: "Prompt", "FontAwesome", sans-serif;
 }
+
 #content {
   max-width: 93%;
   margin: auto;
@@ -157,14 +161,17 @@ export default {
   padding: 0;
   overflow: auto;
 }
+
 #navHome {
   z-index: 1;
 }
+
 @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
   #overflow-page {
     overflow: hidden;
   }
 }
+
 @media only screen and (min-width: 950px) and (max-width: 1150px) {
   .date {
     margin-top: 20pt;
@@ -172,14 +179,17 @@ export default {
     margin-bottom: 10pt;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 700px) {
   .b-icon.bi {
     font-size: 140% !important;
   }
+
   .box-menu-monitor {
     position: relative !important;
     right: 0px !important;
   }
+
   .icon-monitor1,
   .icon-monitor2 {
     cursor: pointer;

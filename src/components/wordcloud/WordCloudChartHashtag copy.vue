@@ -708,7 +708,7 @@ export default {
       this.getHashtagChart.splice(k, 1);
       // this.chartData.splice(k + 1, 1);
       // this.result.hashtag.splice(k, 1);
-      // console.log("click", this.chartData);
+      console.log("click", this.chartData);
     },
   },
   computed: {

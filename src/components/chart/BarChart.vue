@@ -223,7 +223,6 @@ export default {
             ttd = item.count;
           }
         });
-        //console.log('ttttt',tfb,tn,tpt,ttw,tyt,tig);
         let temp = [
           0 + tfb,
           0 + ttw,
@@ -277,7 +276,6 @@ export default {
       .slice(0, 10);
     sdate = "&start=" + today + "T00:00:00";
     edate = "&end=" + today + "T23:59:59";
-    // console.log("this.$route.name==", this.$route.name);
     let urlapi;
     if (this.$route.name == "Report") {
       urlapi =
@@ -300,7 +298,6 @@ export default {
       },
     };
     await this.axios(config).then((response) => {
-      //console.log('response.data',response.data)
       let data = response.data;
       let tfb = 0,
         tn = 0,
@@ -340,7 +337,6 @@ export default {
           ttd = item.count;
         }
       });
-      // console.log("ttttt", tfb, tn, tpt, ttw, tyt, tig);
       let temp = [
         0 + tfb,
         0 + ttw,
@@ -359,7 +355,6 @@ export default {
           data: temp,
         },
       ];
-      // console.log("this.series", this.series);
       this.chartOptions = {
         legend: {
           show: false,

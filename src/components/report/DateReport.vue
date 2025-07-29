@@ -134,7 +134,7 @@ export default {
 
     //   this.$store.commit("setDateReport", [start, end]);
     //   localStorage.setItem("dateReport", [start, end]);
-    //   // console.log("startdate", start, end);
+    //   console.log("startdate", start, end);
     // },
     selectDay() {
       let start = this.valueDate + "T00:00:00";
@@ -211,7 +211,7 @@ export default {
     // let weeknumber = moment("08-14-2022", "MMDDYYYY").isoWeek();
     // let wnum = String(weeknumber + 1);
     // this.valueWeek = wnum;
-    // console.log("wnum", wnum);
+    console.log("wnum", wnum);
   },
 };
 </script>

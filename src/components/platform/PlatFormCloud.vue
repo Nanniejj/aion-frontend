@@ -107,7 +107,7 @@ export default {
     this.$store.commit('setWordCloudHash','')
   },
   created() {
-    // console.log('dddddd',this.getNamePlatform);
+    console.log('dddddd',this.getNamePlatform);
     this.startd = moment(new Date()).format().slice(0,10);
     this.endd = moment(new Date()).format().slice(0,10);
     this.sdate = moment(new Date()).format().slice(0,10) + "T00:00:00";

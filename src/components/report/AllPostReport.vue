@@ -438,11 +438,9 @@
           <b-col>
             <div v-if="datas.source == 'tiktok' && datas.uid">
               <a v-bind:href="datas.url_post" target="_blank">
-                <lite-tiktok
-                  :videoid="datas.uid"
-                  style=" pointer-events: none; "
-                ></lite-tiktok
-              ></a>
+                <img :src="datas.photos && datas.photos[0]" onerror="this.style.display='none'"
+                style="height:450px;border-radius: 10px;" class="my-3" />
+            </a>
 
               <!-- <iframe
                 width="auto"
@@ -535,6 +533,34 @@
             </div>
           </b-col>
         </b-row>
+                <div class="text-left ai-box mt-2"
+          v-if="datas && datas.photos_text && datas.photos_text.length && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;">
+          <div v-for="(text, idx) in datas.photos_text" >
+           
+            <div v-if="text&&text.length">
+              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
+              </b-avatar>
+              <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
+              </span>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text }}
+            </div>
+            <div v-if="text.face" >
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
+                  <span style="background: #e5e5e5;
+                    padding: 0px 6px;
+                    border-radius: 13px;">
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name}}
+                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
+                      parseFloat((face.confidence * 100).toFixed(2))
+                    }}%)</span></span></span>
+              </span>
+            </div>
+          </div>
+        </div>
         <div
           class="text-left ai-box mt-2"
           v-if="datas && datas.ocr && username == 'adminatapy'"
@@ -580,8 +606,7 @@
           v-if="
             datas &&
               datas.location &&
-              datas.location.length &&
-              username == 'adminatapy'
+              datas.location.length
           "
           class="text-left ai-box mt-3 text-small "
           style="font-size: 13px;font-weight: 500; color: #2c3e50;"
@@ -1416,7 +1441,7 @@ export default {
       if (currentPage >= totalPages) {
         currentPage = totalPages;
       }
-      // console.log("data2", data);
+      console.log("data2", data);
       return data;
     },
     totalPages: function() {
@@ -1429,7 +1454,7 @@ export default {
         length = count;
       }
       var xs = Math.ceil(length / itemsPerPage);
-      // console.log("total page:", xs);
+      console.log("total page:", xs);
       return xs;
     },
   },
@@ -1520,14 +1545,14 @@ export default {
         word.push(...this.heightword);
         if (this.andkey.length) {
           this.andkey.forEach(function(key) {
-            // console.log("keyyyy", k, key, key.length);
+            
             if (
               key.length == 2 &&
               full_text.includes(key[0]) &&
               full_text.includes(key[1])
             ) {
-              // console.log("เข้าสอง");
-              // console.log("full_text", full_text, key, word.concat(key));
+              
+              
               word.push(...key);
             }
 
@@ -1550,7 +1575,7 @@ export default {
             }
           });
 
-          //  console.log("key+addkey", word);
+       
         }
         return word;
       } else {
@@ -1559,7 +1584,7 @@ export default {
       // return word;
     },
     onClick(i, data) {
-      // console.log(data);
+      console.log(data);
       this.index = i;
       this.dataPhoto = data;
     },
@@ -1581,16 +1606,16 @@ export default {
       }
       this.setPage(pageNumber);
       this.gotopage = "";
-      // console.log(pageNumber);
+      console.log(pageNumber);
     },
     setPage: function(pageNumber) {
       this.currentPage = pageNumber;
-      // console.log(this.currentPage);
-      //console.log("page num:",typeof(pageNumber));
+      console.log(this.currentPage);
+      console.log("page num:",typeof(pageNumber));
       //Call new data from api here
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
-        // console.log("offset : ", this.offset);
+        console.log("offset : ", this.offset);
       } else {
         this.offset = 0;
       }
@@ -1664,7 +1689,7 @@ export default {
           };
           this.axios(config)
             .then(function() {
-              // console.log(response);
+              console.log(response);
               let se = _this.selected.toLocaleString();
               if (se == "") {
                 if (v == 1) {
@@ -1678,13 +1703,13 @@ export default {
                   _this.getPostAllReprot[k].user_sentiment[_this.objId] = -1;
                 }
               } else {
-                // console.log("in 1");
+                console.log("in 1");
                 if (v == _this.selected) {
-                  // console.log("in 11");
+                  console.log("in 11");
                   _this.getPostAllReprot[k].sentiment = v;
                   _this.getPostAllReprot[k].user_sentiment[_this.objId] = v;
                 } else {
-                  // console.log("in 12");
+                  console.log("in 12");
                   _this.getPostAllReprot.splice(k, 1);
                 }
               }
@@ -1736,7 +1761,7 @@ export default {
     this.domain = "";
     this.getData(this.acc, this.domain, this.social, this.date, offset, sort);
     if (this.getReportDomainPf) {
-      // console.log('this.getReportDomainPf',this.getReportDomainPf);
+      console.log('this.getReportDomainPf',this.getReportDomainPf);
       await this.axios
         .get(
           "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
@@ -1750,7 +1775,7 @@ export default {
       });
       this.andkey = result;
       this.heightword = k;
-      // console.log("result", result);
+      console.log("result", result);
     }
   },
 };

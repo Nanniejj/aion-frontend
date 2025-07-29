@@ -90,7 +90,7 @@ export default {
               let selected = Number(
                 opt.globals.seriesPercent[opt.seriesIndex].toLocaleString()
               );
-              // console.log("selected", selected);
+              console.log("selected", selected);
               return selected.toFixed(2) + "% " + " : " + val + " users";
             },
           },

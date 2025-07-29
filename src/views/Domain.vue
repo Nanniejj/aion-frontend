@@ -80,7 +80,6 @@ export default {
 }
   },
   mounted() {
-    console.log("this.getShowIntro", this.getShowIntro);
     if (this.getShowIntro) {
       this.elementVisible = true;
       this.closeShow();
@@ -124,7 +123,7 @@ export default {
 
 //     const originalURL = "https://facebook.com/profile.php/?id=100002416358810";
 // const simplifiedURL = this.simplifyFacebookURL(originalURL);
-// console.log('simplifiedURL',simplifiedURL); // Output: https://www.facebook.com/100028303330304
+ // Output: https://www.facebook.com/100028303330304
 
   },
 };

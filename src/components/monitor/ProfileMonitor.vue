@@ -306,7 +306,7 @@ export default {
       this.createUser = this.getProfile.filter;
     },
     linkToProfile(item) {
-      // console.log('item',item.source);
+      console.log('item',item.source);
       // let acc = item.uid;
       // if (item.source == "youtube") {
       //   acc = item.uid.replace("@", "");

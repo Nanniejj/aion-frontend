@@ -643,9 +643,7 @@ export default {
         let result = ["Name", "Positive", "Neutral", "Negative"];
 
         let wordChart = res.data.data.wordcloud.data;
-        // console.log('wordChart',wordChart);
-        // console.log('jfhdlg',wordChart[0].count[0].count);
-        //console.log('mclsdckl', wordChart);
+       
         commit("setWordChart", wordChart);
         let temp = [];
         for (var i = 0; i < 10; i++) {
@@ -656,15 +654,15 @@ export default {
             wordChart[i].count[2].count,
           ]);
         }
-        // console.log('temp', temp);
+        
         commit("setWordCloudWordChart", [result, ...temp]);
-        console.log("word", [result, ...temp]);
+        
 
         let temp1 = [];
         for (var j = 0; j < 10; j++) {
           temp1.push([wordChart[j].name]);
         }
-        // console.log('temp1',temp1);
+        
         commit("setWordCloudWordName", temp1);
 
         let hashtagChart = res.data.data.hashtag.data;
@@ -704,7 +702,7 @@ export default {
         const res = await WordcloudService.getWordCloudSentiment(payload);
         commit("setWordCloudSentiment", res.data);
         commit("setLoadStatus", false);
-        // console.log('5555',res.data);
+        console.log('5555',res.data);
       } catch (error) {
         console.log(error.response);
       }

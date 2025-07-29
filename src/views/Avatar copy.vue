@@ -149,7 +149,7 @@ tab(){
 
       axios(config)
         .then(function (response) {
-          //console.log(response)
+          console.log(response)
           let today = new Date();
           let blob = new Blob([response.data], {
             type: "application/force-download",

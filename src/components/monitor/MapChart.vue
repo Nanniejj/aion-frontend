@@ -174,7 +174,7 @@ export default {
         chart: {
           events: {
             dataPointSelection(event, chartContext, config) {
-              // console.log('config',  config);
+              console.log('config',  config);
               let stm
               if(config.seriesIndex==0){
                 stm ="1"

@@ -87,7 +87,7 @@
           >
           </span>
           <span
-            class="fas fa-trash-alt"
+            class="fa fa-trash-alt"
             v-b-tooltip.hover
             title="ลบ"
             size="sm"
@@ -225,7 +225,7 @@ export default {
     },
     ///////////////////////////////
     removeRow: function(item) {
-      // console.log('delete');
+      console.log('delete');
       this.$confirm("คุณต้องการลบข้อมูล " + item.username + " ?").then(() => {
         // alert(item._id)
         this.$store.dispatch("deleteUser", { delUserid: item._id });
@@ -336,7 +336,7 @@ table > thead > tr > th:nth-child(3) {
   background: #4c412b;
   color: white;
 }
-.fa-trash-alt:hover {
+.fa fa-trash-alt:hover {
   background: #4c412b;
   color: white;
 }

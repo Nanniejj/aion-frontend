@@ -169,7 +169,7 @@ export default {
     },
     onOptionsChange: function () {
       this.$store.commit("changeDataChoice", { choice: this.type_selected });
-      // console.log(this.type_selected);
+      console.log(this.type_selected);
     },
     // selectMonitor(){
     //   this.monitor = true

@@ -1,12 +1,13 @@
 <template>
-  <div>
+  <div  v-if="items && items.length">
     <div class="text-left">
-      <span class="h5 mr-4 d-inline-block">Spot News</span>
-      <div class="d-inline-block">
-        <div v-if="items && items[selectIndex] && items[selectIndex].data_date" class="text-left onedate">
+      <div v-if="items && items[selectIndex] && items[selectIndex].data_date" class="text-left onedate mb-2">
           <i class="far fa-calendar-alt"></i>
           {{ items[selectIndex].data_date.split("T")[0] }}
         </div>
+        <span class="h5 mr-1 d-inline-block mt-2">Hot Topics</span>
+      <span class="domain-tag mr-3" >สื่อสำนักข่าว</span>
+      <div class="d-inline-block">
       </div>
     </div>
     <div class="py-2 mx-0 box-spot-bg">
@@ -16,7 +17,7 @@
         <b-button class="slider-button btn-left" @click="scrollLeft"><i class="fa fa-chevron-left "></i></b-button>
         <div class="slider " ref="slider">
           <b-row>
-            <span class="d-flex" style="width:85vw;padding: 0px 20px;">
+            <span class="d-flex box-flex-small" style="width:85vw;padding: 0px 20px;">
               <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative"
                 v-for="(item, index) in items[selectIndex].data" :key="index" v-if="item.posts && item.posts.length">
                 <div class="position-relative" v-if="item && item.posts && item.posts[0]">
@@ -33,7 +34,7 @@
                     item.posts &&
                     item.posts[0] &&
                     item.posts[0].photos &&
-                    item.posts[0].photos.length == 0">
+                    item.posts[0].photos.length == 0|| item.posts[0].photos==undefined">
                     <div class="h5 text-center " style=" height: 200px !important;
                       background-color:rgb(237 231 221);
                       display: flex;
@@ -68,15 +69,16 @@
                 </div>
 
                 <!-- ตัดข้อความและมีปุ่มอ่านเพิ่มเติม -->
-                <div class="my-2 py-3" style="height: 120px;overflow-y: auto;"
+                <div class="my-2 py-3" style="height: 135px;overflow-y: auto;"
                   v-if="item && item.posts && item.posts[0]">
                   <div>
                     <!-- {{ item.title }} -->
                   </div>
-                  <div>{{ item.posts[0].title }}</div>
+                  <ReadMoreBox :item="{ title: item.posts[0].title}" />
+                  <!-- <div>{{ item.posts[0].title }}</div> -->
 
                 </div>
-                <div class="bold h6 position-absolute" style="bottom: 15px; left: 50%; transform: translateX(-50%);">
+                <div class="bold h6 position-absolute" style="bottom: 15px;left: 50%; transform: translateX(-50%); ">
                   <b-avatar variant="primary"
                     style="background-color: rgb(238 238 238) !important;color: rgb(89 89 89)">
                     <b> {{ index + 1 }}</b>
@@ -136,9 +138,14 @@
 <script>
 import moment from "moment";
 import { mapGetters } from "vuex";
+import ReadMoreBox from "./ReadMore.vue";
+
 export default {
+  components:{
+    ReadMoreBox
+  },
   computed: {
-    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate"]),
+    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate","getClickDomainId"]),
   },
   watch: {
     selectIndex() {
@@ -210,7 +217,7 @@ export default {
         method: "get",
         url: "https://api2.cognizata.com/api/v2/userposts/getSpotnews",
         params: {
-          domain: this.getClickDomain,
+          domain: this.getClickDomainId,
           from: from,
           to: to,
         },
@@ -232,11 +239,11 @@ export default {
             };
           });
           this.load = false;
-          console.log("newsss", this.items);
+        //  console.log('item', this.items);
         })
         .catch((error) => {
           this.load = false;
-          console.log(error);
+          console.log('error',error);
         });
     },
   },
@@ -257,6 +264,13 @@ export default {
 };
 </script>
 <style scoped>
+.domain-tag {
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: #fed16e;
+  box-shadow: 2px 2px 4px 0 rgb(0 0 0 / 20%);
+  /* font-weight: 600; */
+}
 .fa-external-link {
   display: inline-block;
   /* ทำให้ขอบครอบคลุมตัวไอคอน */
@@ -512,6 +526,13 @@ export default {
 
   /* จอมือถือ */
   @media only screen and (min-width: 0px) and (max-width: 800px) {
+      .box-link {
+      font-size: 12px !important;
+    }
+     .box-flex-small{
+      width:98vw;
+      padding: 0px 5px;
+    }
     .title-spot {
       display: inline;
       margin-right: 5px;

@@ -63,7 +63,7 @@ export default {
   },
   methods: {
     selectData() {
-      //console.log(this.valueDate[0], this.valueDate[1]);
+      console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         this.start_date =
           moment(new Date())

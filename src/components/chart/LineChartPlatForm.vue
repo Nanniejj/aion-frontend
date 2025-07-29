@@ -161,7 +161,6 @@ export default {
 
     async startChart() {
       var currentTime = new Date();
-      console.log("currentTime", currentTime);
       currentTime.setDate(currentTime.getDate() - 14);
       try {
         var config = {
@@ -177,7 +176,6 @@ export default {
           },
         };
         await this.axios(config).then((response) => {
-          console.log("response.data", response.data);
           var _this = this;
           var getDaysArrays = function(s, e) {
             for (
@@ -216,14 +214,12 @@ export default {
           let countlist = distinctItems.map((item) => item.count);
 
           this.range = datelist[0] + " - " + datelist[datelist.length - 1];
-          //console.log("array3", array3, distinctItems, datelist, countlist);
           this.series = [
             {
               name: "จำนวนโพสต์",
               data: countlist,
             },
           ];
-          console.log("getNamePlatform", this.getNamePlatform);
 
           if (this.getNamePlatform == "twitter") {
             this.colorp = ["#919495"];
@@ -303,7 +299,6 @@ export default {
               categories: datelist,
             },
           };
-          console.log("chart", this.chartOptions);
         });
       } catch (error) {
         console.error("Error fetching chart data:", error);

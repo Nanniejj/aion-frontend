@@ -93,7 +93,7 @@
           >
           </span>
           <span
-            class="fas fa-trash-alt"
+            class="fa fa-trash-alt"
             v-b-tooltip.hover
             title="ลบ"
             size="sm"
@@ -188,7 +188,6 @@ export default {
     },
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
-      console.log(filteredItems.length);
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },
@@ -205,7 +204,7 @@ export default {
   background: #4c412b;
   color: white;
 }
-.fa-trash-alt:hover {
+.fa fa-trash-alt:hover {
   background: #4c412b;
   color: white;
 }

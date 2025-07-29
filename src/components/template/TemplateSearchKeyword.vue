@@ -97,7 +97,7 @@
               >
               </span>
               <span
-                class="fas fa-trash-alt"
+                class="fa fa-trash-alt"
                 v-b-tooltip.hover
                 title="ลบ"
                 size="sm"

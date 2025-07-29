@@ -80,7 +80,7 @@ export default {
       }
     },
     selectData() {
-      //console.log(this.valueDate[0], this.valueDate[1]);
+     // console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         this.start_date = "";
         this.end_date = "";
@@ -120,7 +120,7 @@ export default {
     this.$store.commit("setSDateHt", this.start_date);
     this.$store.commit("setEDateHt", this.end_date);
     this.$store.commit("setArrDateHashtag", this.valueDate);
-    // console.log(
+   // console.log(
     //   "     this.datearre ",
     //   this.datearrs,
     //   this.datearre,
@@ -147,7 +147,7 @@ export default {
         sort_by: "",
         source: this.getValSource
       });
-      console.log("getCnt", this.getCnt);
+      //console.log("getCnt", this.getCnt);
       this.$store.commit("setCnt2", this.getCnt);
     }
   },

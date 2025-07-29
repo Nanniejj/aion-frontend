@@ -291,7 +291,7 @@ export default {
     }
   },
   async created() {
-    //console.log(`${this.$options.name} component succesfully mounted`);
+    console.log(`${this.$options.name} component succesfully mounted`);
     let today = moment(new Date())
       .format()
       .slice(0, 10);
@@ -311,7 +311,7 @@ export default {
     });
     this.domainData = domainName;
     this.$store.commit("setDomainArr", this.domainData);
-    //console.log(domainName);
+    // console.log(domainName);
     await this.$store.dispatch("fetchSentimentStatDashboard", {
       start_date: this.start_date,
       end_date: this.end_date,

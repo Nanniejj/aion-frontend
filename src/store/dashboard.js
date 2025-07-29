@@ -486,7 +486,7 @@ export default {
         commit("setFetchSentimentPost", res.data);
         commit("setLoadStatus", false);
 
-        //console.log(res.data);
+        console.log(res.data);
       } catch (error) {
         commit("setLoadStatus", false);
         alert("ระบบไม่สามารถใช้งานได้ในขณะนี้");
@@ -499,7 +499,7 @@ export default {
         commit("setBacklogs", res.data);
         commit("setLoadStatus", false);
 
-        //console.log(res.data);
+        console.log(res.data);
       } catch (error) {
         console.log(error);
         commit("setLoadStatus", false);

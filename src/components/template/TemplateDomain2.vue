@@ -75,14 +75,14 @@
           >
           </span>
           <span
-            class="fas fa-trash-alt"
+            class="fa fa-trash-alt"
             v-b-tooltip.hover
             title="ลบ"
             size="sm"
             v-on:click="removeRow(row.index, row.item)"
           ></span>
           <span
-            class="fas fa-list-ul"
+            class="fa fa-list-ul"
             v-b-tooltip.hover
             title="ดู SubDomain"
             size="sm"
@@ -258,7 +258,7 @@ export default {
       //   var token='8ed9acde328c317fef0afce75850dc637e674174';
       //   const AuthStr = "Token " + token;
       //   var data = JSON.stringify({"name":_this.textDomain,"display":_this.selected,"id":_this.idDomain});
-      // console.log(data);
+      console.log(data);
       //   var config = {
       //     method: 'put',
       //     url: API_URL+'/v1/domain/'+_this.idDomain+'/',
@@ -302,7 +302,7 @@ export default {
       this.infoModal.content = item.name;
       this.textDomain = item.name;
       this.selected = item.display;
-      //  console.log( this.options);
+      console.log( this.options);
       this.$root.$emit("bv::show::modal", this.infoModal.id, button);
     },
     resetInfoModal() {
@@ -368,7 +368,7 @@ table > thead > tr > th:nth-child(3) {
 }
 .fa-pencil,
 .fa-list-ul,
-.fa-trash-alt {
+.fa-trash-alt,.fa-trash {
   background: #fed16ebf;
   padding: 10px;
   border-radius: 50%;
@@ -384,7 +384,7 @@ table > thead > tr > th:nth-child(3) {
   background: #4c412b;
   color: white;
 }
-.fa-trash-alt:hover {
+.fa fa-trash-alt:hover {
   background: #4c412b;
   color: white;
 }

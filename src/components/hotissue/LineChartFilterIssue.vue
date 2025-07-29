@@ -29,7 +29,7 @@ export default {
   },
   watch: {
     getStatusSearch() {
-      // console.log("this.getSelectIssue222", this.getSelectIssue);
+      console.log("this.getSelectIssue222", this.getSelectIssue);
       this.apiFilterChart("",this.getSelectIssue, this.getDateIssue, this.getSocialIssue);
     },
     getArrDate(val) {
@@ -118,32 +118,11 @@ export default {
       if (n >= 1e12) return +(n / 1e12).toFixed(1) + "T";
     },
     domainFilter(dataAll) {
-      // console.log("dataAll", dataAll);
-      // var getDaysArray = (s, e) => {
-      //   console.log("dataAll2", this.valdate);
-      //   for (var a = [], d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
-      //     a.push({
-      //       date: moment(d)
-      //         .format()
-      //         .slice(0, 10),
-      //       count: this.valdate,
-      //     });
-      //   }
-      //   return a;
-      // };
-      // var daylist = getDaysArray(
-      //   new Date(this.getSdateDm),
-      //   new Date(this.getEdateDm)
-      // );
+  
+     
       let data = dataAll;
 
-      // let results = daylist.map((key) => {
-      //   return key;
-      // });
-      // var array3 = [...results, ...data];
-      // const distinctItems = [
-      //   ...new Map(array3.map((item) => [item["date"], item])).values(),
-      // ];
+   
       let datelist = data.map((item) => item.date);
       let countlist = data.map((item) => item.count);
       let top3 = data.map((item) => item.TopHashtags);
@@ -433,7 +412,7 @@ export default {
     },
     apiFilterChart(start,name,date,social) {
       console.log(start,name,date,social);
-      // console.log('this.typeChart',this.typeChart);
+      
       if (this.series.length !== 0) {
         this.series = [];
       }
@@ -496,7 +475,7 @@ export default {
             (a, b) => order.indexOf(a.source) - order.indexOf(b.source)
           );
           this.source = rel2;
-          console.log("chartres", response.data);
+          
           if (this.typeChart == "platform") {
             this.sourceFilter(rel2);
           }
@@ -506,11 +485,10 @@ export default {
           if (this.typeChart == "domain") {
             this.domainFilter(response.data[0].data);
           }
-          console.log("this.typeChart", this.typeChart);
+          
           if (this.typeChart == "" || this.typeChart == null) {
             this.domainFilter(response.data[0].data);
           }
-          // console.log("sourceFilter", response.data[0].source.result2);
         })
         .catch((error) => {
           console.log(error);

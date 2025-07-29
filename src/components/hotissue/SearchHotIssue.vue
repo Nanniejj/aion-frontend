@@ -140,7 +140,7 @@ export default {
           this.select_social = ["All"];
         }
       }
-      // console.log('this.select_social',this.select_social);
+      console.log('this.select_social',this.select_social);
     },
     clickIssue() {
       const result = this.select_issue.filter((word) => word == "All");
@@ -153,7 +153,7 @@ export default {
           this.select_issue = ["All"];
         }
       }
-      // console.log("issue", this.select_issue );
+      console.log("issue", this.select_issue );
     },
     searchIssue() {
       let issue, social;

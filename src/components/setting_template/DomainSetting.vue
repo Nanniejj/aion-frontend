@@ -1,108 +1,366 @@
 <template>
-  <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3">
-    <div class="prt h3">Domain List</div>
-    <b-row cols="2" cols-sm="2" cols-md="3" cols-lg="4" class="m-auto">
-      <b-col v-for="(domain, k) in getDomainSetting" :key="k">
-        <span
-          id="box-domain"
-          class="mt-3 mb-3 h5"
-          @click="toDomainStat(domain)"
-        >
-          <vue-element-loading
-            :active="getLoadStatus"
-            size="80"
-            background-color="rgba(255, 255, 255, 0.8)"
-            color="#b6ac9a"
-          />
-          {{ domain.name }}
-        </span>
-      </b-col>
-      <b-col>
-        <span id="box-domain" class="mt-3 mb-3" @click="toTemplate"
-          ><i class="fas fa-plus fa-2x"></i
-        ></span>
-      </b-col>
-    </b-row>
+  <div>
+    <b-container fluid id="tp-size">
+      <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.4)"
+        color="#b6ac9a" />
+      <!-- https://bootstrap-vue.org/docs/components/table#custom-data-rendering   \ Complete example -->
+      <!-- User Interface controls -->
+      <b-row id="input-btn">
+        <b-col lg="6" class="my-1">
+
+          <b-form-group label-for="filter-input" label-cols-sm="0" label-align-sm="right" label-size="md" class="mb-0">
+            <b-input-group size="md">
+              <b-form-input id="filter-input" v-model="filter" type="search" placeholder="ค้นหา"></b-form-input>
+            </b-input-group>
+          </b-form-group>
+        </b-col>
+        <b-col lg="6" class="my-1">
+          <TemplateAddDomain />
+          <!-- <button class="btn btn-add" ><i class="fa fa-plus"/><span  style="font-size:16px;"> เพิ่ม Domain </span></button> -->
+        </b-col>
+      </b-row>
+      <br />
+      <!-- {{getItemsDomain}} -->
+      <!-- Main table element -->
+      <b-table hover :items="getItemsDomain" :fields="fields" :current-page="currentPage" :per-page="perPage"
+        :filter="filter" :filter-included-fields="['name']" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
+        :sort-direction="sortDirection" :empty-filtered-text="empData" stacked="md" show-empty small
+        @filtered="onFiltered" head-variant="light">
+        <!-- @row-clicked="linkToSubDomain"   -->
+        <template #cell(id)="row">
+          {{ row.index + 1 + (currentPage - 1) * 10 }}
+        </template>
+        <template #cell(name)="row">
+          <b>{{ row.value }}</b>
+        </template>
+
+        <template #cell(actions)="row">
+          <span class="fa fa-pencil" v-b-tooltip.hover title=" แก้ไขข้อมูล" size="sm" @click="
+            open = true;
+          info(row.item, row.index, $event.target);
+          ">
+          </span>
+          <span class="fa fa-trash-alt" v-b-tooltip.hover title="ลบ" size="sm"
+            v-on:click="removeRow(row.index, row.item)"></span>
+          <span class="fas fa-list-ul" v-b-tooltip.hover title="ดู SubDomain" size="sm"
+            @click="linkToSubDomain(row.item)"></span>
+        </template>
+
+        <template #cell(display)="row">
+          <span v-if="row.value == 'แสดงผล'"><i class="fa fa-circle" style="color:#8cc751;" />
+            {{ row.value }}</span>
+          <span v-else><i class="fa fa-circle" style="color:#d35151;" />
+            {{ row.value }}</span>
+        </template>
+      </b-table>
+      <!-- paginate -->
+      <b-row>
+        <b-col sm="7" md="6" class="my-1" id="page" v-if="!filter">
+          <b-pagination v-model="currentPage" :total-rows="this.getItemsDomain.length" :per-page="perPage" align="fill"
+            size="sm" class="my-0"></b-pagination>
+        </b-col>
+        <b-col sm="7" md="6" class="my-1" id="page" v-else>
+          <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" align="fill" size="sm"
+            class="my-0"></b-pagination>
+        </b-col>
+      </b-row>
+
+      <!-- Info modal -->
+      <vue-modaltor :visible="open" @hide="hideModal" :animation-panel="'modal-slide-top'">
+        <b-container fluid>
+          <h5><b>แก้ไขข้อมูล</b></h5>
+          <hr />
+          <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
+          <div>
+            <b-form-input v-model="textDomain" placeholder="" maxlength="50">
+              <b>{{ textDomain }}</b></b-form-input> <small class="text-muted">{{ textDomain.length }} / 50
+              ตัวอักษร</small>
+            <br />
+            <b-form-group v-slot="{ ariaDescribedby }">
+              <b-form-radio-group v-model="selected" :options="options" :aria-describedby="ariaDescribedby"
+                name="radio-inline"></b-form-radio-group>
+            </b-form-group>
+            <b-row class="my-1">
+              <b-col sm="12" style="text-align:right;">
+                <br />
+                <b-button class="btn btn-close" size="sm" @click="hideModal()">ปิดหน้าต่าง</b-button>
+                <b-button class="btn btn-save" size="sm" @click="editDomain()"
+                  :disabled="textDomain.trim().length === 0">บันทึก</b-button>
+              </b-col>
+            </b-row>
+            <!-- <div class="mt-2">Value: {{ textDomain }}</div> -->
+          </div>
+        </b-container>
+      </vue-modaltor>
+    </b-container>
   </div>
 </template>
 <script>
 import { mapGetters } from "vuex";
-import VueElementLoading from "vue-element-loading";
+import TemplateAddDomain from "@/components/template/TemplateAddDomain.vue";
+// import axios from "axios";
+// import { API_URL } from '@/common/config';
+
 export default {
-  components: {
-    VueElementLoading,
-  },
+  components: { TemplateAddDomain },
   data() {
-    return {};
+    return {
+      empData: "ไม่พบข้อมูล",
+      idDomain: 0,
+      fields: [
+        { key: "id", label: "#", sortable: true, class: "text-center" },
+        { key: "name", label: "Domain", sortable: true },
+
+        {
+          key: "display",
+          label: "สถานะ",
+          formatter: (value) => {
+            return value ? "แสดงผล" : "ไม่แสดงผล";
+          },
+          sortable: true,
+          sortByFormatted: true,
+          filterByFormatted: true,
+        },
+        { key: "actions", label: "การจัดการ" },
+      ],
+      selected: "",
+      options: [
+        { text: "แสดงผล", value: true },
+        { text: "ไม่แสดงผล", value: false },
+      ],
+      textDomain: "",
+      open: false,
+      totalRows: 1,
+      currentPage: 1,
+      perPage: 10,
+      pageOptions: [5, 10, 15, { value: 100, text: "Show a lot" }],
+      sortBy: "",
+      sortDesc: false,
+      sortDirection: "asc",
+      filter: null,
+      filterOn: [],
+      infoModal: {
+        id: "info-modal",
+        title: "",
+        content: "",
+      },
+    };
   },
   computed: {
-    ...mapGetters(["getDomainSetting", "getLoadStatus"]),
+    ...mapGetters([
+      "getSelected",
+      "getFieldsDomain",
+      "getItemsDomain",
+      "getLoadStatus",
+    ]),
+    sortOptions() {
+      // Create an options list from our fields
+      return this.fields
+        .filter((f) => f.sortable)
+        .map((f) => {
+          return { text: f.label, value: f.key };
+        });
+    },
   },
   methods: {
-    toTemplate() {
-      this.$router.push({
-        name: "TemplateSetting",
+    removeRow: function (index, item) {
+      console.log("delete");
+      this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
+        this.$store.dispatch("deleteDomain", {
+          id: item.id,
+          index: index,
+        });
+        this.totalRows = this.getItemsDomain.length;
       });
     },
-    toDomainStat(domain) {
-      console.log(domain);
-      localStorage.setItem("updated_until", domain.updated_until);
-      this.$store.commit("setPushDomainStat", true);
-      this.$store.commit("setClickDomain", domain.name);
+    editDomain() {
+      let tdomain = this.textDomain.trim();
+      this.$store.dispatch("updateDomain", {
+        name: tdomain,
+        id: this.idDomain,
+        display: this.selected,
+      });
+      this.open = false;
+
+      // this.$confirm("กรุณายืนยันข้อมูล").then(() => {
+      //   var _this = this;
+      //   var token='8ed9acde328c317fef0afce75850dc637e674174';
+      //   const AuthStr = "Token " + token;
+      //   var data = JSON.stringify({"name":_this.textDomain,"display":_this.selected,"id":_this.idDomain});
+      console.log(data);
+      //   var config = {
+      //     method: 'put',
+      //     url: API_URL+'/v1/domain/'+_this.idDomain+'/',
+      //     headers: {
+      //       Authorization: AuthStr,
+      //       "Content-Type": "application/json",
+      //     },
+      //     data : data
+      //   };
+      //   axios(config)
+      //   .then(function () {
+      //     _this.$fire({
+      //         title: "บันทึกข้อมูลสำเร็จ",
+      //         type: "success",
+      //       showConfirmButton: false,
+      //         timer: 1000,
+      //       })
+      //       _this.hideModal()
+      //       location.reload();
+      //   })
+      //   .catch(function () {
+      //    _this.$alert("ไม่สามารถดำเนินการได้").then(() => {});
+      //   });
+
+      // });
+    },
+    linkToSubDomain(item) {
+      // this.$store.dispatch("fetchListSubDomain",{name:item.name})
+      console.log(item.id);
+      this.$store.commit("setDomainName", item.name);
+      this.$store.commit("setDomainId", item.id);
+      this.$router.push({ name: "SettingSubDomain"  ,params: { domain: item.name},query: { id:item.id}});
+    },
+    hideModal() {
+      this.open = false;
+    },
+    info(item, button) {
+      // this.infoModal.title = `Row index: ${index}`;
+      this.idDomain = item.id;
+      console.log(this.idDomain);
+      this.infoModal.content = item.name;
+      this.textDomain = item.name;
+      this.selected = item.display;
+      console.log( this.options);
+      this.$root.$emit("bv::show::modal", this.infoModal.id, button);
+    },
+    resetInfoModal() {
+      this.infoModal.title = "";
+      this.infoModal.content = "";
+    },
+    onFiltered(filteredItems) {
+      // Trigger pagination to update the number of buttons/pages due to filtering
+      this.totalRows = filteredItems.length;
+      console.log("item", filteredItems);
+      this.currentPage = 1;
     },
   },
-  mounted() {
-    this.$store.dispatch("apiDomainSetting");
-
-    // let obj = {
-    //   _id: ObjectId("6049b05556b7043831ba8d79"),
-    //   uid: "https://www.khaosod.co.th/politics/news_7971892",
-    //   account_name: "khaosod",
-    //   comments: null,
-    //   comments_count: null,
-    //   retweets_count: null,
-    //   date: ISODate("2023-11-20T11:51:00.000Z"),
-    //   engagement: null,
-    //   full_text:
-    //     "บิ๊กดุง มีข่าวดี กู้เรือหลวงสุโขทัย ชี้เลือกบริษัทกู้เรืออยู่ในขั้นตอนสุดท้าย คาดหากเป็นไปได้จะนำเรือขึ้นมาช่วง มี.ค.-เม.ย.67 เมื่อวันที่ 20 พ.ย.2566 ที่กองบัญชาการกองทัพเรือ (บก.ทร.) พล.ร.อ.อะดุง พันธุ์เอี่ยม ผบ.ทร. กล่าวถึงความคืบหน้าการกู้เรือหลวงสุโขทัยที่อับปางในวันที่ 18 ธ.ค.2565 ว่า เป็นขั้นตอนที่ยากมาก เพราะเรือหลวงสุโขทัยจมที่ความลึก 50 เมตร ซึ่งการจะนำเรือรบที่มีความลึกในระดับ 50 เมตรขึ้นมาทั้งลำ และต้องอยู่ในสภาพที่สมบรูณ์ที่สุด ไม่ใช่เรื่องง่าย “กองทัพเรือต้องการนำเรือขึ้น มาในสภาพสมบูรณ์ที่สุด เพราะเป็นวัตถุพยาน เพื่อนำมาปิดคดี ดังนั้น บริษัทที่เข้าประมูล ต้องมีใบอนุญาตต่างๆ มากมาย ซึ่งขณะนี้น่าจะได้คำตอบที่ดี” ผบ.ทร. กล่าว ผบ.ทร. กล่าวอีกว่า หากเป็นไปตามไทม์ไลน์ คาดว่าจะเสนอให้ผบ.ทสส. อนุมัติ จัดจ้างบริษัทที่จะทำการกู้เรือ ในช่วงเดือนธ.ค.นี้ และจะเริ่มกระบวนการกู้เรือต่อไป หากสิ่งศักดิ์สิทธิ์มีจริง ขอให้เรือหลวงสุโขทัยขึ้นมาในช่วงต้นปีหน้า ช่วงเดือนมี.ค.-เม.ย.67 ทั้งนี้ หลังจากนำเรือขึ้นมาแล้วจะดำเนินการอย่างไรต่อนั้น กองทัพเรือจะพิจารณาในขั้นตอนต่อไป เมื่อถามว่ามีความคืบหน้าขั้นตอนการประมูลของบริษัทที่จะมากู้เรือนั้น ผบ.ทร. กล่าวว่า ใกล้เสร็จสิ้นแล้ว เหลือเพียงขั้นตอนสุดท้าย ส่วนการสอบสวนคดีนี้ ยืนยันต้องจบในยุคนี้ เพราะเสนาธิการทหารเรือ คนก่อนทำสำนวนไว้แล้ว ว่าเรือสุโขทัยประสบอุบัติเหตุในจุดใดบ้างของเรือ เมื่อนำเรือขึ้นมาแล้วจะตอบโจทย์ ตามข้อสันนิษฐานในสำนวนคดี ถ้าใช่ตรงตามนั้นก็เป็นอันว่าจบ และจะทราบว่าเรือจมเพราะอะไร",
-    //   likes_count: null,
-    //   person: [],
-    //   photos: ['https://www.khaosod.co.th/wpapp/uploads/2023/11/%E0%B8%97%E0%B8%A3.jpg'],
-    //   post_type: "post",
-    //   reaction: {
-    //     like: 0,
-    //     share: 0,
-    //   },
-    //   snapshot: "",
-    //   source: "news",
-    //   url_post:
-    //     "https://www.khaosod.co.th/politics/news_7971892",
-    //     processed: false  
-    // };
+  created() {
+    this.$store.dispatch("fetchTemplateDomain");
   },
 };
 </script>
 <style scoped>
-#box-domain {
-  width: 100%;
-  height: 150px;
-  padding: 20px 0px;
-  border-radius: 7px;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+table>thead>tr>th:nth-child(3) {
+  display: none;
 }
-#box-domain:hover {
+
+.btn-close {
+  color: #f8f9fa;
+  background-color: #4c412b;
+  border-color: #4c412b;
+  box-shadow: 1px 1px 3px #666666;
+}
+
+.btn-save {
+  background: #ede7dd;
+  border-color: #ede7dd;
+  color: #4c412b;
+  box-shadow: 1px 1px 3px #666666;
+}
+
+.btn-save:hover {
   background: #fed16e;
-  cursor: pointer;
+  border-color: #fed16e;
 }
+
+#input-btn>div:nth-child(2) {
+  text-align: end;
+}
+
+#tp-size {
+  width: 85%;
+}
+
+#content>div>div:nth-child(1) .form-control:focus {
+  border-color: transparent;
+  outline: 0;
+  box-shadow: 0 0 0 0 #ede7dd;
+}
+
+#btn-filter {
+  background-color: #4c412b;
+  border-color: #4c412b;
+}
+
+#page {
+  margin: auto;
+  margin-top: 40px !important;
+}
+
+.fa-plus {
+  background: white;
+  padding: 5px 7px;
+  border-radius: 50%;
+}
+
+.fa-pencil,
+.fa-list-ul,
+.fa-trash-alt {
+  background: #fed16ebf;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 1px 1px 3px #666666;
+  margin: 7px 5px;
+  color: #4c412b;
+}
+
+.fa-pencil:hover {
+  background: #4c412b;
+  color: white;
+}
+
+.fa-list-ul:hover {
+  background: #4c412b;
+  color: white;
+}
+
+.fa fa-trash-alt:hover {
+  background: #4c412b;
+  color: white;
+}
+
+#filter-input {
+  box-sizing: border-box;
+  background-image: url("@/assets/search_icon.png");
+  background-position: 94% 10px;
+  background-repeat: no-repeat;
+  padding: 7px 20px 7px 45px;
+  border: none;
+  text-align: center;
+  background: #ddddddc7;
+  border-radius: 25px;
+}
+
+.table {
+  /* width: 85%; */
+  margin: auto;
+}
+
+#page {
+  margin-bottom: 50px !important;
+}
+
+@media only screen and (min-width: 0px) and (max-width: 1024px) {
+  #tp-size[data-v-32e3da22] {
+    width: 100%;
+  }
+}
+
 @media only screen and (min-width: 0px) and (max-width: 600px) {
-  #box-domain {
-    height: 100px;
+  .table {
+    /* width: 85%; */
     margin: auto;
-    font-size: large;
-    padding: 2px;
   }
 }
 </style>

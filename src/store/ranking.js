@@ -160,7 +160,6 @@ export default {
     },
     getDomainRanking: (state) => {
      let domain = state.results.filter(element => element.display ==true);
-     console.log(domain);
       return domain.map((result) => {
         return result.name;
       });
@@ -348,7 +347,7 @@ export default {
         commit("setRanking", res.data.data);
 
         // let result = ["Date", "Object", "y"];
-        //console.log("arrrrr " + res.data.trend.slice(0, 10));
+        console.log("arrrrr " + res.data.trend.slice(0, 10));
         commit("setDataTrend", res.data.trend);
         let trenddata = res.data.trend;
         console.log(trenddata);
@@ -388,7 +387,7 @@ export default {
         console.log("###", result);
         commit("setTrendRanking", result);
         commit("setLoadStatus", false);
-        // console.log(res.data);
+        console.log(res.data);
       } catch (error) {
         console.log(error);
         commit('setLoadStatus', false );
@@ -425,7 +424,7 @@ export default {
         );
         commit("setSentimentRankingChart", [result, ...temp]);
 
-        // console.log('5555',[result, ...temp]);
+        console.log('5555',[result, ...temp]);
 
         // let keep = ["Positive", "Neutral", "Negative"]
         let all = res.data.total.total_sentiments;

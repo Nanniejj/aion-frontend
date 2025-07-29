@@ -64,7 +64,7 @@
               badge-variant="info"
               variant="light"
               :src="user.profile_image"
-              :size="50"
+              :size="80"
               class="shadow-sm rounded"
             >
               <template #badge id="bb">

@@ -679,11 +679,7 @@ export default {
       this.tab_selected = "word";
     },
     getStat() {
-      console.log(
-        "fetchSentiment2",
-        this.getDomainArr,
-        this.getWordCloudDomain
-      );
+    
       let domainarr;
       if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
         domainarr = this.getDomainArr;
@@ -722,11 +718,7 @@ export default {
       this.WordsFre = word.name;
       this.$store.commit("setQuerySearch", word.name);
       this.$store.commit("setWordCloudSocial", this.socialname);
-      console.log(
-        "fetchSentiment2",
-   
-        this.getWordCloudDomain.toLocaleString()
-      );
+     
       let domainarr;
       if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
         domainarr = this.getDomainArr;
@@ -783,14 +775,14 @@ export default {
       }
 
       this.tab_selected = false;
-      // console.log("this.tab_selected", this.tab_selected);
+      console.log("this.tab_selected", this.tab_selected);
     },
 
     deleteList(k) {
       this.getWordChart.splice(k, 1);
       // this.chartData.splice(k + 1, 1);
       // this.result.wordcloud.splice(k, 1);
-      // console.log("click", this.chartData);
+      console.log("click", this.chartData);
     },
   },
   computed: {

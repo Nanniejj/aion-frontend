@@ -149,7 +149,6 @@ computed: {
     var full = "Today " + date + "/" + (month + 1) + "/" + year;
     var date2 = new Date();
     var last3 = new Date(date2.getTime() - 1 * 24 * 60 * 60 * 1000);
-    console.log(last3);
    
     // date format
     var last3_m = last3.getMonth() + 1;
@@ -165,7 +164,6 @@ computed: {
     // this.lastday = (last3.getFullYear())  + "-" + (last3.getMonth()+1) + "-" + (last3.getDate())
 
     this.date = full;
-    // console.log(typeof(month))
     month = month + 1;
     if (month < 10) {
       month = "0" + String(month);
@@ -174,20 +172,18 @@ computed: {
     if (date < 10) {
       date = "0" + String(date);
     }
-    //console.log(month);
     this.today = year + "-" + month + "-" + date;
     
     //check button hidden
     this.lastd= this.lastday;
 
-    //console.log("lastbefore",this.lastday);
+    console.log("lastbefore",this.lastday);
     this.day = date;
     this.month = month;
     this.year = year;
  
   },
    mounted() {
-     console.log(this.today);
   this.$store.dispatch("fetchAvatar",{date:this.today});    
   },
 

@@ -381,6 +381,34 @@
             </b-card-body>
           </b-col>
         </b-row>
+          <div class="text-left ai-box mt-2"
+          v-if="datas && datas.photos_text && datas.photos_text.length && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;">
+          <div v-for="(text, idx) in datas.photos_text" >
+           
+            <div v-if="text&&text.length">
+              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
+              </b-avatar>
+              <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
+              </span>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text }}
+            </div>
+            <div v-if="text.face" >
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
+                  <span style="background: #e5e5e5;
+                    padding: 0px 6px;
+                    border-radius: 13px;">
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name}}
+                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
+                      parseFloat((face.confidence * 100).toFixed(2))
+                    }}%)</span></span></span>
+              </span>
+            </div>
+          </div>
+        </div>
         <div
           class="text-left ai-box mt-2"
           v-if="datas && datas.ocr && username == 'adminatapy'"
@@ -426,8 +454,7 @@
           v-if="
             datas &&
               datas.location &&
-              datas.location.length &&
-              username == 'adminatapy'
+              datas.location.length 
           "
           class="text-left ai-box mt-3 text-small "
           style="font-size: 13px;font-weight: 500; color: #2c3e50;"
@@ -1012,7 +1039,6 @@ export default {
         length = count;
       }
       var xs = Math.ceil(length / itemsPerPage);
-      console.log("total page:", xs);
       return xs;
     },
   },
@@ -1079,25 +1105,23 @@ export default {
       }
       this.setPage(pageNumber);
       this.gotopage = "";
-      console.log(pageNumber);
     },
     setPage: function(pageNumber) {
       this.currentPage = pageNumber;
-      console.log(this.currentPage);
-      //console.log("page num:",typeof(pageNumber));
+
       //Call new data from api here
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
-        console.log("offset : ", this.offset);
+      
       } else {
         this.offset = 0;
       }
       if (this.searchQuery != "") {
         this.pageApi(this.sort, 0, this.searchQuery);
       } else {
-        console.log("setPage else");
+    
         this.pageApi(this.sort, this.offset);
-        console.log("else" + this.sort);
+        
       }
 
       //this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:"",offset:this.offset});
@@ -1205,7 +1229,7 @@ export default {
       } else {
         this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น Neutral ?").then(() => {
           //this.sentiment=0
-          //console.log(this.sentiment);
+          console.log(this.sentiment);
           this.getSentimentPost.data.splice(k, 1);
         });
       }
@@ -1216,10 +1240,10 @@ export default {
       } else {
         this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น Negative ?").then(
           () => {
-            //console.log(k);
+            console.log(k);
             //this.sentiment=-1
             this.getSentimentPost.data.splice(k, 1);
-            //console.log(this.sentiment);
+            console.log(this.sentiment);
           }
         );
       }

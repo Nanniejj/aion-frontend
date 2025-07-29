@@ -264,7 +264,7 @@ export default {
       state.loadMapStat = payload;
     },
     setLoadMapStatic: (state, payload) => {
-      state.loadMapstatic=payload
+      state.loadMapstatic = payload;
     },
     setLoadMapPost: (state, payload) => {
       state.loadMapPost = payload;
@@ -338,13 +338,13 @@ export default {
       state.delMonitor = payload;
     },
     addAccount: (state, payload) => {
-      // console.log("acc payload", payload.hashtaglist, typeof payload);
+      console.log("acc payload", payload.hashtaglist, typeof payload);
       if (payload.targetlist) {
         state.listProfile.targetlist = [
           ...state.listProfile.targetlist,
           ...payload.targetlist,
         ];
-        // console.log("acc state", state.listProfile.targetlist);
+        console.log("acc state", state.listProfile.targetlist);
       } else {
         state.listProfile.hashtaglist = [
           ...state.listProfile.hashtaglist,
@@ -384,7 +384,7 @@ export default {
       state.loCount = payload;
     },
     addPostLocation: (state, payload) => {
-      // console.log(payload);
+      console.log(payload);
       state.postMonitor = [...state.postMonitor, ...payload];
     },
 
@@ -416,10 +416,10 @@ export default {
       state.currentPage = payload;
     },
     addAllPost: (state, payload) => {
-      // console.log(payload);
+      console.log(payload);
 
       let temp = [...state.postMonitor, ...payload];
-      // console.log("temp", temp);
+
       const ids = temp.map((o) => o.full_text);
       const filtered = temp.filter(
         ({ full_text }, index) => !ids.includes(full_text, index + 1)
@@ -456,7 +456,6 @@ export default {
           commit("setLoadMapStat", false);
           console.log("datastat", res.data);
           commit("setLocationStat", res.data.result);
-          
         })
         .catch((error) => {
           commit("setLoadMapStat", false);
@@ -470,7 +469,7 @@ export default {
       var axios = require("axios");
       var config = {
         method: "get",
-        url: API_V2_URL  + "/api/v2/userposts/getLocationPost",
+        url: API_V2_URL + "/api/v2/userposts/getLocationPost",
         params: payload,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -695,7 +694,7 @@ export default {
       axios(config)
         .then((response) => {
           commit("setKeyword", response.data);
-          // console.log("Toppp response.data", response.data[0].TopHashtags);
+          console.log("Toppp response.data", response.data[0].TopHashtags);
           console.log("response", response.data);
           // this.$store.commit("setLoadHashIssue", false);
         })
@@ -736,7 +735,7 @@ export default {
         var posts = post.map((result) => {
           return { ...result, ...pair };
         });
-           if (payload.offset === 0) {
+        if (payload.offset === 0) {
           commit("setPostLocation", posts);
         } else {
           commit("addPostLocation", posts);
@@ -762,14 +761,14 @@ export default {
       commit("setLoadStatus2", true);
       try {
         const res = await MonitorService.getProfile(payload);
-        // console.log(res);
+        console.log(res);
         const array = res.data;
         const key = "source";
         const arrayUniqueByKey = [
           ...new Map(array.profile.map((item) => [item[key], item])).values(),
         ];
         Object.assign(res.data, { profile: arrayUniqueByKey });
-          commit("setProfileMonitor", res.data);
+        commit("setProfileMonitor", res.data);
         // commit("setCountPost", res.data.posts);
         commit("setLoadStatus2", false);
       } catch (error) {
@@ -780,14 +779,14 @@ export default {
       commit("setLoadStatus2", true);
       try {
         const res = await MonitorService.getProfile(payload);
-        // console.log(res);
+        console.log(res);
         const array = res.data;
         const key = "source";
         const arrayUniqueByKey = [
           ...new Map(array.profile.map((item) => [item[key], item])).values(),
         ];
         Object.assign(res.data, { profile: arrayUniqueByKey });
-        // console.log(arrayUniqueByKey, { profile: arrayUniqueByKey }, res.data);
+        console.log(arrayUniqueByKey, { profile: arrayUniqueByKey }, res.data);
         commit("setProfileHash", res.data);
         commit("setCountPost", res.data.posts);
         commit("setLoadStatus2", false);
@@ -799,7 +798,7 @@ export default {
       commit("setLoadPostTab", true);
       try {
         const res = await MonitorService.getPostAllMonitor(payload);
-        // console.log(res.data);
+        console.log(res.data);
         commit("setLoadPostTab", false);
         commit("setCnt", res.data.count);
         var posts = res.data.data;
@@ -829,7 +828,7 @@ export default {
       }
     },
     async fatchListMonitor({ commit, state }, payload) {
-      // console.log("state.listProfile", state.listProfile, state.updatetable);
+      console.log("state.listProfile", state.listProfile, state.updatetable);
       if (state.listProfile.targetlist.length) {
         return;
       } else {
@@ -840,7 +839,7 @@ export default {
           commit("setListProfile", data);
           commit("setSumMonitor", res.data[0]);
           commit("setListMonitor", res.data[0]);
-          // console.log(res.data[0]);
+          console.log(res.data[0]);
           //commit('setListHashtag', res.data[0].hashtaglist);
 
           commit("setLoadStatus", false);
@@ -857,7 +856,7 @@ export default {
         const res = await MonitorService.getListMonitor(payload);
 
         commit("setSumMonitor", res.data[0]);
-        // console.log(res.data[0]);
+        console.log(res.data[0]);
         //commit('setListHashtag', res.data[0].hashtaglist);
 
         commit("setLoadStatus", false);
@@ -869,7 +868,7 @@ export default {
       commit("setLoadStatus", true);
       try {
         const res = await MonitorService.delMonitor(payload);
-        // console.log(res.data);
+        console.log(res.data);
         if (payload.hashtag) {
           const index = state.listProfile.hashtaglist.findIndex(
             (hash) => hash.uid === "#" + payload.hashtag
@@ -887,12 +886,12 @@ export default {
         console.log(error.response);
       }
     },
-    
+
     async fetchAllPostDomain({ commit }, payload) {
       commit("setLoadPostTab", true);
       try {
         const res = await DomainService.getPostDomain(payload);
-        // console.log('payload',payload);
+        console.log("payload", payload);
         commit("setLoadPostTab", false);
         var post = res.data.data;
         var pair = { read: true };
@@ -900,7 +899,6 @@ export default {
           return { ...result, ...pair };
         });
 
-        // console.log('post',posts);
         // ---------------------------------------------------------------------------------------------------------
         if (payload.offset === 0) {
           commit("setAllPostDomain", posts);
@@ -920,7 +918,7 @@ export default {
       commit("setLoadPostTab", true);
       try {
         const res = await DomainService.getPostDomainv1(payload);
-        // console.log('payload',payload);
+        console.log("payload", payload);
         commit("setLoadPostTab", false);
         var post = res.data.data;
         var pair = { read: true };
@@ -928,11 +926,12 @@ export default {
           return { ...result, ...pair };
         });
 
-        // console.log('post',posts);
         // ---------------------------------------------------------------------------------------------------------
         if (payload.offset === 0) {
           commit("setAllPostDomain", posts);
-          commit("setTopPostDomain", posts.slice(0, 3));
+          if (payload.sort == "engagement") {
+           // commit("setTopPostDomain", posts.slice(0, 3));
+          }
         } else {
           commit("addAllPost", posts);
         }
@@ -942,6 +941,28 @@ export default {
       } catch (error) {
         alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
         commit("setLoadPostTab", false);
+        console.log(error.response);
+      }
+    },
+    async fetchTopPostPlatform({ commit }, payload) {
+      commit("setLoadTopPost", true);
+      try {
+        const res = await DomainService.getPostDomainv1(payload);
+        commit("setLoadTopPost", false);
+        var post = res.data.data;
+        var pair = { read: true };
+        var posts = post.map((result) => {
+          return { ...result, ...pair };
+        });
+  
+         commit("setTopPostDomain", posts.slice(0, 3));
+   
+  
+        commit("setLoadTopPost", false);
+        return res.data.data;
+      } catch (error) {
+        alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+        commit("setLoadTopPost", false);
         console.log(error.response);
       }
     },
@@ -958,26 +979,26 @@ export default {
     //       "Content-Type": "application/json",
     //     },
     //   };
-    
+
     //   try {
     //     const response = await axios(config);
     //     const res = response.data;
-    
+
     //     commit("setLoadPostTab", false);
-        
+
     //     var post = res.data;
     //     var pair = { read: true };
     //     var posts = post.map((result) => {
     //       return { ...result, ...pair };
     //     });
-    
+
     //     // Check offset and commit appropriate mutations
     //     if (payload.offset === 0) {
     //       commit("setAllPostDomain", posts);
     //     } else {
     //       commit("addAllPost", posts);
     //     }
-    
+
     //     commit("setCountAllPost", res.count);
     //     return res.data;
     //   } catch (error) {
@@ -986,7 +1007,5 @@ export default {
     //     console.log(error.response);
     //   }
     // },
-    
-    
   },
 };

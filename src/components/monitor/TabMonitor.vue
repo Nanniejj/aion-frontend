@@ -82,11 +82,7 @@ export default {
   methods: {
     doFuncFoo(value) {
       this.idChangwats = Number(value);
-      console.log(
-        "this.idChangwats",
-        this.idChangwats,
-        typeof this.idChangwats
-      );
+    
       if (this.idChangwats) {
         this.apiLocation();
       }
@@ -112,8 +108,8 @@ export default {
         var min = Math.min(...myArray.map((item) => item.count));
         var max = Math.max(...myArray.map((item) => item.count));
         this.$store.commit("setMaxMinMap", { max: max, min: min });
-        // console.log("min: " + min);
-        // console.log("max: " + max);
+        console.log("min: " + min);
+        console.log("max: " + max);
       });
     },
 
@@ -142,8 +138,8 @@ export default {
     //     var min = Math.min(...myArray.map((item) => item.count));
     //     var max = Math.max(...myArray.map((item) => item.count));
     //     this.$store.commit("setMaxMinMap", { max: max, min: min });
-    //     // console.log("min: " + min);
-    //     // console.log("max: " + max);
+    //     console.log("min: " + min);
+    //     console.log("max: " + max);
     //   });
     // },
   },

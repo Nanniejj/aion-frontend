@@ -200,7 +200,6 @@ export default {
 
     async startChart() {
       var currentTime = new Date();
-      console.log("currentTime", currentTime);
       currentTime.setDate(currentTime.getDate() - 14)
       
       //http://139.59.103.67:3000/api/userposts_test/getChartDataPlatform?domain=covid19&start=2021-11-19T00:00:00&end=2021-11-22T23:59:59
@@ -218,7 +217,6 @@ export default {
         },
       };
       await this.axios(config).then((response) => {
-        console.log("response.data", response.data);
         var _this = this;
         var getDaysArrays = function(s, e) {
           for (
@@ -255,16 +253,13 @@ export default {
         });
 
         var array3 = [...results, ...data];
-        console.log("array3", ...data, ...results);
         const distinctItems = [
           ...new Map(array3.map((item) => [item["date"], item])).values(),
         ];
 
-        console.log("array3", distinctItems);
         let datelist = distinctItems.map((item) => item.date);
         let countlist = distinctItems.map((item) => item.count);
         let top3 = distinctItems.map((item) => item.TopHashtags);
-        console.log("top3", top3);
         this.range = datelist[0] + " - " + datelist[datelist.length - 1];
 
         this.series = [

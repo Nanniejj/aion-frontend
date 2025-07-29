@@ -157,7 +157,7 @@ export default {
           let chartTeam = [...response.data.result].map((x) => {
             return { x: x.team, y: x.postCount };
           });
-          // console.log('accc',chartTeam);
+          console.log('accc',chartTeam);
           state.dataListAvatar = {
             avatar: response.data.result,
             stat: response.data.stat,
@@ -191,7 +191,7 @@ export default {
         let user = res.data.results;
         let users = user.map((itema) => {
           itema;
-          //console.log({...itema});
+          console.log({...itema});
           return itema;
         });
         console.log(users);
@@ -234,7 +234,7 @@ export default {
         let arr = payload.avatar.split(",");
         console.log(arr);
         if (arr.length > 1) {
-          //console.log('ele>1');
+          console.log('ele>1');
           for (var i = 0; i < arr.length; i++) {
             console.log("payload.avatar", arr[i]);
             const index = state.avatarUser.findIndex((sd) => sd.id === arr[i]);
@@ -242,11 +242,11 @@ export default {
             console.log(index);
           }
         } else {
-          // console.log('ele=1');
+          console.log('ele=1');
           const index = state.avatarUser.findIndex(
             (sd) => sd.id === payload.avatar
           );
-          //console.log('sd.uid',state.avatarUser[index].id);
+          console.log('sd.uid',state.avatarUser[index].id);
           console.log("index", index);
           state.avatarUser.splice(index, 1);
         }

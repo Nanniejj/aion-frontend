@@ -414,11 +414,14 @@
               <b-col>
                 <div v-if="postDomain.source == 'tiktok' && postDomain.uid">
                   <a v-bind:href="postDomain.url_post" target="_blank">
-                    <lite-tiktok
+                    <img :src="postDomain.photos && postDomain.photos[0]" onerror="this.style.display='none'"
+                    style="height:450px;border-radius: 10px;" class="my-3" />
+                    <!-- <lite-tiktok
                       :videoid="postDomain.uid"
                       style=" pointer-events: none; "
                     ></lite-tiktok
-                  ></a>
+                  > -->
+                </a>
 
                   <!-- <iframe
                     width="auto"
@@ -507,6 +510,34 @@
                 </div>
               </b-col>
             </b-row>
+                 <div class="text-left ai-box mt-2"
+          v-if="postDomain && postDomain.photos_text && postDomain.photos_text.length && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;">
+          <div v-for="(text, idx) in postDomain.photos_text" >
+           
+            <div v-if="text&&text.length">
+              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
+              </b-avatar>
+              <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
+              </span>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text }}
+            </div>
+            <div v-if="text.face" >
+              <span v-for="(face, idx) in text.face">
+                <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
+                  <span style="background: #e5e5e5;
+                    padding: 0px 6px;
+                    border-radius: 13px;">
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name}}
+                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
+                      parseFloat((face.confidence * 100).toFixed(2))
+                    }}%)</span></span></span>
+              </span>
+            </div>
+          </div>
+        </div>
             <div
               class="text-left ai-box mt-2"
               v-if="postDomain && postDomain.ocr && username == 'adminatapy'"
@@ -552,8 +583,8 @@
               v-if="
                 postDomain &&
                   postDomain.location &&
-                  postDomain.location.length &&
-                  username == 'adminatapy'
+                  postDomain.location.length 
+        
               "
               class="text-left ai-box mt-3 text-small "
               style="font-size: 13px;font-weight: 500; color: #2c3e50;"
@@ -1183,7 +1214,7 @@ export default {
   },
   watch: {
     getStatusSearch() {
-      // console.log("this.getSelectIssue222", this.getSelectIssue);
+      console.log("this.getSelectIssue222", this.getSelectIssue);
       this.getData(this.getSelectIssue, this.getDateIssue, this.getSocialIssue);
     },
   },
@@ -1336,14 +1367,14 @@ export default {
         word.push(...this.heightword);
         if (this.andkey.length) {
           this.andkey.forEach(function(key) {
-            // console.log("keyyyy", k, key, key.length);
+            
             if (
               key.length == 2 &&
               full_text.includes(key[0]) &&
               full_text.includes(key[1])
             ) {
-              // console.log("เข้าสอง");
-              // console.log("full_text", full_text, key, word.concat(key));
+              
+              
               word.push(...key);
             }
 
@@ -1366,7 +1397,7 @@ export default {
             }
           });
 
-          //  console.log("key+addkey", word);
+       
         }
       }
       return word;
@@ -1375,7 +1406,7 @@ export default {
       event.target.src = this.default_avatar;
     },
     onClick(i, data) {
-      // console.log(data);
+      console.log(data);
       this.index = i;
       this.dataPhoto = data;
     },

@@ -275,7 +275,7 @@ export default {
       var datas = this.getListTargetReport;
       if (this.tabsMonitor == "tabProfile") {
         const found = datas.filter((element) => element.source === "twitter");
-        // console.log({
+       // console.log({
         //   targetlist: found,
         //   summary: this.getListMonitor.summary,
         //   hashtaglist: this.getListMonitor.hashtaglist,

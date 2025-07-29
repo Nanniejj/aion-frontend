@@ -140,7 +140,7 @@ export default {
   },
   methods: {
     login() {
-      //console.log('window.location.protocol',window.location.protocol);
+      console.log('window.location.protocol',window.location.protocol);
       // if (window.location.protocol != "http:") {
       //   window.location.protocol = "http";
        
@@ -161,7 +161,7 @@ export default {
       axios(config)
         .then(function({ data }) {
           //commit('setLogin', response.data);
-          // console.log(data)
+          console.log(data)
           localStorage.setItem("token", data.accessToken);
           localStorage.setItem("reftoken", data.refreshToken);
           localStorage.setItem("reftokenOpt", data.reftokenOpt);

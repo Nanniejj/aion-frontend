@@ -101,7 +101,6 @@ export default {
       let results = daylist.map((key) => {
         return key;
       });
-      console.log("update", results);
       //sumy
       let data1 
       if(this.getDataTrend){
@@ -121,7 +120,6 @@ export default {
       });
 
       //let updatedata = data1.map((item) => item.date);
-      console.log("updatedata", data1);
 
       // var array3 = [...results, ...data];
       // const distinctItems = [
@@ -130,10 +128,8 @@ export default {
       // ];
       let datelist = results.map((item) => item.date);
       let countlist = results.map((item) => item.count);
-      console.log("relll", { date: datelist, data: countlist });
 
       this.range = datelist[0] + " - " + datelist[datelist.length - 1];
-      console.log("datelist", datelist);
       this.series = data1.slice(0, 10);
       this.chartOptions = {
         title: {
@@ -197,20 +193,17 @@ export default {
           new Date(this.getWordCloudStartDate),
           new Date(this.getWordCloudEndDate)
         );
-        console.log('มี arr');
+     
       } else {
         let de = moment(new Date()).format().slice(0, 10);
         let ds = moment(currentTime).format().slice(0, 10);
         daylist = getDaysArrays(new Date(ds), new Date(de));
-        console.log('ไม่มี arr');
       }
 
       let results = daylist.map((key) => {
         return key;
       });
-      console.log("dataaaa", this.getDataTrend);
       //sumy
-      console.log("dateee", results);
       let data1 = this.getDataTrend.map((item) => {
         let sum = item.y.reduce((a, b) => a + b, 0);
         return { x: item.x, sumy: sum, data: item.y, name: item.label };
@@ -226,7 +219,7 @@ export default {
         return { data: item.data, name: item.name, date: item.x };
       });
 
-      console.log("rabknME", data1);
+      // console.log("rabknME", data1);
       //    let data2 = distinctItems.map((item) => item.x);
       // var array3 = [...results, ...data1];
       // console.log("array3", ...data1, ...results);
@@ -238,7 +231,6 @@ export default {
       let datelist = results.map((item) => item.date);
       let countlist = results.map((item) => item.data);
 
-      console.log("bbbbbbbbbb", datelist, countlist);
 
       this.range = datelist[0] + " - " + datelist[datelist.length - 1];
       //console.log("array3", array3, distinctItems, datelist, countlist);

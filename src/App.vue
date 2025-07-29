@@ -148,7 +148,7 @@
 }
 /* width */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 
 /* Track */
@@ -763,7 +763,12 @@ div.modal-vue > div > div.modal-vue-panel.modal-fade.modal-vue-show {
 .bold {
   font-weight: bold;
 }
-
+.fa {
+    font-style: normal !important;
+}
+i {
+    font-style: normal !important;
+}
 .margin-auto {
   margin: auto !important;
 }
@@ -945,6 +950,7 @@ div.modal-vue > div > div.modal-vue-panel.modal-fade.modal-vue-show {
   .tooltip {
     display: none !important ;
   }
+
 }
 @media print {
   .fa-print {

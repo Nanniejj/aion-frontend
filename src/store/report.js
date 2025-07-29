@@ -197,7 +197,7 @@ export default {
       commit("setLoadPostTab", true);
       try {
         const res = await MonitorService.getPostAllMonitor(payload);
-        // console.log(res.data);
+        console.log(res.data);
         commit("setLoadPostTab", false);
         commit("setCntReport", res.data.count);
         var post = res.data.data;
@@ -228,11 +228,11 @@ export default {
       };
       axios(config)
         .then((response) => {
-          // console.log("listDomain2", response.data);
+          console.log("listDomain2", response.data);
           let listDomain = response.data.domains.map((key) => {
             return key.domain;
           });
-          // console.log("listDomain", listDomain);
+          console.log("listDomain", listDomain);
           commit("setStatReport", response.data);
           commit("setReportDomainPf", listDomain);
           commit("setLoadReportStat", false);

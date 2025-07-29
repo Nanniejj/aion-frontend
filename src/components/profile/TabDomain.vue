@@ -153,7 +153,7 @@ export default {
 //   },
   destroyed() {
     this.$destroy();
-    //console.log('destroyed')
+    console.log('destroyed')
   },
 };
 </script>

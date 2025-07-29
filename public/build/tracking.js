@@ -120,7 +120,7 @@
    * tracking.track('#video', tracker, { camera: true });
    *
    * tracker.on('track', function(event) {
-   *   // console.log(event.data[0].x, event.data[0].y)
+   *   console.log(event.data[0].x, event.data[0].y)
    * });
    *
    * @param {HTMLElement} element The element to track, canvas, image or

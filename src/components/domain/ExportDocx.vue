@@ -471,7 +471,7 @@ export default {
 
       this.imgData4 = await this.captureScreenshot("#post-pos");
       this.imgData5 = await this.captureScreenshot("#post-neg");
-      // console.log(this.imgData2);
+      console.log(this.imgData2);
       try {
         // ตั้งค่าเวลาที่รอ (milliseconds)
         const delayTime = 1000;
@@ -619,23 +619,23 @@ export default {
         });
         let yCoordinate2 = 1.5;
         this.getExportTopPostDomain.forEach((x, index) => {
-          slide2.addText(index + 1 + " link : " + x.url_post, {
-            x: 5.2,
+          slide2.addText(index + 1 + " link : " + decodeURI(x.url_post), {
+            x: 5,
             y: yCoordinate2, // You may need to adjust the y-coordinate based on your layout
-            w: "90%",
+            w: "50%",
             h: 0.5,
-            fontSize: 15,
+            fontSize: 13,
             color: "363636",
             fontFace: "TH Sarabun New",
           });
           yCoordinate2 += 0.3;
           if (x.photos && x.source !== "instagram") {
             if (Array.isArray(x.photos)) {
-              // console.log(" x.photos", x.photos);
+              console.log(" x.photos", x.photos);
               x.photos.map((img, idx) => {
                 if (img) {
                   slide2.addText(idx + 1 + ".) ที่มารูป : " + img, {
-                    x: 5.2,
+                    x: 5,
                     y: yCoordinate2, // You may need to adjust the y-coordinate based on your layout
                     w: "90%",
                     h: 0.5,
@@ -702,12 +702,12 @@ export default {
         });
         let yCoordinate3 = 1.5;
         this.getExportTopPostDomainNeg.forEach((x, index) => {
-          slide3.addText(index + 1 + " link : " + x.url_post, {
-            x: 5.2,
+          slide3.addText(index + 1 + " link : " + decodeURI(x.url_post), {
+            x: 5,
             y: yCoordinate3, // You may need to adjust the y-coordinate based on your layout
-            w: "90%",
+            w: "50%",
             h: 0.5,
-            fontSize: 15,
+            fontSize: 13,
             color: "363636",
             fontFace: "TH Sarabun New",
           });
@@ -715,7 +715,7 @@ export default {
           yCoordinate3 += 0.3;
           if (x.photos && x.source !== "instagram") {
             if (Array.isArray(x.photos)) {
-              // console.log(" x.photos", x.photos);
+              console.log(" x.photos", x.photos);
               x.photos.map((img, idx) => {
                 if (img) {
                   slide3.addText(idx + 1 + ".) ที่มารูป : " + img, {
@@ -818,7 +818,7 @@ export default {
         const staticDomainImage = canvas.toDataURL("image/png");
 
         return staticDomainImage;
-        // console.log("Captured StaticDomain as image:", staticDomainImage);
+        console.log("Captured StaticDomain as image:", staticDomainImage);
         // if (check == "stat1") {
         //   this.pngImage1 = staticDomainImage;
         // }
@@ -898,7 +898,7 @@ export default {
 
       this.imgData4 = await this.captureAndResize("#post-pos", null, 500);
       this.imgData5 = await this.captureAndResize("#post-neg", null, 500);
-      // console.log(this.imgData2);
+      console.log(this.imgData2);
       await this.delay(1000);
 
       await this.Export2Word(
@@ -1029,7 +1029,7 @@ export default {
         clonedContent.appendChild(paragraph2);
 
         const url_post = document.createElement("div");
-        url_post.textContent = i + 1 + ". URL : " + x.url_post;
+        url_post.textContent = i + 1 + ". URL : " + decodeURI(x.url_post);
         // url_post.style.fontWeight = "bold";
         url_post.style.fontSize = "22px";
         url_post.style.fontFamily = "'TH Sarabun New', sans-serif";
@@ -1128,7 +1128,7 @@ export default {
         clonedContent.appendChild(paragraph2);
 
         const url_post2 = document.createElement("div");
-        url_post2.textContent = i + 1 + ". URL : " + x.url_post;
+        url_post2.textContent = i + 1 + ". URL : " + decodeURI(x.url_post);
         // url_post2.style.fontWeight = "bold";
         url_post2.style.fontSize = "22px";
         url_post2.style.fontFamily = "'TH Sarabun New', sans-serif";
@@ -1339,14 +1339,14 @@ export default {
         if (error) {
           throw error;
         }
-        // console.log('tagValue',imageModule);
+        console.log('tagValue',imageModule);
         const zip = new PizZip(content);
         const doc = new Docxtemplater(zip, {
           paragraphLoop: true,
           linebreaks: true,
           modules: [imageModule],
         });
-        // console.log("getExportTopPostDomain", this.getExportTopPostDomain);
+        console.log("getExportTopPostDomain", this.getExportTopPostDomain);
         // Set the data for your placeholders
         const data = {
           domain_name: this.getClickDomain,

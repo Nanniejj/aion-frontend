@@ -43,7 +43,7 @@ export default {
               const res = await RelationPostService.getRelationPost();
               commit('setRelationPost', res.data);
              // commit('setLoadStatus', false );
-              //console.log( res.data.table);
+              console.log( res.data.table);
             } catch (error) {
               console.log(error.response);
             }

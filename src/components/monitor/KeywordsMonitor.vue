@@ -132,7 +132,7 @@
         </template>
         <template #cell(actions)="row">
           <span
-            class="fas fa-trash-alt"
+            class="fa fa-trash-alt"
             v-b-tooltip.hover
             title="ลบ"
             @click="delKeyword(row.item, row.index)"

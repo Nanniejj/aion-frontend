@@ -3,11 +3,23 @@
     <ExportDocx v-show="getShowReport" />
     <div v-show="!getShowReport">
       <DomainBackBar />
+      <!-- <RankTable/> -->
+
       <!-- <ExportDocx/> -->
       <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
         <DomainGraph class="mt-1" id="statgraph" />
         <StaticDomain class="mt-3" id="statcap" />
-        <SlideSpotNews class="mt-5" v-if="username =='adminatapy'"/>
+
+        <!-- <TopObjectChart /> -->
+
+        <!-- <SlideSpotNews class="mt-5" v-if="username =='adminatapy'"/> -->
+
+        <SlideSpotNews class="mt-5" />
+
+
+        <SlideSpotSocial class="mt-1" />
+
+        <!-- <SlideSpotNews class="mt-5" /> -->
         <DomainCloud class="mt-5" />
         <TopUser class="mt-5" />
         <TopUserFreq class="mt-1" />
@@ -29,7 +41,11 @@ import AllPostDomain from "@/components/domain/AllPostDomain.vue";
 import TopUser from "@/components/domain/TopUser.vue";
 import TopUserFreq from "./TopUserFreq.vue";
 import TopUser2 from "@/components/domain/TopUser2.vue";
- import SlideSpotNews from "./SlideSpotNews.vue";
+import SlideSpotNews from "./SlideSpotNews.vue";
+import SlideSpotSocial from "./SlideSpotSocial.vue";
+import RankTable from "@/components/chart/RankTable.vue";
+import TopObjectChart from "@/components/chart/TopObjectChart.vue";
+
 // import ExportDomainDocx from "@/components/domain/ExportDomainDocx.vue";
 import ExportDocx from "./ExportDocx.vue";
 import { mapGetters } from "vuex";
@@ -40,7 +56,7 @@ export default {
   },
   data() {
     return {
-      username:""
+      username: ""
     }
   },
   components: {
@@ -52,16 +68,18 @@ export default {
     AllPostDomain,
     TopUser,
     TopUser2,
-
+    SlideSpotSocial,
     TopUserFreq,
     // ExportDomainDocx,
     ExportDocx,
-  SlideSpotNews
+    SlideSpotNews,
+    RankTable,
+    TopObjectChart
   },
   methods: {},
   created() {
     this.username = localStorage.getItem("username");
-  
+
   },
 };
 </script>
@@ -73,16 +91,18 @@ export default {
 #active {
   text-decoration: underline;
 }
+
 .title-domain a {
   cursor: pointer;
   color: #2c3e50;
 }
+
 .title-domain {
   cursor: pointer;
   text-align: start;
   margin-left: 12%;
   margin-bottom: 20px !important;
 }
-@media only screen and (min-width: 0px) and(max-width:600px) {
-}
+
+@media only screen and (min-width: 0px) and(max-width:600px) {}
 </style>

@@ -86,7 +86,7 @@
         >
         </span>
         <span
-          class="fas fa-trash-alt"
+          class="fa fa-trash-alt"
           v-b-tooltip.hover
           title="ลบ"
           size="sm"
@@ -222,7 +222,7 @@ export default {
   },
   methods: {
     linkToWord(item) {
-      // console.log(item);
+      console.log(item);
       this.$store.commit("setSubDomainName", item);
       this.$router.push({ name: "TemplateSettingWord" });
     },
@@ -242,14 +242,14 @@ export default {
         id: Number(this.subDomainId),
         domain: Number(this.IdDm),
       });
-      //console.log('kkkkk'+this);
+      console.log('kkkkk'+this);
       this.open = false;
       // // this.$confirm("กรุณายืนยันข้อมูล").then(() => {
       //   var _this = this;
       //   var token='8ed9acde328c317fef0afce75850dc637e674174';
       //   const AuthStr = "Token " + token;
       //   var data = JSON.stringify({"name":_this.textSubDomain,"id":Number(_this.subDomainId),"domain":Number(_this.IdDm)});
-      // console.log(data);
+      console.log(data);
       //   var config = {
       //     method: 'put',
       //     url: API_URL+'/v1/subdomain/'+_this.subDomainId+'/',
@@ -378,7 +378,7 @@ export default {
   background: #4c412b;
   color: white;
 }
-.fa-trash-alt:hover {
+.fa fa-trash-alt:hover {
   background: #4c412b;
   color: white;
 }

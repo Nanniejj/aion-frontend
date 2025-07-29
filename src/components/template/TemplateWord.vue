@@ -79,7 +79,7 @@
           >
           </span>
           <span
-            class="fas fa-trash-alt"
+            class="fa fa-trash-alt"
             v-b-tooltip.hover
             title="ลบ"
             size="sm"
@@ -342,7 +342,7 @@ export default {
     setPage() {
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
-        // console.log("offset : ", this.offset);
+        console.log("offset : ", this.offset);
       } else {
         this.offset = 0;
       }
@@ -375,11 +375,11 @@ export default {
     backDomain: function() {
       this.$store.commit("setListWord", false);
       this.$store.commit("setListSubDomain", false);
-      //console.log('back');
+      console.log('back');
     },
     backSubDomain: function() {
       this.$store.commit("setListWord", false);
-      //console.log('back');
+      console.log('back');
     },
     hideModal() {
       this.open = false;
@@ -397,7 +397,7 @@ export default {
       this.textInclude = item.and_keywords;
       this.textExclude = item.not_keywords;
       this.selected = item.isActive;
-      //console.log( this.IdDm,this.subDomainId, this.idWord);
+      console.log( this.IdDm,this.subDomainId, this.idWord);
       this.$root.$emit("bv::show::modal", this.infoModal.id, button);
     },
     resetInfoModal() {
@@ -411,7 +411,7 @@ export default {
     },
   },
   created() {
-    //console.log(this.getSubDomainName.domain.name);
+    console.log(this.getSubDomainName.domain.name);
     //this.$store.dispatch("fetchListWord",{domain:this.getSubDomainName.domain.name,subdomain:this.getSubDomainName.name})
     if (this.getSubDomainName.domain.name) {
       this.$store.dispatch("fetchListWord", {
@@ -488,7 +488,7 @@ export default {
   background: #4c412b;
   color: white;
 }
-.fa-trash-alt:hover {
+.fa fa-trash-alt:hover {
   background: #4c412b;
   color: white;
 }

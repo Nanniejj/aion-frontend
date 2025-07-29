@@ -68,7 +68,7 @@ export default {
   watch: {
     getCountAllPost: function(newVal, oldVal) {
       // watch it
-      console.log("Prop date: ", newVal, " | was: ", oldVal);
+      // console.log("Prop date: ", newVal, " | was: ", oldVal);
     },
     getArrDate: function() {
       this.startd = this.getSdateDm.slice(0, 10);

@@ -2,6 +2,7 @@ import { WordcloudService } from "@/common/api.services";
 import { DomainService } from "@/common/api.services";
 export default {
   state: {
+    clickDomainId:"",
     relAcc: "",
     chartDomain: [],
     listDomain: [],
@@ -51,7 +52,7 @@ export default {
       domain.sort(function(a, b) {
         return parseFloat(a.id) - parseFloat(b.id);
       });
-      console.log(domain);
+    
       return domain.map((result) => {
         return result;
       });
@@ -61,6 +62,9 @@ export default {
     },
     getClickDomain: (state) => {
       return state.clickDomain;
+    },
+    getClickDomainId: (state) => {
+      return state.clickDomainId;
     },
     getLoadWordCloud: (state) => {
       return state.loadWcloud;
@@ -85,6 +89,9 @@ export default {
     },
   },
   mutations: {
+    setClickDomainId:(state, payload) =>  {
+     state.clickDomainId=payload
+    },
     setShowReport: (state, payload) => {
       state.showReort = payload;
     },
@@ -155,7 +162,7 @@ export default {
         let domainName = res.data.results.map((key) => {
           return key.name;
         });
-        console.log("domainName", domainName);
+        // console.log("domainName", domainName);
         localStorage.setItem("domainArr", domainName.toString());
         commit("setListDomain", res.data.results);
         commit("setLoadStatus", false);
@@ -168,10 +175,9 @@ export default {
       commit("setLoadTopPost", true);
       try {
         const res = await DomainService.getPostDomain(payload);
-        //console.log(res.data.data.slice(0,3));
+        
         if (res.data.data.length) {
           let temp = res.data.data;
-          console.log("temp", temp);
           const ids = temp.map((o) => o.full_text);
           const filtered = temp.filter(
             ({ full_text }, index) => !ids.includes(full_text, index + 1)
@@ -183,7 +189,7 @@ export default {
           });
      
           commit("setTopPostDomain", posts.slice(0, 3));
-          console.log("temp", [...temp]);
+          
         } else {
           commit("setTopPostDomain", []);
         }
@@ -228,7 +234,6 @@ export default {
   //       });
 
   //       commit("setTopPostDomain", posts.slice(0, 3));
-  //       console.log("temp", [...temp]);
   //     } else {
   //       commit("setTopPostDomain", []);
   //     }
@@ -245,10 +250,10 @@ export default {
       commit("setLoadTopPost", true);
       try {
         const res = await DomainService.getPostDomain(payload);
-        //console.log(res.data.data.slice(0,3));
+        
         if (res.data.data.length) {
           let temp = res.data.data;
-          console.log("temp", temp);
+    
           const ids = temp.map((o) => o.full_text);
           const filtered = temp.filter(
             ({ full_text }, index) => !ids.includes(full_text, index + 1)
@@ -260,7 +265,7 @@ export default {
           });
          
           commit("setExportTopPostDomain", posts.slice(0, 2));
-          console.log("temp", [...temp]);
+          
         } else {
           commit("setExportTopPostDomain", []);
         }
@@ -274,10 +279,9 @@ export default {
       commit("setLoadTopPost", true);
       try {
         const res = await DomainService.getPostDomain(payload);
-        //console.log(res.data.data.slice(0,3));
+        
         if (res.data.data.length) {
           let temp = res.data.data;
-          console.log("temp", temp);
           const ids = temp.map((o) => o.full_text);
           const filtered = temp.filter(
             ({ full_text }, index) => !ids.includes(full_text, index + 1)
@@ -289,7 +293,7 @@ export default {
           });
         
           commit("setExportTopPostDomainNeg", posts.slice(0, 2));
-          console.log("temp", [...temp]);
+          
         } else {
           commit("setExportTopPostDomainNeg", []);
         }

@@ -455,11 +455,14 @@
           <b-col>
             <div v-if="datas.source == 'tiktok' && datas.uid">
               <a v-bind:href="datas.url_post" target="_blank">
-                <lite-tiktok
+                <img :src="datas.photos && datas.photos[0]" onerror="this.style.display='none'"
+                style="height:450px;border-radius: 10px;" class="my-3" />
+                <!-- <lite-tiktok
                   :videoid="datas.uid"
                   style=" pointer-events: none; "
                 ></lite-tiktok
-              ></a>
+              > -->
+            </a>
 
               <!-- <iframe
                 width="auto"
@@ -552,13 +555,42 @@
             </div>
           </b-col>
         </b-row>
+
+              <div class="text-left ai-box mt-2"
+                v-if="datas && datas.photos_text && datas.photos_text.length && username == 'adminatapy'"
+                style="font-size: 15px;font-weight: 500;">
+                <div v-for="(text, idx) in datas.photos_text">
+
+                  <div v-if="text && text.length">
+                    <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
+                    </b-avatar>
+                    <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
+                    </span>
+                    <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+                    {{ text }}
+                  </div>
+                  <div v-if="text.face">
+                    <span v-for="(face, idx) in text.face">
+                      <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
+                        <span style="background: #e5e5e5;
+                    padding: 0px 6px;
+                    border-radius: 13px;">
+                          <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                          {{ face.person_name }}
+                          <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
+                            parseFloat((face.confidence * 100).toFixed(2))
+                            }}%)</span></span></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
         <div
           class="text-left ai-box mt-2"
           v-if="datas && datas.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-for="(text, idx) in datas.ocr">
-            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+            <!-- {{ datas.ocr.face[].person_name /datas.ocr.face[].confidence >) }} -->
             <div v-if="text.text_sort && text.text_sort.length">
               <b-avatar
                 size="18px"
@@ -597,8 +629,7 @@
           v-if="
             datas &&
               datas.location &&
-              datas.location.length &&
-              username == 'adminatapy'
+              datas.location.length     
           "
           class="text-left ai-box mt-3 text-small "
           style="font-size: 13px;font-weight: 500; color: #2c3e50;"
@@ -1552,9 +1583,9 @@ export default {
             })
             .flat(1);
           this.heightword = splitarr.concat(wordarr);
-          // console.log("highlight1",splitarr);
-          // console.log("highlight", heightarr, andarr, wordarr, this.heightword,splitarr);
-          // console.log("Toppp response.data", response.data[0]);
+          console.log("highlight1",splitarr);
+          console.log("highlight", heightarr, andarr, wordarr, this.heightword,splitarr);
+          console.log("Toppp response.data", response.data[0]);
           if (response.data[0].count.length) {
             this.datacount = response.data[0].count[0].total;
           } else {
@@ -1562,14 +1593,14 @@ export default {
           }
 
           var post = response.data[0].data;
-          console.log("post", post);
+         
           var pair = { read: true };
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
 
           this.dataIssue = posts;
-          // console.log("dataaaa", this.dataIssue);
+          console.log("dataaaa", this.dataIssue);
           this.$store.commit("setLoadAllPostIssue", false);
           // this.$store.commit("setLoadTopUserPf", false);
         })
@@ -1662,7 +1693,7 @@ export default {
     setPage: function(pageNumber) {
       this.currentPage = pageNumber;
       console.log(this.currentPage);
-      //console.log("page num:",typeof(pageNumber));
+      console.log("page num:",typeof(pageNumber));
       //Call new data from api here
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
@@ -1682,7 +1713,7 @@ export default {
           this.offset,
           this.sort
         );
-        console.log("else" + this.sort);
+        
       }
       console.log("#box-domain");
     },

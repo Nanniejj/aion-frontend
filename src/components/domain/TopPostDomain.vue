@@ -122,7 +122,7 @@ export default {
         };
       }
       if (this.$route.name!=='Domain') {
-        this.$store.dispatch("fetchAllPostPlatform", objtop);
+        this.$store.dispatch("fetchTopPostPlatform", objtop);
       }else{
         this.$store.dispatch("fetchPostDomain", objtop);
       }

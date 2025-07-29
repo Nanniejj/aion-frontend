@@ -1,11 +1,11 @@
 <template>
- <div id="content">    
+ <div >    
   <h1 class="title">Setting</h1>
     <b-container>
       <b-row>
-        <b-col class="text-center">
+        <b-col class="text-left">
           <span class="h4"
-            ><a>{{ items.domain_name }}</a></span
+            ><a href="#/setting" style="color:#2c3e50;">Domain</a> > <span class="bold">Subdomain</span> </span
           >
           <span class="float-right"
             ><i
@@ -113,7 +113,7 @@ export default {
     },
   },
   mounted() {
-    this.apiList();
+    // this.apiList();
   },
 };
 </script>

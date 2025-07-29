@@ -53,7 +53,7 @@
             >
               <i class="fas fa-trash"></i> ลบรายการที่เลือก
             </button>
-            <!-- <span class="ml-3 mr-3" >  <span class="fas fa-trash-alt" v-b-tooltip.hover title="ลบข้อมูล" size="sm" 
+            <!-- <span class="ml-3 mr-3" >  <span class="fa fa-trash-alt" v-b-tooltip.hover title="ลบข้อมูล" size="sm" 
           v-on:click="removeList()" v-if="btnCheck"></span></span>     -->
           </div>
         </b-col>
@@ -148,7 +148,7 @@
 
         <template #cell(action)="row">
           <span
-            class="fas fa-trash-alt"
+            class="fa fa-trash-alt"
             v-b-tooltip.hover
             title="ลบ"
             size="sm"
@@ -257,19 +257,16 @@ export default {
     },
     checkRow(item) {
       this.selected.push(item.id);
-      console.log("selected", this.selected.toString());
     },
     async removeList() {
       await this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
         let id = this.selected.toString();
-        console.log(id);
         this.$store.dispatch("DelAvatar", { avatar: id });
         this.selected = [];
       });
     },
     removeRow(item) {
       this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
-        console.log("delll", item.uid);
         this.$store.dispatch("DelAvatar", { avatar: item.id });
       });
     },
@@ -281,7 +278,6 @@ export default {
     },
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
-      console.log(filteredItems.length);
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },
@@ -331,7 +327,7 @@ export default {
   background: #4c412b;
   color: white;
 }
-.fa-trash-alt:hover {
+.fa fa-trash-alt:hover {
   background: #4c412b;
   color: white;
 }

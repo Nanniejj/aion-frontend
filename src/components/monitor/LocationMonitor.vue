@@ -451,7 +451,7 @@ export default {
       console.log(idam);
       this.uname = this.username;
       this.forceRerender();
-      // console.log("this.select_changwats", this.select_changwats, this.idcw);
+      console.log("this.select_changwats", this.select_changwats, this.idcw);
     },
     searchLocation() {},
     regions() {

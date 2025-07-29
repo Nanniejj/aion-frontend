@@ -291,7 +291,7 @@ export default {
       this.$store.commit("changeDataChoice", { choice: this.type_selected });
     },
     selectData() {
-      // console.log(this.valueDate[0], this.valueDate[1]);
+      console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         var todaye =
           moment(new Date())

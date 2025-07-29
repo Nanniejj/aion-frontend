@@ -33,6 +33,8 @@ import VueApexCharts from "vue-apexcharts";
 import JsonExcel from "vue-json-excel";
 import LongdoMap from "longdo-map-vue";
 import TinyEmitter from 'tiny-emitter'
+// import 'bootstrap-icons/font/bootstrap-icons.css';
+// import '@mdi/font/css/materialdesignicons.css';
 
 // import VNetworkGraph from "v-network-graph"
 // import "v-network-graph/lib/style.css"

@@ -6,14 +6,14 @@
       </router-link>
     </div>
 
-    <div class="row justify-content-end colorbg">
-      <div>
+    <div class="row justify-content-end colorbg  align-items-center">
+     
         <i
           class="txt-icon fas fa-user-circle"
           style="margin-left: 10px; font-size: 24px; color: #fed16e"
         ></i
         ><span id="user" class="ml-1 mr-2">{{ username }}</span>
-      </div>
+
       <div class="txt-lo" data-toggle="modal" data-target="#myModal">
         <a style="color: #fed16e; margin-top: -2rem">Logout</a>
       </div>
@@ -728,7 +728,6 @@ export default {
       );
     },
     isActive2() {
-      console.log('this.$route.name',   this.$route.name);
       return (
         this.$route.name === "Monitor" ||
         this.$route.name === "Feed" ||this.$route.name === "Report"||this.$route.name === "politician"

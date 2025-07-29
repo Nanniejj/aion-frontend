@@ -50,7 +50,6 @@ export const WordcloudService = {
   },
   getWordCloud(payload) {
     Vue.axios.defaults.baseURL = API_URL;
-    // console.log(payload.domain.length);
     ApiService.setHeader();
     var dom = "",
       key = "",
@@ -96,7 +95,6 @@ export const WordcloudService = {
 
   getSentiment(payload) {
     Vue.axios.defaults.baseURL = API_URL;
-    // console.log(payload);
     ApiService.setHeader();
     var dom = "",
       key = "",
@@ -295,7 +293,6 @@ export const RankingService = {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var subdom="";
-    console.log('payload.subdomain',payload.subdomain);
     if (payload.subdomain&&payload.subdomain.length) {
       subdom = `&subdomain=${payload.subdomain}`;
     } else {
@@ -629,7 +626,6 @@ export const MonitorService = {
   delMonitor(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    console.log("payload", payload);
     return ApiService.post(`/v1/delete-monitor/`, {
       source: payload.source,
       account: payload.account,

@@ -74,7 +74,7 @@ export default {
       function getColor(pos, neg, neu) {
         let percent = (pos + neu / 2) / (pos + neg + neu);
         percent = percent * 2 - 1;
-        // console.log(percent);
+       // console.log(percent);
         if (posval == 0 && negval == 0 && negval == 0) {
           return "#0000004e";
         } else {
@@ -90,13 +90,13 @@ export default {
         }
       }
       let color = getColor(posval, negval, neuval);
-      // console.log("color", color);
+      //console.log("color", color);
       return color;
     },
     async getLocationApi(val) {
       // this.getColorLabel();
       if (val) {
-        console.log("val5555", val);
+        //console.log("val5555", val);
         var keyword = val.name;
         var area = val.id;
         var apiKey = "ee3f741c3f4b32e012e0948d5c3e8c7e";
@@ -112,7 +112,7 @@ export default {
         try {
           const response = await this.axios(config);
           let location = response.data.data[0];
-          console.log("response", response.data.data[0]);
+          //console.log("response", response.data.data[0]);
           return location;
         } catch (error) {
           console.error("Error:", error);
@@ -232,12 +232,9 @@ export default {
   async mounted() {
     this.initMap();
     this.$emitter.on("callApiMap", async (val) => {
-      // this.initMap();
       let x = this.code_id[this.code_id.length - 1];
       let loc = await this.getLocationApi(x);
-      console.log("valmap", val);
-      await this.selectMap(val, loc);
-      // console.log("callApiMap", stat);
+      await this.selectMap(val,loc);
     });
   },
 };

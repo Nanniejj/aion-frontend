@@ -1,66 +1,62 @@
 <template>
   <span>
-    <div>
-      <hr />
-      <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
-      <b-container>
-        <!-- Object Name -->
-        <b-form-group label="Object"
-        label-class="font-weight-bold">
-          <b-form-input
-            v-model="objectName"
-            maxlength="50"
-            required
-          ></b-form-input>
-          <small class="text-muted"
-            >{{ objectName.length }} / 50 ตัวอักษร</small
-          >
-        </b-form-group>
+ 
+    <b-button class="rounded-circle my-2" style="background-color: #7cd1dc; color: black; border:#7cd1dc;"
+      v-if="btn == 'icon'" @click="open = true;">
+      <i class="fa fa-plus"></i>
+    </b-button>
+    <b-button size="sm" class="rounded-circle" v-if="btn == 'edit'"
+      style="background-color: white; color: #2c3e50; width: 30px; height: 30px; margin-right: 3px;"
+      @click="open = true;">
+      <i class="fa fa-pencil"></i>
+    </b-button>
+    <vue-modaltor :visible="open" @hide="open = false;" :animation-panel="'modal-slide-top'"
+      :resize-width='{ 3000: "55%", 1200: "70%", 768: "90%" }'>
+      <div>
+        <!-- {{ domainId }}
+      {{ subdomainId }}
+      {{ dataKeyword.object_id }} -->
+        <!-- {{ dataKeyword }} -->
+        <!-- {{ objectData }} -->
+        <h5><b>แก้ไข Object</b></h5>
+        <hr />
+        <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
+        <b-container>
+          <!-- {{ objectData }} -->
+          <!-- Object Name -->
+          <b-form-group label="Object" label-class="font-weight-bold">
+            <b-form-input v-model="objectName" maxlength="50" required></b-form-input>
+            <small class="text-muted">{{ objectName.length }} / 50 ตัวอักษร</small>
+          </b-form-group>
 
-        <!-- Keywords -->
-        <b-tabs content-class="mt-3"lazy 
-         active-nav-item-class="font-weight-bold" nav-item-class="font-weight-bold">
-          <b-tab title="Keyword">
-            <b-form-tags
-              v-model="editKeywords"
-              placeholder="Enter เพื่อพิมพ์คำใหม่"
-            ></b-form-tags>
-          </b-tab>
+          <!-- Keywords -->
+          <b-tabs content-class="mt-3" lazy active-nav-item-class="font-weight-bold" nav-item-class="font-weight-bold">
+            <b-tab title="Keyword">
+              <b-form-tags v-model="editKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+            </b-tab>
 
-          <b-tab title="Include Keyword">
-            <b-form-tags
-              v-model="editAndKeywords"
-              placeholder="Enter เพื่อพิมพ์คำใหม่"
-            ></b-form-tags>
-            <br />
-            <b-alert variant="info" show>
-              ใช้ <b>+</b> ในการ AND เช่น <strong>การเมือง + การปกครอง</strong>
-            </b-alert>
-          </b-tab>
+            <b-tab title="Include Keyword">
+              <b-form-tags v-model="editAndKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+              <br />
+              <b-alert variant="info" show>
+                ใช้ <b>+</b> ในการ AND เช่น <strong>การเมือง + การปกครอง</strong>
+              </b-alert>
+            </b-tab>
 
-          <b-tab title="Exclude Keyword">
-            <b-form-tags
-              v-model="editNotKeywords"
-              placeholder="Enter เพื่อพิมพ์คำใหม่"
-            ></b-form-tags>
-          </b-tab>
-        </b-tabs>
+            <b-tab title="Exclude Keyword">
+              <b-form-tags v-model="editNotKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+            </b-tab>
+          </b-tabs>
 
-        <!-- ปุ่มบันทึก & ปิด -->
-        <div class="d-flex justify-content-end mt-3">
-          <b-button   
-          style="background-color: #4b371c; border:  #4b371c; color: white;"           
-          @click="closeModal"
-            >ปิดหน้าต่าง</b-button
-          >
-          <b-button class="ml-2"
-          style="background-color: #50c1d0; color: black; border:#50c1d0;"
-          @click="updateObject"
-            >บันทึก</b-button
-          >
-        </div>
-      </b-container>
-    </div>
+          <!-- ปุ่มบันทึก & ปิด -->
+          <div class="d-flex justify-content-end mt-3">
+            <b-button style="background-color: #646462; border:  #646462;" @click="closeModal">ปิดหน้าต่าง</b-button>
+            <b-button class="ml-2" style="background-color: #50c1d0; color: black; border:#50c1d0;"
+              @click="updateObject">บันทึก</b-button>
+          </div>
+        </b-container>
+      </div>
+    </vue-modaltor>
   </span>
 </template>
 
@@ -73,71 +69,73 @@ export default {
   name: "EditObjectKeyword",
   components: { vSelect },
   props: {
-    dataKeyword: Object,
+    // dataKeyword: Object,
+    btn: String,
     objectId: Number,
     subdomainId: Number,
+    objectData: { type: Object }
+
   },
 
   data() {
     return {
+      open: false,
       objectName: "",
       editKeywords: [],
       editAndKeywords: [],
       editNotKeywords: [],
-      domainId: 1, // ค่า domain_id
+      // domainId: 1, // ค่า domain_id
     };
   },
 
   watch: {
-    objectId: {
-      immediate: true,
+    objectData:{
       handler(newVal) {
-        console.log("object Id :", newVal);
         if (!newVal) {
           console.warn("objectId ไม่มีค่า");
-        }
+        } 
+        this.loadData()
       },
+      deep: true,
     },
-    subdomainId: {
-      immediate: true,
-      handler(newVal) {
-        console.log("subdomain Id :", newVal);
-        if (!newVal) {
-          console.warn("subdomainId ไม่มีค่า");
-        }
-      },
-    },
+   
   },
   methods: {
     closeModal() {
-      this.$bvModal.hide("add-object-modal");
+      this.open = false;
+      // this.$bvModal.hide("edit-object-keyword-modal");
     },
 
     async updateObject() {
       console.log("ค่า objectId:", this.objectId);
       console.log("ค่า subdomainId:", this.subdomainId);
+      console.log(' this.objectData', this.objectData);
 
-      if (!this.objectId) {
+      if (!this.objectData && this.objectData.object_id) {
         alert("ไม่พบ Object ID! ตรวจสอบค่าใน Console");
         return;
       }
 
-      if (!this.subdomainId) {
+      if (!this.objectData && this.objectData.subdomain_id) {
         alert("ไม่พบ Subdomain ID! ตรวจสอบค่าใน Console");
         return;
       }
+      let updatedObjectData = {}
+      if (this.objectData && this.objectData.subdomain_id) {
+        updatedObjectData = {
+          domain_id: this.$route.query.id,
+          name: this.objectName,
+          subdomain_id: this.objectData.subdomain_id,
+          keywords: this.editKeywords,
+          and_keywords: this.editAndKeywords,
+          not_keywords: this.editNotKeywords,
+        };
+        console.log('updatedObjectData', updatedObjectData);
 
-      const updatedObjectData = {
-        domain_id: this.domainId,
-        subdomain_id: this.subdomainId,
-        keywords: this.editKeywords,
-        and_keywords: this.editAndKeywords,
-        not_keywords: this.editNotKeywords,
-      };
-
+      }
       try {
         const response = await axios.put(
-          `https://api2.cognizata.com/api/v2/setting/updateKeywords/${this.objectId}`,
+          `https://api2.cognizata.com/api/v2/setting/updateKeywords/${this.objectData.object_id}`,
           updatedObjectData,
           {
             headers: {
@@ -146,13 +144,17 @@ export default {
             },
           }
         );
-
+        this.$store.dispatch("resetDomainLastUpdate", this.$route.query.id);
         console.log("Object keywords updated successfully:", response.data);
-        this.$emit("objectUpdated", response.data);
+        // this.$emit("objectUpdated", response.data);
+        this.$emitter.emit("callApiListSubdomain", response.data);
         this.closeModal();
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        this.$fire({
+          title: "บันทึกข้อมูลสำเร็จ",
+          type: "success",
+          showConfirmButton: false,
+          timer: 1000,
+        });
       } catch (error) {
         console.error("Error updating object:", error.response?.data || error);
         alert("เกิดข้อผิดพลาดในการอัปเดต Keywords");
@@ -160,12 +162,12 @@ export default {
     },
 
     loadData() {
-      if (this.dataKeyword) {
-        // console.log("โหลดข้อมูลใหม่:", this.dataKeyword);
-        this.objectName = this.dataKeyword.object_name || "";
-        this.editKeywords = [...(this.dataKeyword.keywords || [])];
-        this.editAndKeywords = [...(this.dataKeyword.and_keywords || [])];
-        this.editNotKeywords = [...(this.dataKeyword.not_keywords || [])];
+      if (this.objectData) {
+        console.log("โหลดข้อมูลใหม่:", this.dataKeyword);
+        this.objectName = this.objectData.object_name || "";
+        this.editKeywords = [...(this.objectData.keywords || [])];
+        this.editAndKeywords = [...(this.objectData.and_keywords || [])];
+        this.editNotKeywords = [...(this.objectData.not_keywords || [])];
       }
     },
   },
@@ -176,15 +178,23 @@ export default {
     console.log("ได้รับค่า objectId:", this.objectId);
     console.log("ได้รับค่า subdomainId:", this.subdomainId);
     console.log("ได้รับค่า dataKeyword:", this.dataKeyword);
+
+
   },
+
 };
 </script>
 
 <style scoped>
+.btn-secondary {
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  border-color: #dee2e600;
+}
 .badge-warning {
   background-color: #ffc107;
   color: black;
 }
+
 .badge-danger {
   background-color: #dc3545;
 }
@@ -207,19 +217,22 @@ export default {
 }
 
 ::v-deep .nav-tabs .nav-item .nav-link {
-  color: black !important; /* เปลี่ยนสีข้อความเป็นสีดำปกติ */
-  font-weight: normal !important; /* ตัวอักษรปกติ */
+  color: #2c3e50;
+  font-weight: normal !important;
+  /* ตัวอักษรปกติ */
 }
+
 ::v-deep .nav-tabs .nav-item .nav-link.active {
-  font-weight: bold !important; /* ตัวหนาเมื่อ active */
+  font-weight: bold !important;
+  /* ตัวหนาเมื่อ active */
 }
 
 
 /* สีใน keyword  */
 ::v-deep .b-form-tags .b-form-tag {
-  background-color: #fddfa2 !important; /* สีเหลืองอ่อน */
-  color: rgb(48, 47, 47) !important; /* ปรับสีตัวอักษร */
-  font-weight: bold;
+  color: #2c3e50;
+  background-color: #f5f1eb !important;
+
   border-radius: 15px;
   padding: 5px 10px;
   margin: 3px;
@@ -239,5 +252,4 @@ export default {
   font-size: 16px;
   padding: 10px;
 }
-
 </style>

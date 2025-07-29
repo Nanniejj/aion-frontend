@@ -611,7 +611,7 @@ export default {
         code_id = this.dataChagwats;
       }
       let data = code_id.slice(0, 10);
-      // console.log("data.length", data.length);
+      console.log("data.length", data.length);
       if (data.length) {
         val = 100 + data.length * 30;
       }
@@ -649,7 +649,7 @@ console.log('diffDays',diffDays);
       function getColor(pos, neg, neu) {
         let percent = (pos + neu / 2) / (pos + neg + neu);
         percent = percent * 2 - 1;
-        // console.log(percent);
+        console.log(percent);
         if (posval == 0 && neuval == 0 && negval == 0) {
           return "#0000004e";
         } else {
@@ -665,7 +665,7 @@ console.log('diffDays',diffDays);
         }
       }
       let color = getColor(posval, negval, neuval);
-      // console.log("color", color);
+      console.log("color", color);
       return color;
     },
     apiLocationStat(payload) {
@@ -701,7 +701,7 @@ console.log('diffDays',diffDays);
           //     return x; // ส่งค่า x กลับเพื่อให้ Promise.all ได้รับค่าเป็น Promise ที่ resolve ด้วยค่า x
           //   })
           // );
-          // console.log("api", arr);
+         // console.log("api", arr);
           this.$emitter.emit("callApiMap", data);
           this.loadStat = false;
         })
@@ -812,9 +812,9 @@ console.log('diffDays',diffDays);
         }
       }
       this.keyword = this.addKeyword;
-      // console.log("code_id", this.code_id);
+      console.log("code_id", this.code_id);
       this.locPost = [...this.code_id].map((x) => x.name);
-      // console.log("locPost", this.locPost);
+      console.log("locPost", this.locPost);
       let strLoc = JSON.stringify([...this.code_id]);
       console.log("strLoc", this.code_id);
       this.apiLocationStat({
@@ -861,7 +861,7 @@ console.log('diffDays',diffDays);
       });
 
       // this.forceRerender();
-      // console.log("this.select_changwats", this.select_changwats, this.idcw);
+      console.log("this.select_changwats", this.select_changwats, this.idcw);
     },
     regions() {
       if (this.select_Region == "") {
@@ -914,7 +914,7 @@ console.log('diffDays',diffDays);
     changWats() {
       this.apiAble = true;
       this.select_amphoes = "";
-      // console.log('this.getAmphoes',this.getAmphoes);
+      console.log('this.getAmphoes',this.getAmphoes);
       let result_Am = Object.keys(this.getAmphoes).map((key) => {
         this.getAmphoes[key].khet_id = key;
         return this.getAmphoes[key];
@@ -939,7 +939,7 @@ console.log('diffDays',diffDays);
       console.log("intersection", this.idcw[0].changwats_id, arr1);
 
       let results = Object.keys(intersection).map((key) => {
-        // console.log("intersection2", intersection);
+        console.log("intersection2", intersection);
         return {
           name: intersection[key].name.th,
           khet_id: intersection[key].khet_id,

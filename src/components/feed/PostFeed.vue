@@ -469,11 +469,14 @@
           <b-col>
             <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
               <a v-bind:href="profilePost.url_post" target="_blank">
-                <lite-tiktok
+                <img :src="profilePost.photos && profilePost.photos[0]" onerror="this.style.display='none'"
+                style="height:450px;border-radius: 10px;" class="my-3" />
+                <!-- <lite-tiktok
                   :videoid="profilePost.uid"
                   style=" pointer-events: none; "
                 ></lite-tiktok
-              ></a>
+              > -->
+            </a>
 
               <!-- <iframe
                 width="auto"
@@ -561,13 +564,41 @@
             </div>
           </b-col>
         </b-row>
+                      <div class="text-left ai-box mt-2"
+                v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length && username == 'adminatapy'"
+                style="font-size: 15px;font-weight: 500;">
+                <div v-for="(text, idx) in profilePost.photos_text">
+
+                  <div v-if="text && text.length">
+                    <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
+                    </b-avatar>
+                    <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
+                    </span>
+                    <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+                    {{ text }}
+                  </div>
+                  <div v-if="text.face">
+                    <span v-for="(face, idx) in text.face">
+                      <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
+                        <span style="background: #e5e5e5;
+                    padding: 0px 6px;
+                    border-radius: 13px;">
+                          <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                          {{ face.person_name }}
+                          <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
+                            parseFloat((face.confidence * 100).toFixed(2))
+                            }}%)</span></span></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
         <div
           class="text-left ai-box mt-2"
           v-if="profilePost && profilePost.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-for="(text, idx) in profilePost.ocr">
-            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+            <!-- {{ profilePost.ocr.face[].person_name /profilePost.ocr.face[].confidence >) }} -->
             <div v-if="text.text_sort && text.text_sort.length">
               <b-avatar
                 size="18px"
@@ -606,9 +637,7 @@
           v-if="
             profilePost &&
               profilePost.location &&
-              profilePost.location.length &&
-              username == 'adminatapy'
-          "
+              profilePost.location.length "
           class="text-left ai-box mt-3 text-small "
           style="font-size: 13px;font-weight: 500; color: #2c3e50;"
         >
@@ -1322,10 +1351,7 @@ export default {
       );
     },
     getHashtagFeed() {
-      console.log(
-        "HashtagFeed--------------------------------------",
-        this.getHashtagFeed
-      );
+
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
@@ -1495,14 +1521,14 @@ export default {
         word.push(...this.heightword);
         if (this.andkey.length) {
           this.andkey.forEach(function(key) {
-            // console.log("keyyyy", k, key, key.length);
+            
             if (
               key.length == 2 &&
               full_text.includes(key[0]) &&
               full_text.includes(key[1])
             ) {
-              // console.log("เข้าสอง");
-              // console.log("full_text", full_text, key, word.concat(key));
+              
+              
               word.push(...key);
             }
 
@@ -1525,7 +1551,7 @@ export default {
             }
           });
 
-          //  console.log("key+addkey", word);
+       
         }
       }
       return word;
@@ -1601,7 +1627,7 @@ export default {
                 let objIndex = _this.list.findIndex(
                   (obj) => obj.uid == _this.list[k].uid
                 );
-                // console.log("objIndex", _this.list[objIndex]);
+                console.log("objIndex", _this.list[objIndex]);
                 _this.list[objIndex]["user_sentiment"] =
                   response.data.user_sentiment;
 
@@ -1618,15 +1644,15 @@ export default {
                     response.data.user_sentiment;
                   _this.infiniteScroll();
                 } else {
-                  // console.log('ตัด1');
+                  console.log('ตัด1');
                   _this.list.splice(k, 1);
                 }
 
                 //   _this.list[k].user_sentiment[_this.objId] == v;
-                // console.log("Object", _this.list);
+                console.log("Object", _this.list);
               }
             } else {
-              //  console.log('ตัด2');
+              console.log('ตัด2');
               _this.list.splice(k, 1);
               _this.$fire({
                 title: "จัดเก็บในหมวดอ่านแล้ว",
@@ -1687,7 +1713,7 @@ export default {
       event.target.src = this.default_avatar;
     },
     onClick(i, data) {
-      // console.log(data);
+      console.log(data);
       this.index = i;
       this.dataPhoto = data;
     },
@@ -1711,7 +1737,7 @@ export default {
         }
 
         if (domain2 == "All" || domain2 == "" || domain2 == "All Domain") {
-          // console.log('เข้าDomain',arrdomain);
+          console.log('เข้าDomain',arrdomain);
           domain2 = arrdomain;
         }
         await this.axios
@@ -1839,22 +1865,22 @@ export default {
           resObject = temp;
         }
 
-        // console.log("this.page", _page);
+        console.log("this.page", _page);
         if (_page === 0) {
           _this.list = resObject;
         } else {
           console.log("push");
           _this.list.push(...resObject);
         }
-        // console.log("aquaticCreatures", resObject);
+        console.log("aquaticCreatures", resObject);
         // return _this.list;
       });
-      //  console.log("his.list.length", this.list.length ,data);
+      console.log("his.list.length", this.list.length ,data);
       if (data.length === 0) {
         this.isInfinite = false;
       }
       this.page += 10;
-      //  console.log("loop+10",  this.page);
+      console.log("loop+10",  this.page);
       this.infiniteId += 1;
     },
   },

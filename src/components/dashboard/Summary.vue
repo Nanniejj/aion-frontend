@@ -150,7 +150,6 @@ export default {
       return b.value - a.value;
     });
 
-    console.log("items", items);
 
     const shots = [
       { id: 1, amount: 2 },
@@ -166,14 +165,12 @@ export default {
       0
     );
 
-    console.log("shots", shots);
 
     var arr = [1, 2, 3];
     var max = arr.reduce(function(a, b) {
       return Math.max(a, b);
     });
 
-    console.log("max", max);
   },
 };
 </script>

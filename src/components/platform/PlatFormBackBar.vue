@@ -124,7 +124,7 @@ export default {
         alert("กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน");
         this.valueDate[1] = startDate.add(31, "days").format("YYYY-MM-DD");
       } else {
-        // console.log('datePlatform');
+        console.log('datePlatform');
         this.selectData();
       }
     },
@@ -243,7 +243,7 @@ export default {
       // });
       // this.domainData = domainName;
       // this.$store.commit("setDomainArr", this.domainData);
-      //console.log(domainName);
+      console.log(domainName);
       this.$store.dispatch("fetchSentimentStatDashboard", {
         start_date: this.start_date,
         end_date: this.end_date,

@@ -207,11 +207,11 @@ export default {
     },
     updateFace() {
       this.faceLoad = true;
-      // console.log("FACE");
+      console.log("FACE");
     },
     updateQ(totaluploadprogress, totalBytes, totalBytesSent) {
       this.qCount = totaluploadprogress;
-      // console.log("QQQQQ", totaluploadprogress, totalBytes, totalBytesSent);
+      console.log("QQQQQ", totaluploadprogress, totalBytes, totalBytesSent);
       //  let qfile = this.$refs.myVueDropzone.getQueuedFiles()
       if (totaluploadprogress < 100) {
         this.faceLoad = true;
@@ -321,7 +321,7 @@ export default {
     },
     DropZoneSuccess(file) {
       this.faceLoad = true;
-      // console.log(file, file.previewElement);
+      console.log(file, file.previewElement);
       if (file) {
         Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri("./models"),

@@ -87,7 +87,7 @@ import ExportDocx from "./ExportDocx.vue";
 export default {
   components: { ExportDocx },
   computed: {
-    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm"]),
+    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm","getClickDomainId"]),
   },
   data() {
     return {
@@ -162,7 +162,7 @@ export default {
         end_date: this.end_date,
         sort_by: "engagement",
         offset: 0,
-        domain: this.getClickDomain,
+        domain: this.getClickDomainId,
       });
 
       //AllPost
@@ -171,7 +171,7 @@ export default {
         end_date: this.end_date,
         sort_by: "",
         offset: 0,
-        domain: this.getClickDomain,
+        domain: this.getClickDomainId,
       });
       this.$store.dispatch("fetchExportPostDomainNeg", {
         start_date: this.start_date,
@@ -180,7 +180,7 @@ export default {
         sentiment: -1,
         sort_by: "engagement",
         offset: 0,
-        domain: this.getClickDomain,
+        domain: this.getClickDomainId,
       });
       this.$store.dispatch("fetchExportPostDomain", {
         start_date: this.start_date,
@@ -189,7 +189,7 @@ export default {
         sentiment: 1,
         sort_by: "engagement",
         offset: 0,
-        domain: this.getClickDomain,
+        domain: this.getClickDomainId,
       });
     },
     backDomain() {
@@ -219,7 +219,7 @@ export default {
     //  let datearr2 = new Date(datearr)
 
     // let datetime = datearr[0] + " " + datearr[1].slice(0, 5);
-    //  console.log('date',datearr,datearr2);
+   // console.log('date',datearr,datearr2);
     this.updated_until = datearr;
    
   },

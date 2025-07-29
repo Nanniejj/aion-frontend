@@ -59,7 +59,7 @@ methods:{
     backdashboard: function () {
       this.$router.push({ name: "Dashboard" });
        //this.$store.dispatch("fetchSentimentStat",{start_date:this.getRangeStartdate,end_date:this.getRangeEnddate});
-      console.log('555555555'+this.sentiment);
+   
     },
 },
 

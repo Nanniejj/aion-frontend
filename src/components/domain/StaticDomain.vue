@@ -26,7 +26,7 @@
           <b-row cols="2" class="font-icon" cols-lg="3" cols-md="3">
             <b-col>
               <b-row>
-                <b-col cols="auto"
+                <b-col cols="auto" 
                   ><i class="far fa-comments fa-2x d-inline" />
                 </b-col>
                 <b-col cols="auto">
@@ -42,7 +42,7 @@
             <b-col>
               <b-row>
                 <b-col cols="auto"
-                  ><i class="fa fa-paper-plane fa-2x d-inline" />
+                  ><i class="far fa-paper-plane fa-2x d-inline" />
                 </b-col>
                 <b-col cols="auto">
                   <div class="text-icon">
@@ -68,7 +68,7 @@
             </b-col>
             <b-col>
               <b-row>
-                <b-col cols="auto"><i class="fas fa-users fa-2x"></i> </b-col>
+                <b-col cols="auto"><i class="fas fa-users fa-2x d-inline"></i> </b-col>
                 <b-col cols="auto">
                   <div class="text-icon">
                     <b> {{ dataStat.Accounts | numFormat }} </b><br />
@@ -92,7 +92,7 @@
             </b-col>
             <b-col>
               <b-row>
-                <b-col cols="auto"><i class="fas fa-retweet fa-2x"></i> </b-col>
+                <b-col cols="auto"><i class="fa fa-retweet fa-2x"></i> </b-col>
                 <b-col cols="auto">
                   <div class="text-icon">
                     <b>{{ dataStat.retweets_count | numFormat }} </b><br />
@@ -115,7 +115,7 @@
             </b-col> -->
             <b-col >
               <b-row>
-                <b-col cols="auto"><i class="fas fa-eye fa-2x"></i> </b-col>
+                <b-col cols="auto"><i class="fa fa-eye fa-2x"></i> </b-col>
                 <b-col cols="auto">
                   <div class="text-icon">
                     <b>{{ dataStat.views_count | numFormat }} </b><br />
@@ -331,7 +331,6 @@ var config ={
         this.valnag = (this.dataStat.negativeSentiment * 100) / sum;
        
         this.$store.commit("setLoadStat", false);
-        console.log('selectpic1');
         this.$emitter.emit("statstatus", true);
       });
   },

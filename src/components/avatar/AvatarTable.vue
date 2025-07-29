@@ -371,13 +371,13 @@ export default {
    
     getDataListAvatar: {
       handler(val) {
-        console.log("val", val);
+       console.log("val", val);
       },
       deep: true,
     },
     totalRows: function(newVal, oldVal) {
       // watch it
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+    console.log("Prop changed: ", newVal, " | was: ", oldVal);
     },
   },
   data: function() {
@@ -522,7 +522,7 @@ export default {
       this.teamName = team;
       this.dataInfo = {...item,team:data};
       var duplicates = item.hashtags;
-      //  console.log('duplicates',duplicates);
+      console.log('duplicates',duplicates);
       var unique = duplicates.filter(function(elem, pos) {
         return duplicates.indexOf(elem) == pos;
       });
@@ -545,7 +545,7 @@ export default {
     },
     selectChange(val) {
       this.currentPage = 1;
-      console.log("val", val);
+     console.log("val", val);
 
       this.$store.commit("setAvatarSource", val);
     },

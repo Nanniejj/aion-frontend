@@ -270,7 +270,7 @@ export default {
       this.createUser = this.getListReport.filter;
     },
     linkToProfile(item) {
-      // console.log("item", item);
+      console.log("item", item);
       if (item.name) {
         localStorage.setItem("nameReport", item.name);
       }
@@ -285,7 +285,7 @@ export default {
     },
   },
   async created() {
-    // console.log("getSocialMo", this.$route.params);
+    console.log("getSocialMo", this.$route.params);
     // this.$store.dispatch("fatchListMonitor", {
     //   source: this.social,
     // });

@@ -41,10 +41,10 @@ export default {
       });
     },
     toDomainStat(domain){
-      console.log(domain);
       localStorage.setItem("updated_until",domain.updated_until)
       this.$store.commit("setPushDomainStat",true)
       this.$store.commit("setClickDomain",domain.name)
+      this.$store.commit("setClickDomainId",domain.id)
     }
   },
   created() {

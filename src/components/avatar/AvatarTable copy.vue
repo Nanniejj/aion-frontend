@@ -438,7 +438,7 @@ export default {
   watch: {
     totalRows: function(newVal, oldVal) {
       // watch it
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+    console.log("Prop changed: ", newVal, " | was: ", oldVal);
     },
   },
   data: function() {
@@ -508,7 +508,7 @@ export default {
       this.teamName = team;
       this.dataInfo = item;
       var duplicates = item.hashtags;
-      //  console.log('duplicates',duplicates);
+      console.log('duplicates',duplicates);
       var unique = duplicates.filter(function(elem, pos) {
         return duplicates.indexOf(elem) == pos;
       });

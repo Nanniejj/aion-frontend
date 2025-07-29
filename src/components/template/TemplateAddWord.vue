@@ -220,7 +220,7 @@ export default {
       this.open = false;
     },
     addRowWord() {
-      //console.log(...this.addInclude);
+      console.log(...this.addInclude);
       let include = this.addInclude.map((word) =>
         word
           .split("+")
@@ -231,7 +231,7 @@ export default {
       let includes = include.map((word) =>
         word.replace("+ ", "+").replace(" +", "+")
       );
-      //console.log('include',include,includes);
+      console.log('include',include,includes);
       this.$store.dispatch("updateAddWord", {
         name: this.addWord,
         domain: Number(this.getDomainId),

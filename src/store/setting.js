@@ -21,7 +21,7 @@ export default {
       console.log("payload2", payload);
     //   commit("setDomainSetting", true);
       axios
-        .get("http://139.59.103.67:3000/api/v2/domain/getDomain")
+        .get("https://api2.cognizata.com/api/v2/domain/getDomain")
         .then((res)=> {
           // handle success
           commit("setDomainSetting", res.data);

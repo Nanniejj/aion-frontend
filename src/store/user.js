@@ -66,7 +66,7 @@ export default {
             .then((response) => {
                 commit("setUserLoginList", response.data);
             //     state.userLoginList =response.data
-            // console.log('response',response.data);
+            console.log('response',response.data);
             })
             .catch(function(error) {
             //   this.$fire({
@@ -83,7 +83,7 @@ export default {
         .post(API_V2_URL + "/api/user/del", payload)
         .then(function(res) {
           // handle success
-          //console.log(JSON.stringify(res));
+          console.log(JSON.stringify(res));
           // state.userList = res
           dispatch('fetchLoggedDevice')
           commit("setUserList", res.data.results);
@@ -104,7 +104,7 @@ export default {
         .post(API_V2_URL + "/api/user/update", payload)
         .then(function(res) {
           // handle success
-          //console.log(JSON.stringify(res));
+          console.log(JSON.stringify(res));
           // state.userList = res
           if (res.data.results == "error") {
             console.log("Error");
@@ -235,12 +235,12 @@ export default {
               packtmp += " ,";
             }
           }
-          // console.log("packtmp="+packtmp)
+          console.log("packtmp="+packtmp)
           commit("setProjectOneDomainName", packtmp);
 
           tmp = pop[0].hashtagName;
           packtmp = "";
-          // console.log(tmp.length)
+          console.log(tmp.length)
           for (i = 0; i < tmp.length; i++) {
             packtmp += tmp[i].uid;
             if (i != tmp.length - 1) {

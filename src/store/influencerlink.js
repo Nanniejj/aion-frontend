@@ -425,7 +425,7 @@ export default {
       try {
         const res = await InfluencerLinkService.getInfluencerLink(payload);
         // commit("setLinksTop", res.data.links);
-        // console.log("5555", res.data);
+        console.log("5555", res.data);
         //Node
         var nodes = [];
         for (i = 0, len = res.data.nodes.length; i < len; i++) {
@@ -448,7 +448,7 @@ export default {
         }
         commit("setNodesInfluencerLink", nodes);
         //commit('setLoadStatus', false );
-        // console.log("links", res.data.links.length);
+        console.log("links", res.data.links.length);
         //Linkdata
         var linksdata = [];
         for (var i = 0, len = res.data.links.length; i < len; i++) {
@@ -526,9 +526,9 @@ export default {
           obj2[a2[2]] = name;
           //obj2[a2[2]] = color;
           links.push(obj2);
-          //console.log(obj2);
+          console.log(obj2);
           // }
-          // console.log("vsfdvfdsv");
+          console.log("vsfdvfdsv");
         }
         commit("setLinksInfluencerLink", links);
         commit('setLoadStatus', false );

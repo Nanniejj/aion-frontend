@@ -126,12 +126,12 @@ export default {
   },
   methods: {
     async sendReport() {
-      // console.log("this.selectType ", this.selectType);
+      console.log("this.selectType ", this.selectType);
       let type = this.selectType.map((key) => {
         return key.text;
       });
       let stype = type.toString();
-      // console.log("this.selectType2 ", type);
+      console.log("this.selectType2 ", type);
       const axios = require("axios").default;
       //https://api2.cognizata.com
       //http://139.59.103.67:3000

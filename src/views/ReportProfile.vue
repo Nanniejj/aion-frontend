@@ -1,7 +1,7 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-    <div id="content" v-if="getRoleMion">
+    <div id="content" >
       <h1 class="title">Report</h1>
       <h4 class="title-monitor">
         <span style="cursor: pointer"
@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import HomeNav from "@/components/HomeNavMion.vue";
+import HomeNav from "@/components/HomeNav.vue";
 import StatProfileReport from "@/components/report/StatProfileReport.vue";
 import ListDomainReport from "@/components/report/ListDomainReport.vue";
 import AllPostReport from "@/components/report/AllPostReport.vue";

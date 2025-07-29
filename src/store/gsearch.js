@@ -34,7 +34,7 @@ export default {
   
           commit('setFetchGsearch', res.data.content);
           commit('setLoadStatus', false );
-          //console.log(res.data);
+          console.log(res.data);
         } catch (error) {
           commit('setLoadStatus', false );
           console.log(error.response);

@@ -144,7 +144,7 @@ export default {
     },
     updateWord: (state, payload) => {
       state.itemsWord = state.itemsWord.map((item) => {
-        // console.log("id"+ item.id,item.name,payload.name,item.keywords,payload.keywords)
+        console.log("id"+ item.id,item.name,payload.name,item.keywords,payload.keywords)
         if (item.id === String(payload.id)) {
           item.name = payload.name;
           item.keywords = payload.keywords;
@@ -153,7 +153,7 @@ export default {
           console.log("enter func update");
           return item;
         } else {
-          // console.log('enter func update2');
+          console.log('enter func update2');
           return item;
         }
       });
@@ -199,7 +199,7 @@ export default {
           return parseFloat(a.id) - parseFloat(b.id);
         });
       let domainlist =  res.data.results.filter((x)=> x.display==true)
-        console.log(' res.data.results', domainlist);
+        // console.log(' res.data.results', domainlist);
         commit("setDomainItem", domainlist);
         commit("setLoadStatus", false);
       } catch (error) {
@@ -249,7 +249,7 @@ export default {
       commit("setLoadStatus", true);
       try {
         const res = await TemplateService.EditDomain(payload);
-        //console.log('res',res);
+        console.log('res',res);
         commit("updateDomain", res.data);
         commit('setLoadStatus',false)
       } catch (error) {
@@ -298,7 +298,7 @@ export default {
         const res = await TemplateService.DeleteDomain(payload);
         console.log("payload", payload);
         const index = state.itemsDomain.findIndex((dm) => dm.id === payload.id);
-        //console.log(index,state.itemsDomain);
+        console.log(index,state.itemsDomain);
         state.itemsDomain.splice(index, 1);
         console.log("res", res.data);
         commit("updateDomain", res.data);
@@ -330,8 +330,8 @@ export default {
         const index = state.itemsSubDomain.findIndex(
           (sd) => sd.id === payload.id
         );
-        // console.log(index, state.itemsSubDomain);
-        // console.log(payload);
+        console.log(index, state.itemsSubDomain);
+        console.log(payload);
         state.itemsSubDomain.splice(index, 1);
         commit("updateSubDomain", res.data);
       } catch (error) {
@@ -342,9 +342,9 @@ export default {
       commit("setLoadStatus", true);
       try {
         const res = await TemplateService.getListWord(payload);
-        console.log(res.data.results);
+        // console.log(res.data.results);
         commit("setListWord", res.data.results);
-        // console.log(res.data.count);
+        console.log(res.data.count);
         commit("setRowCount", res.data.count);
         commit("setLoadStatus", false);
       } catch (error) {
