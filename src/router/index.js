@@ -4,6 +4,8 @@ import Dashboard from "../views/Dashboard.vue";
 import axios from "axios";
 import store from "@/store";
 // import { API_URL } from '@/common/config';
+// import 'bootstrap-icons/font/bootstrap-icons.css';
+// import '@mdi/font/css/materialdesignicons.css';
 
 Vue.use(VueRouter);
 
@@ -14,13 +16,26 @@ const routes = [
   //   name: 'PlatForm',
   //   component: () => import(/* webpackChunkName: "PlatForm" */ '../views/PlatForm.vue'),
   // },
+ 
   {
     path: "/setting",
     name: "Setting",
-    component: () =>
-      import(/* webpackChunkName: "DomainList" */ "../views/Setting.vue")
-  },  
-  
+    component: () => import("../views/Setting.vue"),
+  },
+  {
+    path: "/setting/:domain",
+    name: "SettingSubDomain",
+    component: () => import("../views/SettingSubDomain.vue"),
+    props: true,
+  }
+,  
+{
+  path: "/setting/:domain/:subdomain",
+  name: "SettingWord",
+  component: () => import("../views/SettingWord.vue"),
+  props: true,
+}
+,  
   {
     path: "/politician",
     name: "Candidates",
@@ -303,6 +318,26 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "login" */ "../views/Monitor.vue")
   },
+  
+    {
+    path: "/monitorlist",
+    name: "MonitorList",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/MonitorList.vue")
+  },
+   {
+    path: "/profiles",
+    name: "MonitorProfile",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/MonitorProfile.vue")
+  },
+  
   {
     path: "/feed",
     name: "Feed",
@@ -397,6 +432,27 @@ const routes = [
     name: "SpotNewsPost",
     component: () =>
       import(/* webpackChunkName: "DomainList" */ "../views/SpotNewsPost.vue")
+  },
+   {
+    path: "/alertsetting",
+    name: "UserLineList",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/UserLineList.vue")
+  },
+  {
+    path: "/hottopicspost",
+    name: "SpotSocialPost",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/SpotSocialPost.vue")
+  },
+  {
+    path: "/allpost",
+    name: "AllPost",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/AllPost.vue")
   },
    // {
   //   path: "/home",

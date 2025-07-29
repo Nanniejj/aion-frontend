@@ -137,7 +137,7 @@ export default {
 
       try {
         const response = await axios.put(
-          `http://localhost:3000/api/v2/monitor/updateKeywords/${this.objectId}`,
+          `https://api2.cognizata.com/api/v2/setting/updateKeywords/${this.objectId}`,
           updatedObjectData,
           {
             headers: {

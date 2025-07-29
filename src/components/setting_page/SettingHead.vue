@@ -82,7 +82,7 @@ export default {
       try {
         var config = {
           method: "get",
-          url: "http://localhost:3000/api/v2/monitor/getSetting",
+          url: "https://api2.cognizata.com/api/v2/setting/getSetting",
           params: {
             domain_id: 1,
           },

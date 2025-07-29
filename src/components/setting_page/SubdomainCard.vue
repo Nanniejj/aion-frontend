@@ -591,7 +591,8 @@ export default {
       try {
         const config = {
           method: "get",
-          url: "http://localhost:3000/api/v2/monitor/getSetting",
+          // url: "http://localhost:3000/api/v2/monitor/getSetting",
+          url: "https://api2.cognizata.com/api/v2/setting/getSetting",
           params: { domain_id: 1 },
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
@@ -638,7 +639,7 @@ export default {
 
       try {
         const response = await this.axios.post(
-          "http://localhost:3000/api/v2/monitor/postSubdomain",
+          "https://api2.cognizata.com/api/v2/setting/postSubdomain",
           newSubdomainData,
           {
             headers: {
@@ -678,7 +679,7 @@ export default {
 
       try {
         const response = await this.axios.put(
-          `http://localhost:3000/api/v2/monitor/putSubdomain/${subdomain.subdomain_id}`,
+          `https://api2.cognizata.com/api/v2/setting/putSubdomain/${subdomain.subdomain_id}`,
           updatedSubdomainData,
           {
             headers: {
@@ -715,7 +716,7 @@ export default {
 
       try {
         const response = await this.axios.post(
-          "http://localhost:3000/api/v2/monitor/postObject",
+          "https://api2.cognizata.com/api/v2/setting/postObject",
           newObject,
           {
             headers: {
@@ -761,7 +762,7 @@ export default {
         console.log("กำลังอัปเดต Object:", object.object_id, updatedObjectData);
 
         const response = await this.axios.put(
-          `http://localhost:3000/api/v2/monitor/updateKeywords/${object.object_id}`,
+          `https://api2.cognizata.com/api/v2/setting/updateKeywords/${object.object_id}`,
           updatedObjectData,
           {
             headers: {
@@ -808,7 +809,7 @@ export default {
 
       try {
         const response = await this.axios.put(
-          `http://localhost:3000/api/v2/monitor/putObject/${object.object_id}`,
+          `https://api2.cognizata.com/api/v2/setting/putObject/${object.object_id}`,
           {
             domain_id: subdomain.domain_id,
             subdomain_id: subdomain.subdomain_id,
@@ -853,7 +854,7 @@ export default {
 
       try {
         const response = await this.axios.post(
-          "http://localhost:3000/api/v2/monitor/postObject",
+          "https://api2.cognizata.com/api/v2/setting/postObject",
           newObjectData,
           {
             headers: {
@@ -891,7 +892,7 @@ export default {
 
       try {
         const response = await this.axios.delete(
-          `http://localhost:3000/api/v2/monitor/deleteSubdomain/${subdomainId}`,
+          `https://api2.cognizata.com/api/v2/setting/deleteSubdomain/${subdomainId}`,
           {
             params: { domain_id: domainId }, //ส่ง domain_id ไปใน params
             headers: {
@@ -1016,7 +1017,7 @@ export default {
 
       this.axios
         .delete(
-          `http://localhost:3000/api/v2/monitor/deleteSubdomain/${subdomainId}`,
+          `https://api2.cognizata.com/api/v2/setting/deleteSubdomain/${subdomainId}`,
           {
             headers: {
               Authorization: "Bearer " + localStorage.getItem("token"),
@@ -1149,7 +1150,7 @@ export default {
 
       try {
         await this.axios.delete(
-          `http://localhost:3000/api/v2/monitor/deleteObject/${objectId}`,
+          `https://api2.cognizata.com/api/v2/setting/deleteObject/${objectId}`,
           {
             headers: {
               Authorization: "Bearer " + localStorage.getItem("token"),

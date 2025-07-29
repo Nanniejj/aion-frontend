@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@justinribeiro/lite-tiktok": "^0.1.0",
+    "@mdi/font": "^7.4.47",
     "@morioh/v-lightbox": "^1.0.3",
     "@syncfusion/ej2-vue-maps": "^19.4.56",
     "apexcharts": "^3.27.1",
     "axios": "^0.21.1",
+    "bootstrap-icons": "^1.11.3",
     "bootstrap-vue": "^2.17.3",
     "canvas": "^2.11.2",
     "chart.js": "^2.9.4",

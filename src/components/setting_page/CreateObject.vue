@@ -194,7 +194,8 @@ export default {
 
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/v2/monitor/postObject",
+          "https://api2.cognizata.com/api/v2/monitor/postObject",
+          // "https://api2.cognizata.com/api/v2/monitor/monitorCandidates"
           newObjectData,
           {
             headers: {
