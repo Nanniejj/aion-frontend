@@ -2,38 +2,15 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
     <div id="content">
-      <div class="d-flex">
-        <h1 class="title ">Monitor</h1>
-        <div class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor" style="position:relative;margin-left: auto; 
-margin-right: 0;">
-          <!-- ในหน้า monitor -->
-          <div class="icon-monitor1" @click="$router.push('/politician')">
-            <b-iconstack font-scale="2">
-              <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="person-lines-fill" scale="0.5"></b-icon>
-            </b-iconstack>
-            <div class="d-block h6 text-center my-0">Politician</div>
-          </div>
-
-          <div class="mr-3 icon-monitor2" @click="toMonitor('Feed')">
-            <b-iconstack font-scale="2">
-              <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="file-post" scale="0.5"></b-icon>
-            </b-iconstack>
-            <div class="d-block h6 text-center my-0">Feed</div>
-          </div>
-          <div class="icon-monitor3" @click="toMonitor('Report')">
-            <b-iconstack font-scale="2">
-              <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="file-earmark-bar-graph" scale="0.5"></b-icon>
-            </b-iconstack>
-            <div class="d-block h6 text-center my-0">Report</div>
-          </div>
-
+        <div class="m-auto" style="width: 85%;">
+            <h1 class="title m-0">Profile</h1>
+            <div class="d-flex align-items-center mb-3">
+                <b-col @click="toMonitor('MonitorList')" cols="auto pl-0" style="cursor: pointer;" class="m-0">Monitor</b-col>
+                <b-icon icon="chevron-right" class=""/>
+                <b-col cols="auto" class="m-0 font-weight-bold">Profile</b-col>
+            </div>
+            <ProfileMonitor />
         </div>
-      </div>
-      <ProfileMonitor />
-
     </div>
   </div>
 </template>
@@ -59,7 +36,8 @@ export default {
       "getItemsProfile",
       "getFieldsProfile",
       "getProfile",
-      "getListMonitorProfile",
+        "getListMonitorProfile",
+      "getToLinkProfile"
     ]),
   },
   methods: {

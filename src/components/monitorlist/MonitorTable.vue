@@ -1,10 +1,9 @@
 <template>
-    <div class="p-3 mt-3">
-        <b-row>
-            <b-col>
-                <div class="d-flex  py-3">
-
-                    <span class="mr-2"> <img v-if="filters.source == 'twitter'" src="@/assets/Twitter.png"
+    <div class="py-3 mt-3">
+        <b-row class="align-items-center mb-3" align-h="between">
+            <b-col cols="12" lg=""  class="mt-3">
+                <div class="row w-100 m-0">
+                    <div class="col-auto pl-0"> <img v-if="filters.source == 'twitter'" src="@/assets/Twitter.png"
                             class="social-imgs" />
                         <img v-if="filters.source == 'facebook'" src="@/assets/Facebook.png" class="social-imgs" />
                         <img v-if="filters.source == 'pantip'" src="@/assets/board.png" class="social-imgs" />
@@ -15,24 +14,30 @@
                         <img v-if="filters.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-imgs" />
                         <img v-if="filters.source == 'threads'" src="@/assets/Threads.png" class="social-imgs" />
                         <b-avatar text="All" size="35" style="background-color: #fed16e;"
-                            v-if="filters.source == ''"></b-avatar></span>
+                            v-if="filters.source == ''"></b-avatar>
+                    </div>
 
-                    <!-- <b-icon icon="filter" font-scale="2.5"></b-icon> -->
-                    <b-form-select id="source-select" v-model="filters.source" :options="sourceOptions"
-                        style="width:200px;"></b-form-select>
+                    <b-form-select class="col col-lg-3 mr-3" id="source-select" v-model="filters.source" :options="sourceOptions"
+                    ></b-form-select>
+                    <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-sm-0 ml-sm-auto">
+                        <ImportPlatform class="col mr-3 px-0" v-if="type == 'targetlist'" @close="apiMonitorList"/>
+                        <CreateMonitor class="col-auto px-0" :tabsMonitor="type" @close="apiMonitorList"/>
+                    </div>
                 </div>
             </b-col>
-            <b-col>
-                <b-form-group label-for="search-input">
+            <!-- <b-col class="w-100" style="height: 2px; background: #fed16e;"></b-col> -->
+            <!-- <div class="h-25 d-inline-block bg-info" style="width: 120px;"></div> -->
+            <b-col cols="12" lg="4"  class="mt-3">
+                <b-form-group label-for="search-input" class="mb-0">
                     <b-input-group-append>
                         <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
-                            class="mr-2"></b-form-input>
-                        <b-button variant="info" pill :pressed="false" class="shadow-r">ค้นหา</b-button>
+                            class="w-100 mr-2"></b-form-input>
+                        <b-button variant="info" pill :pressed="false" class="shadow-r px-4">ค้นหา</b-button>
                     </b-input-group-append>
                 </b-form-group>
             </b-col>
-
         </b-row>
+
         <b-form inline class="mb-3 d-none">
             <b-form-group label-for="search-input" class="mr-3">
                 <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"></b-form-input>
@@ -48,57 +53,78 @@
                 style="width: 100px;"></b-form-select>
 
         </b-form>
+
         <div class="boxlist-card py-3">
             <br>
-            <b-table :items="filteredData" :fields="fields" hover responsive :busy="load" :head-variant="headVariant"
-                :table-variant="tableVariant" :striped="striped" :bordered="bordered" :borderless="borderless"
-                :outlined="outlined" :small="small" thead-class="d-none"    stacked="md">
+            <b-table 
+                :items="data" 
+                :fields="fields" 
+                hover responsive 
+                :filter="search"
+                :filter-included-fields="['name', 'uid']"
+                :busy="load" 
+                :head-variant="headVariant"
+                :table-variant="tableVariant" 
+                :striped="striped" 
+                :bordered="bordered" 
+                :borderless="borderless"
+                :outlined="outlined" 
+                :small="small" thead-class="d-none" stacked="md">
                 <template #cell(id)="data">
-
                     {{ data.index + 1 + (currentPage - 1) * 10 }}
-
                 </template>
                 <template #cell(name)="data">
-                    <div class="text-left ml-2">
-                        <span v-if="type == 'targetlist'">
+                    <div class="d-flex justify-content-start align-items-center" >
+                        <span v-if="type == 'targetlist'" class="mr-2">
                             <b-avatar :src="data.item.profile_image"
                                 v-if="data && data.item && data.item.profile_image">
                             </b-avatar>
-                            <b-avatar :src="data.item.profile_image" v-else> </b-avatar></span>
-                        {{ data.item.name || data.item.uid }}
+                            <b-avatar :src="data.item.profile_image" v-else> </b-avatar>
+                        </span>
+                        <span class="text-truncate d-md-none d-lg-block w-auto">
+                            {{ data.item.name || data.item.uid }}
+                        </span>
+                        <span class="text-truncate d-none d-sm-inline-block d-lg-none" style="max-width: 100px;">
+                            {{ data.item.name || data.item.uid }}
+                        </span>
                     </div>
                 </template>
-                <template #cell(link)="data">
+                <!-- <template #cell(link)="data">
                     <a :href="data.item.link_original" target="_blank">{{ data.item.uid }}</a>
-                </template>
+                </template> -->
                 <template #cell(source)="data">
-                    <div class="text-left bg-link">
-                        <div class="small" style="width: auto;">
-                            <img v-if="data.item.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
-                            <img v-if="data.item.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
-                            <img v-if="data.item.source == 'pantip'" src="@/assets/board.png" class="social-img" />
-                            <img v-if="data.item.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
-                            <img v-if="data.item.source == 'instagram'" src="@/assets/Instagram.png"
-                                class="social-img" />
-                            <img v-if="data.item.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
-                            <img v-if="data.item.source == 'news'" src="@/assets/News.png" class="social-img" />
-                            <img v-if="data.item.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
-                            <img v-if="data.item.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
-                            <a :href="data.item.link_original" target="_blank" class="ml-2"
-                                style="color: #2c3e50 !important;" v-if="type == 'targetlist' && load == false">{{
-                                    data.item.uid }}</a>
-                        </div>
+                    
+                    <div class="small d-flex align-items-center pr-0 w-auto"
+                        :class="{' bg-link': type == 'targetlist'}"
+                    >
+                        <img v-if="data.item.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
+                        <img v-if="data.item.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
+                        <img v-if="data.item.source == 'pantip'" src="@/assets/board.png" class="social-img" />
+                        <img v-if="data.item.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
+                        <img v-if="data.item.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
+                        <img v-if="data.item.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
+                        <img v-if="data.item.source == 'news'" src="@/assets/News.png" class="social-img" />
+                        <img v-if="data.item.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
+                        <img v-if="data.item.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                        <a :href="data.item.link_original" target="_blank" class="mx-2 text-truncate d-inline-block"
+                            style="color: #2c3e50 !important;" v-if="type == 'targetlist' && load == false">
+                            {{ data.item.uid }}
+                        </a>
                     </div>
+                   
                 </template>
                 <template #cell(insert_timestamp)="data">
                     <span class="small"> {{ formatDate(data.item.insert_timestamp) }}</span>
                 </template>
 
                 <template #cell(action)="data">
-                    <span class="fas fa-user-alt-slash" v-b-tooltip.hover title="เลิกติดตาม" size="sm"
-                        @click="delProfile(data.item, row.index)"></span>
+                    <span v-if="type === 'targetlist'" class="fas fa-user-alt-slash text-danger" v-b-tooltip.hover title="เลิกติดตาม" size="sm"
+                        @click="delProfile(data.item)"></span>
+                    <span v-if="type === 'hashtaglist'" 
+                    class="fas fa-trash text-danger" v-b-tooltip.hover title="ลบแฮชแท็ก" size="sm"
+                        @click="delHashtag(data.item,data.index)"></span>
                     <!-- <i class="fas fa-user-check"></i><i class="fas fa-user-plus"></i> -->
-                    <span class="fas fa-list-ul" v-b-tooltip.hover title="ดูข้อมูลส่วนตัว" size="sm"
+                    <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูข้อมูลส่วนตัว" size="sm"
                         @click="linkToProfile(data.item)"></span>
                 </template>
             </b-table>
@@ -106,20 +132,29 @@
         </div>
         <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" align="center" class="my-2"
             @input="onPageChange" />
-
     </div>
 </template>
 
 
 
 <script>
+import ImportPlatform from "./ImportPlatform.vue";
+import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 export default {
+    components: {
+        CreateMonitor,
+        ImportPlatform,
+        
+    },
     props: {
         type: String
     },
     data() {
         return {
             load: false,
+            allData: [],  // เก็บข้อมูลทั้งหมด
             data: [],
             totalRows: 0,
             search: '',
@@ -170,12 +205,19 @@ export default {
     },
     computed: {
         filteredData() {
-            if (!this.search) return this.data;
+            if (!this.search) return this.allData;
             const keyword = this.search.toLowerCase();
-            return this.data.filter(item =>
-                item.name.toLowerCase().includes(keyword)
-            );
-        }
+            return this.allData.filter(item => {
+            const name = (item.name || '').toString().toLowerCase();
+            const uid = (item.uid || '').toString().toLowerCase();
+            return name.includes(keyword) || uid.includes(keyword);
+            });
+        },
+        pagedFilteredData() {
+            const start = (this.currentPage - 1) * this.perPage;
+            const end = start + this.perPage;
+            return this.filteredData.slice(start, end);
+        },    
     },
     watch: {
         type(val) {
@@ -196,16 +238,97 @@ export default {
             this.currentPage = page;
             this.apiMonitorList();
         },
-
         linkToProfile(item) {
             console.log(item);
             this.$router.push({
                 name: "MonitorProfile",
-                query: { uid: item.uid, source: item.source, type: this.type },
+                query: { id: item._id,uid: item.uid, source: item.source, type: this.type },
             });
         },
-
-        apiMonitorList() {
+        async delProfile(item) {
+            Swal.fire({
+                title:'คุณแน่ใจหรือไม่?',
+                text: 'คุณจะไม่สามารถกู้คืนข้อมูลนี้ได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, เลิกการติดตามเลย!',
+                cancelButtonText: 'ยกเลิก',
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-danger'
+                },
+                allowOutsideClick: false,
+                // buttonsStyling: false, // ต้องมี ถ้าใช้ Bootstrap เอง
+                allowEscapeKey: false,
+                didOpen: () => {
+                    const iconContent = document.querySelector('.swal2-icon-content');
+                    if (iconContent) iconContent.style.display = 'none';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$store.dispatch("DeleteMonitor", {
+                        account: item.uid,
+                        source: item.source,
+                    }).then(() => {
+                        Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
+                        // this.data = this.data.filter(data => data.uid !== item.uid);
+                        this.apiMonitorList();
+                    });
+                    // Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success')
+                    // this.data = [];
+                    // this.data = this.data.filter( data => item.uid !== data.uid);
+                    // this.apiMonitorList();
+                } else {
+                    Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
+                }
+            })
+        },
+        async delHashtag(item,index) {
+            Swal.fire({
+                title:'คุณแน่ใจหรือไม่?',
+                text: 'คุณจะไม่สามารถกู้คืนข้อมูลนี้ได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, เลิกการติดตามเลย!',
+                cancelButtonText: 'ยกเลิก',
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-danger'
+                },
+                allowOutsideClick: false,
+                // buttonsStyling: false, // ต้องมี ถ้าใช้ Bootstrap เอง
+                allowEscapeKey: false,
+                didOpen: () => {
+                    const iconContent = document.querySelector('.swal2-icon-content');
+                    if (iconContent) iconContent.style.display = 'none';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var hashtag = item.uid.replace("#", "");
+                    console.log(hashtag,item.source,index);
+                    
+                    this.$store.dispatch("DeleteMonitor", {
+                        hashtag: hashtag,
+                        source: item.source,
+                        index: index,
+                    }).then(() => {
+                        Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
+                        this.apiMonitorList();
+                    });
+                } else {
+                    Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
+                }
+            })
+        
+            // this.$confirm("คุณต้องการเลิกติดตาม ?").then(() => {
+            //     this.$store.dispatch("DeleteMonitor", {
+            //     account: item.uid,
+            //     source: item.source,
+            //     });
+            //     // this.getListMonitorProfile.targetlist.splice(index, 1);
+            // });
+        },
+        async apiMonitorList() {
             this.load = true;
 
             const config = {
@@ -235,8 +358,7 @@ export default {
                     this.load = false;
                     console.error(error);
                 });
-        }
-        ,
+        },
         formatDate(dateStr) {
             const date = new Date(dateStr);
 
@@ -255,15 +377,18 @@ export default {
             return `${day}/${month}/${year} , ${formattedTime}`;
         }
     },
-    mounted() {
+    async mounted() {
         this.filters.type = this.type;
-        this.apiMonitorList();
+        await this.apiMonitorList();
     }
 };
 
 
 </script>
 <style scoped>
+.swal2-icon.swal2-warning::before {
+    content: "" !important;
+}
 .social-imgs {
     width: 35px;
 }

@@ -1,14 +1,14 @@
 <template>
-    <div>
-        <div class="px-3">
+    <div style="width: 85%; margin: auto;">
+        <div class="">
             <b-button-toolbar key-nav aria-label="Toolbar with button groups my-2">
-                <b-button-group class="mx-1" size="lg">
-                    <b-button :variant="activeButton === 'profile' ? 'info' : 'outline-info'"
+                <b-button-group class="" size="lg">
+                    <b-button style="border-bottom-left-radius: 0;"  :variant="activeButton === 'profile' ? 'custom' : 'outline-custom'"
                         @click="selectButton('profile')">
                         <b-icon icon="people" font-scale="1.5"></b-icon> Profile
                     </b-button>
 
-                    <b-button :variant="activeButton === 'hashtag' ? 'info' : 'outline-info'"
+                    <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'hashtag' ? 'custom' : 'outline-custom'"
                         @click="selectButton('hashtag')">
                         <b-icon icon="hash" font-scale="1.5"></b-icon> Hashtag
                     </b-button>
@@ -43,10 +43,17 @@ export default {
     }
 };
 </script>
-<style>
-.btn-info {
-    color: #fff;
-    background-color: #17a3b8ce;
-    border-color: #17a3b896;
+<style scoped>
+.btn-custom {
+    /* color: #fff; */
+    color: #4c412d;
+    background-color: #ffe6e6;
+    border-color: #ffe6e6;
+    /* background-color: #17a3b8ce;
+    border-color: #17a3b896; */
+}
+.btn-outline-custom{
+    color: #afa89d;
+    border-color: #ffe6e6;
 }
 </style>
