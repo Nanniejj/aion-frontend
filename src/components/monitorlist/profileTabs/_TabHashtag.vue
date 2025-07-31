@@ -21,7 +21,7 @@
                         class="border-bottom p-3"
                         v-for="(hashtag, k) in topHashtags"
                         :key="k"
-                        @click="selectDomain(hashtag.hashtag)"
+                        @click="selectHashtag(hashtag.hashtag)"
                     >
                     {{ k + 1 }}. {{ hashtag.hashtag }}
                     <div class="font-weight-normal small text-secondary">
@@ -124,6 +124,9 @@ export default {
         }
     },
     methods: {
+        selectHashtag(hashtag) {
+            this.$emit('update-keyword', hashtag);
+        },
         apiGetProfileHashtagCloud() {
             this.loading = true;
             const config = {

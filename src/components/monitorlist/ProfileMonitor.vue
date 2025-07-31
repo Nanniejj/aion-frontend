@@ -1,7 +1,7 @@
 <template>
     <b-row class="m-0">
         <!-- profile details -->
-        <b-col cols="12" md="5" lg="5" xl="3" class="h-100 mb-4 px-0 pr-md-2">
+        <b-col cols="12" md="5" lg="5" xl="4" class="h-100 mb-4 px-0 pr-md-2">
             <b-card
                 style="max-height: 600px;"
                 class="shadow"
@@ -21,8 +21,20 @@
                                     </b-avatar>
                                     <b-avatar v-else size="140px" class="p-1 bg-white border border-light shadow">
                                         <span v-if="data.profile_image">
-                                            <b-avatar @error="setAltImg" size="120px" :src="data.profile_image" loading="lazy"
-                                                class="shadow-sm rounded badge-light rounded-circle shadow">
+                                            <b-avatar 
+                                                :src="data.profile_image"
+                                                @error="setAltImg"
+                                                size="120px" 
+                                                loading="lazy"
+                                                class="shadow-sm rounded badge-light rounded-circle shadow"
+                                            >
+                                                <!-- <img
+                                                    :src="data.profile_image"
+                                                    @error="setAltImg"
+                                                    class="shadow-sm rounded badge-light rounded-circle shadow"
+                                                    style="object-fit: cover;"
+                                                    loading="lazy"
+                                                /> -->
                                             </b-avatar>
                                         </span>
                                         <span v-else>
@@ -54,9 +66,7 @@
                                 <div v-if="!editable" class="h6 font-weight-bold pt-2 mb-0">
                                     <a class="" v-bind:href="profile.link_original" target="_blank"
                                         style="color: #2c3e50"> 
-                                        <!-- <span class="text-truncate"> -->
-                                            {{ profile.name || profile.uid }}
-                                        <!-- </span> -->
+                                            {{ data.account_name || profile.name || profile.uid }}
                                         <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
                                     </a> 
                                 </div>
@@ -104,7 +114,7 @@
                                 <i class="fas fa-address-card mr-1" />
                                 ลักษณะของบัญชี :
                             </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
+                            <b-col v-if="!editable" cols="auto" class="font-weight-bold">
                                 <span v-if="profile.species">
                                     {{ getSpeciesName(profile.species) }}
                                 </span>
@@ -147,11 +157,11 @@
 
                     <b-col cols="12" class="pb-2">
                         <b-row class="p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <b-col class="text-secondary text-left d-flex p-0 align-items-center">
                                 <i class="fa fa-tag mr-1" />
                                 หมวดหมู่ของ Influencer :
                             </b-col>
-                            <b-col v-if="!editable" cols="auto" class="text-left px-0">
+                            <b-col v-if="!editable" cols="auto" class="text-left font-weight-bold">
                                 <span v-if="profile.influencer_type">
                                     <!-- <span v-if="profile.influencer_type"> -->
                                     <b-badge v-for="item in profile.influencer_type" :key="'type - '+item"  class="mr-1" style="background-color: #fed06ea4; color: #2c3e50;" pill>
@@ -360,7 +370,7 @@
         </b-col>
 
         <!-- tap -->
-        <b-col cols="12" md="7" lg="7" xl="9" class="px-0 px-md-3">
+        <b-col cols="12" md="7" lg="7" xl="8" class="px-0 px-md-3">
             <b-card 
                 class="h-100 boxlist-card"
                 header-tag="nav"
@@ -394,11 +404,19 @@
                         class="scrollable-body tab-body-height "
                         style=""
                         @scroll="handleScroll"
-                        >
+                    >
                         <TabDomain 
                             :wordcloud_image="wordcloud_images.words"
                             :topDomain="topDomain" 
+                            @update-keyword="(data) => setKeyWord(data)"
                         />
+                        <div class="col-12">
+                            <TabPost 
+                                :topDomain="topDomain" 
+                                :isBottom="alreadyAtBottom"
+                                :keyWord="keyWord"
+                            />
+                        </div>
                     </div>
                 </b-card-text>
                 <b-card-text v-if="category === 'hashtags'">
@@ -406,11 +424,19 @@
                         class="scrollable-body pl-2 tab-body-height "
                         style=""
                         @scroll="handleScroll"
-                        >
+                    >
                         <TabHashtag 
                             :wordcloud_image="wordcloud_images.hashtag"
                             :topHashtags="topHashtags"
+                            @update-keyword="(data) => setKeyWord(data)"
                         />
+                        <div class="col-12">
+                            <TabPost 
+                                :topDomain="topDomain" 
+                                :isBottom="alreadyAtBottom"
+                                :keyWord="keyWord"
+                            />
+                        </div>
                     </div>
                 </b-card-text>
                 <b-card-text v-if="category === 'posts'" class="">
@@ -419,7 +445,10 @@
                         style=""
                         @scroll="handleScroll"
                         >
-                        <TabPost :topDomain="topDomain" :isBottom="alreadyAtBottom"/>
+                        <TabPost 
+                            :topDomain="topDomain" 
+                            :isBottom="alreadyAtBottom"
+                        />
                     </div>
                 </b-card-text>
             </b-card>
@@ -449,6 +478,7 @@ export default {
             data: [],
             profile: {},
             category: 'domain',
+            account_name: null,
             editable: false,
             selectedData: {
                 species: null,
@@ -505,10 +535,29 @@ export default {
             ],
             // dataHashtagCloud:[],
             // dataWordCloud: [],
-            wordcloud_images:[],
+            wordcloud_images: [],
+            keyWord: null,
         }
     },
     methods: {
+        // async checkImage(url) {
+        //     console.log("กำลังเช็ค", url);
+        //     return new Promise((resolve) => {
+        //         const img = new Image();
+        //         img.onload = () => {
+        //             console.log("✅ โหลดได้:", url);
+        //             resolve(url);
+        //         };
+        //         img.onerror = () => {
+        //             console.log("❌ โหลดไม่ได้, ใช้ default:", '/images/user.svg');
+        //             resolve('/images/user.svg');
+        //         };
+        //         img.src = url;
+        //     })
+        // },
+        setKeyWord(word) {
+            this.keyWord = word;
+        },
         onlyNumber(e) {
             const char = String.fromCharCode(e.keyCode);
             if (!/[0-9]/.test(char)) {
@@ -539,8 +588,11 @@ export default {
                 const p = this.profile;
                 this.selectedData = {
                     species: p.species ?? null,
-                    influencer_type: p.influencer_type.map(id =>this.influencerTypes.find(item => item.value === id)),
-                    // influencer_type: p.influencer_type ?? null,
+                    influencer_type: Array.isArray(p.influencer_type)
+                        ? p.influencer_type.map(id =>
+                            this.influencerTypes.find(item => item.value === id)
+                        ).filter(Boolean) // กรอง null เผื่อหาไม่เจอ
+                        : [],
                     influencer_condition: p.influencer_condition ?? null,
                     sex: p.sex ?? null,
                     age: p.age ?? null,
@@ -554,7 +606,7 @@ export default {
                     following: p.following ?? null,
                 };
             }
-            console.log("seleted ==== ", this.selectedData);
+            // console.log("seleted ==== ", this.selectedData);
             
         },
         formatPhone(value) {
@@ -656,7 +708,7 @@ export default {
                 console.error(error);
             });
         },
-        apiMonitorProfile() {
+        async apiMonitorProfile() {
             this.load = true;
             const config = {
                 method: "get",
@@ -673,10 +725,12 @@ export default {
             };
 
             this.axios(config)
-            .then((response) => {
+            .then(async (response) => {
                 this.data = response.data || [];
                 console.log('this.data ', this.data);
-
+                // this.data.profile_image = await this.checkImage(response.data.profile_image);
+                // console.log("image === ",this.data.profile_image);
+            
                 this.profile = response.data?.profile
                 if (!('followers' in this.profile)) {
                     this.profile.followers = null; // หรือใส่ 0 ก็ได้
@@ -686,7 +740,6 @@ export default {
                 }
                 this.topDomain = response.data?.topDomain
                 this.topHashtags = response.data?.topHashtag
-
                 console.log('this.profile ', this.profile);
                 this.checkProfile();
                 this.load = false;
@@ -715,6 +768,8 @@ export default {
             this.axios(config)
             .then((response) => {
                 let result = response.data.data || [];
+                console.log(result);
+                
                 this.provinces = result.map(province => ({
                     text: province.name_th,
                     value: province.id
@@ -918,7 +973,7 @@ export default {
     /* height: 100px; */
 }
 .tab-body-height {
-    max-height: 800px;
+    max-height: 550px;
     overflow-y: auto;
 }
 @media only screen and (min-width: 0px) and (max-width: 760px) {

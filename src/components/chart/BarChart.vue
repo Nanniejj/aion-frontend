@@ -54,73 +54,84 @@ export default {
   },
   data() {
     return {
-      sourcelist: [
-        "facebook",
-        "twitter",
-        "board",
-        "news",
-        "youtube",
-        "instagram",
-        "blockdit",
-        "tiktok",
-      ],
-      countlist: [],
-      range: "",
-      series: [],
-      chartOptions: {
-        colors: [
-          "#438afe",
-          "#42c8f4",
-          "#521d85",
-          "#fed45c",
-          "#fa675f",
-          "#ffa67a",
-          "#336db6",
-          "#3f2e4c",
-          "#e75aa1",
+        sourcelist: [
+            "facebook",
+            "twitter",
+            "board",
+            "news",
+            "youtube",
+            "instagram",
+            "blockdit",
+            "tiktok",
         ],
-        chart: {
-          height: 535,
-          type: "bar",
-          fontFamily: "Prompt, FontAwesome, sans-serif",
-        },
-        legend: {
-          show: false,
-        },
-        plotOptions: {
-          bar: {
-            barHeight: "70px",
-            distributed: true,
-            horizontal: true,
-            dataLabels: {
-              position: "top",
-            },
-            borderRadius: 10,
-          },
-        },
-        dataLabels: {
-          enabled: true,
-        },
+        countlist: [],
+        range: "",
         series: [],
-        title: {
-          text: "",
-        },
-        noData: {
-          text: "Loading...",
-        },
-        grid: {
-          xaxis: {
-            lines: {
-              show: false,
+        total: 0,
+        chartOptions: {
+            colors: [
+            "#438afe",
+            "#42c8f4",
+            "#521d85",
+            "#fed45c",
+            "#fa675f",
+            "#ffa67a",
+            "#336db6",
+            "#3f2e4c",
+            "#e75aa1",
+            ],
+            chart: {
+            height: 535,
+            type: "bar",
+            fontFamily: "Prompt, FontAwesome, sans-serif",
             },
-          },
-          yaxis: {
-            lines: {
-              show: false,
+            legend: {
+                show: false,
             },
-          },
+            plotOptions: {
+                bar: {
+                    barHeight: "70px",
+                    distributed: true,
+                    horizontal: true,
+                    dataLabels: {
+                    position: "top",
+                    },
+                    borderRadius: 10,
+                },
+            },
+            dataLabels: {
+                enabled: true,
+                textAnchor: "start",
+                style: {
+                colors: ["#000000"],
+                },
+                formatter: function (val, opts) {
+                    const seriesData = opts.config.series[0].data;
+                    const total = seriesData.reduce((a, b) => a + b, 0);
+                    const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                    return `${val.toLocaleString()} posts (${percent}%)`;
+                },
+            },
+            // series: [],
+            title: {
+                text: "",
+            },
+            noData: {
+            text: "Loading...",
+            },
+            grid: {
+            xaxis: {
+                lines: {
+                show: false,
+                },
+            },
+            yaxis: {
+                lines: {
+                show: false,
+                },
+            },
+            },
         },
-      },
     };
   },
   computed: {
@@ -354,7 +365,9 @@ export default {
           name: "",
           data: temp,
         },
-      ];
+        ];
+        const total = temp.reduce((sum, num) => sum + num, 0); // คำนวณรวมก่อน
+        this.total = total;
       this.chartOptions = {
         legend: {
           show: false,
@@ -404,9 +417,17 @@ export default {
           style: {
             colors: ["#000000"],
           },
-          formatter: function(val) {
-            return val.toLocaleString() + " posts";
-          },
+        //   formatter: function(val) {
+        //     return val.toLocaleString() + " posts";
+            //   },
+        formatter: function (val) {
+            // const seriesData = this.series[0].data;
+            // const total = this.total;
+            // const data = opts.series[0].data;
+            // const total = data.reduce((sum, num) => sum + num, 0);
+            const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+            return `${val.toLocaleString()} posts (${percent}%)`;
+        },
           offsetX: 20,
           dropShadow: {
             enabled: false,

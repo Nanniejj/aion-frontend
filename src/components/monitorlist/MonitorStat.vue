@@ -1,25 +1,28 @@
 <template>
     <div v-if="data" class="p-2 bg-custom boxlist-card" style="border-top-left-radius: 0;" >
         <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
-        <div class="d-flex flex-wrap gap-custom">
-            <div class="col col-sm-2 col-lg px-0">
-                <b-card class="text-center card-item shadow-inner" :body-class="['p-2 w-auto']">
-                    <div class="row align-items-center justify-content-center m-0">
-                        <div class="col-auto ">
-                            <b-avatar class="d-sm-none" size="25" text="All" style="background-color: #fed16e;"></b-avatar>
-                            <b-avatar class="d-none d-sm-block" size="45" text="All" style="background-color: #fed16e;"></b-avatar>
+        <b-row cols="4" cols-md="5" cols-lg="10" class="px-3">
+            <b-col xl="" class="p-1">
+                <!-- <b-card class="text-center card-item shadow-sm" :body-class="['p-2 w-auto']"> -->
+                    <div class="row align-items-center py-1 h-100 card-item shadow-sm justify-content-center m-0">
+                        <div class="col-auto">
+                            <b-avatar class="d-md-none" size="25" text="All" style="background-color: #fed16e;"></b-avatar>
+                            <b-avatar class="d-none d-md-block" size="45" text="All" style="background-color: #fed16e;"></b-avatar>
                         </div>
-                        <div class="col-12 h5 mb-0 font-weight-bold">
+                        <!-- <div class="col-12 h5 mb-0 font-weight-bold">
                             {{ data.totalCount || 0 | numFormat }}
-                        </div>
-                        <div class="col-auto small px-0">users</div>
+                        </div> -->
+                        <!-- <div class="col-auto small px-0">users</div> -->
+                        <div class="col-12 h5 mb-0 font-weight-bold px-0">  {{ data.totalCount || 0 | numFormat }}</div>
+                        <div class="col-auto  small px-0">users</div>
                     </div>
-                </b-card>
-            </div>
-            <div class="col col-sm-2 col-lg px-0" v-for="(item, index) in data.aggregatedData || []" 
+                <!-- </b-card> -->
+            </b-col>
+            <b-col xl="" class="p-1" 
+                v-for="(item, index) in data.aggregatedData || []" 
                 :key="index">
-                <b-card class=" text-center card-item shadow-inner h-100" :body-class="['p-2 ']">
-                    <div class="row align-items-center justify-content-center m-0">
+                <!-- <b-card class=" text-center card-item shadow-sm h-100" :body-class="['p-1 ']"> -->
+                    <div class="row align-items-center py-1 h-100 card-item shadow-sm justify-content-center m-0">
                         <div class="col-auto">
                             <img v-if="item.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
                             <img v-if="item.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
@@ -32,12 +35,12 @@
                             <img v-if="item.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
                             <img v-if="item.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
                         </div>
-                        <div class="col-12 h5 mb-0 font-weight-bold"> {{ item.count || 0 | numFormat }}</div>
+                        <div class="col-12 h5 mb-0 font-weight-bold px-0"> {{ item.count || 0 | numFormat }}</div>
                         <div class="col-auto  small px-0">users</div>
                     </div>
-                </b-card>
-            </div>
-        </div>
+                <!-- </b-card> -->
+            </b-col>
+        </b-row>
     </div>
 </template>
 
@@ -106,17 +109,17 @@ export default {
 .card-item {
     /* border: 0px;
     border-radius: 15px; */
-    /* From https://css.glass */
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.3);
     border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.9) !important;
 }
 
 .card-item {
-    border: 0px;
+    width: 100%;
+    /* border: 0px; */
 }
 
 .boxlist-card {
@@ -128,7 +131,7 @@ export default {
     /* height: 100px; */
 }
 .g-10{
-    gap: 10px;
+    gap: 5px;
 }
 .bg-custom{
     /* background: #17A3B8CE; */
@@ -138,9 +141,40 @@ export default {
 .shadow-inner{
     box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.261) inset;
 }
-@media only screen and (min-width: 0px) and (max-width: 600px) {
+/* xs */
+@media only screen and (min-width: 0px) and (max-width: 575px) {
     .social-img {
         width: 25px;
     }
+    /* .card-item{
+        width: 99px;
+    } */
 }
+/* sm */
+@media only screen and (min-width: 576px) and (max-width: 767px) {
+    .social-img {
+        width: 25px;
+    }
+    /* .card-item{
+        width: 95px;
+    } */
+}
+/* md */
+/* @media only screen and (min-width: 768px) and (max-width: 991px) {
+    .card-item{
+        width: 85px;
+    }
+} */
+/* lg */
+/* @media (min-width: 992px)and (max-width: 1310px) {
+    .card-item{
+        width: 100px;
+    }
+} */
+/* extra */
+/* @media (min-width: 992px)and (max-width: 1200px) {
+    .card-item{
+        width: 102px;
+    }
+} */
 </style>

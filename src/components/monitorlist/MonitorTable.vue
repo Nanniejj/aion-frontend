@@ -30,9 +30,9 @@
             <b-col cols="12" lg="4"  class="mt-3">
                 <b-form-group label-for="search-input" class="mb-0">
                     <b-input-group-append>
-                        <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
+                        <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
                             class="w-100 mr-2"></b-form-input>
-                        <b-button variant="info" pill :pressed="false" class="shadow-r px-4">ค้นหา</b-button>
+                        <b-button variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
                     </b-input-group-append>
                 </b-form-group>
             </b-col>
@@ -40,7 +40,7 @@
 
         <b-form inline class="mb-3 d-none">
             <b-form-group label-for="search-input" class="mr-3">
-                <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"></b-form-input>
+                <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"></b-form-input>
             </b-form-group>
 
             <!-- <b-form-group label="ประเภท:" label-for="type-select" class="mr-3">
@@ -54,14 +54,13 @@
 
         </b-form>
 
-        <div class="boxlist-card py-3">
+        <div  class="boxlist-card py-3">
             <br>
             <b-table 
-                :items="data" 
+                v-if="data.length !== 0"
+                :items="data || []" 
                 :fields="fields" 
                 hover responsive 
-                :filter="search"
-                :filter-included-fields="['name', 'uid']"
                 :busy="load" 
                 :head-variant="headVariant"
                 :table-variant="tableVariant" 
@@ -69,7 +68,12 @@
                 :bordered="bordered" 
                 :borderless="borderless"
                 :outlined="outlined" 
-                :small="small" thead-class="d-none" stacked="md">
+                empty-filtered-text="ไม่พบข้อมูล"
+                :small="small" thead-class="d-none" stacked="md"
+            >
+                <!-- <template #empty>
+                    <div class="text-center text-muted">ไม่มีข้อมูล</div>
+                </template> -->
                 <template #cell(id)="data">
                     {{ data.index + 1 + (currentPage - 1) * 10 }}
                 </template>
@@ -81,7 +85,7 @@
                             </b-avatar>
                             <b-avatar :src="data.item.profile_image" v-else> </b-avatar>
                         </span>
-                        <span class="text-truncate d-md-none d-lg-block w-auto">
+                        <span class="text-truncate d-sm-none d-lg-block w-auto">
                             {{ data.item.name || data.item.uid }}
                         </span>
                         <span class="text-truncate d-none d-sm-inline-block d-lg-none" style="max-width: 100px;">
@@ -127,11 +131,21 @@
                     <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูข้อมูลส่วนตัว" size="sm"
                         @click="linkToProfile(data.item)"></span>
                 </template>
+                
             </b-table>
-
+            <div v-else>
+                ไม่พบข้อมูล
+            </div>
         </div>
-        <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" align="center" class="my-2"
-            @input="onPageChange" />
+
+        <!-- {{ currentPage }} -->
+        <b-pagination 
+            v-model="currentPage"
+            :total-rows="totalRows" 
+            :per-page="perPage" 
+            align="center" class="my-2"
+            @input="onPageChange" 
+        />
     </div>
 </template>
 
@@ -142,11 +156,11 @@ import ImportPlatform from "./ImportPlatform.vue";
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+// import { mapGetters } from "vuex";
 export default {
     components: {
         CreateMonitor,
         ImportPlatform,
-        
     },
     props: {
         type: String
@@ -158,6 +172,7 @@ export default {
             data: [],
             totalRows: 0,
             search: '',
+            debounceTimeout: null,
             currentPage: 1,
             perPage: 10,
             filters: {
@@ -205,9 +220,9 @@ export default {
     },
     computed: {
         filteredData() {
-            if (!this.search) return this.allData;
+            if (!this.search) return this.data;
             const keyword = this.search.toLowerCase();
-            return this.allData.filter(item => {
+            return this.data.filter(item => {
             const name = (item.name || '').toString().toLowerCase();
             const uid = (item.uid || '').toString().toLowerCase();
             return name.includes(keyword) || uid.includes(keyword);
@@ -222,28 +237,57 @@ export default {
     watch: {
         type(val) {
             this.filters.type = val;
-            this.currentPage = 1;
             this.apiMonitorList();
         },
         filters: {
             deep: true,
             handler() {
-                this.currentPage = 1;
+                console.log("handler === ",this.currentPage);
                 this.apiMonitorList();
             }
         }
     },
     methods: {
+        checkSearch() {
+            if (!this.search) {
+                this.apiMonitorList();
+            }
+        },
+        onSearch() {
+            clearTimeout(this.debounceTimeout);
+            this.debounceTimeout = setTimeout(() => {
+                this.currentPage = 1; // รีเซ็ตกลับหน้าแรก
+                this.apiMonitorList();
+            }, 500);
+        },
         onPageChange(page) {
+            // sessionStorage.setItem("monitor_currentPage", page); // ✅ บันทึก currentPage
             this.currentPage = page;
             this.apiMonitorList();
         },
         linkToProfile(item) {
-            console.log(item);
-            this.$router.push({
+            // console.log(item);
+            // sessionStorage.setItem("monitor_currentPage", this.currentPage);
+            // console.log("linkToProfile === ",this.currentPage);
+            // this.$router.push({
+            //     name: "MonitorProfile",
+            //     query: {
+            //         id: item._id,
+            //         uid: item.uid,
+            //         source: item.source,
+            //         type: this.type
+            //     },
+            // });
+            const routeData = this.$router.resolve({
                 name: "MonitorProfile",
-                query: { id: item._id,uid: item.uid, source: item.source, type: this.type },
+                query: {
+                    id: item._id,
+                    uid: item.uid,
+                    source: item.source,
+                    type: this.type
+                },
             });
+            window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
         },
         async delProfile(item) {
             Swal.fire({
@@ -319,18 +363,11 @@ export default {
                     Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
                 }
             })
-        
-            // this.$confirm("คุณต้องการเลิกติดตาม ?").then(() => {
-            //     this.$store.dispatch("DeleteMonitor", {
-            //     account: item.uid,
-            //     source: item.source,
-            //     });
-            //     // this.getListMonitorProfile.targetlist.splice(index, 1);
-            // });
         },
         async apiMonitorList() {
             this.load = true;
-
+            console.log('apiMonitorList ===',this.currentPage);
+            
             const config = {
                 method: "get",
                 url: "https://api2.cognizata.com/api/v2/monitor/getMonitor",
@@ -338,7 +375,8 @@ export default {
                     type: this.filters.type || undefined,
                     source: this.filters.source || undefined,
                     page: this.currentPage,
-                    limit: this.perPage
+                    limit: this.perPage,
+                    search:this.search
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -351,11 +389,16 @@ export default {
                     const resData = response.data;
                     this.data = resData.data || [];
                     this.totalRows = resData.pagination?.totalCount || this.data.length;
-                    this.currentPage = resData.pagination?.currentPage || 1;
+                    console.log(this.totalRows);
+                    
+                    console.log(this.currentPage);
+                    
+                    // this.currentPage = resData.pagination?.currentPage || 1;
                     this.load = false;
                 })
                 .catch((error) => {
                     this.load = false;
+                    this.data = [];
                     console.error(error);
                 });
         },
@@ -378,13 +421,18 @@ export default {
         }
     },
     async mounted() {
+        // this.currentPage = Number(sessionStorage.getItem("monitor_currentPage")) || 1;
+        // this.currentPage =  Number(sessionStorage.getItem("monitor_currentPage"))
         this.filters.type = this.type;
         await this.apiMonitorList();
+        // sessionStorage.removeItem("monitor_currentPage");
+        
     }
 };
 
 
 </script>
+
 <style scoped>
 .swal2-icon.swal2-warning::before {
     content: "" !important;
@@ -440,6 +488,6 @@ export default {
     border: 0px;
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
     border-radius: 15px;
-    /* height: 100px; */
+    min-height: 400px;
 }
 </style>

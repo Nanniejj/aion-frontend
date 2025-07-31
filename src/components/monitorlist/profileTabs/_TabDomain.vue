@@ -112,6 +112,9 @@ export default {
         };
     },
     methods: {
+        selectDomain(domain) {
+           this.$emit('update-keyword', domain) 
+        },
         getWordCloudImage() {
             this.loading = true;
             const config = {

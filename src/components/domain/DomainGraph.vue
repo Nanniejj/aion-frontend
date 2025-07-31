@@ -51,7 +51,7 @@
               <i class="far fa-calendar-alt"></i> {{ startd }} - {{ endd }}
             </div>
           </div>
-        </div>
+        </div>  
         <BarChart />
       </b-col>
     </b-row>

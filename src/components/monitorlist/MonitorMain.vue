@@ -1,5 +1,5 @@
 <template>
-    <div style="width: 85%; margin: auto;">
+    <div class="w-custom">
         <div class="">
             <b-button-toolbar key-nav aria-label="Toolbar with button groups my-2">
                 <b-button-group class="" size="lg">
@@ -56,4 +56,16 @@ export default {
     color: #afa89d;
     border-color: #ffe6e6;
 }
+.w-custom {
+    width: 85%;
+    margin: auto;
+}
+@media only screen and (min-width: 0px) and (max-width: 1280px){
+    .w-custom {
+        width: 96%;
+        margin: auto;
+    }
+
+}
+
 </style>

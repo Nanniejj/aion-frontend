@@ -7,9 +7,9 @@
         />
         <div >
             <!-- header  -->
-            <div class="col-12 pl-0 pr-2 h5 text-left bold">
+            <div class="col-12 px-0 h5 text-left bold">
                 <div class="row m-0">
-                    <div class="col">
+                    <div class="col pl-0">
                         <div v-if="tabTitle == 'domainTab'">
                             <span v-if="keyWord == ''">All</span>
                             <span v-else>{{ keyWord }}</span>
@@ -20,10 +20,10 @@
                         </div>
                         <div v-else>
                             <span>โพสต์ทั้งหมด</span>
-                            <span style="color: #4c412d;" class="px-2">({{ posts.length }})</span>
+                            <span style="color: #4c412d;" class="px-2">({{ total }})</span>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0">
+                    <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0">
                         <date-picker
                             v-model="valueDate"
                             type="date"
@@ -53,7 +53,6 @@
                         <b-form-select v-model="selectedSort" :options="optionSort" size="sm" style="height: 34px;" class=""
                         ></b-form-select>
                     </b-col>
-                    
                 </b-row>
             </b-form-group>
 
@@ -164,7 +163,8 @@
                 
                 <!-- domain tags  -->
                 <div class="text-left">
-                    <span style="font-size: small;" v-if="post.domain.length !== 0">domain tags :
+                    <span style="font-size: small;" v-if="filterDomain(post.domain).length !== 0">
+                        domain tags :
                     </span>
                     <span v-for="(name, i) in filterDomain(post.domain)" :key="i" class="mx-1 py-2">
                         <b-badge pill variant="light" style="color: #2c3e50;
@@ -483,7 +483,7 @@ export default {
         },
         keyWord: {
             type: String,
-            default: null
+            default: ''
         },
         isBottom: {
             type: Boolean,
@@ -493,7 +493,11 @@ export default {
             type: Array,
             // required: true,
             default: () => [] // ✅ ทั้ง type และ default เป็น Array
-        }
+        },
+        // keyWord: {
+        //     type: String,
+        //     default:""
+        // }
     },
     
     data() {
@@ -507,6 +511,7 @@ export default {
             start_date: "",
             end_date: "",
             dataPost: [],
+            total: null,
             posts: [],
             limit: 10,
             index: null,
@@ -532,16 +537,16 @@ export default {
                 return post_domain;
             }
             const topDomainNames = this.topDomain.map(d => d.t_domain);
-            console.log("topDomainNames === ", topDomainNames);
+            // console.log("topDomainNames === ", topDomainNames);
             
             let filter = post_domain.filter(domain => topDomainNames.includes(domain));
-            console.log(filter);
+            // console.log(filter);
             
             return filter;
         },
         openGallery(i, data) {
-            console.log("openGallery ==== ",data);
-            console.log("index ==== ",i);
+            // console.log("openGallery ==== ",data);
+            // console.log("index ==== ",i);
             this.index = i;
             this.dataPhoto = data;
         },
@@ -589,7 +594,7 @@ export default {
                 params: {
                     account: this.$route.query.uid,
                     source: this.$route.query.source,
-                    query:'',
+                    query:this.keyWord ? this.keyWord : '',
                     sort_by: '',
                     offset: 0,
                     limit: this.limit,
@@ -611,6 +616,7 @@ export default {
                     ...post,
                     showAll: false
                 }));
+                this.total = this.dataPost.count;
                 this.getLoadPostTab = false;
             })
             .catch((error) => {
@@ -630,11 +636,18 @@ export default {
             if (newVal) {
                 if (this.posts.length < this.dataPost.count) {
                     this.limit = this.limit + 10;
-                    this.apiUserPosts();
-                    
+                    if (!this.getLoadPostTab) {
+                        this.apiUserPosts();
+                    }
                 }
             }
+        },
+        keyWord(newVal) {
+            if (newVal) {
+                this.apiUserPosts()
+            }
         }
+
     },
 
 };

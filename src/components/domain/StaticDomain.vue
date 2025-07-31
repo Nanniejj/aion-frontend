@@ -165,7 +165,7 @@
                   <b-progress id="barpos" height="20px">
                     <b-progress-bar :value="valpos"></b-progress-bar
                     ><span class="lbvp bold"
-                      >{{ dataStat.positiveSentiment | numFormat }} posts</span
+                      >{{ dataStat.positiveSentiment | numFormat }} posts ({{ getPersent(dataStat.positiveSentiment) }})</span
                     >
                   </b-progress>
                 </b-col>
@@ -181,7 +181,7 @@
                   <b-progress id="bar" height="20px">
                     <b-progress-bar :value="val"></b-progress-bar
                     ><span class="lbv bold"
-                      >{{ dataStat.neutralSentiment | numFormat }} posts</span
+                      >{{ dataStat.neutralSentiment | numFormat }} posts ({{ getPersent(dataStat.neutralSentiment) }})</span
                     >
                   </b-progress>
                 </b-col>
@@ -197,8 +197,10 @@
                   <b-progress id="barnag" height="20px">
                     <b-progress-bar :value="valnag"></b-progress-bar>
                     <span class="lbvn bold"
-                      >{{ dataStat.negativeSentiment | numFormat }} posts</span
+                      >{{ dataStat.negativeSentiment | numFormat }} posts ({{ getPersent(dataStat.negativeSentiment) }})
+                      </span
                     >
+                    
                   </b-progress>
                 </b-col>
               </b-row>
@@ -242,7 +244,7 @@ export default {
     };
   },
   methods: {
-    async updateStat() {
+        async updateStat() {
       this.startd = this.getSdateDm.slice(0, 10);
       this.endd = this.getEdateDm.slice(0, 10);
       let sdate, edate;
@@ -294,8 +296,16 @@ export default {
 
           this.$store.commit("setLoadStat", false);
         });
+        },
+        getPersent(data) {
+            // console.log(this.dataStat);
+            let totalpost = this.dataStat.totalPost;
+            if (!data || totalpost === 0) return `0 posts (0%)`;
+            let percent = (data / totalpost) * 100;
+            return `${percent.toFixed(1)}%`;
+        }
     },
-  },
+   
   created: async function () {
     this.$store.commit("setLoadStat", true);
     this.startd = moment(new Date()).format().slice(0,10);
