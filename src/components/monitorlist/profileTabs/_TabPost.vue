@@ -7,20 +7,23 @@
         />
         <div >
             <!-- header  -->
-            <div class="col-12 px-0 h5 text-left bold">
+            <div class="col-12 px-0 h6 text-left">
                 <div class="row m-0">
-                    <div class="col pl-0">
-                        <div v-if="tabTitle == 'domainTab'">
+                    <div class="col pl-0 ">
+                        <div v-if="keyWord">
                             <span v-if="keyWord == ''">All</span>
                             <span v-else>{{ keyWord }}</span>
+                            <span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
+                            <i @click="resetKeyWord" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                            
                         </div>
-                        <div v-else-if="tabTitle == 'hashtagTab'">
+                        <!-- <div v-else-if="tabTitle == 'hashtagTab'">
                             <span v-if="keyWord == ''"> All</span>
                             <span v-else>#{{ keyWord }}</span>
-                        </div>
+                        </div> -->
                         <div v-else>
                             <span>โพสต์ทั้งหมด</span>
-                            <span style="color: #4c412d;" class="px-2">({{ total }})</span>
+                            <span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
                         </div>
                     </div>
                     <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0">
@@ -532,6 +535,10 @@ export default {
     },
     
     methods: {
+        resetKeyWord() {
+            this.keyWord = ""
+            this.apiUserPosts()
+        },
         filterDomain(post_domain) {
             if (!this.topDomain || this.topDomain.length === 0) {
                 return post_domain;
@@ -587,12 +594,14 @@ export default {
         },
        
         apiUserPosts() {
+            const isHashtagList = this.$route.query.type === 'hashtaglist';
             this.getLoadPostTab = true;
             const config = {
                 method: "get",
                 url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
-                    account: this.$route.query.uid,
+                    // account: this.$route.query.uid,
+                     ...(isHashtagList ? { hashtag: this.$route.query.uid } : { account: this.$route.query.uid }),
                     source: this.$route.query.source,
                     query:this.keyWord ? this.keyWord : '',
                     sort_by: '',
@@ -618,6 +627,7 @@ export default {
                 }));
                 this.total = this.dataPost.count;
                 this.getLoadPostTab = false;
+                this.$emit('totalPost',this.total)
             })
             .catch((error) => {
                 this.getLoadPostTab = false;

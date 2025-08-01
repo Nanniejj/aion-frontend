@@ -42,13 +42,14 @@
 
             <b-col md="12" lg="8" class="font-weight-bold mt-3 mt-xl-0 px-0">
                 <vue-element-loading
-                :active="loading"
-                size="80"
-                class="mt-3 mt-xl-0 h-100"
-                background-color="rgba(0,0,0, 0.05)"
-                color="#fff"
-                spinner="bar-fade-scale"
-            />
+                    :active="loading"
+                    size="80"
+                    class="mt-3 mt-xl-0 h-100"
+                    background-color="rgba(0,0,0, 0.05)"
+                    color="#fff"
+                    spinner="bar-fade-scale"
+                />
+                <!-- {{ loading }} -->
                 <b-card v-if="!wordcloud_image && !loading">
                     <span class="h5 font-weight-bold">WordCloud</span>
                     <hr class="">
@@ -87,6 +88,10 @@ export default {
         ProfileWordCloud,
     },
     props: {
+        load: {
+            type : Boolean,
+            default: false
+        },
         wordcloud_image: {
             type: String,
         },
@@ -105,7 +110,7 @@ export default {
     data() {
         return {
             dm: "",
-            loading: false,
+            loading: true,
             getLoadingStatus2: false,
             dataWordCloud: [],
             wordcloud_images: [],
@@ -133,7 +138,8 @@ export default {
                     "Content-Type": "application/json",
                 },
             };
-
+            console.log("word ",this.loading);
+            
             this.axios(config)
             .then((response) => {
                 this.wordcloud_images = response.data.wordcloud_images || [];
@@ -220,7 +226,7 @@ export default {
         }
     },
     mounted() {
-       
+       this.loading = this.load
         // this.apiGetProfileWordCloud();
         // this.getWordCloudImage();
     }

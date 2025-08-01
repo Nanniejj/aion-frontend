@@ -11,7 +11,7 @@
             >
                 <!-- กำหนด header แบบมีพื้นหลังไล่ระดับ -->
                 <template #header>
-                    <div class="gradient-bg" style="height: 120px;">
+                    <div class="gradient-bg" style="height: 135px;">
                         <b-row v-if="profile" class="m-0">
                             <b-col class="pt-3">
                                 <!-- {{ profile }} -->
@@ -63,8 +63,17 @@
                                             class="social-img" />
                                     </span>
                                 </span>
-                                <div v-if="!editable" class="h6 font-weight-bold pt-2 mb-0">
-                                    <a class="" v-bind:href="profile.link_original" target="_blank"
+                                <div v-if="!editable" class="h6 py-2">
+                                    <a v-if="type == 'hashtaglist'" class="" v-bind:href="profile.link_original" target="_blank"
+                                        style="color: #2c3e50"> 
+                                        <span class="h5">
+                                            {{ profile.name || profile.uid }}
+
+                                        </span>
+                                        <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" /><br>
+                                        ({{ totalPost | numFormat }} posts)
+                                    </a> 
+                                    <a v-else class="" v-bind:href="profile.link_original" target="_blank"
                                         style="color: #2c3e50"> 
                                             {{ data.account_name || profile.name || profile.uid }}
                                         <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
@@ -429,6 +438,7 @@
                         @scroll="handleScroll"
                     >
                         <TabDomain 
+                            :load="load"
                             :wordcloud_image="wordcloud_images.words"
                             :topDomain="topDomain" 
                             @update-keyword="(data) => setKeyWord(data)"
@@ -438,6 +448,7 @@
                                 :topDomain="topDomain" 
                                 :isBottom="alreadyAtBottom"
                                 :keyWord="keyWord"
+                                @totalPost="data =>totalPost = data"
                             />
                         </div>
                     </div>
@@ -479,12 +490,14 @@
     </b-row>
 </template>
 <script>
+import { data } from "jquery"
 import TabDomain from "./profileTabs/_TabDomain.vue"
 import TabHashtag from "./profileTabs/_TabHashtag.vue"
 import TabPost from "./profileTabs/_TabPost.vue"
 import Swal from 'sweetalert2'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
+import { load } from "@syncfusion/ej2-vue-maps"
 export default {
     components: {
         TabDomain,
@@ -500,6 +513,7 @@ export default {
             load: false,
             data: [],
             profile: {},
+            totalPost: 0,
             category: 'domain',
             account_name: null,
             editable: false,

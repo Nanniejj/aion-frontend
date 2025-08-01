@@ -20,10 +20,10 @@
         </template> -->
         <!-- card body -->
         <b-row>
-            <b-col v-if="!editable" md="4">
+            <b-col v-if="!editable" cols="4" class="pr-0">
                 <b-card-img :src="checkImage()" alt="Image" class="rounded-0"></b-card-img>
             </b-col>
-            <b-col>
+            <b-col class="">
             <b-card-body class="py-0 px-2">
                 <b-card-text>
                     <b-row v-if="editable" class="my-2 mx-0">
