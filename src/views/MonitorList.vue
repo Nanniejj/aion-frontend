@@ -7,12 +7,12 @@
         <div class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor" style="position:relative;margin-left: auto; 
 margin-right: 0;">
           <!-- ในหน้า monitor -->
-          <div class="icon-monitor1" @click="$router.push('/politician')">
+          <div class="icon-monitor1" @click="$router.push('/monitor')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="person-lines-fill" scale="0.5"></b-icon>
+              <b-icon stacked icon="display" scale="0.5"></b-icon>
             </b-iconstack>
-            <div class="d-block h6 text-center my-0">Politician</div>
+            <div class="d-block h6 text-center my-0">Monitor</div>
           </div>
 
           <div class="mr-3 icon-monitor2" @click="toMonitor('Feed')">

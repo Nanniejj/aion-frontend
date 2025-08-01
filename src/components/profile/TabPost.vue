@@ -363,7 +363,7 @@
         <div class="text-left ai-box mt-2" v-if="
           profilePost && profilePost.face_detect && username == 'adminatapy'
         " style="font-size: 15px;font-weight: 500;">
-          <div v-if="profilePost.face_detect && profilePost.person_name.length">
+          <div v-if="profilePost.face_detect && profilePost.person_name&&profilePost.person_name.length">
             <span v-for="(face, idx) in profilePost.person_name">
               <span class="mr-2 mt-1" v-if="face">
                 <span style="background: #e5e5e5;

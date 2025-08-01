@@ -508,7 +508,7 @@ export default {
         const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
         return {
             getLoadPostTab: false,
-            selected: "",
+            selected: [1,0,-1],
             selectedSort: "",
             valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
             start_date: "",
@@ -524,7 +524,7 @@ export default {
                 { text: "Positive", value: "1" },
                 { text: "Neutral", value: "0" },
                 { text: "Negative", value: "-1" },
-                { text: "ทั้งหมด", value: "" },
+                { text: "ทั้งหมด", value: [1,0,-1] },
             ],
             optionSort: [
                 { value: "", text: " โพสต์ล่าสุด" },
@@ -604,9 +604,10 @@ export default {
                      ...(isHashtagList ? { hashtag: this.$route.query.uid } : { account: this.$route.query.uid }),
                     source: this.$route.query.source,
                     query:this.keyWord ? this.keyWord : '',
-                    sort_by: '',
-                    offset: 0,
-                    limit: this.limit,
+                    sort_by: this.selectedSort,
+                    sentiment: this.selected,
+                    offset: this.limit,
+                    // limit: this.limit,
                     start_date: this.start_date,
                     end_date:this.end_date
                 },
@@ -653,6 +654,16 @@ export default {
             }
         },
         keyWord(newVal) {
+            if (newVal) {
+                this.apiUserPosts()
+            }
+        },
+        selectedSort(newVal) {
+            if (newVal) {
+                this.apiUserPosts()
+            }
+        },
+        selected(newVal) {
             if (newVal) {
                 this.apiUserPosts()
             }

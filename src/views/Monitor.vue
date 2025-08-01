@@ -7,27 +7,34 @@
         <div class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor" style="position:relative;margin-left: auto; 
 margin-right: 0;">
           <!-- ในหน้า monitor -->
-          <div class="icon-monitor1" @click="$router.push('/politician')">
+          <!-- <div class="icon-monitor1" @click="$router.push('/politician')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
               <b-icon stacked icon="person-lines-fill" scale="0.5"></b-icon>
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Politician</div>
-          </div>
+          </div> -->
 
-          <div class="mr-3 icon-monitor2" @click="toMonitor('Feed')">
+          <div class="mr-3 icon-monitor1" @click="toMonitor('Feed')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
               <b-icon stacked icon="file-post" scale="0.5"></b-icon>
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Feed</div>
           </div>
-          <div class="icon-monitor3" @click="toMonitor('Report')">
+          <div class="icon-monitor2" @click="toMonitor('Report')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
               <b-icon stacked icon="file-earmark-bar-graph" scale="0.5"></b-icon>
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Report</div>
+          </div>
+          <div class="icon-monitor3" @click="toMonitor('MonitorList')">
+            <b-iconstack font-scale="2">
+              <b-icon stacked icon="circle"></b-icon>
+              <b-icon stacked icon="display" scale="0.5"></b-icon>
+            </b-iconstack>
+            <div class="d-block h6 text-center my-0">Monitorlist</div>
           </div>
 
         </div>

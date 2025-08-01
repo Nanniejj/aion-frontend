@@ -282,7 +282,7 @@ export default {
                 name: "MonitorProfile",
                 query: {
                     id: item._id,
-                    uid: item.uid,
+                    uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
                     source: item.source,
                     type: this.type
                 },
