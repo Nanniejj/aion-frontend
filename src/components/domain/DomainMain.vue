@@ -10,7 +10,7 @@
         <DomainGraph class="mt-1" id="statgraph" />
         <StaticDomain class="mt-3" id="statcap" />
 
-        <!-- <TopObjectChart /> -->
+      
 
         <!-- <SlideSpotNews class="mt-5" v-if="username =='adminatapy'"/> -->
 
@@ -18,6 +18,7 @@
 
 
         <SlideSpotSocial class="mt-1" />
+          <TopObjectChart />
 
         <!-- <SlideSpotNews class="mt-5" /> -->
         <DomainCloud class="mt-5" />
