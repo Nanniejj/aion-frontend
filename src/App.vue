@@ -85,10 +85,10 @@
   text-align: center;
 }
 /*topuser */
-.badge-info {
+/* .badge-info {
   color: #fff;
   background-color: #f8f9fa00 !important;
-}
+} */
 .b-avatar-badge {
   bottom: -9px !important;
   right: -17px !important;

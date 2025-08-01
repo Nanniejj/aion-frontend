@@ -878,11 +878,11 @@ td {
     margin-top: 20px;
   }
 }
-::v-deep(.b-form-tag) {
+/* ::v-deep(.b-form-tag) {
   max-width: 250px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   border: 1px solid #ccc !important;
-}
+} */
 </style>

@@ -22,12 +22,12 @@
       <b-row class="w-100">
         <!-- stat -->
         
-        <b-col lg="6" class="text-left">
-          <b-row cols="2" class="font-icon" cols-lg="3" cols-md="3">
+        <b-col lg="7" class="text-left">
+          <b-row cols="3" class="font-icon" cols-lg="3" cols-md="3">
             <b-col>
               <b-row>
-                <b-col cols="auto" 
-                  ><i class="far fa-comments fa-2x d-inline" />
+                <b-col cols="auto">
+                    <i class="far fa-comments fa-2x d-inline" />
                 </b-col>
                 <b-col cols="auto">
                   <div class="text-icon">
@@ -77,26 +77,27 @@
                 </b-col>
               </b-row>
             </b-col>
-            <b-col>
-              <b-row>
-                <b-col cols="auto"
-                  ><i class="far fa-thumbs-up fa-2x"></i>
-                </b-col>
+            <b-col class="px-0">
+              <b-row class="flex-md-nowrap" no-gutters>
                 <b-col cols="auto">
-                  <div class="text-icon">
-                    <b>{{ dataStat.engagement | numFormat }}</b> <br />
-                    Engages
+                    <i class="fas fa-address-card fa-2x d-inline"></i> 
+                </b-col>
+                <b-col cols="auto text-truncate">
+                  <div class="text-icon text-truncate" style="">
+                    <b> {{ dataStat.user_comments | numFormat }} </b><br />
+                    User<br class="d-block d-md-none"/> Comments
                   </div>
                 </b-col>
               </b-row>
             </b-col>
+            
             <b-col>
               <b-row>
-                <b-col cols="auto"><i class="fa fa-retweet fa-2x"></i> </b-col>
+                <b-col cols="auto"><i class="fa fa-share fa-2x"></i> </b-col>
                 <b-col cols="auto">
                   <div class="text-icon">
                     <b>{{ dataStat.retweets_count | numFormat }} </b><br />
-                    Retweet
+                    Share
                   </div>
                 </b-col>
               </b-row>
@@ -137,7 +138,19 @@
                 </b-col>
               </b-row>
             </b-col> -->
-
+            <b-col>
+              <b-row>
+                <b-col cols="auto"
+                  ><i class="far fa-thumbs-up fa-2x"></i>
+                </b-col>
+                <b-col cols="auto">
+                  <div class="text-icon">
+                    <b>{{ dataStat.engagement | numFormat }}</b> <br />
+                    Engages
+                  </div>
+                </b-col>
+              </b-row>
+            </b-col>
             <b-col >
               <b-row>
                 <b-col cols="auto"
@@ -153,8 +166,9 @@
             </b-col>
           </b-row>
         </b-col>
+
         <!-- sentiment bar -->
-        <b-col lg="6">
+        <b-col lg="5">
           <b-row cols="1">
             <b-col class="mb-1">
               <b-row class="v-cen">
@@ -209,6 +223,8 @@
         </b-col>
       </b-row>
     </span>
+
+    <!-- {{ dataStat }} -->
   </div>
 </template>
 
@@ -412,6 +428,7 @@ div.col.avg {
 }
 .text-icon {
   line-height: 17px;
+  font-size: 14px;
 }
 .col-auto {
   padding: 5px 2px 5px 5px;

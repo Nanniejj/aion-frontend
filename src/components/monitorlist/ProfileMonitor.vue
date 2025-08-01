@@ -107,7 +107,30 @@
                             </div>
                         </b-row>
                     </b-col>
-
+                    <b-col v-if="editable" cols="12" class="pb-2">
+                        <b-row class="d-flex justify-content-between p-0">
+                            <b-col class="text-secondary d-flex p-0 align-items-center">
+                                <i class="fas fa-image mr-1"/>
+                                url ที่อยู่รูปโปรไฟล์  
+                                <i
+                                    v-if="editable"
+                                    class="fa fa-exclamation-circle mx-1 text-info"
+                                    v-b-tooltip.hover
+                                    title="คลิกขวาที่รูปโปรไฟล์ เลือก 'คัดลอกที่อยู่รูปภาพ' หรือ 'Copy image address' แล้ววางที่นี่"
+                                    style="font-size: 14px; cursor: pointer;"
+                                ></i> :
+                            </b-col>
+                            <div class="col-12 px-0" >
+                                <b-form-input
+                                    size="sm"
+                                    class="input"
+                                    placeholder="ระบุที่อยู่รูปโปรไฟล์"
+                                    v-model="selectedData.profile_image"
+                                    @input="exportData"
+                                />
+                            </div>
+                        </b-row>
+                    </b-col>
                     <b-col cols="12" class="pb-2">
                         <b-row class="p-0">
                             <b-col class="text-secondary d-flex p-0 align-items-center">
@@ -493,7 +516,8 @@ export default {
                 bot_level: 1,
                 email: '',
                 phone:'' , 
-                name:'' , 
+                name: '', 
+                profile_image: null
             },
             selectedProvince: 10,
             provinces: [],
@@ -604,6 +628,7 @@ export default {
                     name: p.name ?? '',
                     followers: p.followers ?? null,
                     following: p.following ?? null,
+                    profile_image: this.data.profile_image ?? null
                 };
             }
             // console.log("seleted ==== ", this.selectedData);
@@ -849,7 +874,8 @@ export default {
                     bot_level: this.selectedData.bot_level,
                     name: this.selectedData.name,
                     followers : this.selectedData.followers,
-                    following : this.selectedData.following,
+                    following: this.selectedData.following,
+                    profile_image : this.selectedData.profile_image
                 }]
             };
             console.log("data ==== ", rawData);

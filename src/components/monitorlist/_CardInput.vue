@@ -5,450 +5,462 @@
         class="bg-light custom-card-img "
         tag="article"
         :header-class="['p-0']"
-        :body-class="['py-0 px-2']"
+        :body-class="['p-0']"
         img-alt="Image"
-        img-top
+        img-left
     >
-        <template #header>
+        <!-- <template #header>
             <img
+                style="width: 200px;"
                 v-if="!editable"
                 :src="checkImage()"
                 alt="Image"
                 class="img-top w-100 rounded"
             />
-        </template>
+        </template> -->
         <!-- card body -->
-        <b-row v-if="editable" class="my-2 mx-0">
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-user mr-1"/>
-                        ชื่อบัญชี :
-                    </b-col>
-                    <div class="col-12 px-0" >
-                        <b-form-input
-                            size="sm"
-                            class="input"
-                            placeholder="ระบุชื่อบัญชี"
-                            v-model="selectedData.name"
-                            @input="exportData"
-                        />
-                    </div>
-                </b-row>
+        <b-row>
+            <b-col v-if="!editable" md="4">
+                <b-card-img :src="checkImage()" alt="Image" class="rounded-0"></b-card-img>
             </b-col>
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fas fa-image mr-1"/>
-                        url ที่อยู่รูปโปรไฟล์  
-                        <i
-                            v-if="editable"
-                            class="fa fa-exclamation-circle mx-1 text-info"
-                            v-b-tooltip.hover
-                            title="คลิกขวาที่รูปโปรไฟล์ เลือก 'คัดลอกที่อยู่รูปภาพ' หรือ 'Copy image address' แล้ววางที่นี่"
-                            style="font-size: 14px; cursor: pointer;"
-                        ></i> :
-                    </b-col>
-                    <div class="col-12 px-0" >
-                        <b-form-input
-                            size="sm"
-                            class="input"
-                            placeholder="ระบุที่อยู่รูปโปรไฟล์"
-                            v-model="selectedData.profile_image"
-                            @input="exportData"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
+            <b-col>
+            <b-card-body class="py-0 px-2">
+                <b-card-text>
+                    <b-row v-if="editable" class="my-2 mx-0">
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-user mr-1"/>
+                                    ชื่อบัญชี :
+                                </b-col>
+                                <div class="col-12 px-0" >
+                                    <b-form-input
+                                        size="sm"
+                                        class="input"
+                                        placeholder="ระบุชื่อบัญชี"
+                                        v-model="selectedData.name"
+                                        @input="exportData"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fas fa-image mr-1"/>
+                                    url ที่อยู่รูปโปรไฟล์  
+                                    <i
+                                        v-if="editable"
+                                        class="fa fa-exclamation-circle mx-1 text-info"
+                                        v-b-tooltip.hover
+                                        title="คลิกขวาที่รูปโปรไฟล์ เลือก 'คัดลอกที่อยู่รูปภาพ' หรือ 'Copy image address' แล้ววางที่นี่"
+                                        style="font-size: 14px; cursor: pointer;"
+                                    ></i> :
+                                </b-col>
+                                <div class="col-12 px-0" >
+                                    <b-form-input
+                                        size="sm"
+                                        class="input"
+                                        placeholder="ระบุที่อยู่รูปโปรไฟล์"
+                                        v-model="selectedData.profile_image"
+                                        @input="exportData"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+                        
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fas fa-address-card mr-1" />
+                                    ลักษณะของบัญชี :
+                                </b-col>
+                                
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[{ value: null, text: 'ลักษณะของบัญชี' }, ...speciesTypes]"
+                                        v-model="selectedData.species"
+                                        @change="exportData"
+                                        placeholder="เลือกหมวดหมู่"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
             
-            <b-col cols="12" class="pb-2">
-                <b-row class="p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fas fa-address-card mr-1" />
-                        ลักษณะของบัญชี :
-                    </b-col>
-                    
-                    <div class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="[{ value: null, text: 'ลักษณะของบัญชี' }, ...speciesTypes]"
-                            v-model="selectedData.species"
-                            @change="exportData"
-                            placeholder="เลือกหมวดหมู่"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-
-            <b-col cols="12" class="pb-2">
-                <b-row class="p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fas fa-award mr-1" />
-                        เงื่อนไข Influencer :
-                    </b-col>
-                    <div  class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="influConditions"
-                            v-model="selectedData.influencer_condition"
-                            placeholder="เลือกเงื่อนไข Influencer"
-                            @change="exportData"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-
-            <b-col v-if="selectedData.influencer_condition !== 'none'" cols="12" class="pb-2 mr-2">
-                <b-row class="p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-tag mr-1" />
-                        หมวดหมู่ Influencer :
-                    </b-col>
-                    <div class="col-12 px-0">
-                        <!-- <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...influencerTypes]"
-                            v-model="selectedData.influencer_type"
-                            placeholder="เลือกหมวดหมู่"
-                            @change="exportData"
-                        /> -->
-                        <Multiselect
-                            v-model="selectedData.influencer_type"
-                            :options="influencerTypes"
-                            :multiple="true"
-                            :taggable="true"
-                            label="text"
-                            track-by="value"
-                            placeholder="เลือกหมวดหมู่"
-                            @input="exportData"
-                        />
-                            <!-- :reduce="item => item.value"
-                            @input="addTag" -->
-                            <!-- @input="exportData" -->
-                    </div>
-                </b-row>
-            </b-col>
-
-            <b-col cols="12" class="pb-2 mr-2">
-                <b-row class="p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-tag mr-1" />
-                        ประเภทธุรกิจ :
-                    </b-col>
-                    <div class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...departmentTypes]"
-                            v-model="selectedData.department"
-                            placeholder="เลือกหมวดหมู่"
-                            @change="exportData"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-           
-            <b-col cols="12" class="pb-2">
-                <b-row class="p-0 justify-content-between">
-                    <b-col cols="9" class="text-secondary d-flex p-0 align-items-center ">
-                        <i class="fas fa-robot mr-1" />
-                        <span class="text-truncate d-inline-block">
-                            ระดับความถี่ในการเก็บข้อมูล 
-                            <i
-                                v-if="editable"
-                                class="fa fa-exclamation-circle mx-1 text-info"
-                                v-b-tooltip.hover
-                                title="ระดับ 1 = ความถี่ต่ำ,ระดับ 2 = ความถี่ปานกลาง,ระดับ 3 = ความถี่สูง"
-                                style="font-size: 14px; cursor: pointer;"
-                            ></i> :
-                        </span>
-                    </b-col>
-                    <div class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="[1,2,3]"
-                            v-model="selectedData.bot_level"
-                            placeholder="เลือกระดับ"
-                            @change="exportData"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i v-if="selectedData.sex === 'female'" class="fa fa-venus" />
-                        <i v-else-if="selectedData.sex === 'male'" class="fa fa-mars" />
-                        <i v-else class="fa fa-neuter mr-1" />
-                        เพศ :
-                    </b-col>
-                    <div class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="genders"
-                            @change="exportData"
-                            v-model="selectedData.sex"
-                            placeholder="เลือกเพศ"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-birthday-cake mr-1"/>
-                        อายุ :
-                    </b-col>
-                    
-                    <b-form-spinbutton
-                        v-model="selectedData.age" 
-                        min="1" max="100" 
-                        @change="exportData"
-                        @keypress="onlyNumber"
-                    ></b-form-spinbutton>
-                </b-row>
-            </b-col>
-
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-map-marker mr-1"/>
-                        จังหวัด :
-                    </b-col>
-                    <div class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="[{ value: null, text: 'เลือกจังหวัด',disabled: true  }, ...provinces]"
-                            placeholder="เลือกจังหวัด"
-                            v-model="selectedProvince"
-                            @change="getLocation"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-map-marker mr-1"/>
-                        อำเภอ :
-                    </b-col>
-                    <div class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="[{ value: null, text: 'เลือกอำเภอ',disabled: true  }, ...districts]"
-                            placeholder="เลือกอำเภอ"
-                            v-model="selectedDistrict"
-                            @change="getLocation"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-map-marker mr-1"/>
-                        ตำบล :
-                    </b-col>
-                    <div class="col-12 px-0">
-                        <b-form-select
-                            size="sm"
-                            class="input"
-                            :options="[{ value: null, text: 'เลือกตำบล',disabled: true  }, ...subDistricts]"
-                            placeholder="เลือกตำบล"
-                            v-model="selectedSubDistrict"
-                            @change="getLocation"
-                        />
-                    </div>
-                </b-row>
-            </b-col>
-
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fas fa-users mr-1"/>
-                        ผู้ติดตาม :
-                    </b-col>
-                    
-                    <b-form-input
-                        type="text"
-                        v-model="selectedData.follower"
-                        @keypress="onlyNumber"
-                        placeholder="กรอกจำนวนผู้ติดตาม (เฉพาะตัวเลข)"
-                    />
-                </b-row>
-            </b-col>
-
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fas fa-star mr-1"/>
-                        กำลังติดตาม :
-                    </b-col>
-                    <b-form-input
-                        type="text"
-                        v-model="selectedData.following"
-                        @keypress="onlyNumber"
-                        placeholder="กรอกจำนวน account ที่กำลังติดตาม (เฉพาะตัวเลข)"
-                    />
-                </b-row>
-            </b-col>
-            <!-- location : {{ selectedData.location }} -->
-            <!-- <hr class="w-100" />
-
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-envelope mr-1"/>
-                        e-mail :
-                    </b-col>
-                    <b-col v-if="!editable" cols="auto font-weight-bold">
-                        <span v-if="selectedData.email">
-                            {{ selectedData.email }}
-                        </span>
-                        <span v-else> - </span>
-                    </b-col>
-                    <div v-else class="col-12 px-0" >
-                        <b-form-input
-                            size="sm"
-                            class="input"
-                            placeholder="Enter email"
-                            v-model="selectedData.email"
-                        />
-                    </div>
-                </b-row>
-            </b-col> -->
-            <!-- <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <b-col class="text-secondary d-flex p-0 align-items-center">
-                        <i class="fa fa-phone mr-1"/>
-                        เบอร์โทร :
-                    </b-col>
-                    <b-col v-if="!editable" cols="auto font-weight-bold">
-                        <span v-if="selectedData.phone">
-                            {{ selectedData.phone }}
-                        </span>
-                        <span v-else> - </span>
-                    </b-col>
-                    <div v-else class="col-12 px-0" >
-                        <b-form-input
-                            size="sm"
-                            class="input"
-                            placeholder="Enter phone number"
-                            v-model="selectedData.phone"
-                        />
-                    </div>
-                </b-row>
-            </b-col> -->
-        </b-row>
-        <b-row v-else class="mb-2 mx-0">
-            <b-col cols="12" class="pb-2">
-                <b-row class=" justify-content-between p-0">
-                    <b-col class="d-flex flex-wrap align-items-center px-0 pt-1" style="font-size: 18px;">
-                       <b class="mr-2">
-                            {{ selectedData.name ? selectedData.name : 'ไม่ระบุชื่อบัญชี' }}
-                       </b>
-                       <div class="col-auto px-0 mt-2">
-                           <b-badge v-if="selectedData.species" variant="info" class="text-capitalize text-truncate" pill>{{ getSpeciesName(selectedData.species) }}</b-badge>
-                       </div>
-                    </b-col>
-                    <div class="col-auto px-0" style="">
-                        <span style="background-color: lightpink;" v-if="selectedData.sex === 'female'" class="sex-custom-card px-2 pt-0">
-                            หญิง
-                            <!-- <i  class="fa fa-venus" /> -->
-                        </span>
-                        <span style="background-color: lightblue;" v-else-if="selectedData.sex === 'male'" class="sex-custom-card px-2 pt-0">
-                            ชาย
-                            <!-- <i class="fa fa-mars"/> -->
-                        </span>
-                        <span v-else-if="selectedData.sex === 'lgbtq+'" class="sex-custom-card bg-pride px-2 pt-0">
-                            lgbtq+
-                            <!-- <i class="fa fa-mars"/> -->
-                        </span>
-                        <span v-else class="sex-custom-card px-1 pt-0 bg-secondary text-white">
-                            ไม่ระบุเพศ
-                            <!-- <i class="fa fa-neuter mr-1" /> -->
-                        </span>
-                    </div>
-                </b-row>
-            </b-col>
-            <b-col cols="12" class="pb-0 px-0">
-                <!-- <b-row class="text-left text-truncate m-0 p-0 text-capitalize flex-wrap" style="font-size: 18px;"> -->
-                    <span class="text-left text-truncate m-0 p-0 text-capitalize flex-wrap" style="font-size: 18px;">
-                        {{ selectedData.department ? selectedData.department : 'ไม่ระบุประเภทธุรกิจ' }}
-                    </span>
-                    <div v-if="selectedData.influencer_type" class="col-auto px-0 mt-2">
-                        <b-badge v-for="item in selectedData.influencer_type" :key="item.value" 
-                        variant="warning" 
-                        style="background-color: #fed06ea4; color: #2c3e50;"
-                        class="text-capitalize text-truncate mr-2" pill>{{ item.text }}</b-badge>
-                    </div>
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fas fa-award mr-1" />
+                                    เงื่อนไข Influencer :
+                                </b-col>
+                                <div  class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="influConditions"
+                                        v-model="selectedData.influencer_condition"
+                                        placeholder="เลือกเงื่อนไข Influencer"
+                                        @change="exportData"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+            
+                        <b-col v-if="selectedData.influencer_condition !== 'none'" cols="12" class="pb-2 mr-2">
+                            <b-row class="p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-tag mr-1" />
+                                    หมวดหมู่ Influencer :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <!-- <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...influencerTypes]"
+                                        v-model="selectedData.influencer_type"
+                                        placeholder="เลือกหมวดหมู่"
+                                        @change="exportData"
+                                    /> -->
+                                    <Multiselect
+                                        v-model="selectedData.influencer_type"
+                                        :options="influencerTypes"
+                                        :multiple="true"
+                                        :taggable="true"
+                                        label="text"
+                                        track-by="value"
+                                        placeholder="เลือกหมวดหมู่"
+                                        @input="exportData"
+                                    />
+                                        <!-- :reduce="item => item.value"
+                                        @input="addTag" -->
+                                        <!-- @input="exportData" -->
+                                </div>
+                            </b-row>
+                        </b-col>
+            
+                        <b-col cols="12" class="pb-2 mr-2">
+                            <b-row class="p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-tag mr-1" />
+                                    ประเภทธุรกิจ :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...departmentTypes]"
+                                        v-model="selectedData.department"
+                                        placeholder="เลือกหมวดหมู่"
+                                        @change="exportData"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
                        
-                    <span v-else class="text-secondary">
-                        {{ selectedData.influencer_condition ? getInfluConditionName(selectedData.influencer_condition) : 'ไม่ระบุประเภท Influencer/ธุรกิจ' }}
-                    </span>
-                <!-- </b-row> -->
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="p-0 justify-content-between">
+                                <b-col cols="9" class="text-secondary d-flex p-0 align-items-center ">
+                                    <i class="fas fa-robot mr-1" />
+                                    <span class="text-truncate d-inline-block">
+                                        ระดับความถี่ในการเก็บข้อมูล 
+                                        <i
+                                            v-if="editable"
+                                            class="fa fa-exclamation-circle mx-1 text-info"
+                                            v-b-tooltip.hover
+                                            title="ระดับ 1 = ความถี่ต่ำ,ระดับ 2 = ความถี่ปานกลาง,ระดับ 3 = ความถี่สูง"
+                                            style="font-size: 14px; cursor: pointer;"
+                                        ></i> :
+                                    </span>
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[1,2,3]"
+                                        v-model="selectedData.bot_level"
+                                        placeholder="เลือกระดับ"
+                                        @change="exportData"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+            
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i v-if="selectedData.sex === 'female'" class="fa fa-venus" />
+                                    <i v-else-if="selectedData.sex === 'male'" class="fa fa-mars" />
+                                    <i v-else class="fa fa-neuter mr-1" />
+                                    เพศ :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="genders"
+                                        @change="exportData"
+                                        v-model="selectedData.sex"
+                                        placeholder="เลือกเพศ"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+            
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-birthday-cake mr-1"/>
+                                    อายุ :
+                                </b-col>
+                                
+                                <b-form-spinbutton
+                                    v-model="selectedData.age" 
+                                    min="1" max="100" 
+                                    @change="exportData"
+                                    @keypress="onlyNumber"
+                                ></b-form-spinbutton>
+                            </b-row>
+                        </b-col>
+            
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-map-marker mr-1"/>
+                                    จังหวัด :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[{ value: null, text: 'เลือกจังหวัด',disabled: true  }, ...provinces]"
+                                        placeholder="เลือกจังหวัด"
+                                        v-model="selectedProvince"
+                                        @change="getLocation"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-map-marker mr-1"/>
+                                    อำเภอ :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[{ value: null, text: 'เลือกอำเภอ',disabled: true  }, ...districts]"
+                                        placeholder="เลือกอำเภอ"
+                                        v-model="selectedDistrict"
+                                        @change="getLocation"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-map-marker mr-1"/>
+                                    ตำบล :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[{ value: null, text: 'เลือกตำบล',disabled: true  }, ...subDistricts]"
+                                        placeholder="เลือกตำบล"
+                                        v-model="selectedSubDistrict"
+                                        @change="getLocation"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+            
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fas fa-users mr-1"/>
+                                    ผู้ติดตาม :
+                                </b-col>
+                                
+                                <b-form-input
+                                    type="text"
+                                    v-model="selectedData.follower"
+                                    @keypress="onlyNumber"
+                                    placeholder="กรอกจำนวนผู้ติดตาม (เฉพาะตัวเลข)"
+                                />
+                            </b-row>
+                        </b-col>
+            
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fas fa-star mr-1"/>
+                                    กำลังติดตาม :
+                                </b-col>
+                                <b-form-input
+                                    type="text"
+                                    v-model="selectedData.following"
+                                    @keypress="onlyNumber"
+                                    placeholder="กรอกจำนวน account ที่กำลังติดตาม (เฉพาะตัวเลข)"
+                                />
+                            </b-row>
+                        </b-col>
+                        <!-- location : {{ selectedData.location }} -->
+                        <!-- <hr class="w-100" />
+            
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-envelope mr-1"/>
+                                    e-mail :
+                                </b-col>
+                                <b-col v-if="!editable" cols="auto font-weight-bold">
+                                    <span v-if="selectedData.email">
+                                        {{ selectedData.email }}
+                                    </span>
+                                    <span v-else> - </span>
+                                </b-col>
+                                <div v-else class="col-12 px-0" >
+                                    <b-form-input
+                                        size="sm"
+                                        class="input"
+                                        placeholder="Enter email"
+                                        v-model="selectedData.email"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col> -->
+                        <!-- <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-phone mr-1"/>
+                                    เบอร์โทร :
+                                </b-col>
+                                <b-col v-if="!editable" cols="auto font-weight-bold">
+                                    <span v-if="selectedData.phone">
+                                        {{ selectedData.phone }}
+                                    </span>
+                                    <span v-else> - </span>
+                                </b-col>
+                                <div v-else class="col-12 px-0" >
+                                    <b-form-input
+                                        size="sm"
+                                        class="input"
+                                        placeholder="Enter phone number"
+                                        v-model="selectedData.phone"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col> -->
+                    </b-row>
+                    <b-row v-else class="mb-2 mx-0">
+                        <b-col cols="12" class="pb-2">
+                            <b-row class=" justify-content-between p-0">
+                                <b-col class="d-flex flex-wrap align-items-center px-0 pt-1" style="font-size: 18px;">
+                                   <b class="mr-2">
+                                        {{ selectedData.name ? selectedData.name : 'ไม่ระบุชื่อบัญชี' }}
+                                   </b>
+                                   <div class="col-auto px-0 mt-2">
+                                       <b-badge v-if="selectedData.species" variant="info" class="text-capitalize text-truncate" pill>{{ getSpeciesName(selectedData.species) }}</b-badge>
+                                   </div>
+                                </b-col>
+                                <div class="col-auto px-0" style="">
+                                    <span style="background-color: lightpink;" v-if="selectedData.sex === 'female'" class="sex-custom-card px-2 pt-0">
+                                        หญิง
+                                        <!-- <i  class="fa fa-venus" /> -->
+                                    </span>
+                                    <span style="background-color: lightblue;" v-else-if="selectedData.sex === 'male'" class="sex-custom-card px-2 pt-0">
+                                        ชาย
+                                        <!-- <i class="fa fa-mars"/> -->
+                                    </span>
+                                    <span v-else-if="selectedData.sex === 'lgbtq+'" class="sex-custom-card bg-pride px-2 pt-0">
+                                        lgbtq+
+                                        <!-- <i class="fa fa-mars"/> -->
+                                    </span>
+                                    <span v-else class="sex-custom-card px-1 pt-0 bg-secondary text-white">
+                                        ไม่ระบุเพศ
+                                        <!-- <i class="fa fa-neuter mr-1" /> -->
+                                    </span>
+                                </div>
+                            </b-row>
+                        </b-col>
+                        <b-col cols="12" class="pb-0 px-0">
+                            <!-- <b-row class="text-left text-truncate m-0 p-0 text-capitalize flex-wrap" style="font-size: 18px;"> -->
+                                <span v-if="selectedData.department" class="text-left text-truncate m-0 p-0 text-capitalize flex-wrap" style="font-size: 18px;">
+                                    {{ selectedData.department ? this.getDepartmentTypesName(selectedData.department) : 'ไม่ระบุประเภทธุรกิจ' }}
+                                </span>
+                                <div v-if="selectedData.influencer_type" class="col-auto px-0 mt-2">
+                                    <b-badge v-for="item in selectedData.influencer_type" :key="item.value" 
+                                    variant="warning" 
+                                    style="background-color: #fed06ea4; color: #2c3e50;"
+                                    class="text-capitalize text-truncate mr-2" pill>{{ item.text }}</b-badge>
+                                </div>
+                                   
+                                <span v-else class="text-secondary">
+                                    {{ selectedData.influencer_condition ? getInfluConditionName(selectedData.influencer_condition) : 'ไม่ระบุประเภท Influencer/ธุรกิจ' }}
+                                </span>
+                            <!-- </b-row> -->
+                        </b-col>
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <span class="text-14px text-secondary">
+                                    {{ getInfluConditionName(selectedData.influencer_condition) }}
+                                </span>
+                            </b-row>
+                        </b-col>
+                        <hr class="col-12 p-0 mb-2 mt-0" />
+                        <b-col cols="12" class="pb-2">
+                            <b-row class="d-flex p-0">
+                                <b-col cols="6" class="px-0 pr-4">
+                                    <span class="font-weight-bold ">
+                                        {{ selectedData.followers ? selectedData.followers : 'ไม่ระบุ' }}
+                                    </span>
+                                    <span class=" text-secondary text-14px">
+                                        Followers
+                                    </span>
+                                </b-col> 
+                                <b-col cols="6" class="px-0">
+                                    <span class="font-weight-bold ">
+                                        {{ selectedData.following ? selectedData.following : 'ไม่ระบุ' }}
+                                    </span>
+                                    <span class=" text-secondary text-14px">
+                                        Following
+                                    </span>
+                                </b-col>
+                            </b-row>
+                        </b-col>
+                        <div class="col-12 px-0">
+                            <div class="d-flex text-truncate text-14px">
+                                <i class="fas fa-map-marker-alt mr-2 text-info" />
+                                <span class="text-secondary mr-1">{{ selectedData.province ? selectedData.province : 'ไม่ระบุ'}}</span>
+                                <span v-if="selectedData.district" class="text-secondary mr-1">, {{ selectedData.district ? selectedData.district : '' }}</span>
+                                <span v-if="selectedData.sub_district" class="text-secondary text-truncate d-inline-block">, {{ selectedData.sub_district ? selectedData.sub_district : '' }}</span>
+                            </div>
+                        </div>
+                        <div class="col-12 px-0 pt-2">
+                            <div class="d-flex flex-wrap" style="gap: 0.3rem;">
+                                <b-badge v-if="selectedData.age" variant="light" class="text-capitalize text-truncate p-2">
+                                   อายุ  {{ selectedData.age }} ปี
+                                </b-badge>
+                                <b-badge v-else variant="light" class="text-capitalize text-truncate p-2">
+                                   ไม่ระบุอายุ
+                                </b-badge>
+                                <b-badge v-if="selectedData.bot_level" variant="light" class="text-capitalize text-truncate p-2">
+                                    ระดับความถี่ในการเก็บข้อมูล{{ getBotLevel(selectedData.bot_level) }}
+                                </b-badge>
+                                <b-badge v-else variant="light" class="text-capitalize text-truncate p-2">
+                                   ไม่ระบุระดับความถี่ในการเก็บข้อมูล
+                                </b-badge>
+                            </div>
+                        </div>
+                    </b-row>
+                </b-card-text>
+            </b-card-body>
             </b-col>
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex justify-content-between p-0">
-                    <span class="text-14px text-secondary">
-                        {{ getInfluConditionName(selectedData.influencer_condition) }}
-                    </span>
-                </b-row>
-            </b-col>
-            <hr class="col-12 p-0 mb-2 mt-0" />
-            <b-col cols="12" class="pb-2">
-                <b-row class="d-flex p-0">
-                    <b-col cols="auto" class="px-0 pr-4">
-                        <span class="font-weight-bold ">
-                            {{ selectedData.followers ? selectedData.followers : 'ไม่ระบุ' }}
-                        </span>
-                        <span class=" text-secondary text-14px">
-                            Followers
-                        </span>
-                    </b-col> 
-                    <b-col cols="auto" class="px-0">
-                        <span class="font-weight-bold ">
-                            {{ selectedData.following ? selectedData.following : 'ไม่ระบุ' }}
-                        </span>
-                        <span class=" text-secondary text-14px">
-                            Following
-                        </span>
-                    </b-col>
-                </b-row>
-            </b-col>
-            <div class="col-12 px-0">
-                <div class="d-flex text-truncate text-14px">
-                    <i class="fas fa-map-marker-alt mr-2 text-info" />
-                    <span class="text-secondary mr-1">{{ selectedData.province ? selectedData.province : 'ไม่ระบุ'}}</span>
-                    <span v-if="selectedData.district" class="text-secondary mr-1">, {{ selectedData.district ? selectedData.district : '' }}</span>
-                    <span v-if="selectedData.sub_district" class="text-secondary text-truncate d-inline-block">, {{ selectedData.sub_district ? selectedData.sub_district : '' }}</span>
-                </div>
-            </div>
-            <div class="col-12 px-0 pt-2">
-                <div class="d-flex flex-wrap" style="gap: 0.3rem;">
-                    <b-badge v-if="selectedData.age" variant="light" class="text-capitalize text-truncate p-2">
-                       อายุ  {{ selectedData.age }} ปี
-                    </b-badge>
-                    <b-badge v-else variant="light" class="text-capitalize text-truncate p-2">
-                       ไม่ระบุอายุ
-                    </b-badge>
-                    <b-badge v-if="selectedData.bot_level" variant="light" class="text-capitalize text-truncate p-2">
-                        ระดับความถี่ในการเก็บข้อมูล{{ getBotLevel(selectedData.bot_level) }}
-                    </b-badge>
-                    <b-badge v-else variant="light" class="text-capitalize text-truncate p-2">
-                       ไม่ระบุระดับความถี่ในการเก็บข้อมูล
-                    </b-badge>
-                </div>
-            </div>
         </b-row>
         <!-- เพิ่ม footer ตรงนี้ -->
         <!-- <template #footer>
@@ -694,6 +706,10 @@ export default {
             const found = this.influConditions.find(item => item.value === id);
             return found ? found.text : 'ไม่ระบุเงื่อนไข Influencer';
         },
+        getDepartmentTypesName(id) {
+            const found = this.departmentTypes.find(item => item.value === id);
+            return found ? found.text : 'ไม่ระบุประเภทธุรกิจ';
+        },
         getLocationName() {
             let location_id = this.selectedData.location.toString().padStart(6, '0');
             let province_id = location_id.substring(0, 2);
@@ -854,7 +870,7 @@ export default {
 <style scoped>
 .custom-card-img img {
   /* width: 150px !important;  */
-  height: 200px !important;
+  height: 220px !important;
   width: 100% !important;
   /* image-rendering: auto; ป้องกันภาพแตก */
   object-fit: cover; 
