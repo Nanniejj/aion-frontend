@@ -590,7 +590,7 @@ export default {
             this.getLoadPostTab = true;
             const config = {
                 method: "get",
-                url: "https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/",
+                url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     account: this.$route.query.uid,
                     source: this.$route.query.source,
