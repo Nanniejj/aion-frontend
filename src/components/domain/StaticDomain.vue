@@ -23,7 +23,7 @@
         <!-- stat -->
         
         <b-col lg="7" class="text-left">
-          <b-row cols="3" class="font-icon" cols-lg="3" cols-md="3">
+          <b-row cols="2"  sm="3" class="font-icon" cols-lg="3" cols-md="3">
             <b-col>
               <b-row>
                 <b-col cols="auto">
