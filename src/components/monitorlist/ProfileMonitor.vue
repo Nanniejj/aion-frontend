@@ -194,24 +194,14 @@
                                 หมวดหมู่ของ Influencer :
                             </b-col>
                             <b-col v-if="!editable" cols="auto" class="text-left font-weight-bold">
-                                <span v-if="profile.influencer_type">
-                                    <!-- <span v-if="profile.influencer_type"> -->
+                                <span v-if="profile.influencer_type !== [] && profile.influencer_type[0] !== 0">
                                     <b-badge v-for="item in profile.influencer_type" :key="'type - '+item"  class="mr-1" style="background-color: #fed06ea4; color: #2c3e50;" pill>
                                         {{  getTypeName(item) }}
                                     </b-badge>
-                                    <!-- </span> -->
-                                    <!-- {{ getTypeName(profile.influencer_type) }} -->
                                 </span>
                                 <span v-else>-</span>
                             </b-col>
-                            <div v-else class="col-12 px-0">
-                                <!-- <b-form-select
-                                    size="sm"
-                                    class="input"
-                                    :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...influencerTypes]"
-                                    v-model="profile.influencer_type"
-                                    placeholder="เลือกหมวดหมู่"
-                                /> -->
+                            <!-- <div v-else class="col-12 px-0">
                                 <Multiselect
                                     v-model="selectedData.influencer_type"
                                     :options="influencerTypes"
@@ -221,8 +211,7 @@
                                     track-by="value"
                                     placeholder="เลือกหมวดหมู่"
                                 />
-                                    <!-- @input="exportData" -->
-                            </div>
+                            </div> -->
                         </b-row>
                     </b-col>
                     <!-- <b-col cols="12" class="pb-2">
@@ -668,7 +657,8 @@ export default {
             return this.sexs.find(item => item.value === sex).text
         },
         getTypeName(id) {
-            return this.influencerTypes.find(item => item.value === id).text
+            const found = this.influencerTypes.find(item => item.value === id)
+            return found ? found.text : '-';
         },
         getInfluConditions(value) {
             console.log(value);
