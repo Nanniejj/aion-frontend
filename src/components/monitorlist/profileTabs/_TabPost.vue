@@ -619,16 +619,33 @@ export default {
 
             this.axios(config)
             .then((response) => {
-                this.dataPost = response.data || [];
-                console.log('this.data ', this.dataPost);
-                // this.posts = this.dataPost.data
-                this.posts = this.dataPost.data.map(post => ({
-                    ...post,
-                    showAll: false
-                }));
-                this.total = this.dataPost.count;
+                // this.dataPost = response.data || [];
+                // console.log('this.data ', this.dataPost);
+                // // this.posts = this.dataPost.data
+                // this.posts = this.dataPost.data.map(post => ({
+                //     ...post,
+                //     showAll: false
+                // }));
+                // this.total = this.dataPost.count;
+                // this.getLoadPostTab = false;
+                // this.$emit('totalPost',this.total)
+                const newData = response.data?.data || [];
+                this.total = response.data?.count || 0;
                 this.getLoadPostTab = false;
-                this.$emit('totalPost',this.total)
+
+                // กรองเอาโพสต์ใหม่ที่ยังไม่มีใน this.posts
+                const existingIds = this.posts.map(post => post._id); // สมมุติว่าใช้ _id เป็นตัวระบุ
+                const filteredNewPosts = newData.filter(post => !existingIds.includes(post._id));
+
+                // เพิ่ม showAll = false แล้วรวมกับ posts เดิม
+                const newPostsWithFlag = filteredNewPosts.map(post => ({
+                ...post,
+                showAll: false,
+                }));
+
+                this.posts = [...this.posts, ...newPostsWithFlag];
+
+                this.$emit('totalPost', this.total);
             })
             .catch((error) => {
                 this.getLoadPostTab = false;
@@ -645,7 +662,7 @@ export default {
     watch: {
         isBottom(newVal) {
             if (newVal) {
-                if (this.posts.length < this.dataPost.count) {
+                if (this.posts.length < this.total) {
                     this.limit = this.limit + 10;
                     if (!this.getLoadPostTab) {
                         this.apiUserPosts();

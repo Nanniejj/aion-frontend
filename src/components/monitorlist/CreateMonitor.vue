@@ -289,9 +289,10 @@
         <b-row class="my-1">
             <b-col sm="12" style="text-align: right">
             <br />
-            <b-button class="btn btn-close mr-2" size="sm" @click="hideModal()"
-                >ปิดหน้าต่าง</b-button
-            >
+            <b-button v-if="targetLists !== [] || hashtagLists !== []" @click="clear" size="sm" variant="outline-danger" class="mr-2">
+                <i class="fa fa-eraser" aria-hidden="true"></i>
+                clear
+            </b-button>
             <b-button
                 class="btn btn-save"
                 size="sm"
@@ -415,6 +416,10 @@ export default {
         };
     },
     methods: {
+        clear() {
+            this.resetHashtagList();
+            this.resetTargetList();
+        },
         handleLabelData(data, itemPlatform) {
             console.log("data === ",data);
             // คัดลอกทุก key จาก data ไปยัง itemPlatform (รวมทั้งเพิ่ม key ใหม่)
@@ -711,6 +716,8 @@ export default {
         },
         hideModal() {
             this.open = false;
+            this.resetTargetList();
+            this.resetHashtagList();
         },
         resetTargetList() {
             this.targetLists = [];
@@ -725,7 +732,7 @@ export default {
             let cleanLists = list.map(({ editable, url, influencer_type, ...rest })=> ({
                 ...rest,
                 URL: url,
-                influencer_type: influencer_type.map(item => item.value)
+                influencer_type: influencer_type ? influencer_type.map(item => item.value) : null
             }));
             return cleanLists
             // this.targetLists = this.targetLists.map(({ editable, url, ...rest })=> ({

@@ -443,7 +443,7 @@
                             :topDomain="topDomain" 
                             @update-keyword="(data) => setKeyWord(data)"
                         />
-                        <div class="col-12">
+                        <div class="col-12 mt-5">
                             <TabPost 
                                 :topDomain="topDomain" 
                                 :isBottom="alreadyAtBottom"
@@ -464,7 +464,7 @@
                             :topHashtags="topHashtags"
                             @update-keyword="(data) => setKeyWord(data)"
                         />
-                        <div class="col-12">
+                        <div class="col-12 mt-5">
                             <TabPost 
                                 :topDomain="topDomain" 
                                 :isBottom="alreadyAtBottom"
@@ -490,14 +490,12 @@
     </b-row>
 </template>
 <script>
-import { data } from "jquery"
 import TabDomain from "./profileTabs/_TabDomain.vue"
 import TabHashtag from "./profileTabs/_TabHashtag.vue"
 import TabPost from "./profileTabs/_TabPost.vue"
 import Swal from 'sweetalert2'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
-import { load } from "@syncfusion/ej2-vue-maps"
 export default {
     components: {
         TabDomain,
