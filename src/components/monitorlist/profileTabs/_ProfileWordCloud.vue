@@ -1,18 +1,26 @@
 <template>
     <div class="h-100 word-cloud-container pt-4 mt-3 mt-xl-0" style="min-height: 400px;">
-        <span class="h5 font-weight-bold">WordCloud</span>
+        <span class="h5 font-weight-bold">{{ title }}</span>
         <hr class="">
         <!-- {{ wordcloud_images }}
         {{ words.lenght }} -->
+        <vue-element-loading
+            :active="loading"
+            size="80"
+            class="mt-3 mt-xl-0 h-100"
+            background-color="rgba(0,0,0, 0.05)"
+            color="#fff"
+            spinner="bar-fade-scale"
+        />
         <img
             v-if="wordcloud_image"
             :src="myImage(wordcloud_image)"
             id="img-tab"
             style="width:100%"
         />
-         <div v-else class="h-100">
-            <!-- <span v-if="words.length === 0"  class="font-weight-normal text-secondary pt-3">ไม่พบข้อมูล</span> -->
-            <div ref="cloud" class="h-100"></div>
+         <div v-else class="d-flex font-weight-normal text-secondary align-content-center justify-content-center h-100">
+            ไม่พบข้อมูล
+            <!-- <div ref="cloud" class="h-100"></div> -->
          </div>
     </div>
 </template>
@@ -24,6 +32,10 @@ import chroma from 'chroma-js'
 export default {
     name: 'WordCloud',
     props: {
+        loading:{
+            type: Boolean,
+            default : false
+        },
         wordcloud_image: {
             type: String,
             // required: true,
@@ -31,7 +43,7 @@ export default {
         },
         words: {
             type: Array,
-            required: true,
+            // required: true,
             default: () => []
         },
         width: {
@@ -41,6 +53,10 @@ export default {
         height: {
             type: Number,
             default: 480
+        },
+        title:{
+            type: String,
+            default: "Word Cloud"
         }
     },
     data() {

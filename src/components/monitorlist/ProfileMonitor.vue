@@ -1,482 +1,290 @@
 <template>
-    <b-row class="m-0">
-        <!-- profile details -->
-        <b-col cols="12" md="5" lg="5" xl="4" class="h-100 mb-4 px-0 pr-md-2">
-            <b-card
-                style="max-height: 600px;"
-                class="shadow"
-                tag="article"
-                :header-class="['p-0 mb-custom']"
-                :body-class="['scrollable-body max-h-500px py-0']"
-            >
-                <!-- กำหนด header แบบมีพื้นหลังไล่ระดับ -->
-                <template #header>
-                    <div class="gradient-bg" style="height: 135px;">
-                        <b-row v-if="profile" class="m-0">
-                            <b-col class="pt-3">
-                                <!-- {{ profile }} -->
-                                <span>
-                                    <b-avatar v-if="type == 'hashtaglist'" text="#" class="shadow-sm rounded badge-light rounded-circle"
-                                        size="140px">
-                                    </b-avatar>
-                                    <b-avatar v-else size="140px" class="p-1 bg-white border border-light shadow">
-                                        <span v-if="data.profile_image">
-                                            <b-avatar 
+    <div>
+        <!-- avatar  -->
+        <b-row class="m-0">
+            <b-col md="4" class="px-0 pr-lg-3">
+                <div class="gradient-bg h-100" style="">
+                    <b-row v-if="profile" class="m-0">
+                        <b-col class="py-3">
+                            <span>
+                                <b-avatar v-if="type == 'hashtaglist'" text="#" class="shadow-sm rounded badge-light rounded-circle"
+                                    size="140px">
+                                </b-avatar>
+                                <b-avatar v-else size="140px" class="p-1 bg-white border border-light shadow">
+                                    <span v-if="data.profile_image">
+                                        <b-avatar 
+                                            :src="data.profile_image"
+                                            @error="setAltImg"
+                                            size="120px" 
+                                            loading="lazy"
+                                            class="shadow-sm rounded badge-light rounded-circle shadow"
+                                        >
+                                            <!-- <img
                                                 :src="data.profile_image"
                                                 @error="setAltImg"
-                                                size="120px" 
-                                                loading="lazy"
                                                 class="shadow-sm rounded badge-light rounded-circle shadow"
-                                            >
-                                                <!-- <img
-                                                    :src="data.profile_image"
-                                                    @error="setAltImg"
-                                                    class="shadow-sm rounded badge-light rounded-circle shadow"
-                                                    style="object-fit: cover;"
-                                                    loading="lazy"
-                                                /> -->
-                                            </b-avatar>
-                                        </span>
-                                        <span v-else>
-                                            <b-avatar class="shadow-sm rounded badge-light rounded-circle"
-                                                size="120px">
-                                            </b-avatar>
-                                        </span>
-                                    </b-avatar>
-                                    <span class="left">
-                                        <img v-if="profile.source == 'twitter'" src="@/assets/Twitter.png"
-                                            class="social-img" />
-                                        <img v-else-if="profile.source == 'facebook'" src="@/assets/Facebook.png"
-                                            class="social-img" />
-                                        <img v-if="profile.source == 'news'" src="@/assets/News.png" class="social-img" />
-                                        <img v-if="profile.source == 'pantip'" src="@/assets/Pantip.png"
-                                            class="social-img" />
-                                        <img v-if="profile.source == 'instagram'" src="@/assets/Instagram.png"
-                                            class="social-img" />
-                                        <img v-if="profile.source == 'youtube'" src="@/assets/Youtube.png"
-                                            class="social-img" />
-                                        <img v-if="profile.source == 'blockdit'" src="@/assets/Blockdit.png"
-                                            class="social-img" />
-                                        <img v-if="profile.source == 'tiktok'" src="@/assets/Tiktok.png"
-                                            class="social-img" />
-                                        <img v-if="profile.source == 'threads'" src="@/assets/Threads.png"
-                                            class="social-img" />
+                                                style="object-fit: cover;"
+                                                loading="lazy"
+                                            /> -->
+                                        </b-avatar>
                                     </span>
+                                    <span v-else>
+                                        <b-avatar class="shadow-sm rounded badge-light rounded-circle"
+                                            size="120px">
+                                        </b-avatar>
+                                    </span>
+                                </b-avatar>
+                                <span class="left">
+                                    <img v-if="profile.source == 'twitter'" src="@/assets/Twitter.png"
+                                        class="social-img" />
+                                    <img v-else-if="profile.source == 'facebook'" src="@/assets/Facebook.png"
+                                        class="social-img" />
+                                    <img v-if="profile.source == 'news'" src="@/assets/News.png" class="social-img" />
+                                    <img v-if="profile.source == 'pantip'" src="@/assets/Pantip.png"
+                                        class="social-img" />
+                                    <img v-if="profile.source == 'instagram'" src="@/assets/Instagram.png"
+                                        class="social-img" />
+                                    <img v-if="profile.source == 'youtube'" src="@/assets/Youtube.png"
+                                        class="social-img" />
+                                    <img v-if="profile.source == 'blockdit'" src="@/assets/Blockdit.png"
+                                        class="social-img" />
+                                    <img v-if="profile.source == 'tiktok'" src="@/assets/Tiktok.png"
+                                        class="social-img" />
+                                    <img v-if="profile.source == 'threads'" src="@/assets/Threads.png"
+                                        class="social-img" />
                                 </span>
-                                <div v-if="!editable" class="h6 py-2">
-                                    <a v-if="type == 'hashtaglist'" class="" v-bind:href="profile.link_original" target="_blank"
-                                        style="color: #2c3e50"> 
-                                        <span class="h5">
-                                            {{ profile.name || profile.uid }}
+                            </span>
+                            <div class="h6 py-2">
+                                <a v-if="type == 'hashtaglist'" class="" v-bind:href="profile.link_original" target="_blank"
+                                    style="color: #2c3e50"> 
+                                    <h4 class="py-2" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
+                                    <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" /><br>
+                                    ({{ totalPost | numFormat }} posts)
+                                </a> 
+                                <a v-else class="" v-bind:href="profile.link_original" target="_blank"
+                                    style="color: #2c3e50"> 
+                                       <h4 class="py-2">{{ profile.name || profile.uid || data.account_name}}</h4>
+                                    <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
+                                </a> 
+                            </div>
+                        </b-col>
+                    </b-row>
+                </div>
+            </b-col>
+            <b-col md="8" class="text-left px-0 pl-lg-3">
+                <!-- <h4 class="py-2" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
+                <h4 class="py-2" v-else>{{ profile.name || profile.uid || data.account_name}}</h4> -->
 
-                                        </span>
-                                        <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" /><br>
-                                        ({{ totalPost | numFormat }} posts)
-                                    </a> 
-                                    <a v-else class="" v-bind:href="profile.link_original" target="_blank"
-                                        style="color: #2c3e50"> 
-                                            {{ data.account_name || profile.name || profile.uid }}
-                                        <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
-                                    </a> 
-                                </div>
-                                <div v-if="!editable">
-                                    <b-badge v-if="profile.species" variant="info" class="mr-1 text-capitalize" pill>{{ profile.species }}</b-badge>
-                                    <!-- <span v-if="profile.influencer_type">
-                                        <b-badge v-for="item in profile.influencer_type" :key="item" class="mr-2" style="background-color: #fed06ea4; color: #2c3e50;" pill>
-                                            {{ getTypeName(item) }}
-                                        </b-badge>
-                                    </span> -->
-                                </div>
+                <!-- <b-badge v-if="profile.species" variant="info" class="mr-1 text-capitalize" pill>{{ getSpeciesName(profile.species) }}</b-badge>
+                <b-badge v-if="profile.department" class="mr-2" style="background-color: #fed06ea4; color: #2c3e50;" pill>
+                    {{ getDepartmentType(profile.department) }}
+                </b-badge> -->
+                
+                <b-card-text v-if="type !== 'hashtaglist'" class="my-2">
+                    <b-row class="py-2">
+                        <b-col class="text-capitalize text-info d-flex align-content-center">
+                            <i v-if="editable" class="fa fas fa-pen mr-1"></i>
+                            <h5 class="font-weight-bold">about me</h5>
+                        </b-col>
+                        <b-col cols="auto">
+                            <div v-if="!editable" class="d-flex justify-content-end">
+                                <b-button variant="info" @click="editProfile()" size="small">
+                                    <i class="fa fa-edit mr-1"></i> แก้ไขข้อมูล
+                                </b-button>
+                            </div>
+                            <div v-else class="d-flex justify-content-between" style="gap: 10px;">
+                                <b-button variant="success" @click="confirmUpdate()">
+                                    <i class="fa fa-save mr-1"></i> บันทึก
+                                </b-button>
+                                <b-button variant="danger" @click="editProfile()">
+                                    <i class="fa fa-times mr-1"></i> ยกเลิก
+                                </b-button>
+                            </div>
+                        </b-col>
+                    </b-row>
+                    <div class="col-12">
+                        <b-row >
+                            <b-col cols="12 mb-2 px-0">
+                                <b-badge v-if="profile.species" variant="info" class="mr-1 text-capitalize" pill>{{ getSpeciesName(profile.species) }}</b-badge>
+                                <b-badge v-if="profile.department" class="mr-2" style="background-color: #fed06ea4; color: #2c3e50;" pill>
+                                    {{ getDepartmentType(profile.department) }}
+                                </b-badge>
                             </b-col>
+                            <b-col cols="12" class="text-left">
+                                <b-row cols="2"  cols-sm="2" class="">
+                                    <b-col class="my-2">
+                                        <b-row class="">
+                                            <b-col cols="auto">
+                                                <i class="fas fa-transgender-alt fa-2x d-inline" style="color: #fed06ea4;"/>
+                                            </b-col>
+                                            <b-col cols="auto">
+                                            <div class="text-icon text-center">
+                                                <b>{{ getsexTh(profile.sex) }}</b>
+                                            </div>
+                                            </b-col>
+                                        </b-row>
+                                    </b-col>
+                                    <b-col class="my-2">
+                                        <b-row class="">
+                                            <b-col cols="auto">
+                                                <i class="fa fa-birthday-cake fa-2x d-inline" style="color: #fed06ea4;"/>
+                                            </b-col>
+                                            <b-col cols="auto">
+                                                <div class="text-icon text-center">
+                                                    <b>{{ profile.age ? `${profile.age} ปี` : 'ไม่ระบุอายุ' }}</b>
+                                                </div>
+                                            </b-col>
+                                        </b-row>
+                                    </b-col>
+                                    <b-col class="my-2">
+                                        <b-row class="">
+                                            <b-col cols="auto">
+                                                <i class="fa fas fa-users fa-2x d-inline" style="color: #fed06ea4;"/>
+                                            </b-col>
+                                            <b-col cols="auto">
+                                            <div class="text-icon text-center">
+                                                <b>{{ profile.followers| numFormat }}</b>
+                                                Followers
+                                            </div>
+                                            </b-col>
+                                        </b-row>
+                                    </b-col>
+                                    <b-col class="my-2">
+                                        <b-row class="">
+                                            <b-col cols="auto">
+                                                <i class="fa fas fa-star fa-2x d-inline" style="color: #fed06ea4;"/>
+                                            </b-col>
+                                            <b-col cols="auto">
+                                                <div class="text-icon text-center">
+                                                    <b>{{ profile.following| numFormat }}</b>
+                                                    Following
+                                                </div>
+                                            </b-col>
+                                        </b-row>
+                                    </b-col>
+                                </b-row>
+                            </b-col>
+                            
+                            <b-col cols="12" class="my-2">
+                               <b-row class="">
+                                    <b-col cols="auto">
+                                        <i class="fa fa-map-marker fa-2x d-inline" style="color: #fed06ea4;"/>
+                                    </b-col>
+                                    <b-col cols="auto">
+                                    <div v-if="profile.province" class="text-icon text-center">
+                                        <b>{{ profile.province }}</b>
+                                    </div>
+                                    <div v-else class="text-icon text-center">
+                                        <b>ไม่ระบุพื้นที่</b>
+                                    </div>
+                                    </b-col>
+                                </b-row>
+                            </b-col> 
                         </b-row>
                     </div>
-                </template>
-
-                <!-- card body -->
-                <b-row v-if="type !== 'hashtaglist'" class="my-2 mx-0">
-                    <b-col v-if="editable" cols="12" class="pb-2">
-                        <b-row class="d-flex justify-content-between p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fa fa-user mr-1"/>
-                                ชื่อบัญชี :
-                            </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
-                                <span v-if="profile.name">
-                                    {{ profile.name }}
-                                </span>
-                                <span v-else> - </span>
-                            </b-col>
-                            <div v-else class="col-12 px-0" >
-                                <b-form-input
-                                    size="sm"
-                                    class="input"
-                                    placeholder="ระบุชื่อบัญชี"
-                                    v-model="selectedData.name"
-                                />
-                            </div>
-                        </b-row>
-                    </b-col>
-                    <b-col v-if="editable" cols="12" class="pb-2">
-                        <b-row class="d-flex justify-content-between p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fas fa-image mr-1"/>
-                                url ที่อยู่รูปโปรไฟล์  
-                                <i
-                                    v-if="editable"
-                                    class="fa fa-exclamation-circle mx-1 text-info"
-                                    v-b-tooltip.hover
-                                    title="คลิกขวาที่รูปโปรไฟล์ เลือก 'คัดลอกที่อยู่รูปภาพ' หรือ 'Copy image address' แล้ววางที่นี่"
-                                    style="font-size: 14px; cursor: pointer;"
-                                ></i> :
-                            </b-col>
-                            <div class="col-12 px-0" >
-                                <b-form-input
-                                    size="sm"
-                                    class="input"
-                                    placeholder="ระบุที่อยู่รูปโปรไฟล์"
-                                    v-model="selectedData.profile_image"
-                                    @input="exportData"
-                                />
-                            </div>
-                        </b-row>
-                    </b-col>
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fas fa-address-card mr-1" />
-                                ลักษณะของบัญชี :
-                            </b-col>
-                            <b-col v-if="!editable" cols="auto" class="font-weight-bold">
-                                <span v-if="profile.species">
-                                    {{ getSpeciesName(profile.species) }}
-                                </span>
-                                <span v-else>-</span>
-                            </b-col>
-                            <div v-else class="col-12 px-0">
-                                <b-form-select
-                                    size="sm"
-                                    class="input"
-                                    :options="[{ value: null, text: 'เลือกลักษณะของอินฟลูเอนเซอร์' }, ...speciesTypes]"
-                                    v-model="selectedData.species"
-                                    placeholder="เลือกหมวดหมู่"
-                                />
-                            </div>
-                        </b-row>
-                    </b-col>
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fas fa-award mr-1" />
-                                เงื่อนไข Influencer :
-                            </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
-                                <span v-if="profile.influencer_condition">
-                                    {{ getInfluConditions(profile.influencer_condition) }}
-                                </span>
-                                <span v-else>-</span>
-                            </b-col>
-                            <div v-else class="col-12 px-0">
-                                <b-form-select
-                                    size="sm"
-                                    class="input"
-                                    :options="influConditions"
-                                    v-model="selectedData.influencer_condition"
-                                    placeholder="เลือกระดับ Influencer"
-                                />
-                            </div>
-                        </b-row>
-                    </b-col>
-
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="p-0">
-                            <b-col class="text-secondary text-left d-flex p-0 align-items-center">
-                                <i class="fa fa-tag mr-1" />
-                                หมวดหมู่ของ Influencer :
-                            </b-col>
-                            <b-col v-if="!editable" cols="auto" class="text-left font-weight-bold">
-                                <span v-if="profile.influencer_type !== [] && profile.influencer_type[0] !== 0">
-                                    <b-badge v-for="item in profile.influencer_type" :key="'type - '+item"  class="mr-1" style="background-color: #fed06ea4; color: #2c3e50;" pill>
-                                        {{  getTypeName(item) }}
-                                    </b-badge>
-                                </span>
-                                <span v-else>-</span>
-                            </b-col>
-                            <!-- <div v-else class="col-12 px-0">
-                                <Multiselect
-                                    v-model="selectedData.influencer_type"
-                                    :options="influencerTypes"
-                                    :multiple="true"
-                                    :taggable="true"
-                                    label="text"
-                                    track-by="value"
-                                    placeholder="เลือกหมวดหมู่"
-                                />
-                            </div> -->
-                        </b-row>
-                    </b-col>
-                    <!-- <b-col cols="12" class="pb-2">
-                        <b-row class="p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fa fa-tag mr-1" />
-                                ประเภทธุรกิจ :
-                            </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
-                                <span v-if="profile.influencer_type">
-                                    {{ getTypeName(profile.influencer_type) }}
-                                </span>
-                                <span v-else>-</span>
-                            </b-col>
-                            <div v-else class="col-12 px-0">
-                                <b-form-select
-                                    size="sm"
-                                    class="input"
-                                    :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...influencerTypes]"
-                                    v-model="profile.influencer_type"
-                                    placeholder="เลือกหมวดหมู่"
-                                />
-                            </div>
-                        </b-row>
-                    </b-col> -->
                     
-                    <b-col v-if="editable" cols="12" class="pb-2">
-                        <b-row class="p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fas fa-robot mr-1" />
-                                ระดับความถี่ในการเก็บข้อมูล
-                                <i
-                                    class="fa fa-exclamation-circle mx-1 text-info"
-                                    v-b-tooltip.hover
-                                    title="ระดับ 1 = ความถี่ต่ำ,ระดับ 2 = ความถี่ปานกลาง,ระดับ 3 = ความถี่สูง"
-                                    style="font-size: 14px; cursor: pointer;"
-                                ></i> :
+                    <!-- {{ profile }} -->
+                </b-card-text>
+            </b-col>
+        </b-row>
+        <!-- {{ profile }} -->
+        <!-- influencer type -->
+        <b-row v-if="profile.influencer_type && profile.influencer_type.length !== 0" class="my-5 mx-0">
+            <div class="col-12">
+                <h5 class="text-center font-weight-bold py-2">หมวดหมู่ Influencer</h5>
+            </div>
+            <div class="col-12">
+                <b-row cols="1" cols-sm="3" cols-lg="6" class="px-2 py-3 w-100" style="background-color: #fed06ea4; border-radius: 90px;">
+                    <b-col v-for="(item, index) in profile.influencer_type" :key="index">
+                        <b-row>
+                            <b-col cols="12">
+                                <b-avatar icon="people-fill" size="6rem"></b-avatar>
                             </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">{{ profile.bot_level }}</b-col>
-                            <div v-else class="col-12 px-0">
-                                <b-form-select
-                                    size="sm"
-                                    class="input"
-                                    :options="[1,2,3]"
-                                    v-model="selectedData.bot_level"
-                                    placeholder="เลือกระดับ"
-                                />
+                            <b-col cols="12">
+                            <div class="text-icon">
+                                {{ getInfluencerTypeName(item) }}
                             </div>
+                            </b-col>
                         </b-row>
                     </b-col>
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="d-flex justify-content-between p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i v-if="profile.sex === 'female'" class="fa fa-venus" />
-                                <i v-else-if="profile.sex === 'male'" class="fa fa-mars" />
-                                <i v-else class="fa fa-neuter mr-1" />
-                                เพศ :
+                    <b-col v-for="(item, index) in profile.influencer_type" :key="index">
+                        <b-row>
+                            <b-col cols="12">
+                                <b-avatar icon="people-fill" size="6rem"></b-avatar>
                             </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
-                                <span v-if="profile.sex">
-                                    {{ getsexTh(profile.sex) }}
-                                </span>
-                                <span v-else> - </span>
-                            </b-col>
-                            <div v-else class="col-12 px-0">
-                                <b-form-select
-                                    size="sm"
-                                    class="input"
-                                    :options="sexs"
-                                    v-model="selectedData.sex"
-                                    placeholder="เลือกเพศ"
-                                />
+                            <b-col cols="12">
+                            <div class="text-icon">
+                                {{ getInfluencerTypeName(item) }}
                             </div>
+                            </b-col>
                         </b-row>
                     </b-col>
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="d-flex justify-content-between p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fa fa-birthday-cake mr-1"/>
-                                อายุ :
+                    <b-col >
+                        <b-row>
+                            <b-col cols="12">
+                                <b-avatar icon="people-fill" size="6rem"></b-avatar>
                             </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
-                                <span v-if="profile.age">
-                                    {{ profile.age }} ปี
-                                </span>
-                                <span v-else>-</span>
-                            </b-col>
-                            <b-form-spinbutton v-else id="demo-sb" v-model="profile.age" min="0" max="100"></b-form-spinbutton>
-                        </b-row>
-                    </b-col>
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="d-flex justify-content-between p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fa fa-map-marker mr-1"/>
-                                จังหวัด :
-                            </b-col>
-                            <b-col v-if="!editable"  cols="auto font-weight-bold">
-                                    <span v-if="profile.province">
-                                    {{ profile.province }}
-                                </span>
-                                <span v-else>-</span>
-                            </b-col>
-                            <div v-else class="col-12 px-0">
-                                <b-form-select
-                                    size="sm"
-                                    class="input"
-                                    :options="[{ value: null, text: 'เลือกจังหวัด' }, ...provinces]"
-                                    placeholder="เลือกจังหวัด"
-                                    v-model="selectedData.location"
-                                    @change="getProvinceName(profile.location)"
-                                />
+                            <b-col cols="12">
+                            <div class="text-icon">
+                                Messages
                             </div>
+                            </b-col>
                         </b-row>
                     </b-col>
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="d-flex justify-content-between p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fa fas fa-users mr-1"/>
-                                ผู้ติดตาม :
+                    <b-col>
+                        <b-row>
+                            <b-col cols="12">
+                                <b-avatar :text="`+${profile.influencer_type.length}`" size="6rem"></b-avatar>
                             </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
-                                <span v-if="profile && profile.followers">
-                                    {{ profile.followers }}
-                                </span>
-                                <span v-else> - </span>
+                            <b-col cols="" class="px-0">
+                                More
+                                <!-- <div class="text-icon">
+                                    Messages
+                                </div> -->
                             </b-col>
-                            <b-form-input
-                                v-else 
-                                type="text"
-                                v-model="selectedData.followers"
-                                @keypress="onlyNumber"
-                                placeholder="กรอกจำนวนผู้ติดตาม (เฉพาะตัวเลข)"
-                            />
-                        </b-row>
-                    </b-col>
-                    <b-col cols="12" class="pb-2">
-                        <b-row class="d-flex justify-content-between p-0">
-                            <b-col class="text-secondary d-flex p-0 align-items-center">
-                                <i class="fa fas fa-star mr-1"/>
-                                กำลังติดตาม :
-                            </b-col>
-                            <b-col v-if="!editable" cols="auto font-weight-bold">
-                                <span v-if="profile.following">
-                                    {{ profile.following }}
-                                </span>
-                                <span v-else> - </span>
-                            </b-col>
-                            <b-form-input
-                                v-else 
-                                type="text"
-                                v-model="selectedData.following"
-                                @keypress="onlyNumber"
-                                placeholder="กรอกจำนวน account ที่กำลังติดตาม (เฉพาะตัวเลข)"
-                            />
                         </b-row>
                     </b-col>
                 </b-row>
+            </div>
+        </b-row>
 
-                    <!-- เพิ่ม footer ตรงนี้ -->
-                <template v-if="type !== 'hashtaglist'" #footer>
-                    <div v-if="!editable" class="d-flex justify-content-end">
-                        <b-button variant="info" @click="editProfile()">
-                            <i class="fa fa-edit mr-1"></i> แก้ไขข้อมูล
-                        </b-button>
-                    </div>
-                    <div v-else class="d-flex justify-content-between">
-                        <b-button variant="danger" @click="editProfile()">
-                            <i class="fa fa-times mr-1"></i> ยกเลิก
-                        </b-button>
-                        <b-button variant="success" @click="confirmUpdate()">
-                            <i class="fa fa-save mr-1"></i> บันทึก
-                        </b-button>
-                    </div>
-                    <!-- {{ profile }} -->
-                </template>
-            </b-card>
-        </b-col>
-
-        <!-- tap -->
-        <b-col cols="12" md="7" lg="7" xl="8" class="px-0 px-md-3">
-            <b-card 
-                class="h-100 boxlist-card"
-                header-tag="nav"
-                style="min-height: 600px;" 
-                ref="scrollBox"
-                @scroll="handleScroll" 
-                :header-class="['px-0 mx-0 pt-0 bg-transparent']"
-                :body-class="['px-0']"
-            >
-                <template #header>
-                    <b-nav card-header tabs v-model="category">
-                        <b-nav-item 
-                            :active="category === 'domain'" 
-                            @click="category = 'domain'"
-                        >Top Domain</b-nav-item>
-                        <b-nav-item 
-                            :active="category === 'hashtags'" 
-                            @click="category = 'hashtags'" 
-                            >Top Hashtags</b-nav-item>
-                        <b-nav-item 
-                            :active="category === 'posts'" 
-                            @click="category = 'posts'" 
-                        >
-                            Posts
-                        </b-nav-item>
-                    </b-nav>
-                </template>
-
-                <b-card-text  v-if="category === 'domain'">
-                    <div
-                        class="scrollable-body tab-body-height "
-                        style=""
-                        @scroll="handleScroll"
-                    >
-                        <TabDomain 
-                            :load="load"
+        <!-- woldCloud -->
+        <b-row class="my-5 mx-0">
+            <!-- <div class="col-12">
+                <h5 class="font-weight-bold py-2">Word Cloud</h5>
+            </div> -->
+            <div class="col-12">
+                <b-row cols="1" cols-md="2">
+                    <b-col class="p-3">
+                        <ProfileWordCloud 
+                            :loading="loadWordCloud"
+                            title="Word Cloud Domain"
                             :wordcloud_image="wordcloud_images.words"
-                            :topDomain="topDomain" 
-                            @update-keyword="(data) => setKeyWord(data)"
+                            :width="600" 
+                            :height="400" 
                         />
-                        <div class="col-12 mt-5">
-                            <TabPost 
-                                :topDomain="topDomain" 
-                                :isBottom="alreadyAtBottom"
-                                :keyWord="keyWord"
-                                @totalPost="data =>totalPost = data"
-                            />
-                        </div>
-                    </div>
-                </b-card-text>
-                <b-card-text v-if="category === 'hashtags'">
-                    <div
-                        class="scrollable-body pl-2 tab-body-height "
-                        style=""
-                        @scroll="handleScroll"
-                    >
-                        <TabHashtag 
+                    </b-col>
+                    <b-col class="p-3">
+                        <ProfileWordCloud 
+                            :loading="loadWordCloud"
+                            title="Word Cloud Hashtag"
                             :wordcloud_image="wordcloud_images.hashtag"
-                            :topHashtags="topHashtags"
-                            @update-keyword="(data) => setKeyWord(data)"
+                            :width="600" 
+                            :height="400" 
                         />
-                        <div class="col-12 mt-5">
-                            <TabPost 
-                                :topDomain="topDomain" 
-                                :isBottom="alreadyAtBottom"
-                                :keyWord="keyWord"
-                            />
-                        </div>
-                    </div>
-                </b-card-text>
-                <b-card-text v-if="category === 'posts'" class="">
-                    <div
-                        class="scrollable-body pl-2 tab-body-height "
-                        style=""
-                        @scroll="handleScroll"
-                        >
-                        <TabPost 
-                            :topDomain="topDomain" 
-                            :isBottom="alreadyAtBottom"
-                        />
-                    </div>
-                </b-card-text>
-            </b-card>
-        </b-col>
-    </b-row>
+                    </b-col>
+                </b-row>
+            </div>
+        </b-row>
+
+        <!-- posts -->
+        <TabPost 
+            :topDomain="topDomain" 
+            :isBottom="alreadyAtBottom"
+            :keyWord="keyWord"
+            @totalPost="data =>totalPost = data"
+        />
+    </div>
 </template>
 <script>
 import TabDomain from "./profileTabs/_TabDomain.vue"
@@ -485,12 +293,15 @@ import TabPost from "./profileTabs/_TabPost.vue"
 import Swal from 'sweetalert2'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
+
+import ProfileWordCloud from './profileTabs/_ProfileWordCloud.vue'
 export default {
     components: {
         TabDomain,
         TabHashtag,
         TabPost,
-        Multiselect
+        Multiselect,
+        ProfileWordCloud
     },
     data() {
         return {
@@ -498,6 +309,8 @@ export default {
             type:this.$route.query.type,
             default_avatar: "user.svg",
             load: false,
+            loadWordCloud: false,
+            loadPost: false,
             data: [],
             profile: {},
             totalPost: 0,
@@ -562,24 +375,27 @@ export default {
             // dataWordCloud: [],
             wordcloud_images: [],
             keyWord: null,
+            departmentTypes: [
+                { text: "อุตสาหกรรมและการผลิต", value: "manufacturing" },
+                { text: "การค้าและค้าปลีก", value: "retail" },
+                { text: "การเงินและการธนาคาร", value: "finance" },
+                { text: "การแพทย์และสาธารณสุข", value: "healthcare" },
+                { text: "ก่อสร้างและอสังหาริมทรัพย์", value: "construction" },
+                { text: "ขนส่งและโลจิสติกส์", value: "logistics" },
+                { text: "เทคโนโลยีสารสนเทศ (IT)", value: "it" },
+                { text: "การศึกษา", value: "education" },
+                { text: "สื่อสาร / โฆษณา / การตลาด", value: "media_marketing" },
+                { text: "อาหารและเครื่องดื่ม", value: "food_beverage" },
+                { text: "การท่องเที่ยวและโรงแรม", value: "tourism" },
+                { text: "บันเทิงและสันทนาการ", value: "entertainment" },
+                { text: "กฎหมายและที่ปรึกษา", value: "legal_consulting" },
+                { text: "ความงาม / สุขภาพ / ไลฟ์สไตล์", value: "lifestyle" },
+                { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" },
+                
+            ]
         }
     },
     methods: {
-        // async checkImage(url) {
-        //     console.log("กำลังเช็ค", url);
-        //     return new Promise((resolve) => {
-        //         const img = new Image();
-        //         img.onload = () => {
-        //             console.log("✅ โหลดได้:", url);
-        //             resolve(url);
-        //         };
-        //         img.onerror = () => {
-        //             console.log("❌ โหลดไม่ได้, ใช้ default:", '/images/user.svg');
-        //             resolve('/images/user.svg');
-        //         };
-        //         img.src = url;
-        //     })
-        // },
         setKeyWord(word) {
             this.keyWord = word;
         },
@@ -654,9 +470,10 @@ export default {
             this.profile.province =  this.provinces.find(item => item.value === id).text
         },
         getsexTh(sex) {
-            return this.sexs.find(item => item.value === sex).text
+            const found =  this.sexs.find(item => item.value === sex)
+            return found ? found.text : 'ไม่ระบุเพศ';
         },
-        getTypeName(id) {
+        getInfluencerTypeName(id) {
             const found = this.influencerTypes.find(item => item.value === id)
             return found ? found.text : '-';
         },
@@ -671,7 +488,12 @@ export default {
             return found ? found.text : '-';
         },
         getSpeciesName(id) {
-            return this.speciesTypes.find(item => item.value === id).text
+            let found =  this.speciesTypes.find(item => item.value === id)
+             return found ? found.text : '-';
+        },
+        getDepartmentType(id) {
+            let found =  this.departmentTypes.find(item => item.value === id)
+             return found ? found.text : '-';
         },
         confirmUpdate() {
             Swal.fire({
@@ -704,7 +526,7 @@ export default {
             event.target.src = this.default_avatar;
         },
         getWordCloudImage() {
-            this.load = true;
+            this.loadWordCloud = true;
             const config = {
                 method: "get",
                 url: "https://api.cognizata.com/api/v1/getMonitor/",
@@ -728,10 +550,10 @@ export default {
             .then((response) => {
                 this.wordcloud_images = response.data.wordcloud_images || [];
                 console.log('this.wordcloud_images ', this.wordcloud_images);
-                this.load = false;
+                this.loadWordCloud = false;
             })
             .catch((error) => {
-                this.load = false;
+                this.loadWordCloud = false;
                 console.error(error);
             });
         },

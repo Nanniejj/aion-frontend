@@ -3,8 +3,14 @@
     <HomeNav id="navHome" />
     <div id="content">
         <div class="m-auto" style="width: 85%;">
-            <h1 class="title m-0">Profile</h1>
-            <div class="d-flex align-items-center mb-3">
+            <h1 v-if="type == 'hashtaglist'" class="title m-0">Hashtag</h1>
+            <h1 v-else class="title m-0">Profile</h1>
+            <div v-if="type == 'hashtaglist'" class="d-flex align-items-center mb-3">
+                <b-col @click="toMonitor('MonitorList')" cols="auto pl-0" style="cursor: pointer;" class="m-0">Monitor</b-col>
+                <b-icon icon="chevron-right" class=""/>
+                <b-col cols="auto" class="m-0 font-weight-bold">Hashtag</b-col>
+            </div>
+            <div v-else class="d-flex align-items-center mb-3">
                 <b-col @click="toMonitor('MonitorList')" cols="auto pl-0" style="cursor: pointer;" class="m-0">Monitor</b-col>
                 <b-icon icon="chevron-right" class=""/>
                 <b-col cols="auto" class="m-0 font-weight-bold">Profile</b-col>
@@ -26,7 +32,9 @@ export default {
     ProfileMonitor, //ProfileMonitor
   },
   data: function () {
-    return {};
+    return {
+        type : this.$route.query.type
+    };
   },
   computed: {
     ...mapGetters([
@@ -46,6 +54,8 @@ export default {
     },
   },
   async mounted() {
+    console.log(this.type);
+    
     // if (this.getSocialMo == "") {
     //     await this.$store.dispatch("fatchListMonitor");
     //   } else {

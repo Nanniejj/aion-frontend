@@ -60,407 +60,420 @@
             </b-form-group>
 
             <!-- card post -->
-            <div v-for="(post) in posts" :key="'post- '+ post._id"  class="col-12 mb-4 px-0">
-            <b-card header="Light" footer="Light" header-tag="header" footer-tag="footer">
-                <!-- card header  -->
-                <template #header>
-                    <div class="row">
-                        <div class="col-auto">
-                            <b-avatar v-if="post.profile_image" :src="post.profile_image" size="3rem"></b-avatar>
-                            <b-avatar v-else src="https://placekitten.com/300/300" size="3rem"></b-avatar>
-                            <span class="left">
-                                <img v-if="post.source == 'twitter'" src="@/assets/Twitter.png"
-                                    class="social-img" />
-                                <img v-else-if="post.source == 'facebook'" src="@/assets/Facebook.png"
-                                    class="social-img" />
-                                <img v-if="post.source == 'news'" src="@/assets/News.png" class="social-img" />
-                                <img v-if="post.source == 'pantip'" src="@/assets/Pantip.png"
-                                    class="social-img" />
-                                <img v-if="post.source == 'instagram'" src="@/assets/Instagram.png"
-                                    class="social-img" />
-                                <img v-if="post.source == 'youtube'" src="@/assets/Youtube.png"
-                                    class="social-img" />
-                                <img v-if="post.source == 'blockdit'" src="@/assets/Blockdit.png"
-                                    class="social-img" />
-                                <img v-if="post.source == 'tiktok'" src="@/assets/Tiktok.png"
-                                    class="social-img" />
-                                <img v-if="post.source == 'threads'" src="@/assets/Threads.png"
-                                    class="social-img" />
-                            </span>
-                        </div>
-                        <div class="col-12 col-sm">
-                            <div class="d-flex align-center">
-                                <span class="h6 font-weight-bold pr-2">{{ post.account_name }}</span>
-                                <a v-bind:href="post.url_post" class="fa fa-external-link text-info" target="_blank"></a>
-                            </div>
-                            <div class="text-left font-weight-light small" v-if="post.date">
-                                {{ post.date.split("T")[0] }} |
-                                {{ post.date.split("T")[1] }}
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <SentimentButton :sentiment="post.sentiment"/>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- card body  -->
-                <b-card-text>
-                    <p v-if="post.full_text" class="text-left" style="font-size: 16px;">
-                        <span  :class="{'truncate-text-3': !post.showAll}">
-                            {{ post.full_text }}
-                        </span>
-                        <span v-if="post.full_text.length > 450 && !post.showAll" @click="post.showAll = true" style="cursor: pointer;" class="text-info ">อ่านต่อ</span>
-                        <span v-if="post.full_text.length > 450 && post.showAll" @click="post.showAll = false" style="cursor: pointer;" class="text-info ">ย่อบทความ</span>
-                    </p>
-
-                    <!-- image  -->
-                    <div v-if="post.photos && post.source !== 'tiktok'" class="mb-4">
-                        <div >
-                            <div v-if="post.photos.length == 1" class="p-20">
-                            <img class="images1" v-for="(image, i) in post.photos" :src="image"
-                                @click="openGallery(i, post.photos)" :key="`images1-${i}`" />
-                            </div>
-
-                            <div v-else-if="post.photos.length == 2" class="p-20">
-                                <img class="images2" v-for="(image, i) in post.photos" :src="image"
-                                    @click="openGallery(i, post.photos)" :key="`ฺB-${i}`" onerror="this.style.display='none'" />
-                            </div>
-                            <div v-else-if="post.photos.length == 3" class="p-20">
-                            <img class="images3" v-for="(image, i) in post.photos" :src="image"
-                                @click="openGallery(i, post.photos)" :key="`C-${i}`" onerror="this.style.display='none'" />
-                            </div>
-                            <div v-else class="position-relative p-20 col2">
-                                <div v-for="(image, i) in post.photos.slice(0, 4)" :key="`D-${i}`" class="position-relative ">
-                                    <img
-                                    class="images4"
-                                    :src="image"
-                                    @click="openGallery(i, post.photos)"
-                                    @error="hideOnError($event)"
-                                />
-
-                                <div
-                                    v-if="i === 3 && post.photos.length > 4"
-                                    class="overlay-more"
-                                    @click="openGallery(3, post.photos)"
-                                    >
-                                    +{{ post.photos.length - 4 }}
+             <div v-if="posts.length !== 0">
+                <div v-for="(post,index) in posts" :key="'post- '+ index"  class="col-12 mb-4 px-0">
+                    <b-card header="Light" footer="Light" header-tag="header" footer-tag="footer">
+                        <!-- card header  -->
+                        <template #header>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <b-avatar v-if="post.profile_image" :src="post.profile_image" size="3rem"></b-avatar>
+                                    <b-avatar v-else src="https://placekitten.com/300/300" size="3rem"></b-avatar>
+                                    <span class="left">
+                                        <img v-if="post.source == 'twitter'" src="@/assets/Twitter.png"
+                                            class="social-img" />
+                                        <img v-else-if="post.source == 'facebook'" src="@/assets/Facebook.png"
+                                            class="social-img" />
+                                        <img v-if="post.source == 'news'" src="@/assets/News.png" class="social-img" />
+                                        <img v-if="post.source == 'pantip'" src="@/assets/Pantip.png"
+                                            class="social-img" />
+                                        <img v-if="post.source == 'instagram'" src="@/assets/Instagram.png"
+                                            class="social-img" />
+                                        <img v-if="post.source == 'youtube'" src="@/assets/Youtube.png"
+                                            class="social-img" />
+                                        <img v-if="post.source == 'blockdit'" src="@/assets/Blockdit.png"
+                                            class="social-img" />
+                                        <img v-if="post.source == 'tiktok'" src="@/assets/Tiktok.png"
+                                            class="social-img" />
+                                        <img v-if="post.source == 'threads'" src="@/assets/Threads.png"
+                                            class="social-img" />
+                                    </span>
                                 </div>
+                                <div class="col-12 col-sm">
+                                    <div class="d-flex align-center">
+                                        <span class="h6 font-weight-bold pr-2">{{ post.account_name }}</span>
+                                        <a v-bind:href="post.url_post" class="fa fa-external-link text-info" target="_blank"></a>
+                                    </div>
+                                    <div class="text-left font-weight-light small" v-if="post.date">
+                                        {{ post.date.split("T")[0] }} |
+                                        {{ post.date.split("T")[1] }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <SentimentButton :sentiment="post.sentiment"/>
                                 </div>
                             </div>
-                            <!-- <div v-else class="p-20 col2">
-                                <img class="images4" v-for="(image, i) in post.photos.slice(0, 4)" :src="image"
-                                    @click="onClick(i, post.photos)" :key="`D-${i}`" onerror="this.style.display='none'" />
-                               <div
-                                    v-if="i === 3 && post.photos.length > 4"
-                                    class="overlay-more"
-                                    @click="openGallery(3, post.photos)"
-                                    >
-                                    +{{ post.photos.length - 4 }}
+                        </template>
+        
+                        <!-- card body  -->
+                        <b-card-text>
+                            <p v-if="post.full_text" class="text-left" style="font-size: 16px;">
+                                <span  :class="{'truncate-text-3': !post.showAll}">
+                                    {{ post.full_text }}
+                                </span>
+                                <span v-if="post.full_text.length > 450 && !post.showAll" @click="post.showAll = true" style="cursor: pointer;" class="text-info ">อ่านต่อ</span>
+                                <span v-if="post.full_text.length > 450 && post.showAll" @click="post.showAll = false" style="cursor: pointer;" class="text-info ">ย่อบทความ</span>
+                            </p>
+        
+                            <!-- image  -->
+                            <div v-if="post.photos && post.source !== 'tiktok'" class="mb-4">
+                                <div >
+                                    <div v-if="post.photos.length == 1" class="p-20">
+                                    <img class="images1" v-for="(image, i) in post.photos" :src="image"
+                                        @click="openGallery(i, post.photos)" :key="`images1-${i}`" />
+                                    </div>
+        
+                                    <div v-else-if="post.photos.length == 2" class="p-20">
+                                        <img class="images2" v-for="(image, i) in post.photos" :src="image"
+                                            @click="openGallery(i, post.photos)" :key="`ฺB-${i}`" onerror="this.style.display='none'" />
+                                    </div>
+                                    <div v-else-if="post.photos.length == 3" class="p-20">
+                                    <img class="images3" v-for="(image, i) in post.photos" :src="image"
+                                        @click="openGallery(i, post.photos)" :key="`C-${i}`" onerror="this.style.display='none'" />
+                                    </div>
+                                    <div v-else class="position-relative p-20 col2">
+                                        <div v-for="(image, i) in post.photos.slice(0, 4)" :key="`D-${i}`" class="position-relative ">
+                                            <img
+                                            class="images4"
+                                            :src="image"
+                                            @click="openGallery(i, post.photos)"
+                                            @error="hideOnError($event)"
+                                        />
+        
+                                        <div
+                                            v-if="i === 3 && post.photos.length > 4"
+                                            class="overlay-more"
+                                            @click="openGallery(3, post.photos)"
+                                            >
+                                            +{{ post.photos.length - 4 }}
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <!-- <div v-else class="p-20 col2">
+                                        <img class="images4" v-for="(image, i) in post.photos.slice(0, 4)" :src="image"
+                                            @click="onClick(i, post.photos)" :key="`D-${i}`" onerror="this.style.display='none'" />
+                                    <div
+                                            v-if="i === 3 && post.photos.length > 4"
+                                            class="overlay-more"
+                                            @click="openGallery(3, post.photos)"
+                                            >
+                                            +{{ post.photos.length - 4 }}
+                                        </div>
+                                    </div> -->
                                 </div>
-                            </div> -->
-                        </div>
-                        <VueGallerySlideshow v-if="dataPhoto.length !== 0" :images="dataPhoto" :index="index" @close="closeGallery()"/>
-                    </div>
-                </b-card-text>
-                
-                <!-- domain tags  -->
-                <div class="text-left">
-                    <span style="font-size: small;" v-if="filterDomain(post.domain).length !== 0">
-                        domain tags :
-                    </span>
-                    <span v-for="(name, i) in filterDomain(post.domain)" :key="i" class="mx-1 py-2">
-                        <b-badge pill variant="light" style="color: #2c3e50;
-                        background-color: #ddddddad !important;">
-                        {{ name }}
-                        </b-badge>
-                    </span>
-                </div>
-                <!-- card footer  -->
-                <template #footer>
-                    <div class="text-left md-font">
-                        <span v-b-tooltip.hover title="Engagement" v-if="post.source == 'pantip'">
-                            <span style="font-size:14px;">Engages </span>
-                            {{ (post.engagement + post.comments_count)| numFormat }}
-                        </span>
-
-                        <!-- engagement -->
-                        <span v-b-tooltip.hover title="Engagement" v-else>
-                            <span style="font-size:14px;">Engages </span>{{ post.engagement | numFormat }}
-                        </span>
-
-                        <!-- comments -->
-                        <b-badge variant="light" style="font-size: 14px;color: #2c3e50; background-color: #ddddddad !important;">
-                            <span v-b-toggle="'btn'+ post._id" id="box-reaction" v-b-tooltip.hover title="Comments">
+                                <VueGallerySlideshow v-if="dataPhoto.length !== 0" :images="dataPhoto" :index="index" @close="closeGallery()"/>
+                            </div>
+                        </b-card-text>
                         
-                                <i class="fas fa-comment" :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer"></i>
-                    
-                                <span class="md-font" v-if="post.comments_count && post.source == 'news'">
-                                    {{ post.comments.comments.length | numFormat }}&nbsp;
-                                </span>
-                                <span v-else class="md-font">{{ post.comments_count | numFormat }}&nbsp;</span>
+                        <!-- domain tags  -->
+                        <div class="text-left">
+                            <span style="font-size: small;" v-if="filterDomain(post.domain).length !== 0">
+                                domain tags :
                             </span>
-                        </b-badge>
-                        <b-badge v-if="post.source == 'facebook'" variant="light" class="p-1 ml-2" style="font-size: 14px;color: #2c3e50; background-color: #ddddddad !important;">
-                            <i class="far fa-thumbs-up" />
-                            <span v-if="post.likes_count !== '0' && post.likes_count" id="box-reaction" v-b-tooltip.hover title="Like">
-                                    
+                            <span v-for="(name, i) in filterDomain(post.domain)" :key="i" class="mx-1 py-2">
+                                <b-badge pill variant="light" style="color: #2c3e50;
+                                background-color: #ddddddad !important;">
+                                {{ name }}
+                                </b-badge>
+                            </span>
+                        </div>
+                        <!-- card footer  -->
+                        <template #footer>
+                            <div class="text-left md-font">
+                                <span v-b-tooltip.hover title="Engagement" v-if="post.source == 'pantip'">
+                                    <span style="font-size:14px;">Engages </span>
+                                    {{ (post.engagement + post.comments_count)| numFormat }}
+                                </span>
+        
+                                <!-- engagement -->
+                                <span v-b-tooltip.hover title="Engagement" v-else>
+                                    <span style="font-size:14px;">Engages </span>{{ post.engagement | numFormat }}
+                                </span>
+        
+                                <!-- comments -->
+                                <b-badge variant="light" style="font-size: 14px;color: #2c3e50; background-color: #ddddddad !important;">
+                                    <span v-b-toggle="'btn'+ post._id" id="box-reaction" v-b-tooltip.hover title="Comments">
+                                
+                                        <i class="fas fa-comment" :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer"></i>
+                            
+                                        <span class="md-font" v-if="post.comments_count && post.source == 'news'">
+                                            {{ post.comments.comments.length | numFormat }}&nbsp;
+                                        </span>
+                                        <span v-else class="md-font">{{ post.comments_count | numFormat }}&nbsp;</span>
+                                    </span>
+                                </b-badge>
+                                <b-badge v-if="post.source == 'facebook'" variant="light" class="p-1 ml-2" style="font-size: 14px;color: #2c3e50; background-color: #ddddddad !important;">
+                                    <i class="far fa-thumbs-up" />
+                                    <span v-if="post.likes_count !== '0' && post.likes_count" id="box-reaction" v-b-tooltip.hover title="Like">
+                                            
+                                            {{ post.likes_count | numFormat }}
+                                    </span>
+                                    <span v-else>
+                                        0
+                                    </span>
+                                </b-badge>
+        
+                                <!-- twitter -->
+                                <span v-if="
+                                post.source !== 'facebook' &&
+                                post.source !== 'youtube'
+                                ">
+                                <span v-if="
+                                    post.retweets_count !== '0' &&
+                                    post.retweets_count
+                                " id="box-reaction" v-b-tooltip.hover title="Retweet">
+                                    <i class="fal fa-retweet"></i>
+                                    {{ post.retweets_count | numFormat }}
+                                </span>
+                                <span v-if="
+                                    post.likes_count !== '0' && post.likes_count
+                                " id="box-reaction" v-b-tooltip.hover title="Like">
+                                    <i class="fa fa-heart"></i>
                                     {{ post.likes_count | numFormat }}
-                            </span>
-                            <span v-else>
-                                0
-                            </span>
-                        </b-badge>
-
-                        <!-- twitter -->
-                        <span v-if="
-                        post.source !== 'facebook' &&
-                        post.source !== 'youtube'
-                        ">
-                        <span v-if="
-                            post.retweets_count !== '0' &&
-                            post.retweets_count
-                        " id="box-reaction" v-b-tooltip.hover title="Retweet">
-                            <i class="fal fa-retweet"></i>
-                            {{ post.retweets_count | numFormat }}
-                        </span>
-                        <span v-if="
-                            post.likes_count !== '0' && post.likes_count
-                        " id="box-reaction" v-b-tooltip.hover title="Like">
-                            <i class="fa fa-heart"></i>
-                            {{ post.likes_count | numFormat }}
-                        </span>
-                        <span v-if="
-                            post.shares_count !== '0' && post.shares_count
-                        " id="box-reaction" v-b-tooltip.hover title="Share">
-                            <i class="fa fa-share"></i>
-                            {{ post.shares_count | numFormat }}
-                        </span>
-                        <span v-if="
-                            post.views_count !== '0' && post.views_count
-                        " id="box-reaction" v-b-tooltip.hover title="View">
-                            <i class="fas fa-eye"></i>
-                            {{ post.views_count | numFormat }}
-                        </span>
-                        </span>
-                        <!-- reaction-->
-                        <span v-if="post.reaction">
-                        <span v-if="post.reaction != ''">
-                            <!-- pt -->
-                            <span v-if="post.reaction.Good">
-                            <span v-if="post.reaction.Good !== '0'" id="box-reaction" v-b-tooltip.hover
-                                title="Good Content">
-                                <i class="fa fa-plus"></i>
-                                <span class="md-font">
-                                {{ post.reaction.Good | numFormat }}
                                 </span>
-                            </span>
-                            </span>
-                            <span v-if="post.reaction.Horror">
-                            <span v-if="post.reaction.Horror !== '0'" id="box-reaction" v-b-tooltip.hover title="Horror">
-                                <img v-if="post.reaction.Horror !== '0'" src="@/assets/horror.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Horror !== '0'">
-                                {{ post.reaction.Horror | numFormat }}
+                                <span v-if="
+                                    post.shares_count !== '0' && post.shares_count
+                                " id="box-reaction" v-b-tooltip.hover title="Share">
+                                    <i class="fa fa-share"></i>
+                                    {{ post.shares_count | numFormat }}
                                 </span>
-                            </span>
-                            </span>
-                            <!-- pt -->
-                            <!-- fb -->
-
-                            <span v-if="post.reaction.Likes">
-                            <span v-if="post.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                                <img v-if="post.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Likes !== '0'">
-                                {{ post.reaction.Likes | numFormat }}
+                                <span v-if="
+                                    post.views_count !== '0' && post.views_count
+                                " id="box-reaction" v-b-tooltip.hover title="View">
+                                    <i class="fas fa-eye"></i>
+                                    {{ post.views_count | numFormat }}
                                 </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.like">
-                            <span v-if="post.reaction.like !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                                <img v-if="post.reaction.like !== '0'" src="@/assets/fb_like.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.like !== '0'">
-                                {{ post.reaction.like | numFormat }}
                                 </span>
-                            </span></span>
-
-                            <span v-if="post.reaction.share">
-                            <span v-if="post.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
-                                <i class="fa fa-share" v-if="post.reaction.share !== '0'"></i>
-                                <span class="md-font" v-if="post.reaction.share !== '0'">
-                                {{ post.reaction.share | numFormat }}
+                                <!-- reaction-->
+                                <span v-if="post.reaction">
+                                <span v-if="post.reaction != ''">
+                                    <!-- pt -->
+                                    <span v-if="post.reaction.Good">
+                                    <span v-if="post.reaction.Good !== '0'" id="box-reaction" v-b-tooltip.hover
+                                        title="Good Content">
+                                        <i class="fa fa-plus"></i>
+                                        <span class="md-font">
+                                        {{ post.reaction.Good | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+                                    <span v-if="post.reaction.Horror">
+                                    <span v-if="post.reaction.Horror !== '0'" id="box-reaction" v-b-tooltip.hover title="Horror">
+                                        <img v-if="post.reaction.Horror !== '0'" src="@/assets/horror.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Horror !== '0'">
+                                        {{ post.reaction.Horror | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+                                    <!-- pt -->
+                                    <!-- fb -->
+        
+                                    <span v-if="post.reaction.Likes">
+                                    <span v-if="post.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                                        <img v-if="post.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Likes !== '0'">
+                                        {{ post.reaction.Likes | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.like">
+                                    <span v-if="post.reaction.like !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                                        <img v-if="post.reaction.like !== '0'" src="@/assets/fb_like.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.like !== '0'">
+                                        {{ post.reaction.like | numFormat }}
+                                        </span>
+                                    </span></span>
+        
+                                    <span v-if="post.reaction.share">
+                                    <span v-if="post.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                                        <i class="fa fa-share" v-if="post.reaction.share !== '0'"></i>
+                                        <span class="md-font" v-if="post.reaction.share !== '0'">
+                                        {{ post.reaction.share | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.shares">
+                                    <span v-if="post.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                                        <i class="fa fa-share" v-if="post.reaction.shares !== '0'"></i>
+                                        <span class="md-font" v-if="post.reaction.shares !== '0'">
+                                        {{ post.reaction.shares | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.Love">
+                                    <span v-if="post.reaction.Love !== '0'" id="box-reaction" v-b-tooltip.hover title="Love">
+                                        <img v-if="post.reaction.Love !== '0'" src="@/assets/love.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Love !== '0'">
+                                        {{ post.reaction.Love | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.Wow">
+                                    <span v-if="post.reaction.Wow !== '0'" id="box-reaction" v-b-tooltip.hover title="Wow">
+                                        <img v-if="post.reaction.Wow !== '0'" src="@/assets/wow.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Wow !== '0'">
+                                        {{ post.reaction.Wow | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.Haha">
+                                    <span v-if="post.reaction.Haha !== '0'" id="box-reaction" v-b-tooltip.hover title="Haha">
+                                        <img v-if="post.reaction.Haha !== '0'" src="@/assets/haha.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Haha !== '0'">
+                                        {{ post.reaction.Haha | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.Sad">
+                                    <span v-if="post.reaction.Sad !== '0'" id="box-reaction" v-b-tooltip.hover title="Sad">
+                                        <img v-if="post.reaction.Sad !== '0'" src="@/assets/sad.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Sad !== '0'">
+                                        {{ post.reaction.Sad | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.Angry">
+                                    <span v-if="post.reaction.Angry !== '0'" id="box-reaction" v-b-tooltip.hover title="Angry">
+                                        <img v-if="post.reaction.Angry !== '0'" src="@/assets/angry.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Angry !== '0'">
+                                        {{ post.reaction.Angry | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+                                    <span v-if="post.reaction.Hug">
+                                    <span v-if="post.reaction.Hug !== '0'" id="box-reaction" v-b-tooltip.hover title="Hug">
+                                        <img v-if="post.reaction.Hug !== '0'" src="@/assets/hug.png" id="emoji" />
+                                        <span class="md-font" v-if="post.reaction.Hug !== '0'">
+                                        {{ post.reaction.Hug | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <!-- yt -->
+                                    <span v-if="post.reaction.view_count" v-b-tooltip.hover title="Views">
+                                    <span v-if="post.reaction.view_count !== ''" id="box-reaction"><i class="fas fa-eye"></i>
+                                        <span class="md-font" v-if="post.reaction.view_count !== ''">
+                                        {{ post.reaction.view_count | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+                                    <span v-if="post.reaction.likes">
+                                    <span v-if="post.reaction.likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                                        <img v-if="post.reaction.likes !== '0'" /><i class="far fa-thumbs-up"></i>
+                                        <span class="md-font" v-if="post.reaction.likes !== '0'">
+                                        {{ post.reaction.likes | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+        
+                                    <span v-if="post.reaction.dislikes">
+                                    <span v-if="post.reaction.dislikes !== '0'" id="box-reaction" v-b-tooltip.hover
+                                        title="Dislike">
+                                        <i class="far fa-thumbs-down"></i>
+                                        <span class="md-font">
+                                        {{ post.reaction.dislikes | numFormat }}
+                                        </span>
+                                    </span>
+                                    </span>
+                                    <!-- end yt -->
                                 </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.shares">
-                            <span v-if="post.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
-                                <i class="fa fa-share" v-if="post.reaction.shares !== '0'"></i>
-                                <span class="md-font" v-if="post.reaction.shares !== '0'">
-                                {{ post.reaction.shares | numFormat }}
                                 </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.Love">
-                            <span v-if="post.reaction.Love !== '0'" id="box-reaction" v-b-tooltip.hover title="Love">
-                                <img v-if="post.reaction.Love !== '0'" src="@/assets/love.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Love !== '0'">
-                                {{ post.reaction.Love | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.Wow">
-                            <span v-if="post.reaction.Wow !== '0'" id="box-reaction" v-b-tooltip.hover title="Wow">
-                                <img v-if="post.reaction.Wow !== '0'" src="@/assets/wow.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Wow !== '0'">
-                                {{ post.reaction.Wow | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.Haha">
-                            <span v-if="post.reaction.Haha !== '0'" id="box-reaction" v-b-tooltip.hover title="Haha">
-                                <img v-if="post.reaction.Haha !== '0'" src="@/assets/haha.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Haha !== '0'">
-                                {{ post.reaction.Haha | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.Sad">
-                            <span v-if="post.reaction.Sad !== '0'" id="box-reaction" v-b-tooltip.hover title="Sad">
-                                <img v-if="post.reaction.Sad !== '0'" src="@/assets/sad.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Sad !== '0'">
-                                {{ post.reaction.Sad | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.Angry">
-                            <span v-if="post.reaction.Angry !== '0'" id="box-reaction" v-b-tooltip.hover title="Angry">
-                                <img v-if="post.reaction.Angry !== '0'" src="@/assets/angry.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Angry !== '0'">
-                                {{ post.reaction.Angry | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-                            <span v-if="post.reaction.Hug">
-                            <span v-if="post.reaction.Hug !== '0'" id="box-reaction" v-b-tooltip.hover title="Hug">
-                                <img v-if="post.reaction.Hug !== '0'" src="@/assets/hug.png" id="emoji" />
-                                <span class="md-font" v-if="post.reaction.Hug !== '0'">
-                                {{ post.reaction.Hug | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-
-                            <!-- yt -->
-                            <span v-if="post.reaction.view_count" v-b-tooltip.hover title="Views">
-                            <span v-if="post.reaction.view_count !== ''" id="box-reaction"><i class="fas fa-eye"></i>
-                                <span class="md-font" v-if="post.reaction.view_count !== ''">
-                                {{ post.reaction.view_count | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-                            <span v-if="post.reaction.likes">
-                            <span v-if="post.reaction.likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                                <img v-if="post.reaction.likes !== '0'" /><i class="far fa-thumbs-up"></i>
-                                <span class="md-font" v-if="post.reaction.likes !== '0'">
-                                {{ post.reaction.likes | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-
-                            <span v-if="post.reaction.dislikes">
-                            <span v-if="post.reaction.dislikes !== '0'" id="box-reaction" v-b-tooltip.hover
-                                title="Dislike">
-                                <i class="far fa-thumbs-down"></i>
-                                <span class="md-font">
-                                {{ post.reaction.dislikes | numFormat }}
-                                </span>
-                            </span>
-                            </span>
-                            <!-- end yt -->
-                        </span>
-                        </span>
-                    </div>
-
-
-                    <!-- comment content -->
-                    <b-collapse :id="'btn'+ post._id" class="mt-2" v-if="post.comments && post.comments.length">
-                        <b-card id="cmt-card" class="text-left">
-                        <span v-if="post.source == 'news' && post.comments">
-                            <div v-for="(cmtn, inx) in post.comments.comments" :key="inx">
-                            <b-row>
-                                <b-col lg="1">
-                                <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
-                                </b-col>
-                                <b-col lg="11">
-                                <div>
-                                    <span class="bold">{{ cmtn.displayName }}</span>
-                                    <span class="font-weight-light" id="cmt-time">{{
-                                    cmtn.time
-                                    }}</span>
-                                </div>
-
-                                <div v-for="(text, i) in cmtn.contents" :key="i">
-                                    {{ text.extData.content }}
-                                </div>
-                                </b-col>
-                            </b-row>
-                            <hr />
                             </div>
-                        </span>
-                        <span v-else>
-                            <div v-for="(cmt, i) in post.comments" :key="i">
-                            <b-row>
-                                <b-col lg="1">
-                                    <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
-                                        v-if="post.source == 'youtube'">
-                                        <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
-                                        <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
-                                    </a>
-                                    <a :href="cmt.url" target="_blank" v-else>
-                                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
-                                        <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
-                                    </a>
-
-                                    <span> </span>
-                                </b-col>
-                                <b-col lg="11">
-                                <div>
-                                    <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
-                                    v-if="post.source == 'youtube'">
-                                    <span v-if="post.source == 'youtube'" class="bold">
-                                        {{ cmt.author }}</span></a>
-                                    <a :href="cmt.url" target="_blank" v-else>
-                                    <span class="bold text-info"> {{ cmt.username }}</span></a>
-                                    <span v-if="post.source == 'youtube' && cmt.time" class="font-weight-light"
-                                    id="cmt-time">{{ cmt.time.split("T")[0] }} |
-                                    {{ cmt.time.split("T")[1] }}</span>
-                                    <span v-else class="font-weight-light" id="cmt-time">{{
-                                    cmt.time
-                                    }}</span>
-                                </div>
-
-                                <div v-if="post.source == 'youtube'" class="font-weight-light">
-                                    {{ cmt.text }}
-                                </div>
-                                <div v-else class="font-weight-light">
-                                    {{ cmt.content }}
-                                </div>
-                                </b-col>
-                            </b-row>
-                            <hr />
-                            </div>
-                        </span>
-                        </b-card>
-                    </b-collapse>
-                </template>
-            </b-card>
+        
+        
+                            <!-- comment content -->
+                            <b-collapse :id="'btn'+ post._id" class="mt-2" v-if="post.comments && post.comments.length">
+                                <b-card id="cmt-card" class="text-left">
+                                <span v-if="post.source == 'news' && post.comments">
+                                    <div v-for="(cmtn, inx) in post.comments.comments" :key="inx">
+                                    <b-row>
+                                        <b-col lg="1">
+                                        <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                                        </b-col>
+                                        <b-col lg="11">
+                                        <div>
+                                            <span class="bold">{{ cmtn.displayName }}</span>
+                                            <span class="font-weight-light" id="cmt-time">{{
+                                            cmtn.time
+                                            }}</span>
+                                        </div>
+        
+                                        <div v-for="(text, i) in cmtn.contents" :key="i">
+                                            {{ text.extData.content }}
+                                        </div>
+                                        </b-col>
+                                    </b-row>
+                                    <hr />
+                                    </div>
+                                </span>
+                                <span v-else>
+                                    <div v-for="(cmt, i) in post.comments" :key="i">
+                                    <b-row>
+                                        <b-col lg="1">
+                                            <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                                                v-if="post.source == 'youtube'">
+                                                <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                                                <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                                            </a>
+                                            <a :href="cmt.url" target="_blank" v-else>
+                                                <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
+                                                <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                                            </a>
+        
+                                            <span> </span>
+                                        </b-col>
+                                        <b-col lg="11">
+                                        <div>
+                                            <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                                            v-if="post.source == 'youtube'">
+                                            <span v-if="post.source == 'youtube'" class="bold">
+                                                {{ cmt.author }}</span></a>
+                                            <a :href="cmt.url" target="_blank" v-else>
+                                            <span class="bold text-info"> {{ cmt.username }}</span></a>
+                                            <span v-if="post.source == 'youtube' && cmt.time" class="font-weight-light"
+                                            id="cmt-time">{{ cmt.time.split("T")[0] }} |
+                                            {{ cmt.time.split("T")[1] }}</span>
+                                            <span v-else class="font-weight-light" id="cmt-time">{{
+                                            cmt.time
+                                            }}</span>
+                                        </div>
+        
+                                        <div v-if="post.source == 'youtube'" class="font-weight-light">
+                                            {{ cmt.text }}
+                                        </div>
+                                        <div v-else class="font-weight-light">
+                                            {{ cmt.content }}
+                                        </div>
+                                        </b-col>
+                                    </b-row>
+                                    <hr />
+                                    </div>
+                                </span>
+                                </b-card>
+                            </b-collapse>
+                        </template>
+                    </b-card>
+                </div>
+            </div>
+            <div v-if="posts.length === 0 && !getLoadPostTab" style="min-height: 200px;" class="align-content-center text-secondary">
+                ไม่มีรายการโพสต์
             </div>
         </div>
+
+        <b-pagination 
+            v-model="currentPage"
+            :total-rows="totalRows" 
+            :per-page="perPage" 
+            align="center" class="my-2"
+            @input="onPageChange" 
+        />
     </div>
 </template>
 <script>
@@ -507,6 +520,10 @@ export default {
         const today = moment();
         const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
         return {
+            currentPage: 1,
+            totalRows:0,
+            perPage:10,
+            offset: 0,
             getLoadPostTab: false,
             selected: [1,0,-1],
             selectedSort: "",
@@ -516,7 +533,6 @@ export default {
             dataPost: [],
             total: null,
             posts: [],
-            limit: 10,
             index: null,
             dataPhoto: [],
             visible: false,
@@ -535,6 +551,11 @@ export default {
     },
     
     methods: {
+        onPageChange(){
+            console.log("current page : ", this.currentPage);
+            this.offset = (this.currentPage - 1) * 10
+            this.apiUserPosts()
+        },
         resetKeyWord() {
             this.keyWord = ""
             this.apiUserPosts()
@@ -606,8 +627,7 @@ export default {
                     query:this.keyWord ? this.keyWord : '',
                     sort_by: this.selectedSort,
                     sentiment: this.selected,
-                    offset: this.limit,
-                    // limit: this.limit,
+                    offset: this.offset,
                     start_date: this.start_date,
                     end_date:this.end_date
                 },
@@ -619,32 +639,27 @@ export default {
 
             this.axios(config)
             .then((response) => {
-                // this.dataPost = response.data || [];
-                // console.log('this.data ', this.dataPost);
-                // // this.posts = this.dataPost.data
-                // this.posts = this.dataPost.data.map(post => ({
-                //     ...post,
-                //     showAll: false
-                // }));
-                // this.total = this.dataPost.count;
-                // this.getLoadPostTab = false;
-                // this.$emit('totalPost',this.total)
+                console.log(response);
+                
                 const newData = response.data?.data || [];
                 this.total = response.data?.count || 0;
+                this.totalRows = response.data?.count || 0;
                 this.getLoadPostTab = false;
 
                 // กรองเอาโพสต์ใหม่ที่ยังไม่มีใน this.posts
                 const existingIds = this.posts.map(post => post._id); // สมมุติว่าใช้ _id เป็นตัวระบุ
                 const filteredNewPosts = newData.filter(post => !existingIds.includes(post._id));
-
+                if (response.data.has_next) {
+                    this.offset = response.data.next_offset
+                }
                 // เพิ่ม showAll = false แล้วรวมกับ posts เดิม
                 const newPostsWithFlag = filteredNewPosts.map(post => ({
-                ...post,
-                showAll: false,
+                    ...post,
+                    showAll: false,
                 }));
 
-                this.posts = [...this.posts, ...newPostsWithFlag];
-
+                // this.posts = [...this.posts, ...newPostsWithFlag];
+                this.posts = newData
                 this.$emit('totalPost', this.total);
             })
             .catch((error) => {
@@ -660,28 +675,25 @@ export default {
         this.selectDate();
     },
     watch: {
-        isBottom(newVal) {
-            if (newVal) {
-                if (this.posts.length < this.total) {
-                    this.limit = this.limit + 10;
-                    if (!this.getLoadPostTab) {
-                        this.apiUserPosts();
-                    }
-                }
-            }
-        },
+        
         keyWord(newVal) {
             if (newVal) {
+                this.offset = 0
+                this.currentPage = 1
                 this.apiUserPosts()
             }
         },
         selectedSort(newVal) {
             if (newVal) {
+                this.offset = 0
+                this.currentPage = 1
                 this.apiUserPosts()
             }
         },
         selected(newVal) {
             if (newVal) {
+                this.offset = 0
+                this.currentPage = 1
                 this.apiUserPosts()
             }
         }
