@@ -841,10 +841,88 @@ export default {
             }
             
         },
+        async getPreview() {
+            const url = this.selectedData.url;
+            const fallbackImage = require('@/assets/1.png');
+            const fallbackUserImage = require('@/assets/user.svg');
+             
+            // ตรวจว่าเป็นลิงก์ Facebook หรือไม่
+            const isFacebook = url.includes('facebook.com');
+
+            if (isFacebook) {
+                // พยายามแยก page ID หรือ slug จาก URL
+                try {
+                    const parts = url.split('/');
+                    let pageId = parts[parts.length - 1] || parts[parts.length - 2];
+                    pageId = pageId.split('?')[0]; // ตัด query ออก
+
+                    this.img = `https://graph.facebook.com/${pageId}/picture?type=large`;
+                    console.log("Facebook image ==", this.img);
+                    this.selectedData.profile_image = this.img;
+                } catch (err) {
+                    console.warn("ไม่สามารถแยก page ID จาก Facebook URL ได้", err);
+                    this.img = fallbackImage;
+                }
+                // try {
+                //     const parts = url.split('/');
+                //     let pageId = parts[parts.length - 1] || parts[parts.length - 2];
+                //     pageId = pageId.split('?')[0];
+
+                //     // ตรวจสอบว่าเป็น Page จริงหรือไม่
+                //     const checkUrl = `https://graph.facebook.com/${pageId}?fields=id,name,category`;
+                //     const res = await fetch(checkUrl);
+                //     const data = await res.json();
+
+                //     if (data.category) {
+                //         // ✅ เป็นเพจ → ใช้ภาพจาก Graph API
+                //         this.img = `https://graph.facebook.com/${pageId}/picture?type=large`;
+                //         console.log("✅ Facebook Page Image ==", this.img);
+                //         this.selectedData.profile_image = this.img;
+                //     } else {
+                //         // ❌ ไม่ใช่เพจ
+                //         console.warn("❌ ไม่ใช่เพจ หรือไม่มี category:", data);
+                //         this.img = fallbackUserImage;
+                //         this.selectedData.profile_image = null;
+                //     }
+                //     } catch (err) {
+                //     console.warn("❌ ไม่สามารถตรวจสอบ Facebook Page ได้:", err);
+                //     this.img = fallbackUserImage;
+                //     this.selectedData.profile_image = null;
+                // }
+            } else {
+                // กรณีทั่วไป ใช้ Microlink
+                try {
+                const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    const previews = {
+                    title: data.data.title,
+                    description: data.data.description,
+                    image: data.data.image?.url || "",
+                    site: data.data.publisher || "Unknown",
+                    url,
+                    };
+                    this.img = data.data.image?.url || fallbackImage;
+                    console.log("Microlink previews ==== ", previews);
+                    this.selectedData.profile_image = this.img;
+                } else {
+                    this.img = fallbackImage;
+                    this.selectedData.profile_image = null
+                }
+                } catch (error) {
+                    console.error("Error fetching preview:", error);
+                    this.img = fallbackImage;
+                }
+            }
+            this.exportData();
+        }
+
     },
     async mounted() {
         this.mapTargetInfoToSelectedData();
-    },
+        this.getPreview();
+    },  
     // watch: {
     //     editable: {
     //         handler(newVal) {

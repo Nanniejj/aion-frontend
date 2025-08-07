@@ -26,9 +26,9 @@
                  <div class="row m-0">
                     <div class="col-12 col-lg-6 py-2 px-0 px-sm-2" v-for="(item, i) in facebook" :key="'facebook- ' +i">
                         <div class="row m-0">
-                            <div class="col text-truncate d-inline-block px-0" style="width: 100px;">
+                            <a :href="item.url" target="_blank" class="col text-truncate d-inline-block px-0" style="width: 100px;">
                                 {{ i + 1 }}. {{ item.url }}
-                            </div>
+                            </a>
                             
                             <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
                                 <i class="fa fa-edit"></i>
@@ -65,9 +65,9 @@
                  <div class="row m-0">
                     <div class="col-12 col-lg-6 py-2 px-0 px-sm-2" v-for="(item, i) in twitter" :key="'twitter- ' +i">
                         <div class="row m-0">
-                            <div class="col text-truncate d-inline-block px-0" style="width: 100px;">
+                            <a :href="item.url" target="_blank" class="col text-truncate d-inline-block px-0" style="width: 100px;">
                                 {{ i + 1 }}. {{ item.url }}
-                            </div>
+                            </a>
                             
                             <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
                                 <i class="fa fa-edit"></i>
@@ -104,9 +104,9 @@
                  <div class="row m-0">
                     <div class="col-12 col-lg-6 py-2 px-0 px-sm-2" v-for="(item, i) in instagram" :key="'instagram- ' +i">
                         <div class="row m-0">
-                            <div class="col text-truncate d-inline-block px-0" style="width: 100px;">
+                            <a :href="item.url" target="_blank" class="col text-truncate d-inline-block px-0" style="width: 100px;">
                                 {{ i + 1 }}. {{ item.url }}
-                            </div>
+                            </a>
                             
                             <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
                                 <i class="fa fa-edit"></i>
@@ -143,9 +143,9 @@
                  <div class="row m-0">
                     <div class="col-12 col-lg-6 py-2 px-0 px-sm-2" v-for="(item, i) in tiktok" :key="'tiktok- ' +i">
                         <div class="row m-0">
-                            <div class="col text-truncate d-inline-block px-0" style="width: 100px;">
+                            <a :href="item.url" target="_blank" class="col text-truncate d-inline-block px-0" style="width: 100px;">
                                 {{ i + 1 }}. {{ item.url }}
-                            </div>
+                            </a>
                             
                             <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
                                 <i class="fa fa-edit"></i>
@@ -182,9 +182,9 @@
                  <div class="row m-0">
                     <div class="col-12 col-lg-6 py-2 px-0 px-sm-2" v-for="(item, i) in youtube" :key="'youtube- ' +i">
                         <div class="row m-0">
-                            <div class="col text-truncate d-inline-block px-0" style="width: 100px;">
+                            <a :href="item.url" target="_blank" class="col text-truncate d-inline-block px-0" style="width: 100px;">
                                 {{ i + 1 }}. {{ item.url }}
-                            </div>
+                            </a>
                             
                             <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
                                 <i class="fa fa-edit"></i>
@@ -221,9 +221,9 @@
                 <div class="row m-0">
                     <div class="col-12 col-lg-6 py-2 px-0" v-for="(item, i) in pantip" :key="'pantip- ' +i">
                         <div class="row m-0">
-                            <div class="col text-truncate d-inline-block px-0" style="width: 100px;">
+                            <a :href="item.url" target="_blank" class="col text-truncate d-inline-block px-0" style="width: 100px;">
                                 {{ i + 1 }}. {{ item.url }}
-                            </div>
+                            </a>
                             
                             <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
                                 <i class="fa fa-edit"></i>
@@ -260,9 +260,9 @@
                 <div class="row m-0">
                     <div class="col-12 col-lg-6 py-2 px-0 px-sm-2" v-for="(item, i) in blockdit" :key="'blockdit- ' +i">
                         <div class="row m-0">
-                            <div class="col text-truncate d-inline-block px-0" style="width: 100px;">
+                            <a :href="item.url" target="_blank" class="col text-truncate d-inline-block px-0" style="width: 100px;">
                                 {{ i + 1 }}. {{ item.url }}
-                            </div>
+                            </a>
                             
                             <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
                                 <i class="fa fa-edit"></i>

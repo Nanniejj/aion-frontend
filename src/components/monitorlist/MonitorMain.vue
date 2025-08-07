@@ -15,30 +15,37 @@
                 </b-button-group>
             </b-button-toolbar>
         </div>
-        <MonitorStat v-if="activeButton == 'profile'" :type="'targetlist'" />
-        <MonitorStat v-if="activeButton == 'hashtag'" :type="'hashtaglist'" />
+        <MonitorStat v-if="activeButton == 'profile'" :type="'targetlist'" :reface="refaceStat"  @setReface="handleReface"/>
+        <!-- <MonitorStat v-if="activeButton == 'hashtag'" :type="'hashtaglist'" :reface="refaceStat" :total="total" @setReface="handleReface"/> -->
 
-        <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'" />
-        <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'" />
+        <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'"  @setReface="handleReface"/>
+        <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'"  @setReface="handleReface" @total="(data) => total = data"/>
     </div>
 </template>
 
 <script>
 import MonitorStat from "@/components/monitorlist/MonitorStat.vue";
 import MonitorTable from "@/components/monitorlist/MonitorTable.vue";
+import { data } from "jquery";
 export default {
     components: {
         MonitorStat,MonitorTable
     },
     data() {
         return {
-            activeButton: "profile" // ค่าเริ่มต้น
+            activeButton: "profile", // ค่าเริ่มต้น
+            refaceStat: false,
+            total: 0
         };
     },
     methods: {
         selectButton(type) {
-
             this.activeButton = type;
+        },
+        handleReface() {
+            console.log('setReface emitted!');
+            this.refaceStat = !this.refaceStat
+            console.log("reface stat ==== ", this.refaceStat);
         }
     }
 };

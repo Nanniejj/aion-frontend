@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- {{getListMonitorProfile.targetlist.length}} -->
-    <button class="btn btn-add mt-0" @click="open = true">
+    <button class="btn btn-add mt-0 w-100" @click="open = true">
       <i class="fa fa-plus" />
       <span style="font-size: 16px" v-if="tabsMonitor == 'targetlist'">
         เพิ่มบัญชี
@@ -19,7 +19,7 @@
       :visible="open"
       @hide="hideModal"
       :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '40%', 1350: '70%', 768: '90%' }"
+      :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }"
     >
         <div v-if="tabsMonitor == 'targetlist'">
             <h5><b>เพิ่มบัญชี</b></h5>
@@ -37,8 +37,9 @@
             <h5><b>เพิ่มบัญชี Avatar</b></h5>
             <hr />
         </div>
+        
         <!-- body -->
-        <b-row class="my-1">
+        <b-row class="my-1 modal-body-scrollable">
             <b-col sm="12">
             <span v-if="tabsMonitor == 'hashtaglist'">
                 คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่แฮชแท็กที่ต้องการ</span
@@ -48,8 +49,9 @@
                 ที่ต้องการ</span
             >
             <span v-else>
-                คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่บัญชีที่ต้องการ</span
-            >
+                คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่บัญชีที่ต้องการ
+                <span class="text-danger bold" style="font-size: 18px;">สูงสุด 100 บัญชี</span>
+            </span>
             </b-col>
             <b-col sm="12">
             <br />
@@ -58,11 +60,11 @@
                 >ตัวอย่างการใส่ข้อมูล <br />ใส่คำที่ต้องการโดย<b> ไม่ต้องใส่ #</b>
                 เช่น #การเมือง ให้ใส่ <b>การเมือง</b></b-alert
                 >
-                <b-form-select
+                <!-- <b-form-select
                 v-model="selectSourceHash"
                 :options="optionsHash"
                 @change="resetHashtagList()"
-                ></b-form-select>
+                ></b-form-select> -->
             </div>
             <div v-else-if="tabsMonitor == 'tabKeyword'">
                 <b-alert show
@@ -80,8 +82,8 @@
                 >
                 <b-alert v-else-if="selectSource == 'facebook'" show
                 >ตัวอย่างการใส่ข้อมูล <br />
-                https://facebook.com/username</b-alert
-                >
+                https://facebook.com/username หรือ https://www.facebook.com/username
+                </b-alert>
                 <b-alert v-else-if="selectSource == 'instagram'" show
                 >ตัวอย่างการใส่ข้อมูล <br />
                 https://instagram.com/username</b-alert
@@ -111,7 +113,7 @@
                 >ตัวอย่างการใส่ข้อมูล <br />
                 เช่น https://www.threads.net/@ch7hd
                 </b-alert>
-                <b-form-select
+                <!-- <b-form-select
                     v-if="$route.name == 'Avatar'"
                     v-model="selectSource"
                     :options="optionsAV"
@@ -121,14 +123,14 @@
                     v-model="selectSource"
                     :options="options"
                     @change="resetTargetList()"
-                ></b-form-select>
+                ></b-form-select> -->
             </div>
             </b-col>
             <!--------------------------------------------------profile --------------------------------------------------------------->
             <b-col sm="12" class="" v-if="tabsMonitor == 'targetlist'">
-                <label class="mt-4" for="textarea-default"><b>url บัญชี</b></label>
+                <label class="mt-4" for="textarea-default"><b>url บัญชี ({{ addTarget.length }})</b></label>
+                <!-- :disabled="!selectSource" -->
                 <b-form-tags
-                   :disabled="!selectSource"
                     input-id="tags-pills"
                     v-model="addTarget"
                     tag-variant="light"
@@ -144,42 +146,49 @@
                 />
                 <!-- {{ targetLists }} -->
                 <div class="col-12 px-0" v-if="addTarget.length">
-                    <div class="col-12 px-0 pt-3">
-                        <b>รายชื่อเป้าหมาย ({{ addTarget.length }})</b>
-                    </div>
-                    <hr class="my-2"/>
-                    <div class="row justify-content-between mb-3 mx-0" v-for="(item, i) in targetLists" :key="'target- ' +i">
-                        
-                        <div class="col d-sm-none text-truncate px-0" style="max-width: 300px;">
-                            {{ i + 1 }}. {{ item.url }}
-                        </div>
-                        <div class="col d-none d-sm-block text-truncate w-100 px-0" style="">
-                            {{ i + 1 }}. {{ item.url }}
-                        </div>
-                        
-                        <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
-                            <i class="fa fa-edit"></i>
-                        </b-button>
-                        
-                        <div class="col-auto d-flex pl-1 pr-0" v-else>
-                            <b-button class="mr-2" variant="success" @click="toggleEdited(item)">
-                                <i class="fa fa-save"></i>
-                            </b-button>
-                            <b-button variant="danger" @click="toggleEdited(item)">
-                                <i class="fa fa-times"></i>
-                            </b-button>
-                        </div>
-                        <div class="col-12 mt-3 p-0">
-                            <!-- {{ item }} -->
-                            <!-- v-if="checkLableData(item)|| item.editable" -->
-                            <CardInput 
-                                :targetInfo="item"
-                                :provinces="provinces"
-                                :influencerTypes="influencerTypes"
-                                source="blockdit"
-                                :editable="item.editable" 
-                                @update:targetInfo="(data) => handleLabelData(data,item)"
-                            />
+
+                    <!-- {{ facebook }} -->
+                    <div class="col-12 px-0 pt-3" v-for="(platform, platformName) in platforms" :key="platformName">
+                        <div v-if="platform.length">
+                            <b class="mb-2 text-capitalize">{{ platformName }} ({{ platform.length }})</b>
+                            <hr class="my-2"/>
+                            <b-row cols="1" lg-cols="2" xl-cols="2">
+                                <b-col xs="12" lg="6" class="" v-for="(item, i) in platform" :key="'target- ' +i">
+                                    <b-row class="justify-content-between mb-3 mx-0">
+                                        <a :href="item.url" target="_blank" rel="noopener noreferrer" 
+                                        class="col d-sm-none text-truncate px-0" 
+                                        style="max-width: 300px;">
+                                            {{ i + 1 }}. {{ item.url }}
+                                        </a>
+                                        <a :href="item.url" target="_blank" rel="noopener noreferrer" class="col d-none d-sm-block text-truncate w-100 px-0" style="">
+                                            {{ i + 1 }}. {{ item.url }}
+                                        </a>
+                                        
+                                        <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
+                                            <i class="fa fa-edit"></i>
+                                        </b-button>
+                                        
+                                        <div class="col-auto d-flex pl-1 pr-0" v-else>
+                                            <b-button class="mr-2" variant="success" @click="toggleEdited(item)">
+                                                <i class="fa fa-save"></i>
+                                            </b-button>
+                                            <b-button variant="danger" @click="toggleEdited(item)">
+                                                <i class="fa fa-times"></i>
+                                            </b-button>
+                                        </div>
+                                        <div class="col-12 mt-3 p-0">
+                                            <CardInput 
+                                                :targetInfo="item"
+                                                :provinces="provinces"
+                                                :influencerTypes="influencerTypes"
+                                                source="blockdit"
+                                                :editable="item.editable" 
+                                                @update:targetInfo="(data) => handleLabelData(data,item)"
+                                            />
+                                        </div>
+                                    </b-row>
+                                </b-col>
+                            </b-row>
                         </div>
                     </div>
                 </div>
@@ -359,6 +368,24 @@ export default {
             selectSourceHash: "twitter",
             addKeyword: "",
             addHashtag: [],
+            platforms: {
+                facebook: [],
+                tiktok: [],
+                youtube: [],
+                instagram: [],
+                twitter: [],
+                pantip: [],
+                blockdit: [],
+            },
+            platformText: {
+                facebook: 'Facebook',
+                tiktok: 'TikTok',
+                youtube: 'YouTube',
+                instagram: 'Instagram',
+                twitter: 'Twitter (X)',
+                pantip: 'Pantip',
+                blockdit: 'Blockdit'
+            },
             targetLists:[],
             hashtagLists:[],
             addTarget: [],
@@ -451,160 +478,284 @@ export default {
             return hasOtherValue;
         },
         // onTagsInput(tags) {
-        //     console.log("add === ", tags);
+        //     // 1. Normalize tags → ตัด www และ / ท้าย
+        //     const normalizedTags = tags.map(tag =>
+        //         tag.replace("://www.", "://").replace(/\/+$/, '')
+        //     );
+
+        //     // 2. Sync ค่าใน addTarget (กำจัด tag ซ้ำ/ผิดรูปแบบ)
+        //     this.addTarget = normalizedTags;
+
         //     if (this.tabsMonitor === 'targetlist') {
-        //         // กรอง tags ที่ยังไม่มีใน targetLists (ไม่ซ้ำ url)
-        //         const newTags = tags.filter(tag =>
-        //             !this.targetLists.some(item => item.url === tag)
+        //         // 🔥 ลบรายการที่ถูกลบออกจาก addTarget
+        //         this.targetLists = this.targetLists.filter(item =>
+        //         normalizedTags.includes(item.url.replace("://www.", "://").replace(/\/+$/, ''))
         //         );
-    
-        //         // แปลง newTags เป็น object แล้วเพิ่มเข้า targetLists
+
+        //         // ✅ หา tags ที่ยังไม่มีใน targetLists
+        //         const newTags = normalizedTags.filter(tag =>
+        //         !this.targetLists.some(item =>
+        //             item.url.replace("://www.", "://").replace(/\/+$/, '') === tag
+        //         )
+        //         );
+
+        //         // สร้าง object ใหม่
         //         const newEntries = newTags.map(tag => ({
-        //             url: tag,
-        //             source: this.selectSource,
-        //             editable: false,
-        //             bot_level: 1,
-        //             name: null,
-        //             key: this.tabsMonitor === 'targetlist'
+        //         url: tag,
+        //         source: this.selectSource,
+        //         editable: false,
+        //         bot_level: 1,
+        //         name: null,
+        //         key: this.tabsMonitor === 'targetlist'
         //             ? 'account'
         //             : this.tabsMonitor === 'hashtaglist'
-        //                 ? 'hashtag'
-        //                 : null
+        //             ? 'hashtag'
+        //             : null
         //         }));
-        //         // รวมรายการเก่า + ใหม่
+
+        //         // รวมกับของเดิม
         //         this.targetLists = [...this.targetLists, ...newEntries];
+
         //     } else if (this.tabsMonitor === 'hashtaglist') {
-        //         const newTags = tags.filter(tag =>
-        //             !this.hashtagLists.some(item => item.uid === tag)
+        //         // 🔥 ลบรายการที่ถูกลบออกจาก addTarget
+        //         this.hashtagLists = this.hashtagLists.filter(item =>
+        //         normalizedTags.includes(item.uid.replace("://www.", "://").replace(/\/+$/, ''))
         //         );
-    
-        //         // แปลง newTags เป็น object แล้วเพิ่มเข้า hashtagLists
+
+        //         // ✅ หา tags ที่ยังไม่มีใน hashtagLists
+        //         const newTags = normalizedTags.filter(tag =>
+        //         !this.hashtagLists.some(item =>
+        //             item.uid.replace("://www.", "://").replace(/\/+$/, '') === tag
+        //         )
+        //         );
+
+        //         // สร้าง object ใหม่
         //         const newEntries = newTags.map(tag => ({
-        //             uid: tag,
-        //             source: this.selectSourceHash,
-        //             editable: false,
-        //             bot_level: 1,
-        //             // name: null,
-        //             key: this.tabsMonitor === 'targetlist'
+        //         uid: tag,
+        //         source: this.selectSourceHash,
+        //         editable: false,
+        //         bot_level: 1,
+        //         key: this.tabsMonitor === 'targetlist'
         //             ? 'account'
         //             : this.tabsMonitor === 'hashtaglist'
-        //                 ? 'hashtag'
-        //                 : null
+        //             ? 'hashtag'
+        //             : null
         //         }));
-        //         // รวมรายการเก่า + ใหม่
+
+        //         // รวมกับของเดิม
         //         this.hashtagLists = [...this.hashtagLists, ...newEntries];
         //     }
-
         // },
+        normalizeUrl(url) {
+            let result = url.trim();
+
+            // ✅ แปลง Facebook profile.php?id=... → facebook.com/ID (ตัด / ท้าย)
+            const fbProfileMatch = result.match(/^(https:\/\/(www\.)?facebook\.com)\/profile\.php\?id=([^/&?#]+)/);
+            if (fbProfileMatch) {
+                result = `${fbProfileMatch[1]}/${fbProfileMatch[3]}`;
+            }
+
+            // ✅ ตัด / ท้าย (หลังแปลงแล้ว)
+            result = result.replace(/\/+$/, '');
+
+            return result;
+        },
+        detectPlatformName(tag) {
+            if (tag.includes("facebook.com")) return 'facebook';
+            if (tag.includes("tiktok.com")) return 'tiktok';
+            if (tag.includes("youtube.com") || tag.includes("youtu.be")) return 'youtube';
+            if (tag.includes("instagram.com")) return 'instagram';
+            if (tag.includes("twitter.com") || tag.includes("x.com")) return 'twitter';
+            if (tag.includes("pantip.com")) return 'pantip';
+            if (tag.includes("blockdit.com")) return 'blockdit';
+            return null;
+        },
         onTagsInput(tags) {
-            // 1. Normalize tags → ตัด www และ / ท้าย
-            const normalizedTags = tags.map(tag =>
-                tag.replace("://www.", "://").replace(/\/+$/, '')
-            );
+            // ✨ 1. Normalize URLs
+            let normalizedTags = tags.map(tag => this.normalizeUrl(tag));
 
-            // 2. Sync ค่าใน addTarget (กำจัด tag ซ้ำ/ผิดรูปแบบ)
-            this.addTarget = normalizedTags;
+            // 🚫 จำกัดไม่เกิน 100
+            if (normalizedTags.length > 100) {
+                Swal.fire({
+                icon: 'warning',
+                title: "เพิ่มได้สูงสุด 100 เป้าหมาย",
+                showConfirmButton: false,
+                didOpen: () => {
+                    const iconContent = document.querySelector('.swal2-icon-content');
+                    if (iconContent) iconContent.style.display = 'none';
+                },
+                timer: 2000
+                });
+                normalizedTags = normalizedTags.slice(0, 100);
+            }
 
+            
             if (this.tabsMonitor === 'targetlist') {
-                // 🔥 ลบรายการที่ถูกลบออกจาก addTarget
-                this.targetLists = this.targetLists.filter(item =>
-                normalizedTags.includes(item.url.replace("://www.", "://").replace(/\/+$/, ''))
+                // ✨ 2. Sync addTarget
+                this.addTarget = normalizedTags;
+                console.log(normalizedTags);
+                
+                // ✨ 3. map เป็น object พร้อมระบุ source (platform)
+                const newEntries = normalizedTags.map(tag => {
+                    const platform = this.detectPlatformName(tag); // ✅ ใช้ helper ด้านล่าง
+                    return {
+                    url: tag,
+                    source: platform, // เก็บชื่อ platform ลงใน object
+                    editable: false,
+                    bot_level: 1,
+                    name: null,
+                    key: this.tabsMonitor === 'targetlist'
+                        ? 'account'
+                        : this.tabsMonitor === 'hashtaglist'
+                        ? 'hashtag'
+                        : null
+                    };
+                });
+    
+                // ✅ 4. ล้างค่าเก่าใน platforms
+                Object.keys(this.platforms).forEach(p => {
+                    this.platforms[p] = [];
+                });
+    
+                // ✅ 5. เพิ่ม entry แยกตาม platform โดยไม่ซ้ำ
+                const addUnique = (platformArray, entry) => {
+                    if (!platformArray.some(e => e.url === entry.url)) {
+                    platformArray.push(entry);
+                    }
+                };
+    
+                // ✅ 6. แยกแต่ละ entry ลง platform ที่ถูกต้อง
+                newEntries.forEach(entry => {
+                    const platform = entry.source;
+                    if (platform && this.platforms[platform]) {
+                    addUnique(this.platforms[platform], entry);
+                    }
+                });
+    
+                // ✅ 7. รวมสมาชิกทุก platform
+                this.targetLists = Object.values(this.platforms)
+                .flat() // รวม array ย่อยทั้งหมดเป็น array เดียว
+                .filter((item, index, self) =>
+                    // ป้องกันซ้ำซ้อนตาม url
+                    index === self.findIndex(e => e.url === item.url)
                 );
-
-                // ✅ หา tags ที่ยังไม่มีใน targetLists
-                const newTags = normalizedTags.filter(tag =>
-                !this.targetLists.some(item =>
-                    item.url.replace("://www.", "://").replace(/\/+$/, '') === tag
-                )
-                );
-
-                // สร้าง object ใหม่
-                const newEntries = newTags.map(tag => ({
-                url: tag,
-                source: this.selectSource,
-                editable: false,
-                bot_level: 1,
-                name: null,
-                key: this.tabsMonitor === 'targetlist'
-                    ? 'account'
-                    : this.tabsMonitor === 'hashtaglist'
-                    ? 'hashtag'
-                    : null
-                }));
-
-                // รวมกับของเดิม
-                this.targetLists = [...this.targetLists, ...newEntries];
+                // this.targetLists = Array.from(uniqueMap.values());
 
             } else if (this.tabsMonitor === 'hashtaglist') {
-                // 🔥 ลบรายการที่ถูกลบออกจาก addTarget
-                this.hashtagLists = this.hashtagLists.filter(item =>
-                normalizedTags.includes(item.uid.replace("://www.", "://").replace(/\/+$/, ''))
-                );
-
-                // ✅ หา tags ที่ยังไม่มีใน hashtagLists
-                const newTags = normalizedTags.filter(tag =>
-                !this.hashtagLists.some(item =>
-                    item.uid.replace("://www.", "://").replace(/\/+$/, '') === tag
-                )
-                );
-
-                // สร้าง object ใหม่
-                const newEntries = newTags.map(tag => ({
-                uid: tag,
-                source: this.selectSourceHash,
-                editable: false,
-                bot_level: 1,
-                key: this.tabsMonitor === 'targetlist'
-                    ? 'account'
-                    : this.tabsMonitor === 'hashtaglist'
-                    ? 'hashtag'
-                    : null
-                }));
-
-                // รวมกับของเดิม
-                this.hashtagLists = [...this.hashtagLists, ...newEntries];
+                console.log('addHashtag === ',this.addHashtag);
+                const newEntries = this.addHashtag.map(tag => {
+                    // const platform = this.detectPlatformName(tag); // ✅ ใช้ helper ด้านล่าง
+                    return {
+                    uid: tag,
+                    // source: platform, // เก็บชื่อ platform ลงใน object
+                    // editable: false,
+                    bot_level: 1,
+                    // name: null,
+                    key: this.tabsMonitor === 'targetlist'
+                        ? 'account'
+                        : this.tabsMonitor === 'hashtaglist'
+                        ? 'hashtag'
+                        : null
+                    };
+                });
+                console.log('newEntries === ',newEntries);
+                this.hashtagLists = newEntries;
             }
         },
         toggleEdited(item) {
             item.editable = !item.editable
         },
         formatTag(tag) {
-            return tag.replace("://www.", "://").replace(/\/+$/, '');
+            return tag.replace("://").replace(/\/+$/, '');
         },
         validator(tag) {
-            // const normalizedTag = tag.replace("://www.", "://");
-            // if (this.selectSource == "twitter") {
-            //     return tag.includes("https://twitter.com/");
-            // } else if (this.selectSource == "facebook") {
-            //     return tag.includes("https://facebook.com/");
-            // } else if (this.selectSource == "instagram") {
-            //     return tag.includes("https://instagram.com/");
-            // } else if (this.selectSource == "youtube") {
-            //     return tag.includes("https://youtube.com/");
-            // } else if (this.selectSource == "tiktok") {
-            //     return tag.includes("https://www.tiktok.com/@");
-            // } else if (this.selectSource == "threads") {
-            //     return tag.includes("https://www.threads.net/");
-            // } else {
-            //     return tag;
-            // }
-            const normalizedTag = tag.replace("://www.", "://");
-            if (this.selectSource === "twitter") {
-                return normalizedTag.includes("https://twitter.com/");
-            } else if (this.selectSource === "facebook") {
-                return normalizedTag.includes("https://facebook.com/");
-            } else if (this.selectSource === "instagram") {
-                return normalizedTag.includes("https://instagram.com/");
-            } else if (this.selectSource === "youtube") {
-                return normalizedTag.includes("https://youtube.com/");
-            } else if (this.selectSource === "tiktok") {
-                return normalizedTag.includes("https://tiktok.com/@");
-            } else if (this.selectSource === "threads") {
-                return normalizedTag.includes("https://threads.net/");
-            } else {
+            // ❌ จำกัดไม่เกิน 100 รายการ
+            if (this.addTarget.length >= 100) {
+                Swal.fire({
+                icon: 'warning',
+                title: "เพิ่มได้สูงสุด 100 เป้าหมาย",
+                showConfirmButton: false,
+                timer: 2000
+                });
                 return false;
             }
+
+            // ✅ ตรวจว่าเป็น URL ที่ถูกต้อง
+            let urlObj;
+            try {
+                urlObj = new URL(tag.trim());
+                const isValidProtocol = ['http:', 'https:'].includes(urlObj.protocol);
+                const hasDot = urlObj.hostname.includes('.');
+                if (!isValidProtocol || !hasDot) throw new Error();
+            } catch (e) {
+                // Swal.fire({
+                // icon: 'error',
+                // title: 'URL ไม่ถูกต้อง',
+                // text: 'กรุณาใส่ลิงก์ให้ถูกต้อง เช่น https://facebook.com/xxx',
+                // showConfirmButton: true
+                // });
+                return false;
+            }
+
+            // ✅ อนุญาตเฉพาะแพลตฟอร์มที่กำหนด
+            const allowedHosts = [
+                'facebook.com', 'www.facebook.com',
+                'tiktok.com', 'www.tiktok.com',
+                'youtube.com', 'www.youtube.com', 'youtu.be',
+                'instagram.com', 'www.instagram.com',
+                'twitter.com', 'www.twitter.com', 'x.com', 'www.x.com',
+                'pantip.com', 'www.pantip.com',
+                'blockdit.com', 'www.blockdit.com'
+            ];
+
+            const hostname = urlObj.hostname.toLowerCase();
+            const isAllowed = allowedHosts.some(domain => hostname.endsWith(domain));
+
+            if (!isAllowed) {
+                Swal.fire({
+                icon: 'error',
+                title: 'ไม่รองรับแพลตฟอร์มนี้',
+                text: 'กรุณาใช้ลิงก์จาก Facebook, Tiktok, Youtube, Instagram, Twitter, Pantip หรือ Blockdit เท่านั้น',
+                showConfirmButton: true
+                });
+                return false;
+            }
+            return true;
         },
+        // validator(tag) {
+        //     // const normalizedTag = tag.replace("://www.", "://");
+        //     // if (this.selectSource == "twitter") {
+        //     //     return tag.includes("https://twitter.com/");
+        //     // } else if (this.selectSource == "facebook") {
+        //     //     return tag.includes("https://facebook.com/");
+        //     // } else if (this.selectSource == "instagram") {
+        //     //     return tag.includes("https://instagram.com/");
+        //     // } else if (this.selectSource == "youtube") {
+        //     //     return tag.includes("https://youtube.com/");
+        //     // } else if (this.selectSource == "tiktok") {
+        //     //     return tag.includes("https://www.tiktok.com/@");
+        //     // } else if (this.selectSource == "threads") {
+        //     //     return tag.includes("https://www.threads.net/");
+        //     // } else {
+        //     //     return tag;
+        //     // }
+        //     const normalizedTag = tag.replace("://www.", "://");
+        //     if (this.selectSource === "twitter") {
+        //         return normalizedTag.includes("https://twitter.com/");
+        //     } else if (this.selectSource === "facebook") {
+        //         return normalizedTag.includes("https://facebook.com/");
+        //     } else if (this.selectSource === "instagram") {
+        //         return normalizedTag.includes("https://instagram.com/");
+        //     } else if (this.selectSource === "youtube") {
+        //         return normalizedTag.includes("https://youtube.com/");
+        //     } else if (this.selectSource === "tiktok") {
+        //         return normalizedTag.includes("https://tiktok.com/@");
+        //     } else if (this.selectSource === "threads") {
+        //         return normalizedTag.includes("https://threads.net/");
+        //     } else {
+        //         return false;
+        //     }
+        // },
         onTagState(valid, invalid, duplicate) {
             this.validTags = valid;
             this.invalidTags = invalid;
@@ -718,6 +869,7 @@ export default {
             this.open = false;
             this.resetTargetList();
             this.resetHashtagList();
+            // this.$emit("close");
         },
         resetTargetList() {
             this.targetLists = [];
@@ -734,6 +886,8 @@ export default {
                 URL: url,
                 influencer_type: influencer_type ? influencer_type.map(item => item.value) : null
             }));
+            // console.log("cleanLists",cleanLists);
+            
             return cleanLists
             // this.targetLists = this.targetLists.map(({ editable, url, ...rest })=> ({
             //     ...rest,
@@ -760,6 +914,8 @@ export default {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // this.collectAllTargets(list)
+                    
                     this.apiAddTargets(list);
                     // Swal.fire('บันทึกแล้ว!', 'ข้อมูลของคุณถูกบันทึกเรียบร้อย', 'success')
                 } else {
@@ -797,10 +953,12 @@ export default {
                     title: 'บันทึกแล้ว!',
                     text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อย',
                     icon: 'success',
-                    confirmButtonText: 'ตกลง',
-                    customClass: {
-                        confirmButton: 'btn btn-success'
-                    },
+                    // confirmButtonText: 'ตกลง',
+                    // customClass: {
+                    //     confirmButton: 'btn btn-success'
+                    // },
+                    showConfirmButton: false,
+                    timer: 3000,
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     buttonsStyling: false
@@ -844,6 +1002,15 @@ export default {
 </script>
 
 <style scoped>
+.modal-body-scrollable {
+  max-height: 60vh;         /* กำหนดความสูงสูงสุด */
+  overflow-y: auto;         /* ให้ scroll เฉพาะแนวตั้ง */
+  overflow-x: hidden;       /* ❌ ปิดการ scroll แนวนอน */
+  padding-right: 10px;
+       
+  box-sizing: border-box;   /* เผื่อขนาด scrollbar */
+}
+
 .btn-close {
   color: #f8f9fa;
   background-color: #4c412b;

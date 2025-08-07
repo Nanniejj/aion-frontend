@@ -1,7 +1,8 @@
 <template>
-    <div v-if="data" class="p-2 bg-custom boxlist-card" style="border-top-left-radius: 0;" >
-        <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
-        <b-row cols="4" cols-md="5" cols-lg="10" class="px-3">
+    <div class="p-2 bg-custom boxlist-card" style="border-top-left-radius: 0;min-height: 122px;" >
+        <vue-element-loading :active="load" size="80" 
+        background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
+        <b-row v-if="data" cols="4" cols-md="5" cols-lg="10" class="px-3">
             <b-col xl="" class="p-1">
                 <!-- <b-card class="text-center card-item shadow-sm" :body-class="['p-2 w-auto']"> -->
                     <div class="row align-items-center py-1 h-100 card-item shadow-sm justify-content-center m-0">
@@ -47,12 +48,33 @@
 <script>
 export default {
     props: {
-        type: String
+        type: String,
+        reface: {
+            type: Boolean,
+            default: false
+        },
+        total: {
+            type: Number,
+            default: 0
+        }
     },
     watch: {
         type(val) {
             console.log(val);
             this.apiMonitor()
+        },
+        reface(val) {
+            // this.load = val
+            console.log("reface watch === ",val);
+            if (val) {
+                this.apiMonitor()
+                this.$emit('setReface')
+            }
+        },
+        total() {
+            if (this.total !== 0) {
+                this.data.totalCount = this.total
+            }
         }
     },
     data() {
@@ -63,15 +85,12 @@ export default {
     },
     methods: {
         apiMonitor() {
-
             this.load = true;
-
             var config = {
                 method: "get",
                 url: "https://api2.cognizata.com/api/v2/monitor/getMonitorlist",
                 params: {
                     type: this.type,
-
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -83,16 +102,23 @@ export default {
                     this.data = response.data
                     // console.log(response);
                     this.load = false;
-
+                    // this.reface = false
+                    // this.$emit('setReface')
                 })
                 .catch((error) => {
                     this.load = false;
+                    // this.reface = false
                     console.log(error);
+                    // this.$emit('setReface')
                 });
 
         }
     },
+    
     mounted() {
+        // this.load = this.reface
+        console.log("load" , this.load);
+        
         this.apiMonitor()
     },
 }

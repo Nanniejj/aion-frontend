@@ -2,8 +2,8 @@
     <div class="py-3 mt-3">
         <b-row class="align-items-center mb-3" align-h="between">
             <b-col cols="12" lg=""  class="mt-3">
-                <div class="row w-100 m-0">
-                    <div class="col-auto pl-0"> <img v-if="filters.source == 'twitter'" src="@/assets/Twitter.png"
+                <div class="row w-100 m-0 align-items-center">
+                    <div v-if="type === 'targetlist'" class="col-auto pl-0"> <img v-if="filters.source == 'twitter'" src="@/assets/Twitter.png"
                             class="social-imgs" />
                         <img v-if="filters.source == 'facebook'" src="@/assets/Facebook.png" class="social-imgs" />
                         <img v-if="filters.source == 'pantip'" src="@/assets/board.png" class="social-imgs" />
@@ -16,12 +16,22 @@
                         <b-avatar text="All" size="35" style="background-color: #fed16e;"
                             v-if="filters.source == ''"></b-avatar>
                     </div>
+                    <div v-if="type === 'hashtaglist'" class="col-auto"> 
+                        <b-row class="d-flex align-content-center">
+                            <b-avatar text="All" size="55" style="background-color: #fed16e;"
+                                v-if="filters.source == ''">
+                            </b-avatar>
+                            <div class="col-auto bold align-content-center" style="font-size: 20px;">
+                                {{ totalRows.toLocaleString() }} รายการ
+                            </div>
+                        </b-row>
+                    </div>
 
-                    <b-form-select class="col col-lg-3 mr-3" id="source-select" v-model="filters.source" :options="sourceOptions"
+                    <b-form-select v-if="type === 'targetlist'" class="col col-lg-3 mr-3" id="source-select" v-model="filters.source" :options="sourceOptions"
                     ></b-form-select>
                     <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-sm-0 ml-sm-auto">
-                        <ImportPlatform class="col mr-3 px-0" v-if="type == 'targetlist'" @close="apiMonitorList"/>
-                        <CreateMonitor class="col-auto px-0" :tabsMonitor="type" @close="apiMonitorList"/>
+                        <ImportPlatform class="col mr-3 px-0" v-if="type == 'targetlist'" @close="reload"/>
+                        <CreateMonitor class="col-auto px-0" :class="{'w-100':type == 'hashtaglist'}" :tabsMonitor="type" @close="reload"/>
                     </div>
                 </div>
             </b-col>
@@ -56,6 +66,9 @@
 
         <div  class="boxlist-card py-3">
             <br>
+             <vue-element-loading :active="load" size="80" 
+            background-color="rgba(255, 255, 255, 0.3)" 
+            color="#ede7dd" />
             <b-table 
                 v-if="data.length !== 0"
                 :items="data || []" 
@@ -98,7 +111,7 @@
                 </template> -->
                 <template #cell(source)="data">
                     
-                    <div class="small d-flex align-items-center pr-0 w-auto"
+                    <div v-if="type == 'targetlist'" class="small d-flex align-items-center pr-0 w-auto"
                         :class="{' bg-link': type == 'targetlist'}"
                     >
                         <img v-if="data.item.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
@@ -133,7 +146,7 @@
                 </template>
                 
             </b-table>
-            <div v-else>
+            <div v-if="data.length === 0 && !load">
                 ไม่พบข้อมูล
             </div>
         </div>
@@ -154,6 +167,7 @@
 <script>
 import ImportPlatform from "./ImportPlatform.vue";
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
+import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 // import { mapGetters } from "vuex";
@@ -289,6 +303,12 @@ export default {
             });
             window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
         },
+        reload() {
+            console.log("reloadddddd");
+            
+            this.$emit('setReface')
+            this.apiMonitorList()
+        },
         async delProfile(item) {
             Swal.fire({
                 title:'คุณแน่ใจหรือไม่?',
@@ -314,16 +334,31 @@ export default {
                         account: item.uid,
                         source: item.source,
                     }).then(() => {
-                        Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
+                        Swal.fire({
+                            title: "เลิกติดตามแล้ว!",
+                            text: "เลิกติดตามเรียบร้อย'",
+                            icon: "success",
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        // Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
                         // this.data = this.data.filter(data => data.uid !== item.uid);
                         this.apiMonitorList();
+                        this.$emit('setReface')
                     });
                     // Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success')
                     // this.data = [];
                     // this.data = this.data.filter( data => item.uid !== data.uid);
                     // this.apiMonitorList();
                 } else {
-                    Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
+                    // Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
+                    Swal.fire({
+                            title: "ยกเลิก",
+                            text: "ยกเลิกเรียบร้อย",
+                            icon: "error",
+                            showConfirmButton: false,
+                            timer: 2000
+                    });
                 }
             })
         },
@@ -335,10 +370,12 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'ใช่, เลิกการติดตามเลย!',
                 cancelButtonText: 'ยกเลิก',
-                customClass: {
-                    confirmButton: 'btn btn-success',
-                    cancelButton: 'btn btn-danger'
-                },
+                // customClass: {
+                //     confirmButton: 'btn btn-success',
+                //     cancelButton: 'btn btn-danger'
+                // },
+                showConfirmButton: true,
+                
                 allowOutsideClick: false,
                 // buttonsStyling: false, // ต้องมี ถ้าใช้ Bootstrap เอง
                 allowEscapeKey: false,
@@ -356,11 +393,26 @@ export default {
                         source: item.source,
                         index: index,
                     }).then(() => {
-                        Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
+                        Swal.fire({
+                            title: "เลิกติดตามแล้ว!",
+                            text: "เลิกติดตามเรียบร้อย'",
+                            icon: "success",
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        // Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
                         this.apiMonitorList();
+                        this.$emit('setReface')
                     });
                 } else {
-                    Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
+                    // Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
+                    Swal.fire({
+                            title: "ยกเลิก",
+                            text: "ยกเลิกเรียบร้อย",
+                            icon: "error",
+                            showConfirmButton: false,
+                            timer: 2000
+                    });
                 }
             })
         },
@@ -373,7 +425,8 @@ export default {
                 url: "https://api2.cognizata.com/api/v2/monitor/getMonitor",
                 params: {
                     type: this.filters.type || undefined,
-                    source: this.filters.source || undefined,
+                    // source: this.filters.source || undefined,
+                     ...(this.filters.type === 'targetlist' && { source: this.filters.source || undefined }),
                     page: this.currentPage,
                     limit: this.perPage,
                     search:this.search
@@ -385,22 +438,23 @@ export default {
             };
 
             this.axios(config)
-                .then((response) => {
-                    const resData = response.data;
-                    this.data = resData.data || [];
-                    this.totalRows = resData.pagination?.totalCount || this.data.length;
-                    console.log(this.totalRows);
-                    
-                    console.log(this.currentPage);
-                    
-                    // this.currentPage = resData.pagination?.currentPage || 1;
-                    this.load = false;
-                })
-                .catch((error) => {
-                    this.load = false;
-                    this.data = [];
-                    console.error(error);
-                });
+            .then((response) => {
+                const resData = response.data;
+                this.data = resData.data || [];
+                this.totalRows = resData.pagination?.totalCount || this.data.length;
+                console.log(this.totalRows);
+                console.log(this.currentPage);                
+                // this.currentPage = resData.pagination?.currentPage || 1;
+                this.load = false;
+                // if (this.filters.type) {
+                //     this.$emit('total', this.totalRows)
+                // }
+            })
+            .catch((error) => {
+                this.load = false;
+                this.data = [];
+                console.error(error);
+            });
         },
         formatDate(dateStr) {
             const date = new Date(dateStr);
@@ -421,12 +475,7 @@ export default {
         }
     },
     async mounted() {
-        // this.currentPage = Number(sessionStorage.getItem("monitor_currentPage")) || 1;
-        // this.currentPage =  Number(sessionStorage.getItem("monitor_currentPage"))
         this.filters.type = this.type;
-        await this.apiMonitorList();
-        // sessionStorage.removeItem("monitor_currentPage");
-        
     }
 };
 

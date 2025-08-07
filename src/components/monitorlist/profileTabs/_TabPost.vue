@@ -5,10 +5,24 @@
             background-color="rgba(255, 255, 255, 0.3)"
             color="#b6ac9a" 
         />
-        <div >
+        <div id="total-post" class="pt-5">
             <!-- header  -->
             <div class="col-12 px-0 h6 text-left">
-                <div class="row m-0">
+                <div class="row m-0 align-content-center">
+                    <div class="col-auto pl-0"> 
+                        <img v-if="source == 'twitter'" src="@/assets/Twitter.png"
+                            class="social-imgs" />
+                        <img v-if="source == 'facebook'" src="@/assets/Facebook.png" class="social-imgs" />
+                        <img v-if="source == 'pantip'" src="@/assets/board.png" class="social-imgs" />
+                        <img v-if="source == 'blockdit'" src="@/assets/Blockdit.png" class="social-imgs" />
+                        <img v-if="source == 'instagram'" src="@/assets/Instagram.png" class="social-imgs" />
+                        <img v-if="source == 'youtube'" src="@/assets/Youtube.png" class="social-imgs" />
+                        <img v-if="source == 'news'" src="@/assets/News.png" class="social-imgs" />
+                        <img v-if="source == 'tiktok'" src="@/assets/Tiktok.png" class="social-imgs" />
+                        <img v-if="source == 'threads'" src="@/assets/Threads.png" class="social-imgs" />
+                        <b-avatar text="All" size="35" style="background-color: #fed16e;"
+                            v-if="source == null"></b-avatar>
+                    </div>
                     <div class="col pl-0 ">
                         <div v-if="keyWord">
                             <span v-if="keyWord == ''">All</span>
@@ -21,12 +35,13 @@
                             <span v-if="keyWord == ''"> All</span>
                             <span v-else>#{{ keyWord }}</span>
                         </div> -->
-                        <div v-else>
+                        <div v-else class="h-100">
                             <span>โพสต์ทั้งหมด</span>
                             <span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0">
+                    <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0 text-right">
+                        <!-- วันที่ : {{ start }} - {{ end }} -->
                         <date-picker
                             v-model="valueDate"
                             type="date"
@@ -484,7 +499,7 @@ import moment from "moment";
 import SentimentButton from "./_SentimentButton.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 // import "@justinribeiro/lite-tiktok";
-
+import { debounce } from 'lodash';
 
 export default {
     components: {
@@ -493,6 +508,18 @@ export default {
         // Highlighter,
     },
     props: {
+        source: {
+            type: String,
+            default: null
+        },
+        start: {
+            type: String,
+            default: null
+        },  
+        end: {
+            type: String,
+            default: null
+        }, 
         tabTitle: {
             type: String,
             default: null
@@ -527,7 +554,8 @@ export default {
             getLoadPostTab: false,
             selected: [1,0,-1],
             selectedSort: "",
-            valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
+            valueDate: [],
+            // valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
             start_date: "",
             end_date: "",
             dataPost: [],
@@ -537,9 +565,9 @@ export default {
             dataPhoto: [],
             visible: false,
             options: [
-                { text: "Positive", value: "1" },
-                { text: "Neutral", value: "0" },
-                { text: "Negative", value: "-1" },
+                { text: "Positive", value: 1 },
+                { text: "Neutral", value: 0 },
+                { text: "Negative", value: -1 },
                 { text: "ทั้งหมด", value: [1,0,-1] },
             ],
             optionSort: [
@@ -549,12 +577,28 @@ export default {
             ],
         };
     },
-    
+    computed: {
+        startAndEnd() {
+            return [this.start, this.end];
+        }
+    },
+    created() {
+        this.scheduleChartUpdate = debounce(this.apiUserPosts, 100);
+        this.valueDate = [this.start,this.end]
+    },
     methods: {
         onPageChange(){
             console.log("current page : ", this.currentPage);
             this.offset = (this.currentPage - 1) * 10
             this.apiUserPosts()
+
+            // Scroll ไปที่ element id="total-post"
+            this.$nextTick(() => {
+                const el = document.getElementById('total-post');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
         },
         resetKeyWord() {
             this.keyWord = ""
@@ -598,19 +642,17 @@ export default {
         selectDate() {
             console.log(this.valueDate[0], this.valueDate[1]);
             if (this.valueDate.length == 0) {
-                this.start_date = "";
-                this.end_date = "";
-                //  this.start_date = moment(new Date()).format().slice(0,10) + "T00:00:00";
-                //  this.end_date = moment(new Date()).format().slice(0,10) + "T23:59:59";
+                this.start = "";
+                this.end = "";
             } else {
-                this.start_date = this.valueDate[0] + "T00:00:00";
-                this.end_date = this.valueDate[1] + "T23:59:59";
-                // this.start_date = this.valueDate[0] + "T00:00:00";
-                // this.end_date = this.valueDate[1] + "T23:59:59";
+                this.start = this.valueDate[0] ;
+                this.end = this.valueDate[1];
+                this.$emit('update:start', this.valueDate[0]);
+                this.$emit('update:end', this.valueDate[1]);
                 this.apiUserPosts();
             }
-            this.$store.commit("setSDateProfile", this.start_date);
-            this.$store.commit("setEDateProfile", this.end_date);
+            this.$store.commit("setSDateProfile", this.start);
+            this.$store.commit("setEDateProfile", this.end);
             this.$store.commit("setArrDateProfile", this.valueDate);
         },
        
@@ -622,14 +664,15 @@ export default {
                 url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
-                     ...(isHashtagList ? { hashtag: this.$route.query.uid } : { account: this.$route.query.uid }),
-                    source: this.$route.query.source,
-                    query:this.keyWord ? this.keyWord : '',
+                    ...(isHashtagList ? { hashtag: this.$route.query.uid } : { account: this.$route.query.uid }),
+                    source: this.source,
+                    // source: this.$route.query.source,
+                    ...(this.keyWord ? { query: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
                     sort_by: this.selectedSort,
                     sentiment: this.selected,
                     offset: this.offset,
-                    start_date: this.start_date,
-                    end_date:this.end_date
+                    start_date: this.start+ "T00:00:00",
+                    end_date:this.end + "T23:59:59"
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -672,10 +715,39 @@ export default {
     mounted() {
         // this.checkDateRange();
         // this.apiUserPosts();
-        this.selectDate();
+        // if (condition) {
+
+        // } else {
+
+        // }
+        if (this.$route.query.type !== 'targetlist') {
+            this.valueDate = [this.start, this.end];
+            this.selectDate();
+        }
     },
     watch: {
-        
+        source: {
+            handler(newVal, oldVal) {
+                console.log("new == ", newVal);
+                console.log("oldVal == ", oldVal);
+
+                // โหลดทุกครั้งที่ source เปลี่ยน (รวมถึงครั้งแรกที่ mount)
+                if (newVal !== oldVal || oldVal === undefined) {
+                    this.apiUserPosts();
+                }
+            },
+            // immediate: this.$route.query.type === 'targetlist' // ✅ เรียกครั้งแรกด้วย
+        },
+        startAndEnd: {
+            handler([newStart, newEnd]) {
+            // อัปเดต valueDate
+            this.valueDate = [newStart, newEnd];
+
+            // เรียก API แบบ debounce
+            this.scheduleChartUpdate();
+            },
+            immediate: true
+        },
         keyWord(newVal) {
             if (newVal) {
                 this.offset = 0
@@ -683,15 +755,15 @@ export default {
                 this.apiUserPosts()
             }
         },
-        selectedSort(newVal) {
-            if (newVal) {
+        selectedSort(newVal,oldVal) {
+            if (newVal !== oldVal) {
                 this.offset = 0
                 this.currentPage = 1
                 this.apiUserPosts()
             }
         },
-        selected(newVal) {
-            if (newVal) {
+        selected(newVal,oldVal) {
+            if (newVal !== oldVal) {
                 this.offset = 0
                 this.currentPage = 1
                 this.apiUserPosts()
@@ -703,6 +775,9 @@ export default {
 };
 </script>
 <style scoped>
+.social-imgs {
+    width: 35px;
+}
 .col2 {
   column-count: 2;
   /* width: 85%; */
