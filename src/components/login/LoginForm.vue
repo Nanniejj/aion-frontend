@@ -140,11 +140,6 @@ export default {
   },
   methods: {
     login() {
-      console.log('window.location.protocol',window.location.protocol);
-      // if (window.location.protocol != "http:") {
-      //   window.location.protocol = "http";
-       
-      // }
       var _this = this;
       var config = {
         method: "post",
@@ -161,14 +156,14 @@ export default {
       axios(config)
         .then(function({ data }) {
           //commit('setLogin', response.data);
-          console.log(data)
+          // console.log(data)
           localStorage.setItem("token", data.accessToken);
           localStorage.setItem("reftoken", data.refreshToken);
           localStorage.setItem("reftokenOpt", data.reftokenOpt);
           let objId = data.accessToken.split(".");
           const decodedData = atob(objId[1]); // decode the string
           let obj = JSON.parse(decodedData);
-          console.log(decodedData);
+          // console.log(decodedData);
           localStorage.setItem("objId", obj.id);
           localStorage.setItem("username", obj.username);
           localStorage.setItem("roleMion", obj.mion);
@@ -176,7 +171,7 @@ export default {
           _this.$store.commit("setPushDomainStat", false);
           let mi =JSON.parse(localStorage.getItem("roleMion"));
           _this.$store.commit('setRoleMion',mi)
-          console.log("decodedData", obj.mion);
+          // console.log("decodedData", obj.mion);
           _this.$store.commit('setShowIntro',true)
           // _this.$emitter.emit('showIntro',true)
           _this.$router.push({ name: "Domain" });

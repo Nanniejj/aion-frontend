@@ -293,7 +293,8 @@
             </div>
             <div v-if="text.face" >
               <span v-for="(face, idx) in text.face">
-                <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
+               <!-- "face.confidence > 0.68" -->
+                <span v-if="face.confidence" class="mr-2 mt-1">
                   <span style="background: #e5e5e5;
                     padding: 0px 6px;
                     border-radius: 13px;">
@@ -1446,21 +1447,13 @@ export default {
 
     this.objId = localStorage.getItem("objId");
     this.domainArr = localStorage.getItem("domainArr");
-    // this.$store.dispatch("fetchListIssue");
-    // this.$emitter.on("crawdash", async (val) => {
-    //   this.crawdash = val;
-    //   this.page = 0;
-    //   await this.infiniteScroll();
-    //   console.log("emitter", val);
-    // });
-
-    console.log("page", this.$route);
+  
     if (this.$route.name === "Domain") {
       this.pageCheck = this.$route.name;
       await this.axios
         .get(
-          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-          this.getClickDomain
+          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain_id=" +
+          this.getClickDomainId
         )
         .then((response) => (this.arrword = response.data[0]));
 

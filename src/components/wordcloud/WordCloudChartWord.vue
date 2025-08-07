@@ -355,6 +355,27 @@
                     </b-col>
                   </b-row>
                   <!-- End Post and comment/retweet founds -->
+
+                   <!-- <b-row
+                    v-if="tab_selected_detail_social == 'threads'"
+                    class="my-3"
+                  >
+                  
+                    <b-col>
+                      <span>Post</span><br />
+                      <span
+                        ><i class="fas fa-paper-plane"></i>
+                        {{ getSentimentThreadsPost | numFormat }}
+                      </span>
+                    </b-col>
+                    <b-col>
+                      <span>Comments</span><br />
+                      <span
+                        ><i class="fas fa-comments"></i>
+                        {{ getSentimentThreadsComment | numFormat }}
+                      </span>
+                    </b-col>
+                  </b-row> -->
                 </div>
               </b-col>
 
@@ -543,6 +564,16 @@
                     >
                       <span id="day">
                         <Sentimentv2 :chartData="getSentimentTiktok" />
+                      </span>
+                    </span>
+
+                     <span
+                      class=""
+                      id="threads"
+                      v-if="tab_selected_detail_social == 'threads'"
+                    >
+                      <span id="day">
+                        <Sentimentv2 :chartData="getSentimentThreads" />
                       </span>
                     </span>
                   </b-col>
@@ -809,6 +840,7 @@ export default {
       "getSentimentNews",
       "getSentimentBlockdit",
       "getSentimentTiktok",
+      "getSentimentThreads",
       "getWordCloudSocial",
       "getSentimentAllPost",
 

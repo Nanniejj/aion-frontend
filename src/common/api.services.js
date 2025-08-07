@@ -52,6 +52,7 @@ export const WordcloudService = {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
+    domId = "",
       key = "",
       mo = "",
       src = "",
@@ -76,7 +77,11 @@ export const WordcloudService = {
     } else {
       dom = "";
     }
-
+if (payload.domain_ids) {
+      domId = `&domain_id=${payload.domain_ids}`;
+    } else {
+      domId = "";
+    }
     if (payload.keywords) {
       key = `&keywords=${payload.keywords}`;
     } else {
@@ -89,7 +94,7 @@ export const WordcloudService = {
         dom +
         mo +
         src +
-        dash
+        dash +domId
     );
   },
 

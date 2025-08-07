@@ -707,7 +707,7 @@
             v-if="datas && datas.face_detect && username == 'adminatapy'"
             style="font-size: 15px;font-weight: 500;"
           >
-            <div v-if="datas.face_detect && datas.person_name.length">
+            <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
               <span v-for="(face, idx) in datas.person_name">
                 <span class="mr-2 mt-1" v-if="face">
                   <span

@@ -447,6 +447,7 @@ export default {
       "getArrDate",
       "getClickDomain",
       "getLoadTopUserF",
+      "getClickDomainId"
     ]),
   },
   watch: {
@@ -490,8 +491,8 @@ export default {
       var config = {
         method: "get",
         url:
-        "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain=" +
-        this.getClickDomain +'&source=news'+
+        "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain_id=" +
+        this.getClickDomainId +'&source=news'+
         sdate +
         edate,
         // +"&source="+this.source,
@@ -530,8 +531,8 @@ export default {
     var config = {
       method: "get",
       url:
-        "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain=" +
-        this.getClickDomain +'&source=news'+
+        "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain_id=" +
+        this.getClickDomainId +'&source=news'+
         sdate +
         edate,
       // +"&source="+this.source,

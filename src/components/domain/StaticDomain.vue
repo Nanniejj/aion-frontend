@@ -245,6 +245,7 @@ export default {
       "getEdateDm",
       "getLoadStat",
       "getArrDate",
+      "getClickDomainId"
     ]),
   },
   data() {
@@ -270,8 +271,8 @@ export default {
      var config ={
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getStatistics?domain=" +
-          this.getClickDomain +
+          "https://api2.cognizata.com/api/v2/userposts/getStatistics?domain_id=" +
+          this.getClickDomainId +
           sdate +
           edate,
         headers: {
@@ -334,8 +335,8 @@ export default {
 var config ={
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getStatistics?domain=" +
-          this.getClickDomain +
+          "https://api2.cognizata.com/api/v2/userposts/getStatistics?domain_id=" +
+          this.getClickDomainId +
           sdate +
           edate,
         headers: {

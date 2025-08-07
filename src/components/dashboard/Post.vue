@@ -188,12 +188,12 @@
             </div>
           </b-col>
         </b-row>
-           <div class="text-left ai-box mt-2"
+        <div class="text-left ai-box mt-2"
           v-if="datas && datas.photos_text && datas.photos_text.length && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;">
-          <div v-for="(text, idx) in datas.photos_text" >
-           
-            <div v-if="text&&text.length">
+          <div v-for="(text, idx) in datas.photos_text">
+
+            <div v-if="text && text.length">
               <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
               </b-avatar>
               <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
@@ -201,14 +201,14 @@
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text }}
             </div>
-            <div v-if="text.face" >
+            <div v-if="text.face">
               <span v-for="(face, idx) in text.face">
                 <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
                   <span style="background: #e5e5e5;
                     padding: 0px 6px;
                     border-radius: 13px;">
                     <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                    {{ face.person_name}}
+                    {{ face.person_name }}
                     <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
                       parseFloat((face.confidence * 100).toFixed(2))
                     }}%)</span></span></span>
@@ -280,7 +280,7 @@
         </div>
         <div class="text-left ai-box mt-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;">
-          <div v-if="datas.face_detect && datas.person_name.length">
+          <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
             <span v-for="(face, idx) in datas.person_name">
               <span class="mr-2 mt-1" v-if="face">
                 <span style="background: #e5e5e5;
@@ -823,7 +823,7 @@ export default {
       this.end_date = moment(this.valueDate[1])
         .format()
         .slice(0, 10);
-   
+
       this.$store.dispatch("fetchSentimentPost", {
         start_date: this.start_date,
         end_date: this.end_date,
@@ -862,7 +862,7 @@ export default {
       }
       this.setPage(pageNumber);
       this.gotopage = "";
- 
+
     },
     setPage: function (pageNumber) {
       this.currentPage = pageNumber;
@@ -870,7 +870,7 @@ export default {
       //Call new data from api here
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
-   
+
       } else {
         this.offset = 0;
       }
