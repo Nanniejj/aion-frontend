@@ -53,7 +53,7 @@
                                     <img v-if="selectedSource == 'threads'" src="@/assets/Threads.png"
                                         class="social-img" />
                                 </span>
-                                <span v-else class="left">
+                                <span v-if="selectedSource === 'all'" class="left">
                                     <b-avatar class="" size="45" text="All" style="background-color: #fed16e;left: -30px;"></b-avatar>
                                 </span>
                             </span>
@@ -87,7 +87,7 @@
                                 >
                                     {{ valueDate }}
                                 </date-picker>
-                                <b-button v-if="selectedSource" variant="info" pill :pressed="false" @click="selectedSource = null" class="shadow-r px-4 my-4">All Platform</b-button>
+                                <b-button v-if="selectedSource !== 'all'" variant="info" pill :pressed="false" @click="selectedSource = 'all'" class="shadow-r px-4 my-4">All Platform</b-button>
                             </b-col>
                         </b-col>
                     </b-row>
@@ -744,6 +744,7 @@ export default {
         },
         setHashtagSource(source) {
             this.selectedSource = source
+            this.apiMonitorProfile();
         },
         setKeyWord(word) {
             this.keyWord = word;
