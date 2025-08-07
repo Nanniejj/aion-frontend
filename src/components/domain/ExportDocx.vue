@@ -8,18 +8,11 @@
       title="Export Report"
     ></i> -->
 
-    <div
-      class="h5 text-right px-3 pt-3 no-print"
-      @click="toDomain"
-      style="cursor:pointer;"
-    >
-      <span
-        style="background: #ede7dd;
+    <div class="h5 text-right px-3 pt-3 no-print" @click="toDomain" style="cursor:pointer;">
+      <span style="background: #ede7dd;
     padding: 2px 10px;
-    border-radius: 10px"
-      >
-        <i class="fa fa-angle-left" aria-hidden="true"></i> กลับ</span
-      >
+    border-radius: 10px">
+        <i class="fa fa-angle-left" aria-hidden="true"></i> กลับ</span>
       <span></span>
     </div>
     <!-- <button @click="exportFile">Export2Word</button>
@@ -36,41 +29,22 @@
           ด้าน{{ getClickDomain }}
           <span class="float-right no-print">
             <!-- <b-spinner small="true" variant="primary" class=""></b-spinner> -->
-            <vue-element-loading
-              :active="loadding"
-              size="38"
-              background-color="rgba(255, 255, 255, 0.5)"
-              color="#fed16e"/>
+            <vue-element-loading :active="loadding" size="38" background-color="rgba(255, 255, 255, 0.5)"
+              color="#fed16e" />
             <!-- <b-icon icon="download" aria-hidden="true"></b-icon> -->
 
             <b-dropdown size="sm" class="d-down" variant="secondary" style="">
               <template #button-content>
-                <i
-                  class="fas fa-file-download"
-                  style="font-size:20px;margin-right:7px;cursor: pointer"
-                  v-b-tooltip.hover
-                  title="Export Report"
-                ></i>
+                <i class="fas fa-file-download" style="font-size:20px;margin-right:7px;cursor: pointer"
+                  v-b-tooltip.hover title="Export Report"></i>
                 Export
               </template>
               <b-dropdown-item @click="exportFile">
-                <i
-                  class="fas fa-file-word"
-                  style="font-size:18px;margin-right:7px;cursor: pointer"
-                  v-b-tooltip.hover
-                  title="Export Report"
-                ></i
-                >Word</b-dropdown-item
-              >
+                <i class="fas fa-file-word" style="font-size:18px;margin-right:7px;cursor: pointer" v-b-tooltip.hover
+                  title="Export Report"></i>Word</b-dropdown-item>
               <b-dropdown-item @click="exportToPowerPoint">
-                <i
-                  class="fas fa-file-powerpoint"
-                  style="font-size:18px;margin-right:7px;cursor: pointer"
-                  v-b-tooltip.hover
-                  title="Export Report"
-                ></i
-                >Powerpoint</b-dropdown-item
-              >
+                <i class="fas fa-file-powerpoint" style="font-size:18px;margin-right:7px;cursor: pointer"
+                  v-b-tooltip.hover title="Export Report"></i>Powerpoint</b-dropdown-item>
             </b-dropdown>
 
             <span class="">
@@ -96,12 +70,8 @@
                 title="Export Report"
               ></i> -->
             </span>
-            <i
-              class="fas fa-print fa-2x d-inline ml-2 mr-2"
-              style="font-size:25px;margin-right:7px;cursor: pointer"
-              @click="printWindow()"
-            ></i
-          ></span>
+            <i class="fas fa-print fa-2x d-inline ml-2 mr-2" style="font-size:25px;margin-right:7px;cursor: pointer"
+              @click="printWindow()"></i></span>
         </div>
         <hr class="pa-5 ma-5 " id="ex-line" />
         <div id="ex-date" class="text-left">
@@ -111,132 +81,72 @@
           <b-col cols="12">
             <StaticDomain class="mt-3" id="statcap" />
           </b-col>
-          <b-col cols="12" md="6"><BarChart id="statbar"/></b-col>
+          <b-col cols="12" md="6">
+            <BarChart id="statbar" />
+          </b-col>
           <b-col cols="12" md="6">
             <div id="ex-hashcloud">
               <div class="h5 mt-3 bold text-left">TOP 10 #Hashtag</div>
-              <div
-                v-for="(hash, k) in getHashtag"
-                :key="k"
-                class="pl-3 py-2 text-left"
-              >
+              <div v-for="(hash, k) in getHashtag" :key="k" class="pl-3 py-2 text-left">
                 {{ k + 1 }} . {{ hash.name }}
               </div>
             </div>
           </b-col>
         </b-row>
         <div class="posts">
-          <div
-            class="text-left d-block h5 py-3 px-4 "
-            style="background: #cfe7de8a;padding: 8px 10px;border-radius: 10px;color:rgb(84, 198, 157)"
-          >
+          <div class="text-left d-block h5 py-3 px-4 "
+            style="background: #cfe7de8a;padding: 8px 10px;border-radius: 10px;color:rgb(84, 198, 157)">
             <img class="text-left" src="@/assets/Pos.png" style="width:22px;" />
             <span class="ml-2 text-left"> Positive Posts</span>
             <span class="float-right no-print">
-              <b-button
-                size="sm"
-                v-if="showPost"
-                class="mx-2"
-                variant="danger"
-                @click="showAllPost('pos')"
-                >ยกเลิก</b-button
-              >
-              <b-button
-                size="sm"
-                v-if="showPost"
-                variant="success"
-                @click="showAllPost('pos','submit')"
-                >ยืนยัน</b-button
-              >
+              <b-button size="sm" v-if="showPost" class="mx-2" variant="danger"
+                @click="showAllPost('pos')">ยกเลิก</b-button>
+              <b-button size="sm" v-if="showPost" variant="success"
+                @click="showAllPost('pos', 'submit')">ยืนยัน</b-button>
               <span v-else>
-                <b-button
-                  size="sm"
-                  variant="outline-success"
-                  @click="showAllPost('pos')"
-                  >เลือกโพสต์</b-button
-                >
-                <i
-                  class="fa fa-refresh mx-2"
-                  style=" cursor:pointer"
-                  aria-hidden="true"
-                  @click="forceRerender('pos')"
-                ></i>
+                <b-button size="sm" variant="outline-success" @click="showAllPost('pos')">เลือกโพสต์</b-button>
+                <i class="fa fa-refresh mx-2" style=" cursor:pointer" aria-hidden="true"
+                  @click="forceRerender('pos')"></i>
               </span>
             </span>
           </div>
           <div class="" v-if="showPost">
-            <PostPositive  :stmpost="1" />
+            <PostPositive :stmpost="1" />
             <!-- <PostPositive  :stmpost="-1" /> -->
           </div>
-          <ExportTopPostCrad
-            v-show="!showPost"
-            class="mt-3 page-break"
-            :typeStm="'pos'"
-            id="post-pos"
-            ref="captureDiv"
-            :key="componentKey"
-     
-          />
+          <ExportTopPostCrad v-show="!showPost" class="mt-3 page-break" :typeStm="'pos'" id="post-pos" ref="captureDiv"
+            :key="componentKey" />
 
-          <div
-            class="text-left d-block h5 py-3 px-4 mt-3"
-            style="background:rgb(247 119 106 / 17%);padding: 8px 10px;
+          <div class="text-left d-block h5 py-3 px-4 mt-3" style="background:rgb(247 119 106 / 17%);padding: 8px 10px;
     border-radius: 10px;
-    color:rgb(247, 119, 106)"
-          >
+    color:rgb(247, 119, 106)">
             <img src="@/assets/Nag.png" style="width:22px;" />
-            <span  class="ml-2 text-left">Negative Posts</span>
+            <span class="ml-2 text-left">Negative Posts</span>
             <span class="float-right no-print">
-              <b-button
-                size="sm"
-                v-if="showPostNeg"
-                class="mx-2"
-                variant="danger"
-                @click="showAllPost('neg')"
-                >ยกเลิก</b-button
-              >
-              <b-button
-                size="sm"
-                v-if="showPostNeg"
-                variant="success"
-                @click="showAllPost('neg','submit')"
-                >ยืนยัน</b-button
-              >
+              <b-button size="sm" v-if="showPostNeg" class="mx-2" variant="danger"
+                @click="showAllPost('neg')">ยกเลิก</b-button>
+              <b-button size="sm" v-if="showPostNeg" variant="success"
+                @click="showAllPost('neg', 'submit')">ยืนยัน</b-button>
               <span v-else>
-                <b-button
-                  size="sm"
-                  variant="outline-danger"
-                  @click="showAllPost('neg')"
-                  >เลือกโพสต์</b-button
-                >
-                <i
-                  class="fa fa-refresh mx-2"
-                  style=" cursor:pointer"
-                  aria-hidden="true"
-                  @click="forceRerender('neg')"                ></i>
+                <b-button size="sm" variant="outline-danger" @click="showAllPost('neg')">เลือกโพสต์</b-button>
+                <i class="fa fa-refresh mx-2" style=" cursor:pointer" aria-hidden="true"
+                  @click="forceRerender('neg')"></i>
               </span>
             </span>
           </div>
           <div class="" v-if="showPostNeg">
-            <PostPositive  :stmpost="-1" />
+            <PostPositive :stmpost="-1" />
             <!-- <PostPositive  :stmpost="-1" /> -->
           </div>
-          <ExportTopPostCrad   v-show="!showPostNeg"    :key="componentKeyNeg" class="my-3" :typeStm="'neg'" id="post-neg" />
+          <ExportTopPostCrad v-show="!showPostNeg" :key="componentKeyNeg" class="my-3" :typeStm="'neg'" id="post-neg" />
         </div>
       </div>
     </b-container>
-    <div
-      class="h5 text-right px-3 pt-3 mb-8"
-      @click="toDomain"
-      style="cursor:pointer;"
-    >
-      <span
-        style="background: #ede7dd;
+    <div class="h5 text-right px-3 pt-3 mb-8" @click="toDomain" style="cursor:pointer;">
+      <span style="background: #ede7dd;
     padding: 2px 10px;
-    border-radius: 10px"
-      >
-        <i class="fa fa-angle-left" aria-hidden="true"></i> กลับ</span
-      >
+    border-radius: 10px">
+        <i class="fa fa-angle-left" aria-hidden="true"></i> กลับ</span>
       <span></span>
     </div>
     <!-- </vue-modaltor> -->
@@ -267,7 +177,7 @@ function svgToPng(svg, width, height, callback) {
   svgImage.src = "data:image/svg+xml," + encodeURIComponent(svg);
 
   // Wait for the image to load
-  svgImage.onload = function() {
+  svgImage.onload = function () {
     // Create a canvas element with the specified dimensions
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -350,16 +260,16 @@ export default {
 
   methods: {
     forceRerender(type) {
-      if(type=='pos'){
+      if (type == 'pos') {
         this.componentKey += 1;
-      }else{
+      } else {
         this.componentKeyNeg += 1;
       }
     },
-    showAllPost(type,data) {
-      if(type=='pos'){
+    showAllPost(type, data) {
+      if (type == 'pos') {
         this.showPost = !this.showPost;
-      }else{
+      } else {
         this.showPostNeg = !this.showPostNeg;
       }
       if (data == "submit") {
@@ -388,7 +298,7 @@ export default {
       this.$store.commit("setShowReport", false);
     },
 
-    printWindow: function() {
+    printWindow: function () {
       this.$nextTick(() => {
         try {
           window.print();
@@ -411,7 +321,7 @@ export default {
     resizeImage(dataUrl, newWidth, newHeight) {
       return new Promise((resolve) => {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
           if (!newHeight && !newWidth) {
             // If both newHeight and newWidth are not provided, use the original size
             newWidth = img.width;
@@ -447,7 +357,7 @@ export default {
           letterRendering: 1,
           allowTaint: true,
           useCORS: true,
-          onrendered: function(canvas) {
+          onrendered: function (canvas) {
             return canvas.toDataURL("image/png");
           },
         });
@@ -646,7 +556,7 @@ export default {
                 }
                 yCoordinate2 += 0.2;
               });
-          
+
             } else {
               slide2.addText(1 + ".) ที่มารูป : " + x.photos, {
                 x: 5.2,
@@ -1339,7 +1249,7 @@ export default {
         if (error) {
           throw error;
         }
-        console.log('tagValue',imageModule);
+        console.log('tagValue', imageModule);
         const zip = new PizZip(content);
         const doc = new Docxtemplater(zip, {
           paragraphLoop: true,
@@ -1536,31 +1446,35 @@ export default {
 </script>
 <style scoped>
 @media only screen and (min-width: 0px) and (max-width: 760px) {
- .posts > .h5{
+  .posts>.h5 {
     font-size: 14px !important;
   }
-  
-} 
 
+}
 </style>
 <style>
 .d-down .btn-secondary {
   background-color: #4c412d !important;
   border-color: #4c412d !important;
 }
+
 @media print {
   .print-text.d-none {
     display: inline;
   }
+
   .no-print {
     display: none;
   }
+
   #ex-hashcloud {
     column-count: 2;
   }
+
   .page-break {
     page-break-after: always;
   }
+
   .progress {
     background-image: none;
     -webkit-print-color-adjust: exact;

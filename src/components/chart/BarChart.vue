@@ -136,6 +136,7 @@ export default {
             "getEdateDm",
             "getArrDate",
             "getDateReport",
+            "getClickDomainId"
         ]),
         getSeries: function () {
             return [
@@ -180,8 +181,8 @@ export default {
                     endrp;
             } else {
                 urlapi =
-                    "https://api2.cognizata.com/api/v2/userposts/getTotalPosts?domain=" +
-                    this.getClickDomain +
+                    "https://api2.cognizata.com/api/v2/userposts/getTotalPosts?domain_id=" +
+                    this.getClickDomainId +
                     sdate +
                     edate;
             }
@@ -296,8 +297,8 @@ export default {
                 endrp;
         } else {
             urlapi =
-                "https://api2.cognizata.com/api/v2/userposts/getTotalPosts?domain=" +
-                this.getClickDomain +
+                "https://api2.cognizata.com/api/v2/userposts/getTotalPosts?domain_id=" +
+                this.getClickDomainId +
                 sdate +
                 edate;
         }

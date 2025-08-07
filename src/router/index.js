@@ -103,6 +103,16 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "wordcloud" */ "../views/Wordcloud.vue")
   },
+   {
+    path: "/wordcloudnew",
+    name: "WordcloudNew",
+    props: true,
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "wordcloud" */ "../views/WordcloudNew.vue")
+  },
   {
     path: "/ranking",
     name: "Ranking",

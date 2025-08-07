@@ -424,6 +424,7 @@ export default {
       "getArrDate",
       "getClickDomain",
       "getLoadTopUser",
+      "getClickDomainId"
     ]),
   },
   watch: {
@@ -467,8 +468,8 @@ export default {
       var config = {
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain=" +
-          this.getClickDomain +
+          "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain_id=" +
+          this.getClickDomainId +
           sdate +
           edate,
         // +"&source="+this.source,
@@ -508,8 +509,8 @@ export default {
     var config = {
       method: "get",
       url:
-        "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain=" +
-        this.getClickDomain +
+        "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain_id=" +
+        this.getClickDomainId +
         sdate +
         edate,
       // +"&source="+this.source,

@@ -698,6 +698,7 @@ export default {
       "getAllPostDomain",
       "getNamePlatform",
       "getDomainArr",
+      "getClickDomainId"
     ]),
     dataPost() {
       let data = [];
@@ -867,7 +868,7 @@ export default {
         sentiment: 1,
         sort_by: "engagement",
         offset: 0,
-        domain: this.getClickDomain,
+        domain: this.getClickDomainId,
       });
     }
     if (this.typeStm == "neg") {
@@ -878,7 +879,7 @@ export default {
         sentiment: -1,
         sort_by: "engagement",
         offset: 0,
-        domain: this.getClickDomain,
+        domain: this.getClickDomainId,
       });
     }
 
@@ -886,8 +887,8 @@ export default {
       this.pageCheck = this.$route.name;
       await this.axios
         .get(
-          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-          this.getClickDomain
+          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain_id=" +
+          this.getClickDomainId
         )
         .then((response) => (this.arrword = response.data[0]));
       var k = this.arrword.Keywords;

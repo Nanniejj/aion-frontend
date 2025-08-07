@@ -26,7 +26,7 @@ export default {
     apexchart: VueApexCharts,
   },
   computed: {
-    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate"]),
+    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate","getClickDomainId"]),
   },
   props: {
     typeChart: { type: String },
@@ -429,8 +429,8 @@ export default {
       var config = {
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getChartDomainFilter?domain=" +
-          this.getClickDomain +
+          "https://api2.cognizata.com/api/v2/userposts/getChartDomainFilter?domain_id=" +
+          this.getClickDomainId +
           sdate +
           edate +
           label,

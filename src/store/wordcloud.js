@@ -37,6 +37,7 @@ export default {
     sentimentinstagram: [],
     sentimentnews: [],
     sentimentbd: [],
+    sentimentth: [],
     sentimenttiktok: [],
     sentimenthashtag: [],
     sentimenthashtagchart: [],
@@ -59,6 +60,7 @@ export default {
     sentimentnewspost: 0,
     sentimentbdpost: 0,
     sentimenttiktokpost: 0,
+    sentimentthpost: 0,
 
     sentimentallcomment: 0,
     sentimentfacebookcomment: 0,
@@ -202,6 +204,9 @@ export default {
     getSentimentBlockdit: (state) => {
       return state.sentimentbd;
     },
+    getSentimentThreads: (state) => {
+      return state.sentimentth;
+    },
     getSentimentHashtag: (state) => {
       return state.sentimenthashtag;
     },
@@ -253,6 +258,9 @@ export default {
     },
     getSentimentBlockditPost: (state) => {
       return state.sentimentbdpost;
+    },
+    getSentimentThreadsPost: (state) => {
+      return state.sentimentthpost;
     },
     getSentimentTiktokPost: (state) => {
       return state.sentimenttiktokpost;
@@ -457,6 +465,9 @@ export default {
     setSentimentBlockdit: (state, payload) => {
       state.sentimentbd = payload;
     },
+    setSentimentThreads: (state, payload) => {
+      state.sentimentth = payload;
+    },
     setSentimentTiktok: (state, payload) => {
       state.sentimenttiktok = payload;
     },
@@ -519,6 +530,9 @@ export default {
     },
     setSentimentBlockditPost: (state, payload) => {
       state.sentimentbdpost = payload;
+    },
+    setSentimentThreadsPost: (state, payload) => {
+      state.sentimentthpost = payload;
     },
     setSentimentTiktokPost: (state, payload) => {
       state.sentimenttiktokpost = payload;
@@ -643,7 +657,7 @@ export default {
         let result = ["Name", "Positive", "Neutral", "Negative"];
 
         let wordChart = res.data.data.wordcloud.data;
-       
+
         commit("setWordChart", wordChart);
         let temp = [];
         for (var i = 0; i < 10; i++) {
@@ -654,15 +668,14 @@ export default {
             wordChart[i].count[2].count,
           ]);
         }
-        
+
         commit("setWordCloudWordChart", [result, ...temp]);
-        
 
         let temp1 = [];
         for (var j = 0; j < 10; j++) {
           temp1.push([wordChart[j].name]);
         }
-        
+
         commit("setWordCloudWordName", temp1);
 
         let hashtagChart = res.data.data.hashtag.data;
@@ -702,7 +715,7 @@ export default {
         const res = await WordcloudService.getWordCloudSentiment(payload);
         commit("setWordCloudSentiment", res.data);
         commit("setLoadStatus", false);
-        console.log('5555',res.data);
+        console.log("5555", res.data);
       } catch (error) {
         console.log(error.response);
       }
@@ -753,17 +766,7 @@ export default {
       axios(config)
         .then((response) => {
           let res = response.data[0];
-          //   {
-          //     "likes_count": 96,
-          //     "comments_count": 18,
-          //     "retweets_count": 0,
-          //     "engagement": 116,
-          //     "totalPost": 21,
-          //     "positiveSentiment": 15,
-          //     "neutralSentiment": 1,
-          //     "negativeSentiment": 5,
-          //     "Accounts": 7
-          // }
+        
           all = {
             negative: res.negativeSentiment,
             neutral: res.neutralSentiment,
@@ -794,6 +797,9 @@ export default {
           } else if (payload.social == "blockdit") {
             commit("setSentimentBlockditPost", res);
             commit("setSentimentBlockdit", all);
+          } else if (payload.social == "threads") {
+            commit("setSentimentThreadsPost", res);
+            commit("setSentimentThreads", all);
           } else {
             commit("setSentimentAllPost", res);
             commit("setSentimentAll", all);
@@ -1302,6 +1308,8 @@ export default {
     },
     async fetchSentimentDetail({ commit }, payload) {
       commit("setLoadPostCloud", true);
+      console.log("payload", payload);
+
       try {
         const res = await WordcloudService.getSentimentDetail(payload);
         var post = res.data.data;
@@ -1309,7 +1317,9 @@ export default {
         var posts = post.map((result) => {
           return { ...result, ...pair };
         });
-       commit("setSentimentDetail", res.data);
+        console.log("res", res);
+
+        commit("setSentimentDetail", res.data);
         commit("setDetailPost", posts);
         commit("setLoadPostCloud", false);
       } catch (error) {
@@ -1325,7 +1335,7 @@ export default {
         var posts = post.map((result) => {
           return { ...result, ...pair };
         });
-       
+
         commit("setSentimentHashtagDetail", res.data);
         commit("setDetailHashPost", posts);
         commit("setLoadPostHash", false);

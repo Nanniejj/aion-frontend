@@ -106,7 +106,7 @@
             class="btn btn-save"
             size="sm"
             @click="addRowWord"
-            :disabled="!addKeyword.length"
+            :disabled="!addKeyword.length && !addInclude.length"
             >บันทึก</b-button
           >
         </b-col>

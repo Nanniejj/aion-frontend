@@ -12,38 +12,22 @@
       </div>
     </div>
     <div class="mt-3 mb-3 box-domain">
-      <vue-element-loading
-        :active="getLoadWordCloud"
-        size="80"
-        background-color="rgba(255, 255, 255, 0.5)"
-        color="#b6ac9a"
-      />
-      <b-row class="w-100" >
+      <vue-element-loading :active="getLoadWordCloud" size="80" background-color="rgba(255, 255, 255, 0.5)"
+        color="#b6ac9a" />
+      <b-row class="w-100">
         <b-col class="text-left" lg="6">
           <div class="card-tt">Wordcloud</div>
           <div class="font-weight-normal m-3" v-if="!getWordCloudImg">
             ไม่พบข้อมูล
           </div>
-          <img
-            v-else
-            :src="myImage"
-            id="img-tab"
-            style="width: 100%"
-            class="p-2 mb-3"
-          />
+          <img v-else :src="myImage" id="img-tab" style="width: 100%" class="p-2 mb-3" />
         </b-col>
         <b-col class="text-left" lg="6">
           <div class="card-tt">Hashtagcloud</div>
           <div class="font-weight-normal m-3" v-if="!getWordCloudHash">
             ไม่พบข้อมูล
           </div>
-          <img
-            v-else
-            :src="myImagehash"
-            id="img-tab"
-            style="width: 100%"
-            class="p-2 mb-3"
-          />
+          <img v-else :src="myImagehash" id="img-tab" style="width: 100%" class="p-2 mb-3" />
         </b-col>
       </b-row>
     </div>
@@ -70,6 +54,7 @@ export default {
       "getSdateDm",
       "getEdateDm",
       "getArrDate",
+      "getClickDomainId"
     ]),
     myImage() {
       if (this.getWordCloudImg) {
@@ -109,6 +94,8 @@ export default {
       start_date: this.sdate,
       end_date: this.edate,
       domain: this.getClickDomain,
+      // domain_ids:this.getClickDomainId,
+
       //   monitor: this.selected
     });
   },
@@ -127,6 +114,7 @@ export default {
   box-shadow: 0 3px 4px 0 rgb(0 0 0 / 20%);
   background: #fbf7f6;
 }
+
 .box-domain {
   width: 100%;
   height: auto;
@@ -137,6 +125,6 @@ export default {
   align-items: center;
   justify-content: center;
 }
-@media only screen and (min-width: 0px) and (max-width: 991px) {
-}
-</style>  
+
+@media only screen and (min-width: 0px) and (max-width: 991px) {}
+</style>

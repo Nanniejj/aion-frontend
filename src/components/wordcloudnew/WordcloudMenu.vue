@@ -1,5 +1,5 @@
 <template>
-  <div id="content" >
+  <div id="content">
     <b-row align-h="center">
       <b-col class="d-contents">
         <h1 class="title">Wordcloud</h1>
@@ -10,102 +10,75 @@
             <span>Today</span>
             {{ new Intl.DateTimeFormat("en-AU").format() }}
           </span>
-          <span class="pt-3"
-            ><i class="fa fa-print align-middle" @click="printWindow()"></i
-          ></span>
+          <span class="pt-3"><i class="fa fa-print align-middle" @click="printWindow()"></i></span>
         </div>
       </b-col>
     </b-row>
 
-    <b-container class="footer_magin pr-lg-5 pl-lg-5">
-       <vue-element-loading
-      :active="getLoadStatus"
-      size="80"
-      background-color="rgba(255, 255, 255, 0.5)"
-      color="#b6ac9a"
-    />
-      <b-row align-h="center" class="d-none">
-        <b-col>
-          <input
-            type="text"
-            class="form-control md-font"
-            v-model="word"
-            placeholder="ค้นหา"
-          />
+
+    <div class="footer_magin pr-lg-5 pl-lg-5">
+      <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.5)"
+        color="#b6ac9a" />
+
+      <b-row>
+        <b-col cols="12" md="4">
+          <v-select class="mb-3" :options="formattedDomainOptions" v-model="domain_name" label="name"
+            :reduce="d => d.name" placeholder="เลือก Domain" @input="selectDomain" multiple style="width:100%" />
         </b-col>
+        <b-col cols="12" md="3">
+          <div class="mb-2 text-lg-right text-sm-center">
+            <section id="date-picker">
+              <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" size="md"
+                :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
+                @change="checkDateRange()" class="w-100">{{ valueDate }}</date-picker>
+            </section>
+          </div>
+        </b-col>
+        <b-col class="text-right" cols="12" md="auto">
+          <b-form-group label="" v-slot="{ ariaDescribedby }">
+            <b-form-radio-group v-model="selected" :options="options" :aria-describedby="ariaDescribedby"
+              name="radio-inline" class="mt-2"></b-form-radio-group>
+          </b-form-group>
+        </b-col>
+         <b-col cols="12" md="" class="text-center">
+              <b-button  variant="info"  @click="summitform()" pill  class="w-80 px-4">
+                ค้นหา
+              </b-button>
+            </b-col>
       </b-row>
-      <b-row align-h="center" class="mt-3 md-font">
+      <b-row class="d-none">
         <b-col cols="12">
           <b-row>
-            <b-col cols="auto">
-              <div style="text-align: start" class="my-2 bold">Domain</div>
+            <b-col>
+
+              <v-select class="mb-3" :options="formattedDomainOptions" v-model="domain_name" label="name"
+                :reduce="d => d.name" placeholder="เลือก Domain" @input="selectDomain" multiple style="width:100%" />
+              <select name="list" v-model="domain_name" class="form-control md-font" multiple>
+                <option value="Alls">เลือกทั้งระบบ</option>
+                <option value="All">เลือกทุก Domain</option>
+                <option v-for="domain in getShowDomain" :key="domain.id">
+                  {{ domain.name }}
+                </option>
+              </select>
             </b-col>
-            <b-col class="text-right" cols="auto" lg="">
-              <b-form-group label="" v-slot="{ ariaDescribedby }">
-                <b-form-radio-group
-                  v-model="selected"
-                  :options="options"
-                  :aria-describedby="ariaDescribedby"
-                  name="radio-inline"
-                  class="mt-2"
-                ></b-form-radio-group>
-              </b-form-group>
-            </b-col>
-            <b-col sm="" lg="auto" md="auto">
-              <div class="mb-2 text-lg-right text-sm-center">
-                <section id="date-picker">
-                  <date-picker
-                    v-model="valueDate"
-                    type="date"
-                    range
-                    placeholder="เลือกช่วงเวลา"
-                    size="md"
-                    :disabled-date="(date) => date >= new Date()"
-                    value-type="format"
-                    format="YYYY-MM-DD"
-                    @change="checkDateRange()"
-                    >{{ valueDate }}</date-picker
-                  >
-                </section>
-              </div>
+          </b-row>
+
+          <b-row align-h="center" style="margin-top: 15px">
+            <b-col cols="10">
+              <b-button  class="btn submit md-font" @click="summitform()">
+                ค้นหา
+              </b-button>
             </b-col>
           </b-row>
         </b-col>
-      </b-row>
-      <b-row align-h="center">
         <b-col>
-          <!-- <v-select class="mb-3" :options="formattedDomainOptions"  v-model="domain_name" label="name" :reduce="d => d.name"
-            placeholder="เลือก Domain"  @input="selectDomain" multiple />
-  -->
 
-          <select
-            name="list"
-            v-model="domain_name"
-            class="form-control md-font"
-            multiple
-          >
-            <option value="Alls">เลือกทั้งระบบ</option>
-            <option value="All">เลือกทุก Domain</option>
-            <option v-for="domain in getShowDomain" :key="domain.id">
-              {{ domain.name }}
-            </option>
-          </select>
         </b-col>
       </b-row>
-      <b-row align-h="center" style="margin-top: 15px">
-        <b-col cols="10">
-          <button
-            type="submit"
-            class="btn submit md-font"
-            @click="summitform()"
-          >
-            Submit
-          </button>
-        </b-col>
-      </b-row>
-    </b-container>
-        <hr class="mt-5 mb-3 mr-5 ml-5" />
-    <DefaultCloud />
+
+    </div>
+    <hr class="mt-5 mb-3 mr-5 ml-5" />
+    <!-- <DefaultCloud /> -->
   </div>
 </template>
 
@@ -150,14 +123,14 @@ export default {
       "getLoadStatus",
       "getSelectedMonitor"
     ]),
-    // formattedDomainOptions() {
-    //   return [
-    //     { id: 'Alls', name: 'เลือกทั้งระบบ' },
-    //     { id: 'All', name: 'เลือกทุก Domain' },
-    //     ...this.getShowDomain,
-    //   ];
-    // },
-    
+    formattedDomainOptions() {
+      return [
+        { id: 'Alls', name: 'เลือกทั้งระบบ' },
+        { id: 'All', name: 'เลือกทุก Domain' },
+        ...this.getShowDomain,
+      ];
+    },
+
   },
   methods: {
     checkDateRange() {
@@ -169,7 +142,7 @@ export default {
       if (diffDays > 31) {
         alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
         this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
-      }else{
+      } else {
         this.selectData(); // Call your existing method
       }
     },
@@ -202,22 +175,22 @@ export default {
     summitform: function () {
       this.keyword = this.word;
       this.date = this.type_selected;
-console.log('domainjaa',this.domain_name);
-      if (this.domain_name == "Alls"||this.domain_name.length==0) {
+      console.log('domainjaa', this.domain_name);
+      if (this.domain_name == "Alls" || this.domain_name.length == 0) {
         this.domain_name = "";
       }
       this.$store.commit("setSelected", true);
       this.$store.commit("setWordCloudDomain", this.domain_name);
       this.$store.commit("setKeywords", this.word);
       this.$store.commit("setSelectedMonitor", this.selected);
-      console.log("kw",   this.getSelectedMonitor);
+      console.log("kw", this.getSelectedMonitor);
       console.log("domain_name", this.domain_name);
 
       if (this.valueDate == "") {
         var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
         var todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
         console.log("monitor", this.selected);
-        this.$store.commit('setWordCloud',"")
+        this.$store.commit('setWordCloud', "")
         this.$store.dispatch("fetchWordCloud", {
           start_date: todays,
           end_date: todaye,
@@ -230,7 +203,7 @@ console.log('domainjaa',this.domain_name);
         this.$store.commit("setWordCloudEndDate", todaye);
         this.$router.push({ name: "WordcloudSentiment" });
       } else {
-          this.$store.commit('setWordCloud',"")
+        this.$store.commit('setWordCloud', "")
         this.$store.dispatch("fetchWordCloud", {
           start_date: this.start_date,
           end_date: this.end_date,
@@ -253,10 +226,12 @@ console.log('domainjaa',this.domain_name);
 .rounded {
   border-radius: 6px !important;
 }
+
 .fa-print {
   font-size: 25px;
   cursor: pointer;
 }
+
 #content {
   max-width: 93%;
   margin: auto;
@@ -264,6 +239,7 @@ console.log('domainjaa',this.domain_name);
   min-height: 100vh;
   padding: 0;
 }
+
 #navHome {
   z-index: 1;
 }
@@ -275,6 +251,7 @@ console.log('domainjaa',this.domain_name);
   border-radius: 3pt;
   margin: auto;
 }
+
 .domain {
   margin-top: 20pt;
   margin-left: -31rem;
@@ -301,15 +278,16 @@ console.log('domainjaa',this.domain_name);
 .dropdown-toggle::after {
   margin-left: 7em;
 }
+
 .btn-primary:not(:disabled):not(.disabled).active,
 .btn-primary:not(:disabled):not(.disabled):active,
-.show > .btn-primary.dropdown-toggle {
+.show>.btn-primary.dropdown-toggle {
   color: #4c412b;
   background-color: #ede7dd;
   border-color: transparent;
 }
 
-.show > .btn-primary.dropdown-toggle:focus {
+.show>.btn-primary.dropdown-toggle:focus {
   box-shadow: none !important;
 }
 
@@ -325,41 +303,51 @@ console.log('domainjaa',this.domain_name);
   border-radius: 9px;
   font-weight: bold;
 }
+
 @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
   #overflow-page {
     overflow: hidden;
   }
 }
+
 @media only screen and (min-width: 950px) and (max-width: 1150px) {
   .date {
     margin-top: 20pt;
     margin-left: 11.5rem;
     margin-bottom: 10pt;
   }
+
   .d-contents {
     font-size: small !important;
   }
+
   .rounded {
     font-size: small;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 600px) {
   .rounded {
     font-size: small;
   }
+
   .fa-print {
     font-size: 20px;
     margin-right: 5px;
   }
+
   .p-4 {
     padding: 15px 0px !important;
   }
+
   .d-contents {
     display: contents !important;
   }
+
   .title {
     font-size: 5vw !important;
   }
+
   .col-10 {
     max-width: 100%;
   }
