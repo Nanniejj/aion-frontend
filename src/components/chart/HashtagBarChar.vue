@@ -102,6 +102,7 @@ export default {
                 chart: {
                     type: "bar",
                     // height: 535,
+                     fontFamily: "Prompt, FontAwesome, sans-serif",
                     toolbar: { show: false },
                 },
                 grid: {
@@ -146,7 +147,7 @@ export default {
                     textAnchor: "start",
                     style: {
                         colors: ["#000000"],
-                        fontSize: "11px",   // <-- เพิ่มบรรทัดนี้เพื่อลดขนาดตัวอักษร
+                        fontSize: "12.5px",   // <-- เพิ่มบรรทัดนี้เพื่อลดขนาดตัวอักษร
                         // fontWeight: "normal" // ถ้าต้องการปรับน้ำหนักตัวอักษรด้วย (optional)
                     },
                     //   formatter: function(val) {

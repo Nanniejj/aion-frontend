@@ -155,11 +155,11 @@ export default {
                 toolbar: {
                     show: false
                 },
-                legend: {
-                    // show: false
+                legend: {     
                     position: 'bottom'
                 },
                 chart: {
+                     fontFamily: "Prompt, FontAwesome, sans-serif",
                     toolbar: {
                         show: true, // ✅ เปิด toolbar
                         tools: {

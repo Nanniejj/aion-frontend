@@ -1,5 +1,5 @@
 <template>
-  <div id="content">
+  <div >
     <b-row align-h="center">
       <b-col class="d-contents">
         <h1 class="title">Wordcloud</h1>
@@ -21,9 +21,9 @@
         color="#b6ac9a" />
 
       <b-row>
-        <b-col cols="12" md="4">
+        <b-col cols="12" md="3">
           <v-select class="mb-3" :options="formattedDomainOptions" v-model="domain_name" label="name"
-            :reduce="d => d.name" placeholder="เลือก Domain" @input="selectDomain" multiple style="width:100%" />
+            :reduce="d => d.name" placeholder="เลือก Domain" multiple style="width:100%" />
         </b-col>
         <b-col cols="12" md="3">
           <div class="mb-2 text-lg-right text-sm-center">
@@ -40,7 +40,7 @@
               name="radio-inline" class="mt-2"></b-form-radio-group>
           </b-form-group>
         </b-col>
-         <b-col cols="12" md="" class="text-center">
+         <b-col cols="12" md="auto" class="text-center">
               <b-button  variant="info"  @click="summitform()" pill  class="w-80 px-4">
                 ค้นหา
               </b-button>

@@ -687,7 +687,7 @@ export default {
                 //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
-                    ...(isHashtagList ? { hashtag: this.$route.query.uid } : { account: this.$route.query.uid }),
+                    ...(isHashtagList ? { hashtags: this.$route.query.uid } : { account: this.$route.query.uid }),
                      ...(this.source !== 'all' ? { source: this.source } : {}), // ✅ ลบ key ถ้า source = 'all'
                     // source: this.$route.query.source,
                     ...(this.keyWord ? { query: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
@@ -719,13 +719,13 @@ export default {
                     this.offset = response.data.next_offset
                 }
                 // เพิ่ม showAll = false แล้วรวมกับ posts เดิม
-                const newPostsWithFlag = filteredNewPosts.map(post => ({
+                const newPostsWithFlag = newData.map(post => ({
                     ...post,
                     showAll: false,
                 }));
 
                 // this.posts = [...this.posts, ...newPostsWithFlag];
-                this.posts = newData
+                this.posts =  newPostsWithFlag;
                 this.$emit('totalPost', this.total);
             })
             .catch((error) => {
