@@ -561,6 +561,7 @@
             @totalPost="data =>totalPost = data"
             @update:start="data => valueDate[0] = data"
             @update:end="data => valueDate[1] = data"
+            @update-source="data => selectedSource = data"
         />
     </div>
 </template>
@@ -691,6 +692,17 @@ export default {
     },
     methods: {
         checkLocation() {
+            if (!this.profile.location || this.profile.location.length === 0) {
+                console.log("ไม่มีข้อมูล location");
+                this.province_id = null;
+                this.district_id = null;
+                this.subDistrict_id = null;
+                this.selectedProvince = null;
+                this.selectedDistrict = null;
+                this.selectedSubDistrict = null;
+                return; // ออกจากฟังก์ชันทันที
+            }
+
             const location = this.profile.location[0];
             console.log("location === ", location);
 
@@ -720,7 +732,6 @@ export default {
                 subDistrict_id
             });
 
-            // ถ้าต้องการเซตค่าให้ data ใน Vue instance
             this.province_id = province_id;
             this.district_id = district_id;
             this.subDistrict_id = subDistrict_id;

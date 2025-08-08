@@ -102,6 +102,7 @@ export default {
                 chart: {
                     type: "bar",
                     // height: 535,
+                    toolbar: { show: false },
                 },
                 grid: {
                     xaxis: {

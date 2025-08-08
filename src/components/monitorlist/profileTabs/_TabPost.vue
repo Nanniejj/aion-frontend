@@ -21,7 +21,7 @@
                         <img v-if="source == 'tiktok'" src="@/assets/Tiktok.png" class="social-imgs" />
                         <img v-if="source == 'threads'" src="@/assets/Threads.png" class="social-imgs" />
                         <b-avatar text="All" size="35" style="background-color: #fed16e;"
-                            v-if="source == null"></b-avatar>
+                            v-if="source == 'all'"></b-avatar>
                     </div>
                     <div class="col pl-0 ">
                         <div v-if="keyWord">
@@ -29,7 +29,6 @@
                             <span v-else>{{ keyWord }}</span>
                             <span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
                             <i @click="resetKeyWord" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
-                            
                         </div>
                         <!-- <div v-else-if="tabTitle == 'hashtagTab'">
                             <span v-if="keyWord == ''"> All</span>
@@ -40,8 +39,14 @@
                             <span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
                         </div>
                     </div>
-                    <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0 text-right">
+                    <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0 text-right d-flex">
                         <!-- วันที่ : {{ start }} - {{ end }} -->
+                        <b-form-select 
+                            v-if="this.$route.query.type === 'hashtaglist'" 
+                            class="mr-3" id="source-select" 
+                            v-model="source" :options="sourceOptions"
+                            @change="exportSource"
+                        ></b-form-select>
                         <date-picker
                             v-model="valueDate"
                             type="date"
@@ -159,7 +164,7 @@
                                             v-if="i === 3 && post.photos.length > 4"
                                             class="overlay-more"
                                             @click="openGallery(3, post.photos)"
-                                            >
+                                        >
                                             +{{ post.photos.length - 4 }}
                                         </div>
                                         </div>
@@ -206,27 +211,27 @@
                                 </span>
         
                                 <!-- comments -->
-                                <b-badge variant="light" style="font-size: 14px;color: #2c3e50; background-color: #ddddddad !important;">
+                                <!-- <b-badge variant="light" style="font-size: 14px;color: #2c3e50; background-color: #ddddddad !important;"> -->
                                     <span v-b-toggle="'btn'+ post._id" id="box-reaction" v-b-tooltip.hover title="Comments">
                                 
-                                        <i class="fas fa-comment" :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer"></i>
+                                        <i class="fas fa-comment mr-2" :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer"></i>
                             
-                                        <span class="md-font" v-if="post.comments_count && post.source == 'news'">
+                                        <span class="md-font " v-if="post.comments_count && post.source == 'news'">
                                             {{ post.comments.comments.length | numFormat }}&nbsp;
                                         </span>
                                         <span v-else class="md-font">{{ post.comments_count | numFormat }}&nbsp;</span>
                                     </span>
-                                </b-badge>
-                                <b-badge v-if="post.source == 'facebook'" variant="light" class="p-1 ml-2" style="font-size: 14px;color: #2c3e50; background-color: #ddddddad !important;">
+                                <!-- </b-badge> -->
+                                <span v-if="post.source == 'facebook'" class="px-1 ml-2" id="box-reaction">
                                     <i class="far fa-thumbs-up" />
-                                    <span v-if="post.likes_count !== '0' && post.likes_count" id="box-reaction" v-b-tooltip.hover title="Like">
+                                    <span v-if="post.likes_count !== '0' && post.likes_count" v-b-tooltip.hover title="Like">
                                             
                                             {{ post.likes_count | numFormat }}
                                     </span>
                                     <span v-else>
                                         0
                                     </span>
-                                </b-badge>
+                                </span>
         
                                 <!-- twitter -->
                                 <span v-if="
@@ -284,21 +289,22 @@
                                     <!-- fb -->
         
                                     <span v-if="post.reaction.Likes">
-                                    <span v-if="post.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                                        <img v-if="post.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
-                                        <span class="md-font" v-if="post.reaction.Likes !== '0'">
-                                        {{ post.reaction.Likes | numFormat }}
+                                        <span v-if="post.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                                            <img v-if="post.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
+                                            <span class="md-font" v-if="post.reaction.Likes !== '0'">
+                                            {{ post.reaction.Likes | numFormat }}
+                                            </span>
                                         </span>
-                                    </span>
                                     </span>
         
                                     <span v-if="post.reaction.like">
-                                    <span v-if="post.reaction.like !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
-                                        <img v-if="post.reaction.like !== '0'" src="@/assets/fb_like.png" id="emoji" />
-                                        <span class="md-font" v-if="post.reaction.like !== '0'">
-                                        {{ post.reaction.like | numFormat }}
+                                        <span v-if="post.reaction.like !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                                            <img v-if="post.reaction.like !== '0'" src="@/assets/fb_like.png" id="emoji" />
+                                            <span class="md-font" v-if="post.reaction.like !== '0'">
+                                            {{ post.reaction.like | numFormat }}
+                                            </span>
                                         </span>
-                                    </span></span>
+                                    </span>
         
                                     <span v-if="post.reaction.share">
                                     <span v-if="post.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
@@ -544,15 +550,16 @@ export default {
     },
     
     data() {
-        const today = moment();
-        const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
+        // const today = moment();
+        // const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
         return {
             currentPage: 1,
             totalRows:0,
             perPage:10,
             offset: 0,
+            platform: null,
             getLoadPostTab: false,
-            selected: [1,0,-1],
+            selected: null,
             selectedSort: "",
             valueDate: [],
             // valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
@@ -568,13 +575,25 @@ export default {
                 { text: "Positive", value: 1 },
                 { text: "Neutral", value: 0 },
                 { text: "Negative", value: -1 },
-                { text: "ทั้งหมด", value: [1,0,-1] },
+                { text: "ทั้งหมด", value: null },
             ],
             optionSort: [
                 { value: "", text: " โพสต์ล่าสุด" },
                 { value: "descend", text: "โพสต์เริ่มต้น" },
                 { value: "engagement", text: "Engagement" },
             ],
+            sourceOptions: [
+                { value: 'all', text: 'All Platform' },
+                { value: 'facebook', text: 'Facebook' },
+                { value: 'twitter', text: 'X' },
+                { value: 'pantip', text: 'Board' },
+                { value: 'news', text: 'News' },
+                { value: 'youtube', text: 'YouTube' },
+                { value: 'instagram', text: 'Instagram' },
+                { value: 'blockdit', text: 'Blockdit' },
+                { value: 'tiktok', text: 'Tiktok' },
+                { value: 'threads', text: 'Threads' }
+            ]
         };
     },
     computed: {
@@ -587,6 +606,9 @@ export default {
         this.valueDate = [this.start,this.end]
     },
     methods: {
+        exportSource() {
+            this.$emit('update-source',this.source )
+        },
         onPageChange(){
             console.log("current page : ", this.currentPage);
             this.offset = (this.currentPage - 1) * 10
@@ -661,11 +683,12 @@ export default {
             this.getLoadPostTab = true;
             const config = {
                 method: "get",
-                url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
+                url: "https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/",
+                //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
                     ...(isHashtagList ? { hashtag: this.$route.query.uid } : { account: this.$route.query.uid }),
-                    source: this.source,
+                     ...(this.source !== 'all' ? { source: this.source } : {}), // ✅ ลบ key ถ้า source = 'all'
                     // source: this.$route.query.source,
                     ...(this.keyWord ? { query: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
                     sort_by: this.selectedSort,
@@ -720,6 +743,7 @@ export default {
         // } else {
 
         // }
+        this.platform = this.source; 
         if (this.$route.query.type !== 'targetlist') {
             this.valueDate = [this.start, this.end];
             this.selectDate();
@@ -744,7 +768,8 @@ export default {
             this.valueDate = [newStart, newEnd];
 
             // เรียก API แบบ debounce
-            this.scheduleChartUpdate();
+                // this.scheduleChartUpdate();
+                this.apiUserPosts();
             },
             immediate: true
         },
@@ -775,6 +800,17 @@ export default {
 };
 </script>
 <style scoped>
+#box-reaction {
+  background: #ddddddad;
+  color: #2c3e50;
+  border-radius: 7px;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: 4px;
+}
+
 .social-imgs {
     width: 35px;
 }
