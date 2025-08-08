@@ -219,7 +219,7 @@
                                         <b-col v-for="(item, index) in profile.influencer_type.slice(0, 3)" :key="index">
                                             <b-row class="text-center">
                                                 <b-col cols="12">
-                                                    <b-avatar icon="people-fill" size="6rem"></b-avatar>
+                                                    <b-avatar :icon="getIcon(item)" size="6rem"></b-avatar>
                                                 </b-col>
                                                 <b-col cols="12">
                                                 <div class="text-icon">
@@ -229,7 +229,7 @@
                                             </b-row>
                                         </b-col>
                                         
-                                        <b-col v-if="profile.influencer_type && profile.influencer_type.length > 4">
+                                        <b-col v-if="profile.influencer_type && profile.influencer_type.length >= 4">
                                             <b-row class="text-center">
                                                 <b-col cols="12">
                                                     <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="6rem"></b-avatar>
@@ -669,6 +669,7 @@ export default {
             // dataHashtagCloud:[],
             // dataWordCloud: [],
             wordcloud_images: [],
+            icon:[],
             keyWord: null,
             departmentTypes: [
                 { text: "อุตสาหกรรมและการผลิต", value: "manufacturing" },
@@ -842,7 +843,12 @@ export default {
             const found = this.districts.find(item => item.value === id);
             return found ? found.text : null;
         },
-
+        getIcon(id) {
+            const found = this.icon.find(item => item.id === id);
+            console.log("found === ",found);
+            
+            return found && found.icon ? found.icon : "people-fill";
+        },
         getSubDistrictName(id) {
             if (!this.subDistricts || !Array.isArray(this.subDistricts)) return null;
 
@@ -1087,7 +1093,7 @@ export default {
             .then((response) => {
                 // console.log(response);
                 let result = response.data || [];
-                
+                this.icon = result;
                 this.influencerTypes = result.map(type => ({
                     value: type.id,
                     text: type.name
@@ -1096,6 +1102,8 @@ export default {
                 //     text: province.name_th,
                 //     value: province.id
                 // }));
+                console.log(this.icon);
+                
                 console.log('this.influencerTypes ===== ', this.influencerTypes);
                 // this.influencerTypes.map(type => ({
                 //     value: type._id,     // หรือ type.id ก็ได้ ขึ้นกับ backend
