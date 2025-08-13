@@ -301,15 +301,16 @@
               </div>
               <div class="text-left ai-box mt-2" v-if="postDomain && postDomain.face_detect && username == 'adminatapy'"
                 style="font-size: 15px;font-weight: 500;">
-                <div v-if="postDomain.face_detect && postDomain.person_name.length">
-                  <span v-for="(face, idx) in postDomain.person_name">
+                <div v-if="postDomain.face_detect && postDomain.person_name && postDomain.person_name.length">
+                  <span v-for="(face, idx) in postDomain.person_name" :key="idx">
                     <span class="mr-2 mt-1" v-if="face">
-                      <span style="background: #e5e5e5;
-                  padding: 0px 6px;
-                  border-radius: 13px;">
-                        <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                        {{ face }}
-                      </span></span>
+                        <span style="background: #e5e5e5;
+                            padding: 0px 6px;
+                            border-radius: 13px;">
+                            <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                            {{ face }}
+                        </span>
+                    </span>
                   </span>
                 </div>
               </div>

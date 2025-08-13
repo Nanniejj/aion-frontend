@@ -2,7 +2,7 @@
     <div>
         <!-- avatar  -->
         <b-row class="m-0">
-            <b-col md="4" class="px-0 pr-lg-3">
+            <b-col lg="4" class="px-0 pr-lg-3">
                 <div class="gradient-bg h-100" style="">
                     <b-row v-if="profile" class="m-0">
                         <b-col class="py-3">
@@ -60,13 +60,13 @@
                             <div class="h6 py-2">
                                 <a v-if="type == 'hashtaglist'" class="" v-bind:href="profile.link_original" target="_blank"
                                     style="color: #2c3e50"> 
-                                    <h4 class="py-2" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
+                                    <h4 class="py-2 text-truncate" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
                                     <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" /><br>
                                     ({{ totalPost | numFormat }} posts)
                                 </a> 
                                 <a v-else class="" v-bind:href="profile.link_original" target="_blank"
                                     style="color: #2c3e50"> 
-                                       <h4 class="py-2">{{ profile.name || data.account_name || profile.uid }}</h4>
+                                    <h4 class="py-2 text-truncate">{{ profile.name || data.account_name || profile.uid }}</h4>
                                     <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
                                 </a> 
                             </div>
@@ -93,7 +93,7 @@
                     </b-row>
                 </div>
             </b-col>
-            <b-col md="8" class="text-left px-0 pl-lg-3">
+            <b-col lg="8" class="text-left px-0 pl-lg-3">
                 <!-- <h4 class="py-2" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
                 <h4 class="py-2" v-else>{{ profile.name || profile.uid || data.account_name}}</h4> -->
 
@@ -110,11 +110,11 @@
                 </b-card-text>
                 <b-card-text v-if="type !== 'hashtaglist'" class="my-2">
                     <b-row class="py-2 mx-0">
-                        <b-col class="text-capitalize text-info d-flex align-content-center">
+                        <b-col class="px-0 text-capitalize text-info d-flex align-content-center">
                             <i v-if="editable" class="fa fas fa-pen mr-1"></i>
                             <h5 class="font-weight-bold">about me</h5>
                         </b-col>
-                        <b-col cols="auto">
+                        <b-col cols="auto" class="px-0">
                             <div v-if="!editable" class="d-flex justify-content-end">
                                 <b-button variant="info" @click="editProfile()" size="small">
                                     <i class="fa fa-edit mr-1"></i> แก้ไขข้อมูล
@@ -122,10 +122,10 @@
                             </div>
                             <div v-else class="d-flex justify-content-between" style="gap: 10px;">
                                 <b-button variant="success" @click="confirmUpdate()">
-                                    <i class="fa fa-save mr-1"></i> บันทึก
+                                    <i class="fa fa-save mr-1"></i>
                                 </b-button>
                                 <b-button variant="danger" @click="editProfile()">
-                                    <i class="fa fa-times mr-1"></i> ยกเลิก
+                                    <i class="fa fa-times mr-1"></i>
                                 </b-button>
                             </div>
                         </b-col>
@@ -139,9 +139,9 @@
                                 </b-badge>
                             </b-col>
                             <b-col cols="12" class="text-left">
-                                <b-row cols="2"  cols-sm="2" class="">
+                                <b-row cols="2" cols-sm="2" class="">
                                     <b-col class="my-2">
-                                        <b-row class="">
+                                        <b-row class="justify-content-center justify-content-sm-start">
                                             <b-col cols="auto">
                                                 <i class="fa fas fa-users fa-2x d-inline" style="color: #fed06ea4;"/>
                                             </b-col>
@@ -154,7 +154,7 @@
                                         </b-row>
                                     </b-col>
                                     <b-col class="my-2">
-                                        <b-row class="">
+                                        <b-row class="justify-content-center justify-content-sm-start">
                                             <b-col cols="auto">
                                                 <i class="fa fas fa-star fa-2x d-inline" style="color: #fed06ea4;"/>
                                             </b-col>
@@ -167,7 +167,7 @@
                                         </b-row>
                                     </b-col>
                                     <b-col class="my-2">
-                                        <b-row class="">
+                                        <b-row class="justify-content-center justify-content-sm-start">
                                             <b-col cols="auto">
                                                 <i class="fas fa-transgender-alt fa-2x d-inline" style="color: #fed06ea4;"/>
                                             </b-col>
@@ -179,7 +179,7 @@
                                         </b-row>
                                     </b-col>
                                     <b-col class="my-2">
-                                        <b-row class="">
+                                        <b-row class="justify-content-center justify-content-sm-start">
                                             <b-col cols="auto">
                                                 <i class="fa fa-birthday-cake fa-2x d-inline" style="color: #fed06ea4;"/>
                                             </b-col>
@@ -192,23 +192,30 @@
                                     </b-col>
                                     
                                 </b-row>
+                                <b-col cols="12" class="my-2">
+                                    <b-row class="d-flex">
+                                        <b-col cols="auto" class="pl-0">
+                                            
+                                            <i class="fa fa-map-marker fa-2x d-inline" style="color: #fed06ea4;"/>
+                                        </b-col>
+                                        <b-col class="text-truncate">
+                                            <span v-if="profile.province" class="text-icon text-center text-truncate d-inline-block">
+                                                <b>{{ profile.province }}</b>
+                                            </span>
+                                            <span v-if="district_id" class="text-icon text-center text-truncate d-inline-block">
+                                                <b>, {{ getDistrictName(district_id) }}</b>
+                                            </span>
+                                            <span v-if="subDistrict_id" class="text-icon text-center text-truncate d-inline-block">
+                                                <b>, {{  getSubDistrictName(subDistrict_id) }}</b>
+                                            </span>
+                                            <span v-if="!profile.province && !district_id && !subDistrict_id" class="text-icon text-center">
+                                                <b>ไม่ระบุพื้นที่</b>
+                                            </span>
+                                        </b-col>
+                                    </b-row>
+                                </b-col> 
                             </b-col>
                             
-                            <b-col cols="12" class="my-2">
-                                <b-row class="">
-                                    <b-col cols="auto">
-                                        <i class="fa fa-map-marker fa-2x d-inline" style="color: #fed06ea4;"/>
-                                    </b-col>
-                                    <b-col cols="auto">
-                                    <div v-if="profile.province" class="text-icon text-center">
-                                        <b>{{ profile.province }}</b>
-                                    </div>
-                                    <div v-else class="text-icon text-center">
-                                        <b>ไม่ระบุพื้นที่</b>
-                                    </div>
-                                    </b-col>
-                                </b-row>
-                            </b-col> 
                             <!-- influencer type -->
                             <b-row v-if="profile.influencer_type && profile.influencer_type.length !== 0" class="m-0 w-100 ">
                                 <div class="col-12">
@@ -216,10 +223,20 @@
                                 </div>
                                 <div class="col-12">
                                     <b-row cols="1" cols-sm="2" cols-lg="4" class="px-5 py-3 w-100" style="background-color: #fed06ea4; border-radius: 90px;">
-                                        <b-col v-for="(item, index) in profile.influencer_type.slice(0, 3)" :key="index">
+                                        <b-col v-for="(item, index) in profile.influencer_type.length > 4 
+                                            ? profile.influencer_type.slice(0, 3) 
+                                            : profile.influencer_type.slice(0, 4)"
+                                            :key="index"
+                                        >
                                             <b-row class="text-center">
                                                 <b-col cols="12">
-                                                    <b-avatar :icon="getIcon(item)" size="6rem"></b-avatar>
+                                                    <b-avatar v-if="getIcon(item).startsWith('fa-')" size="6rem">
+                                                        <i class="fas" :class="getIcon(item)" style="font-size: 2rem;"></i>
+                                                    </b-avatar>
+
+                                                    <!-- ถ้าไม่ใช่ fa- ให้ใช้แบบ icon ปกติ -->
+                                                    <b-avatar v-else :icon="getIcon(item)" size="6rem"></b-avatar>
+                                                    <!-- <b-avatar :icon="getIcon(item)" size="6rem"></b-avatar> -->
                                                 </b-col>
                                                 <b-col cols="12">
                                                 <div class="text-icon">
@@ -229,7 +246,7 @@
                                             </b-row>
                                         </b-col>
                                         
-                                        <b-col v-if="profile.influencer_type && profile.influencer_type.length >= 4">
+                                        <b-col v-if="profile.influencer_type && profile.influencer_type.length > 4">
                                             <b-row class="text-center">
                                                 <b-col cols="12">
                                                     <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="6rem"></b-avatar>
@@ -248,9 +265,9 @@
                         </b-row>
                     </div>
                     <div v-else class="col-12 px-0">
-                        <b-row cols="2" class="mx-0">
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+                        <b-row cols="1" cols-sm="1" cols-md="2" class="mx-0">
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fa-user mr-1"/>
                                         ชื่อบัญชี :
@@ -266,8 +283,8 @@
                                 </b-row>
                             </b-col>
 
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fas fa-image mr-1"/>
                                         url ที่อยู่รูปโปรไฟล์  
@@ -290,8 +307,8 @@
                                 </b-row>
                             </b-col>
 
-                            <b-col class="px-0 px-lg-1 mb-2">
-                               <b-row class="w-100">
+                            <b-col class="px-0 px-md-1 mb-2">
+                               <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fas fa-address-card mr-1" />
                                         ลักษณะของบัญชี :
@@ -308,8 +325,8 @@
                                 </b-row>
                             </b-col>
 
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fas fa-award mr-1" />
                                         เงื่อนไข Influencer :
@@ -332,8 +349,8 @@
                                 </b-row>
                             </b-col>
 
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fas fa-robot mr-1" />
                                         ระดับความถี่ในการเก็บข้อมูล
@@ -355,8 +372,9 @@
                                     </div>
                                 </b-row>
                             </b-col>
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i v-if="profile.sex === 'female'" class="fa fa-venus" />
                                         <i v-else-if="profile.sex === 'male'" class="fa fa-mars" />
@@ -374,8 +392,9 @@
                                     </div>
                                 </b-row>
                             </b-col>
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fa-birthday-cake mr-1"/>
                                         อายุ :
@@ -385,8 +404,8 @@
                                 </b-row>
                             </b-col>
 
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fa-map-marker mr-1"/>
                                         จังหวัด :
@@ -399,12 +418,14 @@
                                             :options="[{ value: null, text: 'เลือกจังหวัด' }, ...provinces]"
                                             placeholder="เลือกจังหวัด"
                                             v-model="province_id"
+                                            @change="apiGetDistrict(province_id)"
                                         />
                                     </div>
                                 </b-row>
                             </b-col>
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fa-map-marker mr-1"/>
                                         อำเภอ :
@@ -418,12 +439,14 @@
                                             :options="[{ value: null, text: 'เลือกอำเภอ' }, ...districts]"
                                             placeholder="เลือกอำเภอ"
                                             v-model="district_id"
+                                            @change="apiGetSubDistrict(district_id)"
                                         />
                                     </div>
                                 </b-row>
                             </b-col>
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fa-map-marker mr-1"/>
                                         ตำบล :
@@ -442,8 +465,8 @@
                                 </b-row>
                             </b-col>
                             
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fas fa-users mr-1"/>
                                         ผู้ติดตาม :
@@ -459,8 +482,8 @@
                                 </b-row>
                             </b-col>
 
-                            <b-col class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fas fa-star mr-1"/>
                                         กำลังติดตาม :
@@ -476,33 +499,30 @@
                                 </b-row>
                             </b-col>
 
-                            <b-col cols="12" class="px-0 px-lg-1 mb-2">
-                                <b-row class="w-100">
-                                    <b-col class="text-secondary text-left d-flex p-0 align-items-center">
-                                        <i class="fa fa-tag mr-1" />
-                                        หมวดหมู่ของ Influencer :
-                                    </b-col>
-                                    <div class="col-12 px-0">
-                                        <Multiselect
-                                            v-model="selectedData.influencer_type"
-                                            :options="influencerTypes"
-                                            :multiple="true"
-                                            :taggable="true"
-                                            label="text"
-                                            track-by="value"
-                                            placeholder="เลือกหมวดหมู่"
-                                        />
-                                    </div>
-                                </b-row>
-                            </b-col>
                         </b-row>
+                        <b-col cols="12" class="px-0 px-md-1 mb-2">
+                            <b-row class="w-100 m-0">
+                                <b-col class="text-secondary text-left d-flex p-0 align-items-center">
+                                    <i class="fa fa-tag mr-1" />
+                                    หมวดหมู่ของ Influencer :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <Multiselect
+                                        v-model="selectedData.influencer_type"
+                                        :options="influencerTypes"
+                                        :multiple="true"
+                                        :taggable="true"
+                                        label="text"
+                                        track-by="value"
+                                        placeholder="เลือกหมวดหมู่"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
                     </div>
-                    <!-- {{ profile }} -->
                 </b-card-text>
             </b-col>
-        </b-row>
-        <!-- {{ profile }} -->
-        
+        </b-row>        
 
         <!-- woldCloud -->
         <b-row class="my-5 mx-0">
@@ -536,7 +556,7 @@
         </b-row>
 
         <!-- Top Domain & hashtag  -->
-        <b-row class="my-5 mx-0">
+        <b-row class="mt-5 mx-0">
             <b-col class="px-0">
                 <TabDomain 
                     :source="selectedSource"
@@ -548,7 +568,6 @@
                 />
             </b-col>
         </b-row>
-        
 
         <!-- posts -->
         <TabPost 
@@ -693,7 +712,7 @@ export default {
     },
     methods: {
         checkLocation() {
-            if (!this.profile.location || this.profile.location.length === 0) {
+            if (!this.selectedData.location || this.selectedData.location.length === 0) {
                 console.log("ไม่มีข้อมูล location");
                 this.province_id = null;
                 this.district_id = null;
@@ -704,9 +723,11 @@ export default {
                 return; // ออกจากฟังก์ชันทันที
             }
 
-            const location = this.profile.location[0];
+            const location = this.selectedData.location[0];
             console.log("location === ", location);
-
+            if (this.profile.province) {
+                this.selectedData.province = this.profile.province;
+            }
             let province_id = null;
             let district_id = null;
             let subDistrict_id = null;
@@ -716,14 +737,20 @@ export default {
 
                 if (locStr.length >= 2) {
                     province_id = locStr.slice(0, 2);
+                    this.selectedData.location = province_id;
+                    this.apiGetDistrict(province_id);
+                    this.getProvinceName(province_id)
                 }
 
                 if (locStr.length >= 4) {
                     district_id = locStr.slice(0, 4);
+                    this.selectedData.location = district_id;
+                    this.apiGetSubDistrict(district_id);
                 }
 
                 if (locStr.length === 6) {
                     subDistrict_id = locStr;
+                    this.selectedData.location = subDistrict_id;
                 }
             }
 
@@ -737,9 +764,33 @@ export default {
             this.district_id = district_id;
             this.subDistrict_id = subDistrict_id;
 
-            this.selectedProvince = this.profile.province;
-            this.selectedDistrict = this.getDistrictName(district_id);
-            this.selectedSubDistrict = this.getSubDistrictName(subDistrict_id);
+            // this.selectedProvince = this.profile.province;
+            // this.selectedDistrict = this.getDistrictName(this.district_id);
+            // this.selectedSubDistrict = this.getSubDistrictName(this.subDistrict_id);
+            
+            
+        },
+        handleLocation() {
+            if (this.subDistrict_id) {
+                this.selectedData.location = this.subDistrict_id;
+                this.getProvinceName(this.province_id);
+            } else
+             if (this.district_id) {
+                this.selectedData.location = this.district_id;
+                this.getProvinceName(this.province_id);
+            }else
+            if (this.province_id) {
+                this.selectedData.location = this.province_id;
+                // if (this.selectedData.province) {
+                    
+                // }
+                this.getProvinceName(this.selectedData.location);
+            }
+            else {
+                this.selectedData.location = null;
+            }
+            console.log("selectedData.location === ",  this.selectedData.location);
+            
         },
         checkDateRange() {
             const startDate = moment(this.valueDate[0]);
@@ -835,12 +886,17 @@ export default {
             console.log('editable ', this.editable);
         },
         getProvinceName(id) {
-            this.selectedData.province =  this.provinces.find(item => item.value === id).text
+            let pro_id = Number(id);
+            const province = this.provinces.find(item => item.value === pro_id)
+            this.selectedData.province = province ? province.text : ''
+            // this.selectedData.province =  this.provinces.find(item => item.value === id).text
         },
         getDistrictName(id) {
+            console.log(id,"districts ====== ",this.districts);
+            let val = Number(id)
             if (!this.districts || !Array.isArray(this.districts)) return null;
 
-            const found = this.districts.find(item => item.value === id);
+            const found = this.districts.find(item => item.value === val);
             return found ? found.text : null;
         },
         getIcon(id) {
@@ -850,9 +906,11 @@ export default {
             return found && found.icon ? found.icon : "people-fill";
         },
         getSubDistrictName(id) {
-            if (!this.subDistricts || !Array.isArray(this.subDistricts)) return null;
-
-            const found = this.subDistricts.find(item => item.value === id);
+            // if (!this.subDistricts || !Array.isArray(this.subDistricts)) return null;
+            let val = Number(id)
+            const found = this.subDistricts.find(item => item.value === val);
+            console.log(typeof(numId),"found subDistricts".found,this.subDistricts);
+            
             return found ? found.text : null;
         },
         getsexTh(sex) {
@@ -1042,6 +1100,8 @@ export default {
                     text: district.name_th,
                     value: district.id
                 }));
+                console.log(this.districts);
+                
             } catch (error) {
                 console.error("apiGetDistrict error:", error);
                 this.districts =  [];
@@ -1067,6 +1127,9 @@ export default {
                     text: subDistrict.name_th,
                     value: subDistrict.id
                 }));
+
+                console.log(this.subDistricts);
+                
             } catch (error) {
                 console.error("apiGetDistrict error:", error);
                 this.subDistricts = [];
@@ -1119,6 +1182,7 @@ export default {
             });
         },
         apiUpdateProflie() {
+            this.handleLocation();
             this.load = true;
             let rawData = {
                 "data": [{
@@ -1208,29 +1272,30 @@ export default {
         
     },
     watch: {
-        province_id(oldVal,newVal) {
-            if (newVal !== oldVal) {
-                this.district_id = null;
-                this.subDistrict_id = null;
-                this.apiGetDistrict(this.province_id);
-                this.selectedData.location = this.province_id
-                this.checkLocation();
-            }
-        },
-        district_id(oldVal,newVal) {
-            if (newVal !== oldVal) {
-                this.apiGetSubDistrict(this.district_id);
-                this.subDistrict_id = null;
-                this.selectedData.location = this.district_id;
-                this.checkLocation();
-            }
-        },
-        subDistrict_id(oldVal,newVal) {
-            if (newVal !== oldVal) {
-                this.selectedData.location = this.subDistrict_id;
-                this.checkLocation();
-            }
-        },
+        // province_id(oldVal,newVal) {
+        //     if (newVal !== oldVal) {
+        //         // this.district_id = null;
+        //         // this.subDistrict_id = null;
+        //         this.apiGetDistrict(this.province_id);
+        //         this.selectedData.location = this.province_id
+        //         this.getProvinceName(this.province_id);
+        //         // this.checkLocation();
+        //     }
+        // },
+        // district_id(oldVal,newVal) {
+        //     if (newVal !== oldVal) {
+        //         this.apiGetSubDistrict(this.district_id);
+        //         // this.subDistrict_id = null;
+        //         this.selectedData.location = this.district_id;
+        //         // this.checkLocation();
+        //     }
+        // },
+        // subDistrict_id(oldVal,newVal) {
+        //     if (newVal !== oldVal) {
+        //         this.selectedData.location = this.subDistrict_id;
+        //         // this.checkLocation();
+        //     }
+        // },
     }
 }
 </script>
