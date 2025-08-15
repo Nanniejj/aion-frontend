@@ -199,16 +199,16 @@
                                             <i class="fa fa-map-marker fa-2x d-inline" style="color: #fed06ea4;"/>
                                         </b-col>
                                         <b-col class="text-truncate">
-                                            <span v-if="profile.province" class="text-icon text-center text-truncate d-inline-block">
-                                                <b>{{ profile.province }}</b>
+                                            <span v-if="province_id" class="text-icon text-center text-truncate d-inline-block">
+                                                <b>{{ selectedProvince }}</b>
                                             </span>
                                             <span v-if="district_id" class="text-icon text-center text-truncate d-inline-block">
-                                                <b>, {{ getDistrictName(district_id) }}</b>
+                                                <b>, {{ selectedDistrict }}</b>
                                             </span>
                                             <span v-if="subDistrict_id" class="text-icon text-center text-truncate d-inline-block">
-                                                <b>, {{  getSubDistrictName(subDistrict_id) }}</b>
+                                                <b>, {{  selectedSubDistrict }}</b>
                                             </span>
-                                            <span v-if="!profile.province && !district_id && !subDistrict_id" class="text-icon text-center">
+                                            <span v-if="!province_id && !district_id && !subDistrict_id" class="text-icon text-center">
                                                 <b>ไม่ระบุพื้นที่</b>
                                             </span>
                                         </b-col>
@@ -262,6 +262,7 @@
                                     </b-row>
                                 </div>
                             </b-row>
+                            <!-- {{ profile.location }} -->
                         </b-row>
                     </div>
                     <div v-else class="col-12 px-0">
@@ -348,7 +349,23 @@
                                     </div>
                                 </b-row>
                             </b-col>
-
+                            <b-col class="px-0 px-md-1 mb-2">
+                                <b-row class="w-100 m-0">
+                                    <b-col class="text-secondary d-flex p-0 align-items-center">
+                                        <i class="fa fa-tag mr-1" />
+                                        ประเภทธุรกิจ :
+                                    </b-col>
+                                    <div class="col-12 px-0">
+                                        <b-form-select
+                                            size="sm"
+                                            class="input"
+                                            :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...departmentTypes]"
+                                            v-model="selectedData.department"
+                                            placeholder="เลือกหมวดหมู่"
+                                        />
+                                    </div>
+                                </b-row>
+                            </b-col>
                             <b-col class="px-0 px-md-1 mb-2">
                                 <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
@@ -400,7 +417,7 @@
                                         อายุ :
                                     </b-col>
                                     
-                                    <b-form-spinbutton id="demo-sb" size="sm" v-model="profile.age" min="0" max="100"></b-form-spinbutton>
+                                    <b-form-spinbutton id="demo-sb" size="sm" v-model="selectedData.age" min="0" max="100"></b-form-spinbutton>
                                 </b-row>
                             </b-col>
 
@@ -641,7 +658,9 @@ export default {
                 email: '',
                 phone:'' , 
                 name: '', 
-                profile_image: null
+                profile_image: null,
+                department: null
+
             },
             selectedProvince: null,
             selectedDistrict: null,
@@ -711,7 +730,10 @@ export default {
         }
     },
     methods: {
-        checkLocation() {
+        updateFilterLocation() {
+            this.location = this.location; // trigger setter → อัปเดต filterRules.location
+        },
+        async checkLocation() {
             if (!this.selectedData.location || this.selectedData.location.length === 0) {
                 console.log("ไม่มีข้อมูล location");
                 this.province_id = null;
@@ -722,53 +744,29 @@ export default {
                 this.selectedSubDistrict = null;
                 return; // ออกจากฟังก์ชันทันที
             }
-
-            const location = this.selectedData.location[0];
-            console.log("location === ", location);
-            if (this.profile.province) {
-                this.selectedData.province = this.profile.province;
-            }
-            let province_id = null;
-            let district_id = null;
-            let subDistrict_id = null;
-
-            if (location) {
-                const locStr = location.toString();
-
-                if (locStr.length >= 2) {
-                    province_id = locStr.slice(0, 2);
-                    this.selectedData.location = province_id;
-                    this.apiGetDistrict(province_id);
-                    this.getProvinceName(province_id)
-                }
-
-                if (locStr.length >= 4) {
-                    district_id = locStr.slice(0, 4);
-                    this.selectedData.location = district_id;
-                    this.apiGetSubDistrict(district_id);
-                }
-
-                if (locStr.length === 6) {
-                    subDistrict_id = locStr;
-                    this.selectedData.location = subDistrict_id;
+            const location = this.selectedData.location;
+            console.log("location ==== ", location);
+            // กำหนดค่าพร้อมตรวจว่ามีข้อมูลครบหรือไม่
+            this.province_id = location.length >= 1 ? location[0] : null;
+            // ถ้ามี province_id → โหลดอำเภอ
+            if (this.province_id) {
+                this.selectedProvince = await this.getProvinceNameById(this.province_id);
+                this.selectedData.province = this.selectedProvince;
+                await this.apiGetDistrict(this.province_id);
+                this.district_id = location.length >= 2 ? location[1] : null;
+                if (this.district_id) {
+                    this.selectedDistrict = await this.getDistrictNameById(this.district_id);
                 }
             }
 
-            console.log({
-                province_id,
-                district_id,
-                subDistrict_id
-            });
-
-            this.province_id = province_id;
-            this.district_id = district_id;
-            this.subDistrict_id = subDistrict_id;
-
-            // this.selectedProvince = this.profile.province;
-            // this.selectedDistrict = this.getDistrictName(this.district_id);
-            // this.selectedSubDistrict = this.getSubDistrictName(this.subDistrict_id);
-            
-            
+            // ถ้ามี district_id → โหลดตำบล
+            if (this.district_id) {
+                await this.apiGetSubDistrict(this.district_id); // คุณต้องมีฟังก์ชันนี้
+                this.subDistrict_id = location.length >= 3 ? location[2] : null;
+                if (this.subDistrict_id) {
+                    this.selectedSubDistrict = await this.getSubDistrictNameById(this.subDistrict_id);
+                }
+            }
         },
         handleLocation() {
             if (this.subDistrict_id) {
@@ -864,7 +862,8 @@ export default {
                     name: p.name ?? '',
                     followers: p.followers ?? null,
                     following: p.following ?? null,
-                    profile_image: this.data.profile_image ?? null
+                    profile_image: this.data.profile_image ?? null,
+                    department: p.department ?? null
                 };
             }
             // console.log("seleted ==== ", this.selectedData);
@@ -885,33 +884,105 @@ export default {
             this.checkProfile()
             console.log('editable ', this.editable);
         },
-        getProvinceName(id) {
-            let pro_id = Number(id);
-            const province = this.provinces.find(item => item.value === pro_id)
-            this.selectedData.province = province ? province.text : ''
-            // this.selectedData.province =  this.provinces.find(item => item.value === id).text
-        },
-        getDistrictName(id) {
-            console.log(id,"districts ====== ",this.districts);
-            let val = Number(id)
-            if (!this.districts || !Array.isArray(this.districts)) return null;
+        // getProvinceName(id) {
+        //     let pro_id = Number(id);
+        //     const province = this.provinces.find(item => item.value === pro_id)
+        //     this.selectedData.province = province ? province.text : ''
+        //     // this.selectedData.province =  this.provinces.find(item => item.value === id).text
+        // },
+        // getDistrictName(id) {
+        //     console.log(id,"districts ====== ",this.districts);
+        //     let val = Number(id)
+        //     if (!this.districts || !Array.isArray(this.districts)) return null;
 
-            const found = this.districts.find(item => item.value === val);
-            return found ? found.text : null;
+        //     const found = this.districts.find(item => item.value === val);
+        //     return found ? found.text : null;
+        // },
+        // getSubDistrictName(id) {
+        //     // if (!this.subDistricts || !Array.isArray(this.subDistricts)) return null;
+        //     let val = Number(id)
+        //     const found = this.subDistricts.find(item => item.value === val);
+        //     console.log(typeof(numId),"found subDistricts".found,this.subDistricts);
+
+        //     return found ? found.text : null;
+        // },
+        async getProvinceNameById(id) {
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getProvinces",
+                    params: { id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+                const response = await this.axios(config);
+                let result = response.data.data[0] || [];
+                console.log("procince === ",result.name_th);
+                return result.name_th;
+            }catch (error) {
+                console.error("apiGetInfluencers error:", error);
+                return null;
+                // this.influencers = [];
+            }
+            // finally {
+            //     this.loading = false; // จะทำงานเสมอ ไม่ว่าผลจะ success หรือ error
+            // }
+        },
+        async getDistrictNameById(id) {
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getAmphures",
+                    params: { id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+                const response = await this.axios(config);
+                let result = response.data.data[0] || [];
+                console.log("procince === ",result.name_th);
+                return result.name_th;
+            }catch (error) {
+                console.error("apiGetInfluencers error:", error);
+                return null;
+                // this.influencers = [];
+            }
+            // finally {
+            //     this.loading = false; // จะทำงานเสมอ ไม่ว่าผลจะ success หรือ error
+            // }
+        },
+        async getSubDistrictNameById(id) {
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getTambons",
+                    params: { id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+                const response = await this.axios(config);
+                let result = response.data.data[0] || [];
+                console.log("procince === ",result.name_th);
+                return result.name_th;
+            }catch (error) {
+                console.error("apiGetInfluencers error:", error);
+                return null;
+                // this.influencers = [];
+            }
+            // finally {
+            //     this.loading = false; // จะทำงานเสมอ ไม่ว่าผลจะ success หรือ error
+            // }
         },
         getIcon(id) {
             const found = this.icon.find(item => item.id === id);
             console.log("found === ",found);
             
             return found && found.icon ? found.icon : "people-fill";
-        },
-        getSubDistrictName(id) {
-            // if (!this.subDistricts || !Array.isArray(this.subDistricts)) return null;
-            let val = Number(id)
-            const found = this.subDistricts.find(item => item.value === val);
-            console.log(typeof(numId),"found subDistricts".found,this.subDistricts);
-            
-            return found ? found.text : null;
         },
         getsexTh(sex) {
             const found =  this.sexs.find(item => item.value === sex)
@@ -1046,6 +1117,8 @@ export default {
             });
         },
         apiGetProvinces() {
+            this.district_id = null;
+            this.subDistrict_id = null;
             this.load = true;
             const config = {
                 method: "get",
@@ -1082,15 +1155,18 @@ export default {
             });
         },
         async apiGetDistrict(id) {
+            this.selectedProvince = await this.getProvinceNameById(this.province_id);
+            this.selectedData.province = this.selectedProvince;
+            this.subDistrict_id = null;
             try {
                 const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/location/getAmphures",
-                params: { province_id: id },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getAmphures",
+                    params: { province_id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
                 };
 
                 const response = await this.axios(config);
@@ -1182,7 +1258,7 @@ export default {
             });
         },
         apiUpdateProflie() {
-            this.handleLocation();
+            // this.handleLocation();
             this.load = true;
             let rawData = {
                 "data": [{
@@ -1204,7 +1280,8 @@ export default {
                     name: this.selectedData.name,
                     followers : this.selectedData.followers,
                     following: this.selectedData.following,
-                    profile_image : this.selectedData.profile_image
+                    profile_image: this.selectedData.profile_image,
+                    department: this.selectedData.department
                 }]
             };
             console.log("data ==== ", rawData);
@@ -1269,34 +1346,30 @@ export default {
         this.apiGetInfluencerType();
         await this.getWordCloudImage();
         console.log('this.selectedSource ==== ',this.selectedSource);
-        
+    },
+    computed: {
+        location: {
+            get() {
+            if (!this.province_id && !this.district_id && !this.subDistrict_id) {
+                return [];
+            }
+            return [
+                this.province_id,
+                this.district_id,
+                this.subDistrict_id
+            ].filter(v => v != null);
+            },
+            set(newVal) {
+                this.selectedData.location = newVal;
+            }
+        }
     },
     watch: {
-        // province_id(oldVal,newVal) {
-        //     if (newVal !== oldVal) {
-        //         // this.district_id = null;
-        //         // this.subDistrict_id = null;
-        //         this.apiGetDistrict(this.province_id);
-        //         this.selectedData.location = this.province_id
-        //         this.getProvinceName(this.province_id);
-        //         // this.checkLocation();
-        //     }
-        // },
-        // district_id(oldVal,newVal) {
-        //     if (newVal !== oldVal) {
-        //         this.apiGetSubDistrict(this.district_id);
-        //         // this.subDistrict_id = null;
-        //         this.selectedData.location = this.district_id;
-        //         // this.checkLocation();
-        //     }
-        // },
-        // subDistrict_id(oldVal,newVal) {
-        //     if (newVal !== oldVal) {
-        //         this.selectedData.location = this.subDistrict_id;
-        //         // this.checkLocation();
-        //     }
-        // },
-    }
+        // ทุกครั้งที่ตัวเลือกเปลี่ยน ให้ location (computed) อัปเดต filterRules.location
+        province_id: 'updateFilterLocation',
+        district_id: 'updateFilterLocation',
+        subDistrict_id: 'updateFilterLocation'
+    },
 }
 </script>
 

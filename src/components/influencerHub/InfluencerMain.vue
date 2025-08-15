@@ -37,14 +37,15 @@
         </div>
         <div class="col-12 col-lg-8 col-xl-9 px-0">
             <b-row class="h-100">
+                <vue-element-loading :active="loading" size="80" 
+                    background-color="rgba(255, 255, 255, 0.3)" 
+                    color="#ede7dd" 
+                />
                 <b-col>
                     <InfluencerList 
                         :total="totalRows"
                         :influencers="influencers" 
                         :filters="filters"
-                        :provinces="provinces"
-                        :districts="districts"
-                        :subDistricts="subDistricts"
                     />
                 </b-col>
                 <b-col cols="12" align-self="end" class="">
@@ -89,10 +90,6 @@ export default {
                 category: null,
             },
             influencers: [],
-            provinces: [],
-            districts: [],
-            subDistricts: [],
-            influencerTypes:[]
             // followers: ""
         };
     },
@@ -104,6 +101,7 @@ export default {
             // Handle the applied filters here
             this.filters = filters;
             console.log('Filters applied:', filters);
+            this.apiGetInfluencer();
         },
         async apiGetInfluencer(){
             try {
@@ -113,7 +111,19 @@ export default {
                     url: "https://api2.cognizata.com/api/v2/monitor/monitorInfluencer",
                     params: {
                         page: this.currentPage,
-                        limit: this.perPage
+                        limit: this.perPage,
+                        ...this.filters,
+                        sex: Array.isArray(this.filters.sex)
+                            ? this.filters.sex.join(',')
+                            : '',
+                        influencer_type: Array.isArray(this.filters.influencer_type)
+                            ? this.filters.influencer_type.join(',')
+                            : '',
+                        followers: Array.isArray(this.filters.followers)
+                            ? this.filters.followers.join('-')
+                            : typeof this.filters.followers === 'string'
+                            ? this.filters.followers: '',
+                        age: Array.isArray(this.filters.age)? this.filters.age.join('-') :''
                     },
                     headers: {
                         Authorization: "Bearer " + localStorage.getItem("token"),
@@ -134,141 +144,15 @@ export default {
             } catch (error) {
                 console.error("apiGetInfluencers error:", error);
                 this.influencers = [];
+            }finally {
+                this.loading = false; // จะทำงานเสมอ ไม่ว่าผลจะ success หรือ error
             }
         },
-        async apiGetProvinces() {
-            this.load = true;
-            const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/location/getProvinces",
-                // params: {
-                //     type: this.$route.query.type,
-                //     source: this.$route.query.source,
-                //     id: this.$route.query.uid,
-                // },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
-
-            this.axios(config)
-            .then((response) => {
-                let result = response.data.data || [];
-                console.log(result);
-                
-                this.provinces = result.map(province => ({
-                    text: province.name_th,
-                    value: province.id
-                }));
-                console.log('this.provinces ', this.provinces);
-                
-                // this.profile = response.data?.profile
-                // console.log('this.profile ', this.profile);
-                this.load = false;
-            })
-            .catch((error) => {
-                this.load = false;
-                console.error(error);
-            });
-        },
-        async apiGetDistrict(id) {
-            try {
-                const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/location/getAmphures",
-                params: { province_id: id },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-                };
-
-                const response = await this.axios(config);
-                const result = response.data.data || [];
-
-                this.districts =  result.map(district => ({
-                    text: district.name_th,
-                    value: district.id
-                }));
-                console.log(this.districts);
-                
-            } catch (error) {
-                console.error("apiGetDistrict error:", error);
-                this.districts =  [];
-            }
-        },
-        async apiGetSubDistrict(id) {
-            try {
-                const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/location/getTambons",
-                params: { amphure_id: id },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-                };
-
-                const response = await this.axios(config);
-                const result = response.data.data || [];
-
-                this.subDistricts = result.map(subDistrict => ({
-                    text: subDistrict.name_th,
-                    value: subDistrict.id
-                }));
-
-                console.log(this.subDistricts);
-                
-            } catch (error) {
-                console.error("apiGetDistrict error:", error);
-                this.subDistricts = [];
-            }
-            
-        },
-        async apiGetInfluencerType() {
-            const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/monitor/getInfluencerType",
-                
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
-
-            this.axios(config)
-            .then((response) => {
-                // console.log(response);
-                let result = response.data || [];
-                this.icon = result;
-                this.influencerTypes = result.map(type => ({
-                    value: type.id,
-                    text: type.name
-                }));
-                // this.provinces = result.map(province => ({
-                //     text: province.name_th,
-                //     value: province.id
-                // }));
-                // console.log(this.icon);
-                
-                // console.log('this.influencerTypes ===== ', this.influencerTypes);
-                // this.influencerTypes.map(type => ({
-                //     value: type._id,     // หรือ type.id ก็ได้ ขึ้นกับ backend
-                //     text: type.name
-                // }));
-                // this.profile = response.data?.profile
-                // console.log('this.profile ', this.profile);
-                this.load = false;
-            })
-            .catch((error) => {
-                this.load = false;
-                console.error(error);
-            });
-        },
+        
     },
     async mounted() {
         await this.apiGetInfluencer();
+        
     }
 }
 </script>
