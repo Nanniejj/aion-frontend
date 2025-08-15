@@ -1,6 +1,6 @@
 <template>
     <div class="py-3 mt-3">
-        <b-row class="align-items-center mb-3" align-h="between">
+        <b-row cols="2" class="align-items-center mb-3" align-h="between">
             <b-col cols="12" lg=""  class="mt-3">
                 <div class="row w-100 m-0 align-items-center">
                     <div v-if="type === 'targetlist'" class="col-auto pl-0"> <img v-if="filters.source == 'twitter'" src="@/assets/Twitter.png"
@@ -37,7 +37,7 @@
             </b-col>
             <!-- <b-col class="w-100" style="height: 2px; background: #fed16e;"></b-col> -->
             <!-- <div class="h-25 d-inline-block bg-info" style="width: 120px;"></div> -->
-            <b-col cols="12" lg="4"  class="mt-3">
+            <b-col cols="12" lg="auto"  class="d-flex mt-3">
                 <b-form-group label-for="search-input" class="mb-0">
                     <b-input-group-append>
                         <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
@@ -45,6 +45,17 @@
                         <b-button variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
                     </b-input-group-append>
                 </b-form-group>
+                <b-col>
+                    <!-- <MissingTargets :missingTargets="missingTargets"/> -->
+                    <!-- <b-avatar variant="primary" icon="people-fill" size="40px"></b-avatar>
+                    <b-badge
+                        pill
+                        variant="warning"
+                        style="background: #fed16e;color: #fed16e;position: absolute; top: 20px; right: 10px; transform: translate(0%, 0%);"
+                    >
+                        .
+                    </b-badge> -->
+                </b-col>
             </b-col>
         </b-row>
 
@@ -143,6 +154,9 @@
                     <!-- <i class="fas fa-user-check"></i><i class="fas fa-user-plus"></i> -->
                     <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูข้อมูลส่วนตัว" size="sm"
                         @click="linkToProfile(data.item)"></span>
+                    <!-- <span class="fas fa-list-ul text-info" v-b-tooltip.hover 
+                        title="ดูข้อมูลส่วนตัว" size="sm"
+                    ></span> -->
                 </template>
                 
             </b-table>
@@ -167,7 +181,8 @@
 <script>
 import ImportPlatform from "./ImportPlatform.vue";
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
-import { load } from "@syncfusion/ej2-vue-maps";
+import MissingTargets from "./MissingTargets.vue";
+// import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 // import { mapGetters } from "vuex";
@@ -175,6 +190,7 @@ export default {
     components: {
         CreateMonitor,
         ImportPlatform,
+        MissingTargets,
     },
     props: {
         type: String
@@ -184,6 +200,7 @@ export default {
             load: false,
             allData: [],  // เก็บข้อมูลทั้งหมด
             data: [],
+            missingTargets:{},
             totalRows: 0,
             search: '',
             debounceTimeout: null,
@@ -456,6 +473,30 @@ export default {
                 console.error(error);
             });
         },
+        async getMissingTargets() {
+             const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getMissingUrls",
+                
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            try {
+                const res = await this.axios(config);
+                const result = res.data?.data || [];
+                this.missingTargets = result
+                console.log("this.missingTargets ==== ",this.missingTargets);
+                
+
+                // this.allSubdomainData = subdomains; // เก็บทั้ง subdomain และ objects ไว้ใช้ต่อ
+
+            } catch (error) {
+                console.error(error);
+            }
+        },
         formatDate(dateStr) {
             const date = new Date(dateStr);
 
@@ -476,6 +517,7 @@ export default {
     },
     async mounted() {
         this.filters.type = this.type;
+        await this.getMissingTargets();
     }
 };
 

@@ -26,7 +26,6 @@
 <script>
 import MonitorStat from "@/components/monitorlist/MonitorStat.vue";
 import MonitorTable from "@/components/monitorlist/MonitorTable.vue";
-import { data } from "jquery";
 export default {
     components: {
         MonitorStat,MonitorTable

@@ -30,34 +30,34 @@
                     </div>
                 </b-form-group>
                 <b-form-group label="ค้นหา">
-                    <b-form-input v-model="filterRules.searchQuery" 
+                    <b-form-input v-model="filterRules.search" 
                     placeholder="ค้นหาด้วยชื่อบัญชี หรือ url ..."></b-form-input>
                 </b-form-group>
                 <div>
                     <label class="mb-2 d-block">เพศ</label>
                     <b-button-group class="w-100" style="gap: 5px;">
                         <b-button
-                            :variant="isSelected( filterRules.genders,'male') ? 'info' : 'outline-info'"
+                            :variant="isSelected( filterRules.sex,'male') ? 'info' : 'outline-info'"
                             @click="toggleGender('male')"
                         >
                             ชาย
                         </b-button>
         
                         <b-button
-                            :variant="isSelected( filterRules.genders,'female') ? 'female' : 'outline-female'"
+                            :variant="isSelected( filterRules.sex,'female') ? 'female' : 'outline-female'"
                             @click="toggleGender('female')"
                         >
                             หญิง
                         </b-button>
                         <b-button
-                            :variant="isSelected( filterRules.genders,'lgbtq+') ? 'danger' : 'outline-danger'"
+                            :variant="isSelected( filterRules.sex,'lgbtq+') ? 'danger' : 'outline-danger'"
                             @click="toggleGender('lgbtq+')"
                         >
                             lgbtq+
                         </b-button>
         
                         <b-button
-                            :variant="isSelected( filterRules.genders,'other') ? 'secondary' : 'outline-secondary'"
+                            :variant="isSelected( filterRules.sex,'other') ? 'secondary' : 'outline-secondary'"
                             @click="toggleGender('other')"
                         >
                             ไม่ระบุ
@@ -70,8 +70,8 @@
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'top_star') ? 'info' : 'outline-info'"
-                            @click="toggleGender('top_star')"
+                            :variant="influencerLevel === 'top star' ? 'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('top star')"
                         >
                             Top Star
                         </b-button>
@@ -79,16 +79,16 @@
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'macro') ? 'info' : 'outline-info'"
-                            @click="toggleGender('macro')"
+                            :variant="influencerLevel === 'macro' ? 'info' : 'outline-info'"
+                             @click="toggleInfluencerLevel('macro')"
                         >
                             Macro
                         </b-button>
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'micro') ? 'info' : 'outline-info'"
-                            @click="toggleGender('micro')"
+                            :variant="influencerLevel === 'micro' ? 'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('micro')"
                         >
                             Micro
                         </b-button>
@@ -96,16 +96,16 @@
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'nano') ?'info' : 'outline-info'"
-                            @click="toggleGender('nano')"
+                            :variant="influencerLevel === 'nano' ?'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('nano')"
                         >
                             Nano
                         </b-button>
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'end_user') ?'info' : 'outline-info'"
-                            @click="toggleGender('end_user')"
+                            :variant="influencerLevel === 'end user' ?'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('end user')"
                         >
                             End User
                         </b-button>
@@ -146,7 +146,17 @@
                     />
                 </div>
                 <b-form-group label="หมวดหมู่ Influencer">
-                    <b-form-select v-model="filterRules.category" :options="categories"></b-form-select>
+                    <!-- <b-form-select v-model="filterRules.category" :options="categories"></b-form-select> -->
+                    <Multiselect
+                        v-model="selectedTypes"
+                        :options="influencerTypes"
+                        :multiple="true"
+                        :taggable="true"
+                        label="text"
+                        track-by="value"
+                        placeholder="เลือกหมวดหมู่"
+                        @input="updateInfluencerType"
+                    />
                 </b-form-group>
                 <b-form-group label="ประเภทธุรกิจ">
                     <b-form-select v-model="filterRules.department" :options="departmentTypes"></b-form-select>
@@ -155,13 +165,28 @@
                     <b-form-select v-model="filterRules.species" :options="speciesTypes"></b-form-select>
                 </b-form-group>
                 <b-form-group label="จังหวัด">
-                    <b-form-select v-model="filterRules.selectedBusinessType" :options="businessTypes"></b-form-select>
+                    <b-form-select 
+                        placeholder="เลือกจังหวัด"
+                        class="input"
+                        v-model="selectedProvince" 
+                        :options="[{ value: null, text: 'เลือกจังหวัด',disabled: true  }, ...provinces]"
+                        @change="apiGetDistrict(selectedProvince)"
+                    ></b-form-select>
                 </b-form-group>
                 <b-form-group label="อำเภอ">
-                    <b-form-select v-model="filterRules.selectedBusinessType" :options="businessTypes"></b-form-select>
+                    <b-form-select 
+                    v-model="selectedDistrict"
+                    :disabled="!selectedProvince" 
+                    :options="[{ value: null, text: 'เลือกอำเภอ',disabled: true  }, ...districts]"
+                    @change="apiGetSubDistrict(selectedDistrict)"
+                    ></b-form-select>
                 </b-form-group>
                 <b-form-group label="ตำบล">
-                    <b-form-select v-model="filterRules.selectedBusinessType" :options="businessTypes"></b-form-select>
+                    <b-form-select 
+                    v-model="selectedSubdistrict"
+                    :disabled="!selectedDistrict"  
+                    :options="[{ value: null, text: 'เลือกตำบล',disabled: true  }, ...subDistricts]"
+                ></b-form-select>
                 </b-form-group>
                 <div class="d-flex w-100 justify-content-between mt-2" style="gap: 10px;">
                     <b-button class="col" size="sm" variant="info" @click="applyFilters">Apply</b-button>
@@ -190,34 +215,34 @@
                     </div>
                 </b-form-group>
                 <b-form-group label="ค้นหา">
-                    <b-form-input v-model="filterRules.searchQuery" 
+                    <b-form-input v-model="filterRules.search" 
                     placeholder="ค้นหาด้วยชื่อบัญชี หรือ url ..."></b-form-input>
                 </b-form-group>
                 <div>
                     <label class="mb-2 d-block">เพศ</label>
                     <b-button-group class="w-100" style="gap: 5px;">
                         <b-button
-                            :variant="isSelected( filterRules.genders,'male') ? 'info' : 'outline-info'"
+                            :variant="isSelected( filterRules.sex,'male') ? 'info' : 'outline-info'"
                             @click="toggleGender('male')"
                         >
                             ชาย
                         </b-button>
         
                         <b-button
-                            :variant="isSelected( filterRules.genders,'female') ? 'female' : 'outline-female'"
+                            :variant="isSelected( filterRules.sex,'female') ? 'female' : 'outline-female'"
                             @click="toggleGender('female')"
                         >
                             หญิง
                         </b-button>
                         <b-button
-                            :variant="isSelected( filterRules.genders,'lgbtq+') ? 'danger' : 'outline-danger'"
+                            :variant="isSelected( filterRules.sex,'lgbtq+') ? 'danger' : 'outline-danger'"
                             @click="toggleGender('lgbtq+')"
                         >
                             lgbtq+
                         </b-button>
         
                         <b-button
-                            :variant="isSelected( filterRules.genders,'other') ? 'secondary' : 'outline-secondary'"
+                            :variant="isSelected( filterRules.sex,'other') ? 'secondary' : 'outline-secondary'"
                             @click="toggleGender('other')"
                         >
                             ไม่ระบุ
@@ -230,8 +255,8 @@
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'top_star') ? 'info' : 'outline-info'"
-                            @click="toggleGender('top_star')"
+                            :variant="influencerLevel === 'top star' ? 'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('top star')"
                         >
                             Top Star
                         </b-button>
@@ -239,16 +264,16 @@
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'macro') ? 'info' : 'outline-info'"
-                            @click="toggleGender('macro')"
+                            :variant="influencerLevel === 'macro' ? 'info' : 'outline-info'"
+                             @click="toggleInfluencerLevel('macro')"
                         >
                             Macro
                         </b-button>
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'micro') ? 'info' : 'outline-info'"
-                            @click="toggleGender('micro')"
+                            :variant="influencerLevel === 'micro' ? 'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('micro')"
                         >
                             Micro
                         </b-button>
@@ -256,28 +281,38 @@
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'nano') ?'info' : 'outline-info'"
-                            @click="toggleGender('nano')"
+                            :variant="influencerLevel === 'nano' ?'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('nano')"
                         >
                             Nano
                         </b-button>
                         <b-button
                             style="font-size: 14px;"
                             class="px-1"
-                            :variant="isSelected(filterRules.influencerLevel,'end_user') ?'info' : 'outline-info'"
-                            @click="toggleGender('end_user')"
+                            :variant="influencerLevel === 'end user' ?'info' : 'outline-info'"
+                            @click="toggleInfluencerLevel('end user')"
                         >
                             End User
                         </b-button>
                     </b-button-group>
+                    <!-- <b-row class="m-0">
+                        <b-col v-if="filterRules.influencerLevel && filterRules.influencerLevel === 'top_star' " class="px-0 py-3 text-info">
+                            ผู้ติดตามมากกว่า {{ filterRules.followers[0] | numFormat  }} คน
+                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                        </b-col>
+                        <b-col v-if="filterRules.influencerLevel && filterRules.influencerLevel !== 'top_star' " class="px-0 py-3 text-info">
+                            ผู้ติดตาม {{ filterRules.followers[0] | numFormat  }} - {{ filterRules.followers[1] | numFormat }} คน
+                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                        </b-col>
+                    </b-row> -->
                 </div>
-                <div>
+                <!-- <div>
                     <label for="followers" class="mt-2">ผู้ติดตาม</label>
                     <vue-slider
                         class="px-0"
                         v-model="filterRules.followers"
-                        :min="0"
-                        :max="10"
+                        :min="100"
+                        :max="99999999"
                         :interval="1"
                         :enable-cross="false"
                         :dot-size="18"
@@ -287,14 +322,14 @@
                         :process-style="{ backgroundColor: '#17a2b8' }"
                         :dot-style="{ backgroundColor: '#17a2b8', border: 'none' }"
                     />
-                </div>
+                </div> -->
                 <div>
                     <label for="followers" class="mt-2">ช่วงอายุ</label>
                     <vue-slider
                         class="px-0"
-                        v-model="filterRules.followers"
+                        v-model="filterRules.age"
                         :min="0"
-                        :max="10"
+                        :max="100"
                         :interval="1"
                         :enable-cross="false"
                         :dot-size="18"
@@ -304,9 +339,26 @@
                         :process-style="{ backgroundColor: '#17a2b8' }"
                         :dot-style="{ backgroundColor: '#17a2b8', border: 'none' }"
                     />
+                    <b-form-checkbox
+                        class="my-2"
+                        v-model="resetAge"
+                        @change="onResetAge"
+                        >
+                        ไม่จำกัดช่วงอายุ
+                    </b-form-checkbox>
                 </div>
                 <b-form-group label="หมวดหมู่ Influencer">
-                    <b-form-select v-model="filterRules.category" :options="categories"></b-form-select>
+                    <Multiselect
+                        v-model="selectedTypes"
+                        :options="influencerTypes"
+                        :multiple="true"
+                        :taggable="true"
+                        label="text"
+                        track-by="value"
+                        placeholder="เลือกหมวดหมู่"
+                       @input="updateInfluencerType"
+                    />
+                    <!-- <b-form-select v-model="filterRules.category" :options="categories"></b-form-select> -->
                 </b-form-group>
                 <b-form-group label="ประเภทธุรกิจ">
                     <b-form-select v-model="filterRules.department" :options="departmentTypes"></b-form-select>
@@ -315,28 +367,47 @@
                     <b-form-select v-model="filterRules.species" :options="speciesTypes"></b-form-select>
                 </b-form-group>
                 <b-form-group label="จังหวัด">
-                    <b-form-select v-model="filterRules.selectedBusinessType" :options="businessTypes"></b-form-select>
+                    <b-form-select 
+                        placeholder="เลือกจังหวัด"
+                        class="input"
+                        v-model="selectedProvince" 
+                        :options="[{ value: null, text: 'เลือกจังหวัด',disabled: true  }, ...provinces]"
+                        @change="apiGetDistrict(selectedProvince)"
+                    ></b-form-select>
                 </b-form-group>
                 <b-form-group label="อำเภอ">
-                    <b-form-select v-model="filterRules.selectedBusinessType" :options="businessTypes"></b-form-select>
-                </b-form-group>
+                    <b-form-select 
+                        v-model="selectedDistrict" 
+                        :disabled="!selectedProvince" 
+                        :options="[{ value: null, text: 'เลือกอำเภอ',disabled: true  }, ...districts]"
+                        @change="apiGetSubDistrict(selectedDistrict)"
+                        ></b-form-select>
+                    </b-form-group>
                 <b-form-group label="ตำบล">
-                    <b-form-select v-model="filterRules.selectedBusinessType" :options="businessTypes"></b-form-select>
+                    <b-form-select 
+                        v-model="selectedSubdistrict" 
+                        :disabled="!selectedDistrict" 
+                        :options="[{ value: null, text: 'เลือกตำบล',disabled: true  }, ...subDistricts]"
+                    ></b-form-select>
                 </b-form-group>
                 <div class="d-flex w-100 justify-content-between mt-2" style="gap: 10px;">
                     <b-button class="col" size="sm" variant="info" @click="applyFilters">Apply</b-button>
                     <b-button class="col" size="sm" variant="warning" style="background-color: #fdd071;" @click="resetFilters">Reset</b-button>
                 </div>
             </b-form>
+            <!-- {{ filterRules }} -->
         </div>
     </div>
 </template>
 <script>
 import VueSlider from 'vue-slider-component'
+import Multiselect from 'vue-multiselect'
 import 'vue-slider-component/theme/default.css'
+import 'vue-multiselect/dist/vue-multiselect.min.css'
 export default {
     components: {
-        VueSlider
+        VueSlider,
+        Multiselect
     },
     props: {
         showHeader: {
@@ -346,18 +417,25 @@ export default {
     },
     data() {
         return {
+            resetAge: true,
             businessTypes: [],
+            selectedTypes:null,
+            selectedProvince:null,
+            selectedDistrict:null,
+            selectedSubdistrict:null,
             filterRules: {
                 source:null,
-                searchQuery: "",
-                category: null,
+                search: "",
+                // category: null,
                 department: null,
                 species: null,
-                followers: [3, 5],
-                influencerLevel:[],
-                genders: [],
-                location: null
+                age: [],
+                followers: [],
+                sex: [],
+                location: [],
+                influencer_type:[]
             },
+            influencerLevel: '',
             departmentTypes:[
                 { text: "เลือกประเภทธุรกิจ", value: null },
                 { text: "อุตสาหกรรมและการผลิต", value: "manufacturing" },
@@ -413,53 +491,253 @@ export default {
             provinces: [],
             districts: [],
             subDistricts: [],
+            influencerTypes:[]
         };
     },
+    computed: {
+        location: {
+            get() {
+            if (!this.selectedProvince && !this.selectedDistrict && !this.selectedSubdistrict) {
+                return [];
+            }
+            return [
+                this.selectedProvince,
+                this.selectedDistrict,
+                this.selectedSubdistrict
+            ].filter(v => v != null);
+            },
+            set(newVal) {
+            this.filterRules.location = newVal;
+            }
+        }
+    },
     methods: {
-        toggleGender(gender) {
-            const index = this.filterRules.genders.indexOf(gender)
-            if (index === -1) {
-                this.filterRules.genders.push(gender) // ยังไม่เลือก → เพิ่ม
+        onResetAge() {
+            if (this.resetAge) {
+                // ถ้า checkbox ถูกติ๊ก → รีเซ็ตเป็น array ว่าง
+                this.filterRules.age = [];
             } else {
-                this.filterRules.genders.splice(index, 1) // เลือกอยู่ → เอาออก
+                this.filterRules.age = [0,100];
+            }
+        },
+        resetFollowers() {
+            this.influencerLevel = null;
+            this.filterRules.followers = [];
+            this.applyFilters();
+        },
+        toggleInfluencerLevel(level) {
+             if (this.influencerLevel === level) {
+                // คลิกซ้ำ → รีเซ็ต
+                this.influencerLevel = null;
+                this.filterRules.followers = null;
+            } else {
+                // เลือกตัวใหม่
+                this.influencerLevel = level;
+                this.filterRules.followers = level;
+            }
+            console.log("filter rules === ", this.filterRules);
+        },
+        // setFollowersByLevel(level) {
+        //     switch (level) {
+        //         case 'top_star':
+        //             this.filterRules.followers = [1000001] // มากกว่า 1 ล้าน
+        //             // this.filterRules.followers = [1000001, Infinity] // มากกว่า 1 ล้าน
+        //             break
+        //         case 'macro':
+        //             this.filterRules.followers = [100001, 1000000] // 1 แสน ถึง 1 ล้าน
+        //             break
+        //         case 'micro':
+        //             this.filterRules.followers = [10001, 100000] // 1 หมื่น ถึง 1 แสน
+        //             break
+        //         case 'nano':
+        //             this.filterRules.followers = [1001, 10000] // 1 พัน ถึง 1 หมื่น
+        //             break
+        //         case 'end_user':
+        //             this.filterRules.followers = [101, 1000] // 100 ถึง 1 พัน
+        //             break
+        //         default:
+        //         this.filterRules.followers = [] // เคลียร์ถ้าไม่ได้เลือก
+        //         break
+        //     }
+        //     console.log("filter ==== ", this.filterRules);
+            
+        // },
+        updateInfluencerType(selected) {
+            // แปลง array ของ object → array ของ value
+            this.filterRules.influencer_type = selected.map(item => item.value);
+        },
+        updateFilterLocation() {
+            this.location = this.location; // trigger setter → อัปเดต filterRules.location
+        },
+        async apiGetProvinces() {
+            this.load = true;
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/location/getProvinces",
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                let result = response.data.data || [];
+                console.log(result);
+                
+                this.provinces = result.map(province => ({
+                    text: province.name_th,
+                    value: province.id
+                }));
+                console.log('this.provinces ', this.provinces);
+                
+                // this.profile = response.data?.profile
+                // console.log('this.profile ', this.profile);
+                this.load = false;
+            })
+            .catch((error) => {
+                this.load = false;
+                console.error(error);
+            });
+        },
+        async apiGetDistrict(id) {
+            this.selectedDistrict = null;
+            this.selectedSubdistrict = null;
+            try {
+                const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/location/getAmphures",
+                params: { province_id: id },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+                };
+
+                const response = await this.axios(config);
+                const result = response.data.data || [];
+
+                this.districts =  result.map(district => ({
+                    text: district.name_th,
+                    value: district.id
+                }));
+                console.log(this.districts);
+                
+            } catch (error) {
+                console.error("apiGetDistrict error:", error);
+                this.districts =  [];
+            }
+        },
+        async apiGetSubDistrict(id) {
+            this.selectedSubdistrict = null;
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getTambons",
+                    params: { amphure_id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+
+                const response = await this.axios(config);
+                const result = response.data.data || [];
+
+                this.subDistricts = result.map(subDistrict => ({
+                    text: subDistrict.name_th,
+                    value: subDistrict.id
+                }));
+
+                console.log(this.subDistricts);
+                
+            } catch (error) {
+                console.error("apiGetDistrict error:", error);
+                this.subDistricts = [];
+            }
+            
+        },
+        async apiGetInfluencerType() {
+            // this.load = true;
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getInfluencerType",
+                
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                // console.log(response);
+                let result = response.data || [];
+                this.icon = result;
+                this.influencerTypes = result.map(type => ({
+                    value: type.id,
+                    text: type.name
+                }));
+                
+                console.log(this.icon);
+                
+                console.log('this.influencerTypes ===== ', this.influencerTypes);
+                
+            })
+            .catch((error) => {
+                this.load = false;
+                console.error(error);
+            });
+        },
+        toggleGender(gender) {
+            const index = this.filterRules.sex.indexOf(gender)
+            if (index === -1) {
+                this.filterRules.sex.push(gender) // ยังไม่เลือก → เพิ่ม
+            } else {
+                this.filterRules.sex.splice(index, 1) // เลือกอยู่ → เอาออก
             }
         },
         isSelected(data,gender) {
             return data.includes(gender)
-            // return this.filterRules.genders.includes(gender)
         },
-        toggleInfluLevel(level) {
-            const index = this.filterRules.influencerLevel.indexOf(level)
-            if (index === -1) {
-                this.filterRules.influencerLevel.push(level) // ยังไม่เลือก → เพิ่ม
-            } else {
-                this.filterRules.influencerLevel.splice(index, 1) // เลือกอยู่ → เอาออก
-            }
-        },
-        // isSelected(gender) {
-        //     return this.filterRules.genders.includes(gender)
-        // },
         applyFilters() {
             // Emit the filter criteria to the parent component
-            this.$emit("filter-applied", {
-                search: this.searchQuery,
-                category: this.category,
-            });
+            this.$emit("filter-applied", this.filterRules);
         },
         resetFilters() {
             // Reset the filter criteria
-            this.searchQuery = "";
-            this.category = null;
-            // Emit the reset event to the parent component
-            this.$emit("filter-applied", {
+            this.selectedTypes = null;
+            this.selectedProvince = null;
+            this.selectedDistrict = null;
+            this.selectedSubdistrict = null;
+            this.resetAge = true;
+            this.filterRules = {
+                source: null,
                 search: "",
-                category: null,
-            });
+                // category: null,
+                department: null,
+                species: null,
+                age: [],
+                followers: [],
+                influencerLevel: null,
+                sex: [],
+                location: [],
+                influencer_type: []
+            };
+            // Emit the reset event to the parent component
+            this.$emit("filter-applied",  this.filterRules);
         },
-        // opanFilter() {
-        //     this.$emit('openfilter')
-        // }
     },
+    watch: {
+        // ทุกครั้งที่ตัวเลือกเปลี่ยน ให้ location (computed) อัปเดต filterRules.location
+        selectedProvince: 'updateFilterLocation',
+        selectedDistrict: 'updateFilterLocation',
+        selectedSubdistrict: 'updateFilterLocation'
+    },
+    async mounted() {
+        await this.apiGetInfluencerType();
+        await this.apiGetProvinces();
+    }
 };
 </script>
 <style scoped>

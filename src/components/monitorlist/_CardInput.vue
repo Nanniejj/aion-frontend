@@ -539,7 +539,7 @@ export default {
                 // bot_level: 1,
                 // location: null,
                 
-                follower: null,
+                followers: null,
                 following: null,
                 department: null,
                 species: null,
@@ -897,15 +897,19 @@ export default {
 
                 if (data.status === "success") {
                     const previews = {
-                    title: data.data.title,
-                    description: data.data.description,
-                    image: data.data.image?.url || "",
-                    site: data.data.publisher || "Unknown",
-                    url,
+                        title: data.data.title,
+                        description: data.data.description,
+                        image: data.data.image?.url || "",
+                        site: data.data.publisher || "Unknown",
+                        url,
                     };
                     this.img = data.data.image?.url || fallbackImage;
                     console.log("Microlink previews ==== ", previews);
                     this.selectedData.profile_image = this.img;
+                    this.selectedData.name = this.extractName(previews.title);
+                    this.selectedData.followers =  previews.description
+                        ? this.extractFollowers(previews.description)
+                        : null;
                 } else {
                     this.img = fallbackImage;
                     this.selectedData.profile_image = null
@@ -916,33 +920,35 @@ export default {
                 }
             }
             this.exportData();
-        }
+        },
+        extractName(title) {
+            // ดึงชื่อก่อน (@username)
+            const match = title.match(/^(.*?)\s*\(@/);
+            let name = match ? match[1].trim() : title;
 
+            // ลบ emoji / icon ออก
+            name = name.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
+
+            // ตัดเว้นวรรคเกินออก
+            return name.trim();
+        },
+        extractFollowers(description) {
+            if (!description) return null;
+            // หาเลขก่อนคำว่า Followers.
+            const match = description.match(/(\d+(?:,\d+)*)\s+Followers\./i);
+
+            if (match) {
+                // ลบ comma ออกแล้วแปลงเป็นตัวเลข
+                return parseInt(match[1].replace(/,/g, ""), 10);
+            }
+            
+            return null;
+        }
     },
     async mounted() {
         this.mapTargetInfoToSelectedData();
         this.getPreview();
     },  
-    // watch: {
-    //     editable: {
-    //         handler(newVal) {
-    //             console.log('Editable changed to:', this.editable);
-    //             console.log('Editable changed to:', this.selectedData);
-    //             if (!this.editable) {
-    //             //     this.targetInfo = this.selectedData
-    //                 this.exportData();
-    //             }
-    //         // ใส่ logic ที่คุณต้องการเมื่อ prop นี้เปลี่ยน
-    //         },
-    //         // immediate: true // ให้ run ครั้งแรกด้วยตอน component ถูก mount
-    //     }
-    // },
-    // watch: {
-    //     selectedProvince: 'updateLocation',
-    //     selectedDistrict: 'updateLocation',
-    //     selectedSubDistrict: 'updateLocation'
-    // }
-
 }
 </script>
 <style scoped>

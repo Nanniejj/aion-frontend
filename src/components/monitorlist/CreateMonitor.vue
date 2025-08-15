@@ -16,13 +16,29 @@
     </button>
 
     <vue-modaltor
-      :visible="open"
-      @hide="hideModal"
-      :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }"
+        :visible="open"
+        @hide="hideModal"
+        :animation-panel="'modal-slide-top'"
+        :resize-width="{ 3000: '99%', 1350: '90%', 768: '90%' }"
     >
+      <!-- :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }" -->
         <div v-if="tabsMonitor == 'targetlist'">
             <h5><b>เพิ่มบัญชี</b></h5>
+            <!-- <label class="" for="textarea-default"><b>url บัญชี ({{ addTarget.length }})</b></label>
+            <b-form-tags
+                input-id="tags-pills"
+                v-model="addTarget"
+                tag-variant="light"
+                tag-pills
+                size="md"
+                placeholder="Enter เพื่อเพิ่มบัญชี"
+                :tag-validator="validator"
+                :tag-formatter="formatTag" 
+                @input="onTagsInput"
+                @tag-state="onTagState"
+                separator=" ,;"
+                remove-on-delete
+            /> -->
             <hr />
         </div>
         <div v-else-if="tabsMonitor == 'hashtaglist'">
@@ -40,92 +56,92 @@
         
         <!-- body -->
         <b-row class="my-1 modal-body-scrollable">
-            <b-col sm="12">
-            <span v-if="tabsMonitor == 'hashtaglist'">
-                คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่แฮชแท็กที่ต้องการ</span
-            >
-            <span v-else-if="tabsMonitor == 'tabKeyword'">
-                คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่ keyword
-                ที่ต้องการ</span
-            >
-            <span v-else>
-                คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่บัญชีที่ต้องการ
-                <span class="text-danger bold" style="font-size: 18px;">สูงสุด 100 บัญชี</span>
-            </span>
-            </b-col>
-            <b-col sm="12">
-            <br />
-            <div v-if="tabsMonitor == 'hashtaglist'">
-                <b-alert show
-                >ตัวอย่างการใส่ข้อมูล <br />ใส่คำที่ต้องการโดย<b> ไม่ต้องใส่ #</b>
-                เช่น #การเมือง ให้ใส่ <b>การเมือง</b></b-alert
+            <!-- <b-col sm="12">
+                <span v-if="tabsMonitor == 'hashtaglist'">
+                    คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่แฮชแท็กที่ต้องการ</span
                 >
-                <!-- <b-form-select
-                v-model="selectSourceHash"
-                :options="optionsHash"
-                @change="resetHashtagList()"
-                ></b-form-select> -->
-            </div>
-            <div v-else-if="tabsMonitor == 'tabKeyword'">
-                <b-alert show
-                >ตัวอย่างการใส่ข้อมูล <br />ใส่คำ keyword ที่ต้องการ เช่น การเมือง
-                </b-alert>
-                <b-form-select
-                v-model="selectSourceKeyword"
-                :options="optionsKeyword"
-                ></b-form-select>
-            </div>
-            <div v-else>
-                <b-alert v-if="selectSource == 'twitter'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                https://twitter.com/username</b-alert
+                <span v-else-if="tabsMonitor == 'tabKeyword'">
+                    คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่ keyword
+                    ที่ต้องการ</span
                 >
-                <b-alert v-else-if="selectSource == 'facebook'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                https://facebook.com/username หรือ https://www.facebook.com/username
-                </b-alert>
-                <b-alert v-else-if="selectSource == 'instagram'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                https://instagram.com/username</b-alert
-                >
-                <b-alert v-else-if="selectSource == 'youtube'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                https://youtube.com/username</b-alert
-                >
-                <b-alert v-else-if="selectSource == 'pantip'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                https://pantip.com/profile/2116489 (หมายเลขสมาชิก)</b-alert
-                >
-                <b-alert v-else-if="selectSource == 'news'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                ใส่ URL ของ Digital News เช่น https://dailynews.co.th/</b-alert
-                >
-                <b-alert v-else-if="selectSource == 'blockdit'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                เช่น https://www.blockdit.com/username <br />
-                หรือ https://www.blockdit.com/users/id</b-alert
-                >
-                <b-alert v-else-if="selectSource == 'tiktok'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                เช่น https://www.tiktok.com/@username
-                </b-alert>
-                <b-alert v-else-if="selectSource == 'threads'" show
-                >ตัวอย่างการใส่ข้อมูล <br />
-                เช่น https://www.threads.net/@ch7hd
-                </b-alert>
-                <!-- <b-form-select
-                    v-if="$route.name == 'Avatar'"
-                    v-model="selectSource"
-                    :options="optionsAV"
-                    ></b-form-select>
+                <span v-else>
+                    คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่บัญชีที่ต้องการ
+                    <span class="text-danger bold" style="font-size: 18px;">สูงสุด 100 บัญชี</span>
+                </span>
+            </b-col> -->
+            <!-- <b-col sm="12">
+                <br />
+                <div v-if="tabsMonitor == 'hashtaglist'">
+                    <b-alert show
+                    >ตัวอย่างการใส่ข้อมูล <br />ใส่คำที่ต้องการโดย<b> ไม่ต้องใส่ #</b>
+                    เช่น #การเมือง ให้ใส่ <b>การเมือง</b></b-alert
+                    >
                     <b-form-select
-                    v-else
-                    v-model="selectSource"
-                    :options="options"
-                    @change="resetTargetList()"
-                ></b-form-select> -->
-            </div>
-            </b-col>
+                    v-model="selectSourceHash"
+                    :options="optionsHash"
+                    @change="resetHashtagList()"
+                    ></b-form-select>
+                </div>
+                <div v-else-if="tabsMonitor == 'tabKeyword'">
+                    <b-alert show
+                    >ตัวอย่างการใส่ข้อมูล <br />ใส่คำ keyword ที่ต้องการ เช่น การเมือง
+                    </b-alert>
+                    <b-form-select
+                    v-model="selectSourceKeyword"
+                    :options="optionsKeyword"
+                    ></b-form-select>
+                </div>
+                <div v-else>
+                    <b-alert v-if="selectSource == 'twitter'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    https://twitter.com/username</b-alert
+                    >
+                    <b-alert v-else-if="selectSource == 'facebook'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    https://facebook.com/username หรือ https://www.facebook.com/username
+                    </b-alert>
+                    <b-alert v-else-if="selectSource == 'instagram'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    https://instagram.com/username</b-alert
+                    >
+                    <b-alert v-else-if="selectSource == 'youtube'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    https://youtube.com/username</b-alert
+                    >
+                    <b-alert v-else-if="selectSource == 'pantip'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    https://pantip.com/profile/2116489 (หมายเลขสมาชิก)</b-alert
+                    >
+                    <b-alert v-else-if="selectSource == 'news'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    ใส่ URL ของ Digital News เช่น https://dailynews.co.th/</b-alert
+                    >
+                    <b-alert v-else-if="selectSource == 'blockdit'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    เช่น https://www.blockdit.com/username <br />
+                    หรือ https://www.blockdit.com/users/id</b-alert
+                    >
+                    <b-alert v-else-if="selectSource == 'tiktok'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    เช่น https://www.tiktok.com/@username
+                    </b-alert>
+                    <b-alert v-else-if="selectSource == 'threads'" show
+                    >ตัวอย่างการใส่ข้อมูล <br />
+                    เช่น https://www.threads.net/@ch7hd
+                    </b-alert>
+                    <b-form-select
+                        v-if="$route.name == 'Avatar'"
+                        v-model="selectSource"
+                        :options="optionsAV"
+                        ></b-form-select>
+                        <b-form-select
+                        v-else
+                        v-model="selectSource"
+                        :options="options"
+                        @change="resetTargetList()"
+                    ></b-form-select>
+                </div>
+            </b-col> -->
             <!--------------------------------------------------profile --------------------------------------------------------------->
             <b-col sm="12" class="" v-if="tabsMonitor == 'targetlist'">
                 <label class="mt-4" for="textarea-default"><b>url บัญชี ({{ addTarget.length }})</b></label>
@@ -248,50 +264,7 @@
                     </div>
                 </div> -->
             </b-col>
-            <!--------------------------------------------------addKeyword --------------------------------------------------------------->
-            <b-col sm="12" v-else-if="tabsMonitor == 'tabKeyword'">
-            <label class="mt-4" for="textarea-default"><b>keyword</b></label>
-            <b-form-input
-                id="input-default"
-                v-model="addKeyword"
-                :disabled="!selectSourceKeyword"
-                placeholder="กรุณากรอก keyword"
-            ></b-form-input>
-            <!-- <b-form-tags
-                input-id="tags-pills"
-                v-model="addKeyword"
-                tag-variant="light"
-                tag-pills
-                size="md"
-                placeholder="Enter เพื่อเพิ่ม keyword"
-                remove-on-delete
-            ></b-form-tags> -->
-            </b-col>
-            <!--------------------------------------------------avatar --------------------------------------------------------------->
-            <b-col sm="12" v-else>
-            <label class="mt-4" for="textarea-default"><b>ชื่อทีม</b></label>
-            <b-form-input
-                id="input-default"
-                v-model="selectTeam"
-                :disabled="!selectSource"
-                placeholder="กรุณาใส่ชื่อทีม"
-            ></b-form-input>
-            <!-- <b-form-select v-model="selectTeam" :disabled='!selectSource' :options="optionsTeam" ></b-form-select> -->
-            <label class="mt-4" for="textarea-default"><b>ชื่อบัญชี</b></label>
-            <b-form-tags
-                input-id="tags-pills"
-                :disabled="!selectTeam"
-                v-model="addAvatar"
-                tag-variant="light"
-                tag-pills
-                size="md"
-                remove-on-delete
-                placeholder="Enter เพื่อเพิ่มบัญชี"
-                :tag-validator="validator"
-                @tag-state="onTagState"
-                separator=" ,;"
-            ></b-form-tags>
-            </b-col>
+            
         </b-row>
 
         <!-- footer -->
@@ -376,6 +349,7 @@ export default {
                 twitter: [],
                 pantip: [],
                 blockdit: [],
+                threads:[]
             },
             platformText: {
                 facebook: 'Facebook',
@@ -384,7 +358,8 @@ export default {
                 instagram: 'Instagram',
                 twitter: 'Twitter (X)',
                 pantip: 'Pantip',
-                blockdit: 'Blockdit'
+                blockdit: 'Blockdit',
+                threads: 'Threads'
             },
             targetLists:[],
             hashtagLists:[],
@@ -477,75 +452,6 @@ export default {
 
             return hasOtherValue;
         },
-        // onTagsInput(tags) {
-        //     // 1. Normalize tags → ตัด www และ / ท้าย
-        //     const normalizedTags = tags.map(tag =>
-        //         tag.replace("://www.", "://").replace(/\/+$/, '')
-        //     );
-
-        //     // 2. Sync ค่าใน addTarget (กำจัด tag ซ้ำ/ผิดรูปแบบ)
-        //     this.addTarget = normalizedTags;
-
-        //     if (this.tabsMonitor === 'targetlist') {
-        //         // 🔥 ลบรายการที่ถูกลบออกจาก addTarget
-        //         this.targetLists = this.targetLists.filter(item =>
-        //         normalizedTags.includes(item.url.replace("://www.", "://").replace(/\/+$/, ''))
-        //         );
-
-        //         // ✅ หา tags ที่ยังไม่มีใน targetLists
-        //         const newTags = normalizedTags.filter(tag =>
-        //         !this.targetLists.some(item =>
-        //             item.url.replace("://www.", "://").replace(/\/+$/, '') === tag
-        //         )
-        //         );
-
-        //         // สร้าง object ใหม่
-        //         const newEntries = newTags.map(tag => ({
-        //         url: tag,
-        //         source: this.selectSource,
-        //         editable: false,
-        //         bot_level: 1,
-        //         name: null,
-        //         key: this.tabsMonitor === 'targetlist'
-        //             ? 'account'
-        //             : this.tabsMonitor === 'hashtaglist'
-        //             ? 'hashtag'
-        //             : null
-        //         }));
-
-        //         // รวมกับของเดิม
-        //         this.targetLists = [...this.targetLists, ...newEntries];
-
-        //     } else if (this.tabsMonitor === 'hashtaglist') {
-        //         // 🔥 ลบรายการที่ถูกลบออกจาก addTarget
-        //         this.hashtagLists = this.hashtagLists.filter(item =>
-        //         normalizedTags.includes(item.uid.replace("://www.", "://").replace(/\/+$/, ''))
-        //         );
-
-        //         // ✅ หา tags ที่ยังไม่มีใน hashtagLists
-        //         const newTags = normalizedTags.filter(tag =>
-        //         !this.hashtagLists.some(item =>
-        //             item.uid.replace("://www.", "://").replace(/\/+$/, '') === tag
-        //         )
-        //         );
-
-        //         // สร้าง object ใหม่
-        //         const newEntries = newTags.map(tag => ({
-        //         uid: tag,
-        //         source: this.selectSourceHash,
-        //         editable: false,
-        //         bot_level: 1,
-        //         key: this.tabsMonitor === 'targetlist'
-        //             ? 'account'
-        //             : this.tabsMonitor === 'hashtaglist'
-        //             ? 'hashtag'
-        //             : null
-        //         }));
-
-        //         // รวมกับของเดิม
-        //         this.hashtagLists = [...this.hashtagLists, ...newEntries];
-        //     }
-        // },
         normalizeUrl(url) {
             let result = url.trim();
 
@@ -568,6 +474,7 @@ export default {
             if (tag.includes("twitter.com") || tag.includes("x.com")) return 'twitter';
             if (tag.includes("pantip.com")) return 'pantip';
             if (tag.includes("blockdit.com")) return 'blockdit';
+            if (tag.includes("threads.com")) return 'threads';
             return null;
         },
         onTagsInput(tags) {
@@ -599,16 +506,16 @@ export default {
                 const newEntries = normalizedTags.map(tag => {
                     const platform = this.detectPlatformName(tag); // ✅ ใช้ helper ด้านล่าง
                     return {
-                    url: tag,
-                    source: platform, // เก็บชื่อ platform ลงใน object
-                    editable: false,
-                    bot_level: 1,
-                    name: null,
-                    key: this.tabsMonitor === 'targetlist'
-                        ? 'account'
-                        : this.tabsMonitor === 'hashtaglist'
-                        ? 'hashtag'
-                        : null
+                        url: tag,
+                        source: platform, // เก็บชื่อ platform ลงใน object
+                        editable: false,
+                        bot_level: 1,
+                        name: null,
+                        key: this.tabsMonitor === 'targetlist'
+                            ? 'account'
+                            : this.tabsMonitor === 'hashtaglist'
+                            ? 'hashtag'
+                            : null
                     };
                 });
     
@@ -705,7 +612,8 @@ export default {
                 'instagram.com', 'www.instagram.com',
                 'twitter.com', 'www.twitter.com', 'x.com', 'www.x.com',
                 'pantip.com', 'www.pantip.com',
-                'blockdit.com', 'www.blockdit.com'
+                'blockdit.com', 'www.blockdit.com',
+                'www.threads.com'
             ];
 
             const hostname = urlObj.hostname.toLowerCase();
@@ -715,7 +623,7 @@ export default {
                 Swal.fire({
                 icon: 'error',
                 title: 'ไม่รองรับแพลตฟอร์มนี้',
-                text: 'กรุณาใช้ลิงก์จาก Facebook, Tiktok, Youtube, Instagram, Twitter, Pantip หรือ Blockdit เท่านั้น',
+                text: 'กรุณาใช้ลิงก์จาก Facebook, Tiktok, Youtube, Instagram, Twitter, Pantip, Threads หรือ Blockdit เท่านั้น',
                 showConfirmButton: true
                 });
                 return false;
@@ -1003,12 +911,12 @@ export default {
 
 <style scoped>
 .modal-body-scrollable {
-  max-height: 60vh;         /* กำหนดความสูงสูงสุด */
-  overflow-y: auto;         /* ให้ scroll เฉพาะแนวตั้ง */
-  overflow-x: hidden;       /* ❌ ปิดการ scroll แนวนอน */
-  padding-right: 10px;
-       
-  box-sizing: border-box;   /* เผื่อขนาด scrollbar */
+    min-height: 65vh;
+    max-height: 60vh;         
+    overflow-y: auto;         /* ให้ scroll เฉพาะแนวตั้ง */
+    overflow-x: hidden;       /* ❌ ปิดการ scroll แนวนอน */
+    padding-right: 10px;
+    box-sizing: border-box;   /* เผื่อขนาด scrollbar */
 }
 
 .btn-close {
@@ -1052,11 +960,14 @@ td {
     margin-top: 20px;
   }
 }
-/* ::v-deep(.b-form-tag) {
-  max-width: 250px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  border: 1px solid #ccc !important;
+/* ::v-deep(.vue-modaltor__panel) {
+  width: 100% !important;
+  height: 100vh !important; 
+  max-width: 100% !important;
+  max-height: 100vh !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  display: flex;
+  flex-direction: column;
 } */
 </style>
