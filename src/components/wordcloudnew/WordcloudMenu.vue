@@ -1,5 +1,5 @@
 <template>
-  <div >
+  <div>
     <b-row align-h="center">
       <b-col class="d-contents">
         <h1 class="title">Wordcloud</h1>
@@ -40,11 +40,11 @@
               name="radio-inline" class="mt-2"></b-form-radio-group>
           </b-form-group>
         </b-col>
-         <b-col cols="12" md="auto" class="text-center">
-              <b-button  variant="info"  @click="summitform()" pill  class="w-80 px-4">
-                ค้นหา
-              </b-button>
-            </b-col>
+        <b-col cols="12" md="auto" class="text-center">
+          <b-button variant="info" @click="summitform()" pill class="w-80 px-4">
+            ค้นหา
+          </b-button>
+        </b-col>
       </b-row>
       <b-row class="d-none">
         <b-col cols="12">
@@ -65,7 +65,7 @@
 
           <b-row align-h="center" style="margin-top: 15px">
             <b-col cols="10">
-              <b-button  class="btn submit md-font" @click="summitform()">
+              <b-button class="btn submit md-font" @click="summitform()">
                 ค้นหา
               </b-button>
             </b-col>
@@ -215,7 +215,12 @@ export default {
       }
     },
   },
-  created: function () {
+  mounted() {
+
+    var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
+    var todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
+    this.$store.commit("setWordCloudStartDate", todays);
+    this.$store.commit("setWordCloudEndDate", todaye);
     this.$store.dispatch("fetchDomain");
     // this.$store.commit("setSelectedMonitor", true);
   },

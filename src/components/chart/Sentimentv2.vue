@@ -19,7 +19,7 @@
                 </b-col>
               </b-row>
             </b-col>
-
+            
             <b-col class="mb-1">
               <b-row class="v-cen">
                 <b-col cols="auto">

@@ -4,6 +4,7 @@ import { API_V2_URL } from "@/common/config";
 import moment from "moment";
 export default {
   state: {
+    postall: null,
     mapstatic: [],
     loadMapstatic: false,
     loadMapStat: false,
@@ -123,6 +124,9 @@ export default {
     socialmo: "",
   },
   getters: {
+    getPostsAll: (state) => {
+      return state.postall;
+    },
     getMapStatic: (state) => {
       return state.mapstatic;
     },
@@ -251,6 +255,9 @@ export default {
     },
   },
   mutations: {
+    setPostsAll: (state, payload) => {
+      state.postall = payload;
+    },
     setMapStatic: (state, payload) => {
       state.mapstatic = payload;
     },
@@ -930,7 +937,7 @@ export default {
         if (payload.offset === 0) {
           commit("setAllPostDomain", posts);
           if (payload.sort == "engagement") {
-           // commit("setTopPostDomain", posts.slice(0, 3));
+            // commit("setTopPostDomain", posts.slice(0, 3));
           }
         } else {
           commit("addAllPost", posts);
@@ -954,10 +961,9 @@ export default {
         var posts = post.map((result) => {
           return { ...result, ...pair };
         });
-  
-         commit("setTopPostDomain", posts.slice(0, 3));
-   
-  
+
+        commit("setTopPostDomain", posts.slice(0, 3));
+
         commit("setLoadTopPost", false);
         return res.data.data;
       } catch (error) {
@@ -966,7 +972,32 @@ export default {
         console.log(error.response);
       }
     },
+    async fetchPosts({ commit }, payload) {
+      commit("setLoadPostTab", true);
+      try {
+        const res = await DomainService.getPostDomain(payload);
+        console.log("payload", payload);
+        commit("setLoadPostTab", false);
+        var post = res.data.data;
+        var pair = { read: true };
+        var posts = post.map((result) => {
+          return { ...result, ...pair };
+        });
 
+        // ---------------------------------------------------------------------------------------------------------
+      
+      console.log('res.data',res.data);
+      
+        commit("setPostsAll", res.data);
+      
+        commit("setLoadPostTab", false);
+        return res.data.data;
+      } catch (error) {
+        alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+        commit("setLoadPostTab", false);
+        console.log(error.response);
+      }
+    },
     // async fetchAllPostDomain({ commit }, payload) {
     //   commit("setLoadPostTab", true);
     //   var axios = require("axios");

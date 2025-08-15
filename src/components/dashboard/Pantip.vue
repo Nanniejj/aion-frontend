@@ -11,65 +11,71 @@
       <div class="left"></div>
       <img src="@/assets/board.png" class="socialogo" />
       <div class="md-font">
-        กระทู้ที่เกี่ยวข้อง
-        <span class="total-all"> {{ getPantip.post | numFormat }} </span>
-      </div>
-      <b-container>
-        <b-row class="comment-post">
-          <b-col class="border-right">
-            <div class="md-font dp">Users</div>
-            <div class="total-sub">
-              <span class="prt">Users : </span>{{ getPantip.users | numFormat }}
-            </div>
-          </b-col>
-          <b-col class="border-left">
-            <div class="md-font dp">Messages</div>
-            <div class="total-sub">
-              <span class="prt">Messages : </span
-              >{{ (getPantip.comment + getPantip.post) | numFormat }}
-            </div>
-          </b-col>
-        </b-row>
-        <b-row class="comment-post">
-          <b-col cols="12" class="dp"><div>Summary</div></b-col>
-          <span class="prt"><br />จำนวนรวม</span>
-        </b-row>
-        <b-row class="md-font">
-          <b-col cols="5">
-            <div><i class="far fa-paper-plane" /></div>
-            <div><i class="far fa-comments" /></div>
-            <div><i class="fas fa-users" /></div>
-            <!-- <div><i class="fas fa-cloud-download-alt" /></div>
-            <div><i class="fas fa-database" /></div> -->
-            <!-- <div>Start</div>
-              <div>End</div> -->
-          </b-col>
-          <b-col cols="7" class="sum-right">
-            <div>
-              <span class="prt">Posts : </span>
-              {{ getSumPantip.post | numFormat }}
-            </div>
-            <div>
-              <span class="prt">Comments : </span>
-              {{ getSumPantip.comment | numFormat }}
-            </div>
-            <div>
-              <span class="prt">Users : </span>
-              {{ Number(getSumPantip.users) | numFormat }}
-            </div>
-            <!-- <div>
-              <span class="prt">ข้อมูลที่ไปเก็บ : </span
-              >{{ getCraw.crawler_pantip | numFormat }}
-            </div>
-            <div>
-              <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
-              >{{ getCraw.preprocess_pantip | numFormat }}
-            </div> -->
+          โพสต์ที่เกี่ยวข้อง
+          <span class="total-all">
+            {{ dataPlatform.post | numFormat }}
+          </span>
+        </div>
+        <b-container>
+          <b-row class="comment-post">
+            <b-col class="border-right">
+              <div class="md-font dp">Users</div>
+              <div class="total-sub">
+                <span class="prt">Users : </span>
+                {{ dataPlatform.users | numFormat }}
+              </div>
+            </b-col>
+            <b-col class="border-left">
+              <div class="md-font dp">Messages</div>
+              <div class="total-sub">
+                <span class="prt">Messages : </span>{{ dataPlatform.comment + dataPlatform.post | numFormat }}
+              </div>
+            </b-col>
+          </b-row>
+          <b-row class="comment-post">
+            <b-col cols="12" class="dp">
+              <div>Summary</div>
+            </b-col>
+            <span class="prt"><br />จำนวนรวม</span>
+          </b-row>
+          <b-row class="md-font">
+            <b-col cols="5">
+              <div><i class="far fa-paper-plane" /></div>
+              <div><i class="far fa-comment" /></div>
+              <div><i class="far fa-comments" /></div>
+              <div><i class="fas fa-users" /></div>
 
-            <!-- <div>{{startFormat }}</div>
-              <div>{{endFormat}}</div> -->
-          </b-col>
-        </b-row>
+              <!-- <div><i class="fas fa-cloud-download-alt" /></div>
+              <div><i class="fas fa-database" /></div> -->
+              <!-- <div>Start</div>
+              <div>End</div> -->
+            </b-col>
+            <b-col cols="7" class="sum-right">
+              <div>
+                <span class="prt">Posts : </span>{{ dataSum.total_post_all || 0 | numFormat }}
+              </div>
+              <div>
+                <span class="prt">Comments : </span>{{ (dataSum.total_message_all - dataSum.total_post_all) || 0 |
+                  numFormat }}
+              </div>
+              <div>
+                <span class="prt">Messages : </span>{{ dataSum.total_message_all | numFormat }}
+              </div>
+              <div>
+                <span class="prt">Users : </span>{{ Number(dataSum.total_user_all) | numFormat }}
+              </div>
+              <!-- <div>
+                <span class="prt">ข้อมูลที่ไปเก็บ : </span
+                >{{ getCraw.crawler_facebook | numFormat }}
+              </div>
+              <div>
+                <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
+                >{{ getCraw.preprocess_facebook | numFormat }}
+              </div> -->
+              <!-- <span class="prt">Post : </span><div>{{stratFormat }}</div>
+              <span class="prt">Post : </span><div>{{EndFormat }}</div> -->
+            </b-col>
+          </b-row>
       </b-container>
       <br />
     </div>
@@ -106,6 +112,7 @@
 import { mapGetters } from "vuex";
 import SentimentChart from "../chart/SentimentChart.vue";
 export default {
+   props: { dataSum: { type: Object }, dataPlatform: { type: Object } },
   data: function() {
     return {
       showDetail: true,

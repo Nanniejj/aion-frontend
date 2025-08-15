@@ -3,15 +3,17 @@
         <WordcloudMenu/>
         <WordcloudImg/>
         <WordcloudList/>
+        <WordPost/>
     </div>
 </template>
 <script>
 import WordcloudMenu from "./WordcloudMenu";
 import WordcloudImg from "./WordcloudImg";
 import WordcloudList from "./WordcloudList";
+import WordPost from "./WordPost";
 export default {
     components:{
-        WordcloudMenu,WordcloudImg,WordcloudList
+        WordcloudMenu,WordcloudImg,WordcloudList,WordPost
     }
 }
 </script>
