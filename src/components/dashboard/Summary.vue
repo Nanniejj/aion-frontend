@@ -256,7 +256,8 @@ export default {
 
 <style scoped>
 .bg-box-stat {
-  background: linear-gradient(to bottom, #f8f6f1 0%, #f2eee4 100%);
+  border: 1px solid #6f5b37b8;
+  /* background: linear-gradient(to bottom, #f8f6f1 0%, #f2eee4 100%); */
   padding-top: 15px;
   padding-bottom: 15px;
   border-radius: 20px;
@@ -270,7 +271,7 @@ export default {
 
 .h4,
 .border-left {
-  color: #53918b;
+  color: #68645c;
 }
 
 .fa {
@@ -363,6 +364,10 @@ export default {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  .bg-box-stat {
+  margin: 2px 0px;
+}
+
   #sumboxsum > div:nth-child(2) > div{
      padding: 2px 5px !important;
   }

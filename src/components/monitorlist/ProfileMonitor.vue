@@ -112,7 +112,7 @@
                     <b-row class="py-2 mx-0">
                         <b-col class="px-0 text-capitalize text-info d-flex align-content-center">
                             <i v-if="editable" class="fa fas fa-pen mr-1"></i>
-                            <h5 class="font-weight-bold">about me</h5>
+                            <h5 class="font-weight-bold">Details</h5>
                         </b-col>
                         <b-col cols="auto" class="px-0">
                             <div v-if="!editable" class="d-flex justify-content-end">
@@ -219,7 +219,7 @@
                             <!-- influencer type -->
                             <b-row v-if="profile.influencer_type && profile.influencer_type.length !== 0" class="m-0 w-100 ">
                                 <div class="col-12">
-                                    <h5 class="text-center font-weight-bold py-2">หมวดหมู่ Influencer</h5>
+                                    <h5 class="text-center font-weight-bold ">หมวดหมู่ Influencer</h5>
                                 </div>
                                 <div class="col-12">
                                     <b-row cols="1" cols-sm="2" cols-lg="4" class="px-5 py-3 w-100" style="background-color: #fed06ea4; border-radius: 90px;">
@@ -230,12 +230,12 @@
                                         >
                                             <b-row class="text-center">
                                                 <b-col cols="12">
-                                                    <b-avatar v-if="getIcon(item).startsWith('fa-')" size="6rem">
+                                                    <b-avatar v-if="getIcon(item).startsWith('fa-')" size="3rem">
                                                         <i class="fas" :class="getIcon(item)" style="font-size: 2rem;"></i>
                                                     </b-avatar>
 
                                                     <!-- ถ้าไม่ใช่ fa- ให้ใช้แบบ icon ปกติ -->
-                                                    <b-avatar v-else :icon="getIcon(item)" size="6rem"></b-avatar>
+                                                    <b-avatar v-else :icon="getIcon(item)" size="3rem"></b-avatar>
                                                     <!-- <b-avatar :icon="getIcon(item)" size="6rem"></b-avatar> -->
                                                 </b-col>
                                                 <b-col cols="12">
@@ -249,7 +249,7 @@
                                         <b-col v-if="profile.influencer_type && profile.influencer_type.length > 4">
                                             <b-row class="text-center">
                                                 <b-col cols="12">
-                                                    <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="6rem"></b-avatar>
+                                                    <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="3rem"></b-avatar>
                                                 </b-col>
                                                 <b-col cols="" class="px-0">
                                                     More
