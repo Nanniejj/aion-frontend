@@ -369,7 +369,7 @@ export default {
 }
 
   #sumboxsum > div:nth-child(2) > div{
-     padding: 2px 5px !important;
+     padding: 5px 5px !important;
   }
   .border-right {
   border: 0px solid #9e9e9e !important;
