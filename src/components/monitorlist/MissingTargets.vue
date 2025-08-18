@@ -109,7 +109,7 @@ export default {
 .modal-body-scrollable {
     min-height: 75vh;
     max-height: 75vh;
-    max-width: 90vw;         
+    max-width: 95vw;         
     overflow-y: auto;         /* ให้ scroll เฉพาะแนวตั้ง */
     overflow-x: hidden;       /* ❌ ปิดการ scroll แนวนอน */
     padding-left: 10px;

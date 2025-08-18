@@ -104,16 +104,56 @@
               ></router-link
             >
           </li>
-          <li class="nav-item" id="li-nav" >
+          <!-- <li class="nav-item" id="li-nav" >
             <router-link to="/influencertop" tag="p"
               ><a class="nav-link"
                 ><img
                   src="@/assets/Influ.png"
                   alt="logo"
                   class="img-nav"
-                /><strong>Influencer</strong></a
+                /><strong>Top Influencer</strong></a
               ></router-link
             >
+          </li> -->
+          <li
+            class=" nav-item dropdown"
+            id="li-nav"
+          >
+            <a
+              class="nav-link dropdown-toggle"
+              id="navbarDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              tag="p"
+              :class="{ 'router-link-exact-active': isActive2 }"
+            >
+              <img
+                src="@/assets/Influ.png"
+                alt="logo"
+                class="img-nav"
+              /><strong>Influencer</strong>
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <router-link
+                to="/influencertop"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive10 }"
+                id="nav-router"
+                ><center><strong>Top Influencer</strong></center></router-link
+              >
+              <router-link
+                to="/influencerHub"
+                class="dropdown-item"
+                :class="{ dropdownStyle: isActive11 }"
+                id="nav-router"
+                ><center><strong>Influencer Hub</strong></center></router-link
+              >
+             
+
+              <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
+            </div>
           </li>
           <li class="nav-item " id="li-nav"  v-if="username =='adminatapy'|| username =='adminpeach'">
           <a class="nav-link" href="https://link.cognizata.com" target="_blank"
@@ -186,7 +226,7 @@
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               <router-link
-                to="/monitor"
+                to="/monitorlist"
                 class="dropdown-item"
                 :class="{ dropdownStyle: isActive10 }"
                 id="nav-router"
@@ -375,17 +415,53 @@
               </a>
             </router-link>
           </b-nav-item>-->
-          <b-nav-item id="nav-con1" >
-            <router-link to="/influencertop" tag="p">
-              <a class="nav-link">
-                <img src="@/assets/Influ.png" alt="logo" class="img-nav" />
-                <a class="nav-link titlenav">
-                  <strong>Influencer</strong>
+
+           <b-nav-item id="nav-con1" >
+            <b-nav-item-dropdown no-caret id="dp-color" class="">
+              <template slot="button-content">
+                <a
+                  class="nav-link"
+                  data-toggle="tab"
+                  tag="p"
+                  :class="{ 'router-link-exact-active': isActive2 }"
+                  style="padding: 0"
+                >
+                  <img
+                    src="@/assets/Influ.png"
+                    alt="logo"
+                    class="img-nav"
+                  />
+                  <a class="nav-link titlenav">
+                    <strong>Influencer</strong>
+                  </a>
                 </a>
-              </a>
-            </router-link>
+              </template>
+              <b-dropdown-item  to="/influencertop">
+                <router-link
+                  to="/influencertop"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive10 }"
+                  id="dp-txt"
+                >
+                    Top Influencer
+                </router-link>
+              </b-dropdown-item>
+              <b-dropdown-item  to="/influencerHub">
+                <router-link
+                  to="/influencerHub"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: isActive13}"
+                  id="dp-txt"
+                  >Influencer Hub
+                </router-link>
+              </b-dropdown-item>
+              
+            </b-nav-item-dropdown>
           </b-nav-item>
          
+
           <b-nav-item id="nav-con1" class=""  href="https://link.cognizata.com" target="_blank" v-if="username =='adminatapy'|| username =='adminpeach'">
             <!-- <router-link to="" tag="p"> -->
               <a class="nav-link"  >
@@ -507,9 +583,9 @@
                   </a>
                 </a>
               </template>
-              <b-dropdown-item  to="/monitor">
+              <b-dropdown-item  to="/monitorlist">
                 <router-link
-                  to="/monitor"
+                  to="/monitorlist"
                   tag="a"
                   :style="dropdownStyle"
                   :class="{ dropdownStyle: isActive10 }"

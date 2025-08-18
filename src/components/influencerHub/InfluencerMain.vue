@@ -2,9 +2,9 @@
   <div style="width: 85%; margin: auto;">
     <b-row class="m-0 justify-content-between">
         <b-col md="auto" class="col d-contents px-0">
-            <h1 class="title m-0">Influencer Hub</h1>
+            <h1 class="title m-0 mb-3">Influencer Hub</h1>
         </b-col>
-        <b-col cols="auto" md="auto" class="px-0">
+        <!-- <b-col cols="auto" md="auto" class="px-0">
             <div class="py-4 my-0">
                 <span class="shadow-sm p-2 mb-3 bg-white rounded bold mr-2">
                     <span>Today</span>
@@ -14,7 +14,7 @@
                     ><i class="fa fa-print align-middle" @click="printWindow()"></i
                 ></span>
             </div>
-        </b-col>
+        </b-col> -->
     </b-row>
     <!-- Recommended -->
     <!-- <div class="col-12 px-0">
@@ -27,11 +27,11 @@
     </div> -->
 
     <b-row class="m-0 mb-3" style="">
-        <div class="col-12 px-0">
+        <!-- <div class="col-12 px-0">
             <div class="px-0 bold text-lg-left text-md-left text-sm-center h5 col-sm mt-5 mb-lg-5">
                 Our KOLs & Influencers
             </div>
-        </div>
+        </div> -->
         <div class="col-12 col-lg-4 col-xl-3 px-0 pr-md-3">
             <FilterInfluencer @filter-applied="applyFilters" />
         </div>

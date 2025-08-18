@@ -1,7 +1,7 @@
 <template>
     <div class="py-3 mt-3">
-        <b-row cols="2" class="align-items-center mb-3" align-h="between">
-            <b-col cols="12" lg=""  class="mt-3">
+        <b-row cols="2" class="align-items-center mb-3 mx-0" align-h="between">
+            <b-col cols="12" lg=""  class="">
                 <div class="row w-100 m-0 align-items-center">
                     <div v-if="type === 'targetlist'" class="col-auto pl-0"> <img v-if="filters.source == 'twitter'" src="@/assets/Twitter.png"
                             class="social-imgs" />
@@ -27,35 +27,37 @@
                         </b-row>
                     </div>
 
-                    <b-form-select v-if="type === 'targetlist'" class="col col-lg-3 mr-3" id="source-select" v-model="filters.source" :options="sourceOptions"
+                    <b-form-select v-if="type === 'targetlist'" class="col col-lg-3 mr-md-3" id="source-select" v-model="filters.source" :options="sourceOptions"
                     ></b-form-select>
-                    <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-sm-0 ml-sm-auto">
-                        <ImportPlatform class="col mr-3 px-0" v-if="type == 'targetlist'" @close="reload"/>
-                        <CreateMonitor class="col-auto px-0" :class="{'w-100':type == 'hashtaglist'}" :tabsMonitor="type" @close="reload"/>
-                    </div>
+                    <!-- <b-form-select v-if="type === 'targetlist'" class="col col-lg-3 mr-3" id="source-select" v-model="filters.source" :options="sourceOptions"
+                    ></b-form-select> -->
+                    <b-input-group v-if="type === 'targetlist'" prepend="@" class="align-items-center col-12 col-md px-0 mt-3 mt-md-0">
+                        <b-form-input v-model="followers" type="number" placeholder="จำนวน followers"></b-form-input>  
+                        <span class="px-2 text-secondary">follower ขึ้นไป</span>
+                    </b-input-group>
+                    
                 </div>
             </b-col>
             <!-- <b-col class="w-100" style="height: 2px; background: #fed16e;"></b-col> -->
             <!-- <div class="h-25 d-inline-block bg-info" style="width: 120px;"></div> -->
-            <b-col cols="12" lg="auto"  class="d-flex mt-3">
-                <b-form-group label-for="search-input" class="mb-0">
-                    <b-input-group-append>
-                        <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
-                            class="w-100 mr-2"></b-form-input>
-                        <b-button variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
-                    </b-input-group-append>
-                </b-form-group>
-                <b-col>
-                    <!-- <MissingTargets :missingTargets="missingTargets"/> -->
-                    <!-- <b-avatar variant="primary" icon="people-fill" size="40px"></b-avatar>
-                    <b-badge
-                        pill
-                        variant="warning"
-                        style="background: #fed16e;color: #fed16e;position: absolute; top: 20px; right: 10px; transform: translate(0%, 0%);"
-                    >
-                        .
-                    </b-badge> -->
-                </b-col>
+            <b-col cols="12" lg=""  class="px-0">
+                <b-row class="align-items-center mx-0">
+                    <b-col cols="12" md="auto" class="">
+                        <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-lg-0 ml-lg-auto">
+                            <ImportPlatform class="col col-md-auto  mr-3 px-0" v-if="type == 'targetlist'" @close="reload"/>
+                            <CreateMonitor class="col col-md-auto px-0" :class="{'w-100':type == 'hashtaglist'}" :tabsMonitor="type" @close="reload"/>
+                        </div>
+                    </b-col>
+                    <b-col class="">
+                        <b-form-group label-for="search-input" class="mt-3 mt-lg-0 col-12 col-sm px-0">
+                            <b-input-group-append>
+                                <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
+                                    class="w-100 mr-2"></b-form-input>
+                                <b-button variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
+                            </b-input-group-append>
+                        </b-form-group>
+                    </b-col>
+                </b-row>
             </b-col>
         </b-row>
 
@@ -72,7 +74,6 @@
 
             <b-form-select id="source-select" v-model="filters.source" :options="sourceOptions"
                 style="width: 100px;"></b-form-select>
-
         </b-form>
 
         <div  class="boxlist-card py-3">
@@ -206,6 +207,7 @@ export default {
             debounceTimeout: null,
             currentPage: 1,
             perPage: 10,
+            followers:null,
             filters: {
                 type: '',
                 source: ''
@@ -273,7 +275,7 @@ export default {
         filters: {
             deep: true,
             handler() {
-                console.log("handler === ",this.currentPage);
+                // console.log("handler === ",this.currentPage);
                 this.apiMonitorList();
             }
         }
@@ -321,7 +323,7 @@ export default {
             window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
         },
         reload() {
-            console.log("reloadddddd");
+            // console.log("reloadddddd");
             
             this.$emit('setReface')
             this.apiMonitorList()
@@ -403,7 +405,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     var hashtag = item.uid.replace("#", "");
-                    console.log(hashtag,item.source,index);
+                    // console.log(hashtag,item.source,index);
                     
                     this.$store.dispatch("DeleteMonitor", {
                         hashtag: hashtag,
@@ -435,7 +437,7 @@ export default {
         },
         async apiMonitorList() {
             this.load = true;
-            console.log('apiMonitorList ===',this.currentPage);
+            // console.log('apiMonitorList ===',this.currentPage);
             
             const config = {
                 method: "get",
@@ -446,7 +448,8 @@ export default {
                      ...(this.filters.type === 'targetlist' && { source: this.filters.source || undefined }),
                     page: this.currentPage,
                     limit: this.perPage,
-                    search:this.search
+                    search: this.search,
+                    ...(this.followers != null && { followers: this.followers }),
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -459,8 +462,8 @@ export default {
                 const resData = response.data;
                 this.data = resData.data || [];
                 this.totalRows = resData.pagination?.totalCount || this.data.length;
-                console.log(this.totalRows);
-                console.log(this.currentPage);                
+                // console.log(this.totalRows);
+                // console.log(this.currentPage);                
                 // this.currentPage = resData.pagination?.currentPage || 1;
                 this.load = false;
                 // if (this.filters.type) {
@@ -488,7 +491,7 @@ export default {
                 const res = await this.axios(config);
                 const result = res.data?.data || [];
                 this.missingTargets = result
-                console.log("this.missingTargets ==== ",this.missingTargets);
+                // console.log("this.missingTargets ==== ",this.missingTargets);
                 
 
                 // this.allSubdomainData = subdomains; // เก็บทั้ง subdomain และ objects ไว้ใช้ต่อ
