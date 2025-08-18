@@ -449,7 +449,8 @@ export default {
                     page: this.currentPage,
                     limit: this.perPage,
                     search: this.search,
-                    ...(this.followers != null && { followers: this.followers }),
+                    ...((this.filters.type === 'targetlist' && this.followers != null) && { followers: this.followers })
+                    // ...(this.followers != null && { followers: this.followers }),
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),

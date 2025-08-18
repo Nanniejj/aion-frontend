@@ -12,7 +12,7 @@ margin-right: 0;">
               <b-icon stacked icon="circle"></b-icon>
               <b-icon stacked icon="display" scale="0.5"></b-icon>
             </b-iconstack>
-            <div class="d-block h6 text-center my-0">Monitor</div>
+            <div class="d-block h6 text-center my-0">Monitor (old ver.)</div>
           </div>
 
           <div class="mr-3 icon-monitor2" @click="toMonitor('Feed')">
