@@ -225,7 +225,8 @@
                   </div>
                   <div v-if="text.face">
                     <span v-for="(face, idx) in text.face">
-                      <span v-if="face.confidence > 0.68" class="mr-2 mt-1">
+                      <!-- v-if="face.person_name"  -->
+                      <span class="mr-2 mt-1">
                         <span style="background: #e5e5e5;
                     padding: 0px 6px;
                     border-radius: 13px;">

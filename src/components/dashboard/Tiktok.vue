@@ -1,77 +1,78 @@
 <template>
   <b-col sm="12" md="6" lg="4">
     <!-- <div class="box" id="bd" v-b-modal.modal-5> -->
-    <vue-element-loading
-      :active="getLoadStatus"
-      size="80"
-      background-color="rgba(255, 255, 255, 0.3)"
-      color="#b6ac9a"
-    />
+    <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.3)"
+      color="#b6ac9a" />
     <div class="box" id="tiktok" @click="toPlatform">
       <div class="right"></div>
       <!-- <i class="fab fa-instagram fa-2x"></i> -->
       <img src="@/assets/Tiktok.png" class="socialogo" />
-      <div class="md-font">
-        โพสต์ที่เกี่ยวข้อง
-        <span class="total-all"> {{ getTiktok.post | numFormat }} </span>
-      </div>
-      <b-container>
-        <b-row class="row comment-post">
-          <b-col class="border-right">
-            <div class="md-font dp">Users</div>
-            <div class="total-sub">
-              <span class="prt">Users : </span>
-              {{ getTiktok.users | numFormat }}
-            </div>
-          </b-col>
-          <b-col class="border-left">
-            <div class="md-font dp">Messages</div>
-            <div class="total-sub">
-              <span class="prt">Messages : </span>
-              {{ getTiktok.comment + getTiktok.post | numFormat }}
-            </div>
-          </b-col>
-        </b-row>
-        <b-row class="comment-post">
-          <b-col cols="12" class="dp"><div>Summary</div></b-col>
-          <span class="prt"><br />จำนวนรวม</span>
-        </b-row>
-        <b-row class="md-font">
-          <b-col cols="5">
-            <div><i class="far fa-paper-plane" /></div>
-            <div><i class="far fa-comments" /></div>
-            <div><i class="fas fa-users" /></div>
-            <!-- <div><i class="fas fa-cloud-download-alt" /></div>
-            <div><i class="fas fa-database" /></div> -->
-            <!-- <div>Start</div>
-                <div>End</div> -->
-          </b-col>
-          <b-col cols="7" class="sum-right">
-            <div>
-              <span class="prt">Posts : </span>
-              {{ getSumTiktok.post | numFormat }}
-            </div>
-            <div>
-              <span class="prt">Comments : </span>
-              {{ getSumTiktok.comment | numFormat }}
-            </div>
-            <div>
-              <span class="prt">Users : </span>
-              {{ getSumTiktok.users | numFormat }}
-            </div>
-            <!-- <div>
-              <span class="prt">ข้อมูลที่ไปเก็บ : </span
-              >{{ getCraw.crawler_tiktok | numFormat }}
-            </div>
-            <div>
-              <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
-              >{{ getCraw.preprocess_tiktok | numFormat }}
-            </div> -->
+        <div class="md-font">
+          โพสต์ที่เกี่ยวข้อง
+          <span class="total-all">
+            {{ dataPlatform.post | numFormat }}
+          </span>
+        </div>
+        <b-container>
+          <b-row class="comment-post">
+            <b-col class="border-right">
+              <div class="md-font dp">Users</div>
+              <div class="total-sub">
+                <span class="prt">Users : </span>
+                {{ dataPlatform.users | numFormat }}
+              </div>
+            </b-col>
+            <b-col class="border-left">
+              <div class="md-font dp">Messages</div>
+              <div class="total-sub">
+                <span class="prt">Messages : </span>{{ dataPlatform.comment + dataPlatform.post | numFormat }}
+              </div>
+            </b-col>
+          </b-row>
+          <b-row class="comment-post">
+            <b-col cols="12" class="dp">
+              <div>Summary</div>
+            </b-col>
+            <span class="prt"><br />จำนวนรวม</span>
+          </b-row>
+          <b-row class="md-font">
+            <b-col cols="5">
+              <div><i class="far fa-paper-plane" /></div>
+              <div><i class="far fa-comment" /></div>
+              <div><i class="far fa-comments" /></div>
+              <div><i class="fas fa-users" /></div>
 
-            <!-- <div> {{ startFormat }} </div>
-                <div> {{ endFormat}} </div> -->
-          </b-col>
-        </b-row>
+              <!-- <div><i class="fas fa-cloud-download-alt" /></div>
+              <div><i class="fas fa-database" /></div> -->
+              <!-- <div>Start</div>
+              <div>End</div> -->
+            </b-col>
+            <b-col cols="7" class="sum-right">
+              <div>
+                <span class="prt">Posts : </span>{{ dataSum.total_post_all || 0 | numFormat }}
+              </div>
+              <div>
+                <span class="prt">Comments : </span>{{ (dataSum.total_message_all - dataSum.total_post_all) || 0 |
+                  numFormat }}
+              </div>
+              <div>
+                <span class="prt">Messages : </span>{{ dataSum.total_message_all | numFormat }}
+              </div>
+              <div>
+                <span class="prt">Users : </span>{{ Number(dataSum.total_user_all) | numFormat }}
+              </div>
+              <!-- <div>
+                <span class="prt">ข้อมูลที่ไปเก็บ : </span
+                >{{ getCraw.crawler_facebook | numFormat }}
+              </div>
+              <div>
+                <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
+                >{{ getCraw.preprocess_facebook | numFormat }}
+              </div> -->
+              <!-- <span class="prt">Post : </span><div>{{stratFormat }}</div>
+              <span class="prt">Post : </span><div>{{EndFormat }}</div> -->
+            </b-col>
+          </b-row>
       </b-container>
       <br />
     </div>
@@ -93,12 +94,8 @@
           </b-col>
         </b-row>
         <!-- <TimelineChart :chartDataTimeline='getTimelineInstagram' /> -->
-        <SentimentChart
-          v-if="getTiktok.total_sentiments"
-          :source="'instagram'"
-          :chartData="getTiktok.total_sentiments"
-          :pageType="'DashboardPage'"
-        />
+        <SentimentChart v-if="getTiktok.total_sentiments" :source="'instagram'" :chartData="getTiktok.total_sentiments"
+          :pageType="'DashboardPage'" />
         <!-- <SentimentChart :chartData="getTiktok.sentiment" /> -->
       </b-container>
     </b-modal>
@@ -109,10 +106,11 @@
 import { mapGetters } from "vuex";
 import SentimentChart from "../chart/SentimentChart.vue";
 export default {
+    props: { dataSum: { type: Object }, dataPlatform: { type: Object } },
   components: {
     SentimentChart,
   },
-  data: function() {
+  data: function () {
     return {
       showDetail: true,
       dateToday: new Intl.DateTimeFormat("en-AU").format(),
@@ -202,6 +200,7 @@ export default {
   box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
     rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
 }
+
 #tiktok:hover {
   box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
     rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
@@ -209,6 +208,7 @@ export default {
     rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
     rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
+
 #sumboxig {
   width: 100%;
   border: 2px solid #f69675;
@@ -216,6 +216,7 @@ export default {
   padding-bottom: 20px;
   min-height: 14em;
 }
+
 .date2 {
   color: black;
   margin-left: 15% !important;
@@ -237,6 +238,7 @@ export default {
   top: 13px;
   left: 140px;
 }
+
 .bg_summarize img {
   width: 118px;
   position: absolute;
@@ -246,6 +248,7 @@ export default {
   top: 50%;
   left: -16.8rem;
 }
+
 #secondig::after {
   left: 49%;
 }
@@ -287,29 +290,36 @@ export default {
 .vue-popover#foo6 {
   left: -200% !important;
 }
+
 #foo6.vue-popover.dropdown-position-bottom:before {
   left: calc(84% - 6px) !important;
 }
+
 @media only screen and (max-width: 1150px) {
   .box .tooltiptext {
     width: 45em;
   }
+
   #secondig {
     left: 0;
     margin-left: -81px;
   }
+
   #secondig::after {
     left: 25%;
   }
 }
+
 @media only screen and (min-width: 1150px) and (max-width: 1750px) {
   .box .tooltiptext {
     width: 55em;
   }
+
   #secondig {
     left: 0;
     margin-left: -81px;
   }
+
   #secondig::after {
     left: 25%;
   }
@@ -319,10 +329,12 @@ export default {
   .box .tooltiptext {
     width: 28em;
   }
+
   #secondig {
     left: 0;
     margin-left: -67px;
   }
+
   #secondig::after {
     left: 24%;
   }
@@ -333,15 +345,19 @@ export default {
     left: calc(90% - 6px) !important;
   }
 }
+
 @media only screen and (max-width: 1300px) {
   #foo6.vue-popover.dropdown-position-bottom:before {
     left: calc(90% - 6px) !important;
   }
+
   .vue-popover#foo6[data-v-aae30ed8] {
     left: -178% !important;
   }
 }
+
 @media only screen and (min-width: 820px) and (max-width: 990px) {
+
   /* .md-font {
     font-size: 1.5vw !important;
   } */
@@ -349,7 +365,9 @@ export default {
     left: -60% !important;
   }
 }
+
 @media only screen and (min-device-width: 770px) and (max-width: 850px) {
+
   /* .md-font {
     font-size: 2.2vw !important;
   } */
@@ -359,9 +377,11 @@ export default {
     left: -29px !important;
     top: 50px !important;
   }
+
   .vue-popover#foo6[data-v-aae30ed8][data-v-aae30ed8] {
     left: -29px !important;
   }
+
   #foo6.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(48% - 6px) !important;
   }
@@ -372,9 +392,11 @@ export default {
     white-space: nowrap;
     margin-left: 18vw !important;
   }
+
   .sentiment {
     width: 100%;
   }
+
   /* .md-font {
     font-size: 2vw !important;
   } */
@@ -390,9 +412,11 @@ export default {
     left: -1px !important;
     top: 50px !important;
   }
+
   .vue-popover#foo6[data-v-aae30ed8][data-v-aae30ed8] {
     left: -1px !important;
   }
+
   #foo6.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(48% - 6px) !important;
   }
@@ -402,32 +426,40 @@ export default {
   .box .tooltiptext {
     width: auto !important;
   }
+
   #secondig {
     margin-left: -40px !important;
   }
+
   .date2 {
     margin-left: unset !important;
   }
+
   #font-month {
     font-size: 3.5vw;
     margin-left: 18vw;
   }
+
   h1,
   .h1 {
     font-size: 1.5rem;
   }
+
   .align-self-center {
     display: contents;
   }
+
   /* .md-font {
     font-size: 3.5vw !important;
   } */
   .sentiment[data-v-aae30ed8] {
     width: 100%;
   }
+
   .vue-popover#foo6[data-v-aae30ed8][data-v-aae30ed8] {
     left: -1px !important;
   }
+
   #foo6.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(48% - 6px) !important;
   }

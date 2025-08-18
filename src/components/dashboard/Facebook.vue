@@ -1,22 +1,19 @@
 <template>
   <b-col sm="12" md="6" lg="4">
     <!-- <div class="box" id="facebook" v-b-modal.modal-1> -->
-    <vue-element-loading
-      :active="getLoadStatus"
-      size="80"
-      background-color="rgba(255, 255, 255, 0.3)"
-      color="#b6ac9a"
-    />
+    <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.3)"
+      color="#b6ac9a" />
     <div class="box" id="facebook" @click="toPlatform">
       <div class="left"></div>
       <div style="cursor: pointer">
+        <!-- {{ dataSum }} {{ dataSum.post }} -->
         <!-- <i class="fab fa-facebook-f fa-3x mt-3"></i> -->
         <img src="@/assets/Facebook.png" class="socialogo" />
 
         <div class="md-font">
           โพสต์ที่เกี่ยวข้อง
           <span class="total-all">
-            {{ getFacebook.post | numFormat }}
+            {{ dataPlatform.post | numFormat }}
           </span>
         </div>
         <b-container>
@@ -25,26 +22,29 @@
               <div class="md-font dp">Users</div>
               <div class="total-sub">
                 <span class="prt">Users : </span>
-                {{ getFacebook.users | numFormat }}
+                {{ dataPlatform.users | numFormat }}
               </div>
             </b-col>
             <b-col class="border-left">
               <div class="md-font dp">Messages</div>
               <div class="total-sub">
-                <span class="prt">Messages : </span
-                >{{ getFacebook.comment + getFacebook.post | numFormat }}
+                <span class="prt">Messages : </span>{{ dataPlatform.comment + dataPlatform.post | numFormat }}
               </div>
             </b-col>
           </b-row>
           <b-row class="comment-post">
-            <b-col cols="12" class="dp"><div>Summary</div></b-col>
+            <b-col cols="12" class="dp">
+              <div>Summary</div>
+            </b-col>
             <span class="prt"><br />จำนวนรวม</span>
           </b-row>
           <b-row class="md-font">
             <b-col cols="5">
               <div><i class="far fa-paper-plane" /></div>
+              <div><i class="far fa-comment" /></div>
               <div><i class="far fa-comments" /></div>
               <div><i class="fas fa-users" /></div>
+
               <!-- <div><i class="fas fa-cloud-download-alt" /></div>
               <div><i class="fas fa-database" /></div> -->
               <!-- <div>Start</div>
@@ -52,16 +52,17 @@
             </b-col>
             <b-col cols="7" class="sum-right">
               <div>
-                <span class="prt">Posts : </span
-                >{{ getSumFacebook.post | numFormat }}
+                <span class="prt">Posts : </span>{{ dataSum.total_post_all || 0 | numFormat }}
               </div>
               <div>
-                <span class="prt">Comments : </span
-                >{{ getSumFacebook.comment | numFormat }}
+                <span class="prt">Comments : </span>{{ (dataSum.total_message_all - dataSum.total_post_all) || 0 |
+                  numFormat }}
               </div>
               <div>
-                <span class="prt">Users : </span
-                >{{ Number(getSumFacebook.users) | numFormat }}
+                <span class="prt">Messages : </span>{{ dataSum.total_message_all | numFormat }}
+              </div>
+              <div>
+                <span class="prt">Users : </span>{{ Number(dataSum.total_user_all) | numFormat }}
               </div>
               <!-- <div>
                 <span class="prt">ข้อมูลที่ไปเก็บ : </span
@@ -97,12 +98,8 @@
           </b-col>
         </b-row>
         <!-- <TimelineChart :chartDataTimeline='getTimelineFacebook' /> -->
-        <SentimentChart
-          v-if="getFacebook.total_sentiments"
-          :source="'facebook'"
-          :chartData="getFacebook.total_sentiments"
-          :pageType="'DashboardPage'"
-        />
+        <SentimentChart v-if="getFacebook.total_sentiments" :source="'facebook'"
+          :chartData="getFacebook.total_sentiments" :pageType="'DashboardPage'" />
       </b-container>
     </b-modal>
   </b-col>
@@ -114,7 +111,8 @@ import SentimentChart from "../chart/SentimentChart.vue";
 // import TimelineChart from "../chart/TimelineChart.vue";
 
 export default {
-  data: function() {
+  props: { dataSum: { type: Object }, dataPlatform: { type: Object } },
+  data: function () {
     return {
       dateToday: new Intl.DateTimeFormat("en-AU").format(),
       fbPost: "",
@@ -201,7 +199,7 @@ export default {
     hideModal() {
       this.open = false;
     },
-    onOptionsChange: function() {
+    onOptionsChange: function () {
       this.$store.commit("changeDataChoice", { choice: this.type_selected });
     },
   },
@@ -229,10 +227,12 @@ export default {
   padding-bottom: 20px;
   min-height: 14em;
 }
+
 .date2 {
   color: black;
   margin-left: 15% !important;
 }
+
 #overlay {
   position: fixed;
   display: none;
@@ -246,9 +246,11 @@ export default {
   z-index: 2;
   cursor: pointer;
 }
+
 #foo.vue-popover.dropdown-position-bottom:before {
   left: calc(9% - 6px) !important;
 }
+
 .vue-popover#foo {
   left: unset !important;
 }
@@ -260,9 +262,11 @@ export default {
   margin-top: -49px;
   margin-left: -43px;
 }
+
 .hover-click {
   cursor: pointer;
 }
+
 #font-week {
   font-size: 1vw;
 }
@@ -280,25 +284,31 @@ export default {
 .bl-txt {
   color: black;
 }
+
 .card-sum {
   padding: 0px;
   margin: 0;
   margin-bottom: 15px;
 }
+
 .card-body {
   min-height: 13rem;
 }
+
 .mb-2 {
   margin: auto;
 }
+
 .card-title {
   position: relative;
   z-index: 1;
   color: white;
 }
+
 .card-text:last-child {
   margin-top: 36px;
 }
+
 #tt-fb h4 {
   position: relative;
   z-index: 1;
@@ -315,10 +325,12 @@ export default {
   top: 13px;
   left: 140px;
 }
+
 .bg_summarize img {
   width: 118px;
   position: absolute;
 }
+
 .summpad {
   margin-top: 50px;
   padding-right: 15px;
@@ -327,9 +339,11 @@ export default {
   margin-right: auto;
   margin-left: auto;
 }
+
 #textsum {
   font-size: 25px;
 }
+
 #chart-text {
   flex-flow: nowrap;
 }
@@ -355,14 +369,14 @@ export default {
 
 .btn-primary:not(:disabled):not(.disabled).active,
 .btn-primary:not(:disabled):not(.disabled):active,
-.show > .btn-primary.dropdown-toggle {
+.show>.btn-primary.dropdown-toggle {
   color: #4c412b;
   background-color: #ede7dd;
   width: 125px;
   border-color: transparent;
 }
 
-.show > .btn-primary.dropdown-toggle:focus {
+.show>.btn-primary.dropdown-toggle:focus {
   box-shadow: none !important;
 }
 
@@ -396,18 +410,18 @@ export default {
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0);
 }
+
 #facebook {
   /* background-color: #4867aa; */
   background: #043185;
-  background: linear-gradient(
-    145deg,
-    #4867aa 10%,
-    rgb(17 41 85) 55%
-  );
+  background: linear-gradient(145deg,
+      #4867aa 10%,
+      rgb(17 41 85) 55%);
   /* background: linear-gradient(184deg, #7ba0f0, rgb(9, 31, 73) ); */
   box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
   color: #ffffff;
 }
+
 #facebook:hover {
   box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
     rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
@@ -415,15 +429,18 @@ export default {
     rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
     rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
+
 .boxr {
   margin: auto;
   margin-left: 15%;
   max-width: 80%;
 }
+
 .modal-content {
   padding: 40px;
   padding-top: 0px;
 }
+
 button.close {
   font-size: 40px;
 }
@@ -463,6 +480,7 @@ button.close {
   color: black;
   text-align: start;
 }
+
 .date {
   color: black;
 }
@@ -537,9 +555,11 @@ button.close {
   #dashboard {
     height: auto;
   }
+
   .box .tooltiptext {
     width: 55em;
   }
+
   .boxr {
     margin: auto;
     max-width: 100%;
@@ -554,25 +574,30 @@ button.close {
     left: 25%;
   }
 }
+
 @media only screen and (min-width: 1024px) and (max-width: 1370px) {
   #sumboxsum {
     min-height: 50vh;
     padding-top: 90px;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 985px) {
   .col-sm-4 {
     flex: 42.333333%;
     max-width: 58.333333%;
   }
+
   #sumboxsum {
     min-height: 50vh;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 941px) {
   #dashboard {
     min-height: auto;
   }
+
   .boxr {
     margin: auto;
     max-width: 100%;
@@ -582,10 +607,12 @@ button.close {
   .box .tooltiptext {
     width: 28em;
   }
+
   #firstfb {
     left: 0;
     margin-left: -67px;
   }
+
   #firstfb::after {
     left: 24%;
   }
@@ -595,6 +622,7 @@ button.close {
   #font-week {
     font-size: 1.5vw;
   }
+
   /* .md-font {
     font-size: 1.5vw !important;
   } */
@@ -607,6 +635,7 @@ button.close {
   div #g-chart {
     margin-left: -44px !important;
   }
+
   /* .md-font {
     font-size: 2.2vw !important;
   } */
@@ -629,15 +658,18 @@ button.close {
   .img-size {
     width: 5vw !important;
   }
+
   .vue-popover#foo {
     width: 85vw !important;
     z-index: 2 !important;
     left: -29px !important;
     top: 50px !important;
   }
+
   #foo.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(48% - 6px) !important;
   }
+
   .vue-popover[data-v-aae30ed8] {
     padding: 15px;
   }
@@ -647,26 +679,32 @@ button.close {
   .align-self-center {
     display: contents;
   }
+
   .date2 {
     white-space: nowrap;
     margin-left: 18vw !important;
   }
+
   .sentiment {
     width: 100%;
   }
+
   #font-week {
     font-size: 2vw;
   }
+
   .col-sm-4 {
     flex: 42.333333%;
     max-width: 58.333333%;
   }
+
   /* .md-font {
     font-size: 2vw !important;
   } */
   .legend {
     font-size: 1.7vw !important;
   }
+
   #dashboard {
     overflow: hidden;
   }
@@ -677,6 +715,7 @@ button.close {
     flex: unset;
     max-width: unset;
   }
+
   .box .tooltiptext {
     width: auto !important;
   }
@@ -690,11 +729,13 @@ button.close {
     overflow: hidden;
     margin-left: -64px !important;
   }
+
   .modal-content {
     padding: 15px;
     padding-top: 0px;
     overflow: hidden;
   }
+
   .bl-txt md-font {
     margin-top: -28px;
     margin-bottom: 10px;
@@ -704,57 +745,72 @@ button.close {
     padding-left: 0;
     padding-right: 0;
   }
+
   .summpad {
     padding-right: 15%;
     padding-left: 15%;
   }
+
   .card-text {
     font-size: 4vw;
   }
+
   .bg_title img[data-v-aae30ed8] {
     left: 120px;
   }
+
   .legend {
     font-size: 1.7vw !important;
   }
+
   .bl-txt {
     font-size: 2vw !important;
   }
+
   .legend a {
     display: block;
     margin-left: -4px;
     font-size: 1.5vw !important;
   }
+
   #icon-chart {
     margin-top: -25px;
   }
+
   .vue-popover#foo {
     width: 75vw !important;
     z-index: 2 !important;
     left: -1px !important;
     top: 50px !important;
   }
+
   #foo.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(48% - 6px) !important;
   }
+
   .vue-popover[data-v-aae30ed8] {
     padding: 15px;
   }
+
   .date2 {
     margin-left: unset !important;
   }
+
   #font-month {
     font-size: 2vw;
     margin-left: 34vw;
   }
+
   #font-week {
     font-size: 2vw;
     margin-left: 34vw;
   }
+
   h1,
   .h1 {
     font-size: 1.5rem;
   }
+
   .align-self-center {
     display: contents;
   }
@@ -762,13 +818,16 @@ button.close {
   .legend {
     margin-top: 11px;
   }
+
   .col-2 {
     flex: 0 0 25.666667%;
     max-width: 25.666667%;
   }
+
   .sentiment[data-v-aae30ed8] {
     width: 100%;
   }
+
   .date[data-v-aae30ed8] {
     margin-left: 43vw;
   }
@@ -783,19 +842,23 @@ button.close {
   .box .tooltiptext {
     width: auto !important;
   }
+
   #firstfb {
     margin-left: -40px !important;
   }
+
   div #g-chart {
     width: 336px;
     overflow: hidden;
     margin-left: -64px !important;
   }
+
   .modal-content {
     padding: 15px;
     padding-top: 0px;
     overflow: hidden;
   }
+
   .bl-txt md-font {
     margin-top: -28px;
     margin-bottom: 10px;
@@ -805,30 +868,38 @@ button.close {
     padding-left: 0;
     padding-right: 0;
   }
+
   .summpad {
     padding-right: 15%;
     padding-left: 15%;
   }
+
   .card-text {
     font-size: 4vw;
   }
+
   .bg_title img[data-v-aae30ed8] {
     left: 120px;
   }
+
   .legend {
     font-size: 3vw !important;
   }
+
   .bl-txt {
     font-size: 3vw !important;
   }
+
   .legend a {
     display: block;
     margin-left: -4px;
     font-size: 2.5vw !important;
   }
+
   #icon-chart {
     margin-top: -25px;
   }
+
   .vue-popover#foo,
   .vue-popover#foo2,
   .vue-popover#foo3,
@@ -840,43 +911,54 @@ button.close {
     left: -1px !important;
     top: 50px !important;
   }
+
   #foo.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(48% - 6px) !important;
   }
+
   .vue-popover[data-v-aae30ed8] {
     padding: 15px;
   }
+
   .date2 {
     margin-left: unset !important;
   }
+
   #font-month {
     font-size: 3.5vw;
     margin-left: 18vw;
   }
+
   #font-week {
     font-size: 3.5vw;
     margin-left: 18vw;
   }
+
   h1,
   .h1 {
     font-size: 1.5rem;
   }
+
   .align-self-center {
     display: contents;
   }
+
   /* .md-font {
     font-size: 4vw !important;
   } */
   .legend {
     margin-top: 11px;
   }
+
   .col-2 {
     flex: 0 0 25.666667%;
     max-width: 25.666667%;
   }
+
   .sentiment[data-v-aae30ed8] {
     width: 100%;
   }
+
   .date[data-v-aae30ed8] {
     margin-left: 43vw;
   }

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-5">
+  <div class="px-1 px-lg-5">
     <div class="text-left">
       <span class="h5 mr-3 d-inline-block">Wordcloud / Hashtagcloud</span>
       <div class="d-inline-block">

@@ -1,11 +1,13 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-    <div id="content" >
+    <div id="content">
       <div v-if="getToPlatform">
         <b-container fluid>
           <b-row>
-            <b-col class="d-contents"><h1 class="title">Platform</h1> </b-col>
+            <b-col class="d-contents">
+              <h1 class="title">Platform</h1>
+            </b-col>
             <b-col class="text-right">
               <span class="bold md-font"> </span>
               <div v-if="getRangeStartdate" class="prt">
@@ -16,9 +18,7 @@
                   <span>Today</span>
                   {{ new Intl.DateTimeFormat("en-AU").format() }}
                 </span>
-                <span class="pt-3"
-                  ><i class="fa fa-print align-middle" @click="print"></i
-                ></span>
+                <span class="pt-3"><i class="fa fa-print align-middle" @click="print"></i></span>
               </div>
               <b-button id="export-btn" v-b-modal.modal class="d-none">
                 <i class="fa fa-info-circle fa-2x" />
@@ -43,31 +43,24 @@
             </b-col>
           </b-row>
           <section id="date-picker" class="text-rigth">
-            <date-picker
-              v-model="valueDate"
-              type="date"
-              range
-              placeholder="เลือกช่วงเวลา"
-              :disabled-date="date => date >= new Date()"
-              value-type="YYYY-MM-DD"
-              format="DD/MM/YYYY"
-              @change="selectData()"
-            ></date-picker>
+            <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา"
+              :disabled-date="date => date >= new Date()" value-type="YYYY-MM-DD" format="DD/MM/YYYY"
+              @change="selectData()"></date-picker>
           </section>
           <b-row align-h="end"> </b-row>
         </b-container>
         <b-container>
           <b-row style="padding-bottom: 200px">
-            <Summary  class="mt-2"/>
-            <Facebook />
-            <Twitter />
-            <Pantip />
-            <News />
-            <Youtube />
-            <Instagram />
-            <Blockdit />
-            <Tiktok />
-            <Threads />
+            <Summary class="mt-2" :dataSum="dataSum" />
+            <Facebook :dataSum="dataSum.summary.platform_data.facebook || {}" :dataPlatform="dataPlatform.facebook || {}"/>
+            <Twitter :dataSum="dataSum.summary.platform_data.twitter || {}" :dataPlatform="dataPlatform.twitter || {}" />
+            <Pantip :dataSum="dataSum.summary.platform_data.pantip || {}" :dataPlatform="dataPlatform.pantip || {}" />
+            <News :dataSum="dataSum.summary.platform_data.news || {}" :dataPlatform="dataPlatform.news || {}" />
+            <Youtube :dataSum="dataSum.summary.platform_data.youtube || {}" :dataPlatform="dataPlatform.youtube || {}" />
+            <Instagram :dataSum="dataSum.summary.platform_data.instagram || {}" :dataPlatform="dataPlatform.instagram || {}" />
+            <Blockdit :dataSum="dataSum.summary.platform_data.blockdit || {}" :dataPlatform="dataPlatform.blockdit || {}" />
+            <Tiktok :dataSum="dataSum.summary.platform_data.tiktok || {}" :dataPlatform="dataPlatform.tiktok || {}" />
+            <Threads :dataSum="dataSum.summary.platform_data.threads || {}" :dataPlatform="dataPlatform.threads || {}" />
           </b-row>
         </b-container>
       </div>
@@ -135,8 +128,10 @@ export default {
     Tiktok,
     Threads
   },
-  data: function() {
+  data: function () {
     return {
+      dataSum: null,
+      dataPlatform:null,
       domainData: "",
       sdate: "",
       edate: "",
@@ -248,47 +243,117 @@ export default {
     };
   },
   methods: {
-    selectData() {
+    apidash() {
+    this.$store.commit("setLoadStatus", true);
+      // let sdate, edate, today;
+
+
+      // today = moment(new Date()).format().slice(0, 10);
+      // sdate = "start_date=" + today + "T00:00:00";
+      // edate = "&end_date=" + today + "T23:59:59";
       if (this.valueDate[0] != null) {
         console.log(this.valueDate[0], this.valueDate[1]);
         this.start_date = this.valueDate[0] + "T00:00:00";
         this.end_date = this.valueDate[1] + "T23:59:59";
-        this.$store.commit("setRageStartdate", this.start_date);
-        this.$store.commit("setRageEnddate", this.end_date);
-        this.$store.dispatch("fetchSentimentStatDashboard", {
-          start_date: this.start_date,
-          end_date: this.end_date,
-          domain:'All'
-          // domain: this.domainData
-        });
-        this.$store.dispatch("fetchAllstats", {
-          start_date: this.start_date,
-          end_date: this.end_date,
-            domain: 'All'
-        });
       } else {
         let today = moment(new Date())
           .format()
           .slice(0, 10);
         this.start_date = today + "T00:00:00";
         this.end_date = today + "T23:59:59";
-        this.$store.dispatch("fetchSentimentStatDashboard", {
-          start_date: this.start_date,
-          end_date: this.end_date,
-          domain:'All'
-          // domain: this.domainData
+      }
+
+      var config = {
+        method: "get",
+        url:
+          "https://api2.cognizata.com/api/v2/platform/getAllstats?" +
+          "start_date=" + this.start_date + "&end_date=" +
+          this.end_date,
+        // +"&source="+this.source,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      this.axios(config)
+        .then((response) => {
+          this.dataSum = response.data
+          // console.log('dataSum', this.dataSum);
+
+        })
+        .catch(function (error) {
+          console.log(error);
+
         });
-        this.$store.dispatch("fetchAllstats", {
-          start_date: this.start_date,
-          end_date: this.end_date,
-            domain: 'All'
+         var config2 = {
+        method: "get",
+        url:
+          "https://api2.cognizata.com/api/v2/platform/getSentimentStat?" +
+          "start_date=" + this.start_date + "&end_date=" +
+          this.end_date,
+        // +"&source="+this.source,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      this.axios(config2)
+        .then((response) => {
+          this.dataPlatform = response.data
+          // console.log('dataSum', this.dataPlatform);
+this.$store.commit("setLoadStatus", false);
+        })
+        .catch(function (error) {
+          console.log(error);
+
         });
+    },
+    selectData() {
+      this.apidash()
+      if (this.valueDate[0] != null) {
+        console.log(this.valueDate[0], this.valueDate[1]);
+        this.start_date = this.valueDate[0] + "T00:00:00";
+        this.end_date = this.valueDate[1] + "T23:59:59";
+        this.$store.commit("setRageStartdate", this.start_date);
+        this.$store.commit("setRageEnddate", this.end_date);
+
+      //   this.$store.dispatch("fetchSentimentStatDashboard", {
+      //     start_date: this.start_date,
+      //     end_date: this.end_date,
+      //     domain: 'All'
+      //     // domain: this.domainData
+      //   });
+      //   this.$store.dispatch("fetchAllstats", {
+      //     start_date: this.start_date,
+      //     end_date: this.end_date,
+      //     domain: 'All'
+      //   });
+      // } else {
+      //   let today = moment(new Date())
+      //     .format()
+      //     .slice(0, 10);
+      //   this.start_date = today + "T00:00:00";
+      //   this.end_date = today + "T23:59:59";
+      //   this.$store.dispatch("fetchSentimentStatDashboard", {
+      //     start_date: this.start_date,
+      //     end_date: this.end_date,
+      //     domain: 'All'
+      //     // domain: this.domainData
+      //   });
+      //   this.$store.dispatch("fetchAllstats", {
+      //     start_date: this.start_date,
+      //     end_date: this.end_date,
+      //     domain: 'All'
+      //   });
       }
     },
     print() {
       const d = new Printd();
       d.print(document.getElementById("content"), [this.cssText]);
     }
+  },
+  mounted() {
+    this.apidash()
   },
   async created() {
     console.log(`${this.$options.name} component succesfully mounted`);
@@ -303,7 +368,7 @@ export default {
     this.$store.dispatch("fetchAllstats", {
       start_date: this.start_date,
       end_date: this.end_date,
-        domain: 'All'
+      domain: 'All'
     });
     await this.$store.dispatch("fetchDomain");
     let domainName = this.getShowDomain.map(key => {
@@ -315,7 +380,7 @@ export default {
     await this.$store.dispatch("fetchSentimentStatDashboard", {
       start_date: this.start_date,
       end_date: this.end_date,
-      domain:'All'
+      domain: 'All'
       // domain: domainName
     });
   }
@@ -327,9 +392,11 @@ export default {
   font-size: 25px;
   cursor: pointer;
 }
+
 .modal-vue .modal-vue-show {
   width: 50% !important;
 }
+
 #content {
   max-width: 93%;
   margin: auto;
@@ -337,6 +404,7 @@ export default {
   min-height: 100vh;
   padding: 0;
 }
+
 .drop {
   color: #4c412b;
   background-color: #ede7dd;
@@ -347,6 +415,7 @@ export default {
 .dropdown-toggle::after {
   margin-left: 7em;
 }
+
 .dropdown-toggle[data-v-1976f48e] {
   width: 80%;
   color: #4c412b;
@@ -354,21 +423,24 @@ export default {
   border-color: transparent;
   cursor: pointer;
 }
+
 .btn-primary:not(:disabled):not(.disabled).active,
 .btn-primary:not(:disabled):not(.disabled):active,
-.show > .btn-primary.dropdown-toggle {
+.show>.btn-primary.dropdown-toggle {
   color: #4c412b;
   background-color: #ede7dd;
   width: 125px;
   border-color: transparent;
 }
-.show > .btn-primary.dropdown-toggle:focus {
+
+.show>.btn-primary.dropdown-toggle:focus {
   box-shadow: none !important;
 }
 
 .btn-primary:focus {
   box-shadow: none !important;
 }
+
 #navHome {
   z-index: 1;
 }
@@ -382,54 +454,67 @@ export default {
   color: black;
   text-align: start;
 }
+
 @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
   #overflow-page {
     overflow: hidden;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 600px) {
   .title {
     font-size: 5vw !important;
   }
 }
+
 .bold a {
   color: #695a3d;
 }
+
 @media only screen and (min-width: 0px) and (max-width: 600px) {
   .rounded {
     font-size: small;
   }
+
   .fa-print {
     font-size: 20px;
     margin-right: 5px;
   }
+
   .p-4 {
     padding: 15px 0px !important;
   }
+
   .d-contents {
     display: contents !important;
   }
+
   .title {
     font-size: 5vw !important;
   }
+
   .col-10 {
     max-width: 100%;
   }
+
   #date-picker {
     /* margin: 20px 0px 0px 0px; */
     text-align: center;
   }
 }
+
 @media only screen and (min-device-width: 768px) and (max-device-width: 1000px) {
   .popup {
     width: 100%;
   }
 }
+
 @media only screen and (min-device-width: 768px) and (max-device-width: 1000px) {
   .popup {
     width: 100%;
   }
 }
+
 @media only screen and (min-width: 375px) and (max-width: 815px) {
   .popup {
     width: 100%;

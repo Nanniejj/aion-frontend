@@ -1,74 +1,75 @@
 <template>
   <b-col sm="12" md="6" lg="4">
     <!-- <div class="box" id="youtube" v-b-modal.modal-6> -->
-    <vue-element-loading
-      :active="getLoadStatus"
-      size="80"
-      background-color="rgba(255, 255, 255, 0.3)"
-      color="#b6ac9a"
-    />
+    <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.3)"
+      color="#b6ac9a" />
     <div class="box" id="youtube" @click="toPlatform">
       <div class="right"></div>
       <img src="@/assets/Youtube.png" class="socialogo" />
       <div class="md-font">
-        จำนวนวิดิโอที่เกี่ยวข้อง
-        <span class="total-all"> {{ getYoutube.post | numFormat }} </span>
+        โพสต์ที่เกี่ยวข้อง
+        <span class="total-all">
+          {{ dataPlatform.post | numFormat }}
+        </span>
       </div>
       <b-container>
         <b-row class="comment-post">
           <b-col class="border-right">
             <div class="md-font dp">Users</div>
             <div class="total-sub">
-              <span class="prt">Users : </span
-              >{{ getYoutube.users | numFormat }}
+              <span class="prt">Users : </span>
+              {{ dataPlatform.users | numFormat }}
             </div>
           </b-col>
           <b-col class="border-left">
             <div class="md-font dp">Messages</div>
             <div class="total-sub">
-              <span class="prt">Messages : </span
-              >{{ (getYoutube.comment + getYoutube.post) | numFormat }}
+              <span class="prt">Messages : </span>{{ dataPlatform.comment + dataPlatform.post | numFormat }}
             </div>
           </b-col>
         </b-row>
         <b-row class="comment-post">
-          <b-col cols="12" class="dp"><div>Summary</div></b-col>
+          <b-col cols="12" class="dp">
+            <div>Summary</div>
+          </b-col>
           <span class="prt"><br />จำนวนรวม</span>
         </b-row>
         <b-row class="md-font">
           <b-col cols="5">
             <div><i class="far fa-paper-plane" /></div>
+            <div><i class="far fa-comment" /></div>
             <div><i class="far fa-comments" /></div>
             <div><i class="fas fa-users" /></div>
+
             <!-- <div><i class="fas fa-cloud-download-alt" /></div>
-            <div><i class="fas fa-database" /></div> -->
+              <div><i class="fas fa-database" /></div> -->
             <!-- <div>Start</div>
               <div>End</div> -->
           </b-col>
           <b-col cols="7" class="sum-right">
             <div>
-              <span class="prt">Posts : </span
-              >{{ getSumYoutube.post | numFormat }}
+              <span class="prt">Posts : </span>{{ dataSum.total_post_all || 0 | numFormat }}
             </div>
             <div>
-              <span class="prt">Comments : </span
-              >{{ getSumYoutube.comment | numFormat }}
+              <span class="prt">Comments : </span>{{ (dataSum.total_message_all - dataSum.total_post_all) || 0 |
+                numFormat }}
             </div>
             <div>
-              <span class="prt">Users : </span
-              >{{ Number(getSumYoutube.users) | numFormat }}
+              <span class="prt">Messages : </span>{{ dataSum.total_message_all | numFormat }}
+            </div>
+            <div>
+              <span class="prt">Users : </span>{{ Number(dataSum.total_user_all) | numFormat }}
             </div>
             <!-- <div>
-              <span class="prt">ข้อมูลที่ไปเก็บ : </span
-              >{{ getCraw.crawler_youtube | numFormat }}
-            </div>
-            <div>
-              <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
-              >{{ getCraw.preprocess_youtube | numFormat }}
-            </div> -->
-
-            <!-- <div>{{ startFormat}}</div>
-              <div>{{ endFormat}}</div> -->
+                <span class="prt">ข้อมูลที่ไปเก็บ : </span
+                >{{ getCraw.crawler_facebook | numFormat }}
+              </div>
+              <div>
+                <span class="prt">ข้อมูลที่ประมวลผลได้ : </span
+                >{{ getCraw.preprocess_facebook | numFormat }}
+              </div> -->
+            <!-- <span class="prt">Post : </span><div>{{stratFormat }}</div>
+              <span class="prt">Post : </span><div>{{EndFormat }}</div> -->
           </b-col>
         </b-row>
       </b-container>
@@ -91,12 +92,8 @@
             </div>
           </b-col>
         </b-row>
-        <SentimentChart
-          v-if="getYoutube.total_sentiments"
-          :source="'youtube'"
-          :chartData="getYoutube.total_sentiments"
-          :pageType="'DashboardPage'"
-        />
+        <SentimentChart v-if="getYoutube.total_sentiments" :source="'youtube'" :chartData="getYoutube.total_sentiments"
+          :pageType="'DashboardPage'" />
         <!-- <SentimentChart :chartData="getYoutube.sentiment" /> -->
       </b-container>
     </b-modal>
@@ -108,7 +105,8 @@ import { mapGetters } from "vuex";
 import SentimentChart from "../chart/SentimentChart.vue";
 
 export default {
-  data: function() {
+   props: { dataSum: { type: Object }, dataPlatform: { type: Object } },
+  data: function () {
     return {
       showDetail: true,
       dateToday: new Intl.DateTimeFormat("en-AU").format(),
@@ -202,6 +200,7 @@ export default {
     rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
   transition: 0.3s;
 }
+
 #youtube:hover {
   box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
     rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
@@ -209,6 +208,7 @@ export default {
     rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
     rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
+
 #sumboxyt {
   width: 100%;
   border: 2px solid #ef6666;
@@ -216,13 +216,16 @@ export default {
   padding-bottom: 20px;
   min-height: 14em;
 }
+
 .date2 {
   color: black;
   margin-left: 15% !important;
 }
+
 .vue-popover#foo5 {
   left: -100% !important;
 }
+
 #tt-yt h4 {
   position: relative;
   z-index: 1;
@@ -232,46 +235,57 @@ export default {
   padding-top: 12px;
   margin-bottom: 17px;
 }
+
 .bg_title img {
   position: absolute;
   width: 40%;
   top: 13px;
   left: 140px;
 }
+
 .bg_summarize img {
   width: 118px;
   position: absolute;
 }
+
 #firstyt {
   top: 50%;
   left: 10%;
 }
+
 #firstyt::after {
   left: 10%;
 }
+
 .bold a {
   color: #695a3d;
 }
+
 .total-all {
   font-size: 16pt;
   font-weight: bold;
 }
+
 .total-sub {
   font-size: calc(1em + 0.8vw);
   font-weight: bold;
 }
+
 .comment-post {
   margin-top: 15px;
 }
+
 .sentiment {
   color: black;
   text-align: start;
 }
+
 .date2 {
   color: black;
   margin-left: 40%;
   margin-top: 15px;
 }
+
 .doc {
   color: #695a3d;
   text-align: start;
@@ -281,10 +295,12 @@ export default {
   .box .tooltiptext {
     width: 45em;
   }
+
   #firstyt {
     left: 11em;
     margin-left: -483px;
   }
+
   #firstyt::after {
     left: 65%;
   }
@@ -294,10 +310,12 @@ export default {
   .box .tooltiptext {
     width: 55em;
   }
+
   #firstyt {
     left: 11em;
     margin-left: -483px;
   }
+
   #firstyt::after {
     left: 65%;
   }
@@ -307,28 +325,33 @@ export default {
   .box .tooltiptext {
     width: 28em;
   }
+
   #firstyt {
     left: 0;
     margin-left: -67px;
   }
+
   #firstyt::after {
     left: 24%;
   }
 }
 
 @media only screen and (min-width: 820px) and (max-width: 990px) {
+
   /* .md-font {
     font-size: 1.5vw !important;
   } */
   #foo5.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(9% - 6px) !important;
   }
+
   .vue-popover#foo5 {
     left: unset !important;
   }
 }
 
 @media only screen and (min-device-width: 770px) and (max-width: 850px) {
+
   /* .md-font {
     font-size: 2.2vw !important;
   } */
@@ -343,6 +366,7 @@ export default {
   .socialogo {
     width: 15% !important;
   }
+
   .vue-popover#foo5 {
     width: 85vw !important;
     z-index: 2 !important;
@@ -356,15 +380,18 @@ export default {
     white-space: nowrap;
     margin-left: 18vw !important;
   }
+
   .sentiment {
     width: 100%;
   }
+
   /* .md-font {
     font-size: 2vw !important;
   } */
   #foo5.vue-popover.dropdown-position-bottom[data-v-aae30ed8]:before {
     left: calc(9% - 6px) !important;
   }
+
   .vue-popover#foo5 {
     left: unset !important;
   }
@@ -374,29 +401,36 @@ export default {
   .box .tooltiptext {
     width: auto !important;
   }
+
   #firstyt {
     margin-left: -40px !important;
   }
+
   .bg_title img[data-v-aae30ed8] {
     left: 120px;
   }
+
   .vue-popover#foo5 {
     width: 75vw !important;
     z-index: 2 !important;
     left: -1px !important;
     top: 50px !important;
   }
+
   .date2 {
     margin-left: unset !important;
   }
+
   #font-month {
     font-size: 2vw;
     margin-left: 34vw;
   }
+
   h1,
   .h1 {
     font-size: 1.5rem;
   }
+
   .sentiment[data-v-aae30ed8] {
     width: 100%;
   }
@@ -406,29 +440,36 @@ export default {
   .box .tooltiptext {
     width: auto !important;
   }
+
   #firstyt {
     margin-left: -40px !important;
   }
+
   .bg_title img[data-v-aae30ed8] {
     left: 120px;
   }
+
   .vue-popover#foo5 {
     width: 85vw !important;
     z-index: 2 !important;
     left: -1px !important;
     top: 50px !important;
   }
+
   .date2 {
     margin-left: unset !important;
   }
+
   #font-month {
     font-size: 3.5vw;
     margin-left: 18vw;
   }
+
   h1,
   .h1 {
     font-size: 1.5rem;
   }
+
   /* .md-font {
     font-size: 3.5vw !important;
   } */

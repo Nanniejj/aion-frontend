@@ -65,7 +65,7 @@
                                 </a> 
                                 <a v-else class="d-flex align-items-center justify-content-center" v-bind:href="profile.link_original" target="_blank"
                                     style="color: #2c3e50"> 
-                                    <h4 class="text-truncate mb-0 mr-2">{{ profile.name || data.account_name || profile.uid }}</h4>
+                                    <h4 class="py-2 text-truncate">{{ profile.name || data.account_name || profile.uid }}</h4>
                                     <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
                                 </a> 
                                 

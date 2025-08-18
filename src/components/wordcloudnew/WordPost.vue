@@ -1,32 +1,71 @@
 <template>
-  <div>
-    <div class="container" id="tab-all" v-if="getSentimentPost">
+  <div id="wordcloud">
+    <vue-element-loading :active="getLoadPostCloud" size="80" background-color="rgba(255, 255, 255, 0.5)"
+      color="#b6ac9a" />
+    {{ getPostsAll }}
+    <!-- {{ getPostsAll }}dfgdfgdfgdf -->
+    <div class="container" id="tab-all" v-if="getPostsAll">
+      <b-row v-if="getQuerySearch" class="mb-1">
+        <b-col md="8" lg="8" class="m-auto my-1">
+          <h5 class="bold text-lg-left text-md-left">{{ getQuerySearch }}</h5>
+        </b-col>
+        <b-col md="4" lg="4" class="text-lg-right my-1">
+          <span id="post-comment">
+            <i class="far fa-paper-plane" />
+
+            <b>
+              <span v-if="getPostsAll.count !== 0">
+                {{ getPostsAll.count | numFormat }} </span><span v-else> 0 </span></b>
+            โพสต์
+          </span>
+        </b-col>
+      </b-row>
       <div class="row">
-        <b-col sm="12" md="12" lg="6" id="tab-post">
+        <b-col sm="12" md="12" lg="" v-if="checkpost">
+          <b-form-group label="" v-slot="{ ariaDescribedby }">
+            <b-row>
+              <b-col sm="12">
+                <b-form-radio-group v-model="selected" :options="optionsstm" :aria-describedby="ariaDescribedby"
+                  name="radio-inline" class="mt-2 text-lg-left ml-2 text-md-center text-sm-center"
+                  @change="selectSentiment"></b-form-radio-group>
+              </b-col>
+            </b-row>
+          </b-form-group>
+        </b-col>
+        <b-col sm="12" md="12" lg="6" id="tab-post" v-if="!checkpost">
           <b-row>
             <b-col cols="12">
-              <span v-if="social === 'facebook'"><img src="@/assets/Facebook.png" width="50px" id="img-title" />
+              <span v-if="
+                getWordCloudSocial ===
+                'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
+              ">
+                <a> <a class="all">ALL</a> </a>
               </span>
-              <span v-if="social === 'twitter'"><img src="@/assets/Twitter.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'facebook'"><img src="@/assets/Facebook.png" width="50px"
+                  id="img-title" />
               </span>
-              <span v-if="social === 'pantip'"><img src="@/assets/Pantip.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'twitter'"><img src="@/assets/Twitter.png" width="50px"
+                  id="img-title" />
               </span>
-              <span v-if="social === 'youtube'"><img src="@/assets/Youtube.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'pantip'"><img src="@/assets/Pantip.png" width="50px" id="img-title" />
               </span>
-              <span v-if="social === 'news'"><img src="@/assets/News.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'youtube'"><img src="@/assets/Youtube.png" width="50px"
+                  id="img-title" />
               </span>
-              <span v-if="social === 'instagram'"><img src="@/assets/Instagram.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'news'"><img src="@/assets/News.png" width="50px" id="img-title" />
+              </span>
+              <span v-if="getWordCloudSocial === 'instagram'"><img src="@/assets/Instagram.png" width="50px"
+                  id="img-title" />
               </span>
               <span id="post-comment">
                 <i class="far fa-paper-plane" />
-                <b> {{ getSentimentPost.count | numFormat }} </b> posts |
+                <b> {{ getPostsAll.count | numFormat }} </b> posts |
                 <i class="far fa-comments" />
-                <b> {{ getSentimentPost.total_comment | numFormat }} </b>
+                <b> {{ getPostsAll.total_comment | numFormat }} </b>
                 comments</span>
             </b-col>
           </b-row>
         </b-col>
-
         <b-col sm="12" md="12" lg="6" id="tab-view">
           <span id="title-tab"><i class="fas fa-sort-amount-down-alt"></i></span>
           <span id="all-eltab">
@@ -44,54 +83,47 @@
       </div>
     </div>
 
-    <div v-if="getSentimentPost.data.length == 0" class="md-font">
-      <b-card>
-        <div class="mt-3">ไม่พบข้อมูล</div>
-      </b-card>
-    </div>
+    <div v-if="getPostsAll">
+      <!-- Highlight -->
+      <b-form-checkbox switch size="lg" class="text-right mb-2" v-model="checked">
+        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
+        <span v-else class="box-hl pl-2 pr-2">Highlight</span>
+      </b-form-checkbox>
 
-    <div v-if="getSentimentPost">
+      <div v-if="getDetailPost.length == 0" class="md-font">
+        <b-card>
+          <div class="mt-3">ไม่พบข้อมูล</div>
+        </b-card>
+      </div>
       <b-card no-body class="overflow-hidden" header-tag="header" footer-tag="footer"
         style="max-width: 100%; margin-bottom: 30px" v-for="(datas, k) in paginate" :key="k">
         <template #header>
           <b-row>
             <b-col style="text-align: initial; display: contents">
-              <img v-if="datas.profile_image == undefined || datas.photo == ''" :src="user" loading="lazy"
-                class="user-img" @error="setAltImg" />
-              <!-- 
-              <img
-                v-else
-                v-bind:src="datas.profile_image"
-                loading="lazy"
-                class="user-img"
-              /> -->
-              <b-avatar v-else size="47px" :src="datas.profile_image" loading="lazy" class="imgpro"></b-avatar>
+              <span v-if="datas.profile_image">
+                <b-avatar @error="user" size="47px" :src="datas.profile_image" loading="lazy" class="imgpro"
+                  v-if="datas.source != 'blockdit'"></b-avatar>
+                <b-avatar @error="user" size="47px" :src="datas.profile_image" loading="lazy" v-else></b-avatar>
+              </span>
+              <span v-else> <b-avatar size="45px"></b-avatar></span>
+
               <img v-if="datas.source === 'twitter'" :src="imgtw" class="social-img" />
               <img v-if="datas.source === 'facebook'" :src="imgfb" class="social-img" />
               <img v-if="datas.source === 'pantip'" :src="imgpt" class="social-img" />
               <img v-if="datas.source === 'youtube'" :src="imgyt" class="social-img" />
               <img v-if="datas.source === 'news'" :src="imgnw" class="social-img" />
               <img v-if="datas.source === 'instagram'" :src="imgig" class="social-img" />
+              <img v-if="datas.source === 'blockdit'" :src="imgbd" class="social-img" />
+              <img v-if="datas.source === 'tiktok'" :src="imgtt" class="social-img" />
+              <img v-if="datas.source === 'threads'" :src="imgtd" class="social-img" />
             </b-col>
             <b-col style="text-align: initial">
-              <span v-if="datas.source !== 'twitter'" id="user-name">
-                <a v-if="datas.url_post != undefined && datas.url_post != ''" v-bind:href="datas.url_post"
-                  target="_blank">
-                  <b style="text-decoration: none; color: #2c3e50">{{ datas.account_name }}
-                  </b>
-                  <i class="fa fa-external-link" />
-                </a>
-              </span>
-              <span v-else id="user-name">
-                <a v-bind:href="'https://twitter.com/' +
-                  datas.account_name +
-                  '/status/' +
-                  datas.uid
-                  " target="_blank">
-                  <b style="text-decoration: none; color: #2c3e50">{{ datas.account_name }}
-                  </b>
-                  <i class="fa fa-external-link" />
-                </a>
+              <span id="txt-name">
+                <span><b> {{ datas.account_name }} </b></span>
+
+                <a v-if="datas.url_post && datas.url_post.includes('mbasic')"
+                  v-bind:href="datas.url_post.replace('mbasic.', '')" class="fa fa-external-link" target="_blank"></a>
+                <a v-else v-bind:href="datas.url_post" class="fa fa-external-link" target="_blank"></a>
               </span>
               <!-- Time -->
               <div id="text-date" style="text-align: start" class="md-font">
@@ -103,24 +135,71 @@
               <div>
                 <img class="images1 d-none" :src="datas.snapshot" />
                 <i v-if="datas.snapshot" class="fas fa-camera mr-2" @click="onClick(0, [datas.snapshot])" />
-                <b-button-group size="sm" id="btn-group" v-if="status == 1">
-                  <b-button id="btn-pos" :style="btnPosStyle"
-                    @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
-                  <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
-                  <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
-                </b-button-group>
-                <b-button-group size="sm" id="btn-group" v-if="status == 0">
-                  <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
-                  <b-button id="btn-nue" :style="btnNeuStyle"
-                    @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
-                  <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
-                </b-button-group>
-                <b-button-group size="sm" id="btn-group" v-if="status == -1">
-                  <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
-                  <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
-                  <b-button id="btn-neg" :style="btnNegStyle"
-                    @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
-                </b-button-group>
+                <span v-if="datas.user_sentiment">
+                  <span v-if="
+                    datas.user_sentiment[objId] == 0 ||
+                    datas.user_sentiment[objId]
+                  ">
+                    <b-button-group size="sm" id="btn-group" v-if="datas.user_sentiment[objId] == 1">
+                      <b-button id="btn-pos" :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="datas.user_sentiment[objId] == 0">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="datas.user_sentiment[objId] == -1">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                    </b-button-group>
+                  </span>
+                  <span v-else>
+                    <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 1">
+                      <b-button id="btn-pos" :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 0">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == -1">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                    </b-button-group>
+                  </span>
+                </span>
+                <span v-else>
+                  <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 1">
+                    <b-button id="btn-pos" :style="btnPosStyle"
+                      @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                    <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                  </b-button-group>
+                  <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 0">
+                    <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                    <b-button id="btn-nue" :style="btnNeuStyle"
+                      @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                  </b-button-group>
+                  <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == -1">
+                    <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                    <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" :style="btnNegStyle"
+                      @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
+                  </b-button-group>
+                </span>
               </div>
             </b-col>
           </b-row>
@@ -128,39 +207,54 @@
         <b-row no-gutters>
           <b-col lg="12">
             <b-card-body>
-              <b-card-text>
-                <read-more more-str="อ่านต่อ" :text="datas.full_text" link="#" less-str="ย่อบทความ" :max-chars="520">
-                  <!-- <read-more more-str="อ่านต่อ" :text="datas.content" link="#" less-str="ย่อบทความ" :max-chars="520"> -->
+              <b-card-text class="box-contents">
+                <div v-if="datas && datas.title" class="title-news text-left my-2">
+                  {{ datas.title }}
+                </div>
+                <Highlighter class="my-highlight md-font" :style="{
+                  textAlign: 'left',
+                  fontSize: '17px',
+                  padding: '10px',
+                }" highlightClassName="highlight4" :searchWords="highlightText(datas.full_text)" :autoEscape="true"
+                  :textToHighlight="datas.read ? datas.full_text.slice(0, 450) : datas.full_text
+                    "></Highlighter>
 
-                  <Highlighter class="my-highlight md-font" :style="{
-                    textAlign: 'left',
-                    fontSize: '17px',
-                    padding: '10px',
-                  }" highlightClassName="highlight1" :searchWords="highlightText" :autoEscape="true"
-                    :textToHighlight="datas.full_text" v-if="status == '-1'"></Highlighter>
-                  <Highlighter class="my-highlight md-font" :style="{
-                    textAlign: 'left',
-                    fontSize: '17px',
-                    padding: '10px',
-                  }" highlightClassName="highlight2" :searchWords="highlightText" :autoEscape="true"
-                    :textToHighlight="datas.full_text" v-if="status == '1'" />
-                  <Highlighter class="my-highlight md-font" :style="{
-                    textAlign: 'left',
-                    fontSize: '17px',
-                    padding: '10px',
-                  }" highlightClassName="highlight3" :searchWords="highlightText" :autoEscape="true"
-                    :textToHighlight="datas.full_text" v-if="status == '0'" />
-                </read-more>
+                <div v-if="datas.full_text.length > 450" @click="datas.read = !datas.read" id="readmore">
+                  <span v-if="datas.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
+                </div>
+                <!-- </read-more> -->
               </b-card-text>
             </b-card-body>
           </b-col>
           <b-col>
-            <div id="photo-grid" v-if="datas.photos" class="mb-4">
+            <div v-if="datas.source == 'tiktok' && datas.uid">
+              <a v-bind:href="datas.url_post" target="_blank">
+                <img :src="datas.photos && datas.photos[0]" onerror="this.style.display='none'"
+                  style="height:450px;border-radius: 10px;" class="my-3" />
+                <!-- <lite-tiktok
+                  :videoid="datas.uid"
+                  style=" pointer-events: none; "
+                ></lite-tiktok
+              > -->
+              </a>
+              <!-- <iframe
+                width="auto"
+                height="750"
+                :src="'https://www.tiktok.com/embed/v2/' + datas.uid"
+                allowfullscreen
+              ></iframe> -->
+            </div>
+            <div id="photo-grid" v-if="
+              datas.photos !== null &&
+              datas.photos &&
+              datas.photos != '' &&
+              datas.source !== 'tiktok'
+            " class="mb-4">
               <div v-if="typeof datas.photos == 'string'">
-                <img class="images1" :src="datas.photos" @click="onClick(0, [datas.photos])" />
+                <img class="images1" :src="datas.photos" @click="onClick(0, [datas.photos])"
+                  onerror="this.style.display='none'" />
               </div>
               <div v-else>
-                <!-- {{datas.photos.length}} -->
                 <div v-if="datas.photos.length == 1" class="p-20">
                   <img class="d-none images1" v-for="(image, i) in datas.photos" :src="datas.photos"
                     @click="onClick(i, datas.photos)" :key="i" />
@@ -219,7 +313,7 @@
         <div class="text-left ai-box mt-2" v-if="datas && datas.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.ocr">
-            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
+            <!-- {{ datas.ocr.face[].person_name /datas.ocr.face[].confidence >) }} -->
             <div v-if="text.text_sort && text.text_sort.length">
               <b-avatar size="18px" style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx + 1 }}
               </b-avatar>
@@ -244,9 +338,8 @@
         <div v-if="
           datas &&
           datas.location &&
-          datas.location.length &&
-          username == 'adminatapy'
-        " class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          datas.location.length
+        " class="text-left ai-box my-3 mx-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
           <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
           <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
     border-radius: 33px;
@@ -293,7 +386,16 @@
           </div>
         </div>
         <template #footer>
-          <div class="comment-img">
+          <div class="comment-img text-left md-font">
+            <!------------- engages-------------- -->
+            <span v-b-tooltip.hover title="Engagement" v-if="datas.source == 'pantip'">
+              <span style="font-size:14px;">Engages </span>
+              {{ (datas.engagement + datas.comments_count) | numFormat }}
+            </span>
+
+            <span v-b-tooltip.hover title="Engagement" v-else>
+              <span style="font-size:14px;">Engages </span>{{ datas.engagement | numFormat }}
+            </span>
             <!-- popover user comment -->
             <popover :name="'foo' + k" id="foo" v-if="
               datas.source !== 'facebook' &&
@@ -350,6 +452,7 @@
                       " target="_blank">
                       <img v-bind:src="comment.owner.profile_pic_url" id="img-user" />
                       {{ comment.owner.username }}</a>
+
                     <!-- pt -->
                     <a id="user-link" v-if="datas.source === 'pantip'" v-bind:href="'https://pantip.com//profile/' + comment.username
                       " target="_blank">
@@ -366,16 +469,23 @@
                 <!-- <div v-if="datas.comment==''" class="text-center">ไม่มีลิสต์รายชื่อ account</div> -->
               </div>
             </popover>
-            <span>
-              <i class="fas fa-comment" v-b-toggle="'btn' + offset + k" :aria-expanded="visible ? 'true' : 'false'"
-                style="cursor: pointer">
-              </i>
+            <span id="box-reaction" v-b-tooltip.hover title="Comments" v-b-toggle="'btn' + offset + k"
+              :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer">
+              <i class="fas fa-comment"> </i>
               <span class="md-font" v-if="datas.comments_count && datas.source == 'news'">
                 {{ datas.comments.comments.length | numFormat }}&nbsp;
               </span>
               <span v-else class="md-font">
                 {{ datas.comments_count | numFormat }}&nbsp;</span>
               <!-- <span  class="md-font" v-if="datas.comments_count==''&&datas.source == 'twitter'"> 0 </span> -->
+            </span>
+            <!------------- engages-------------- -->
+            <span id="box-reaction" v-b-tooltip.hover title="Engagement" v-if="datas.source == 'pantip'"
+              style="float:right;">
+              <span style="font-size:14px;">Engages
+                {{
+                  (datas.engagement + datas.comments_count) | numFormat
+                }}</span>
             </span>
 
             <!-- twitter -->
@@ -402,6 +512,22 @@
               </span>
             </span>
 
+            <span v-if="datas.source == 'facebook'">
+              <span v-if="datas.likes_count !== '0' && datas.likes_count" id="box-reaction" v-b-tooltip.hover
+                title="Like">
+                <i class="far fa-thumbs-up" />
+                {{ datas.likes_count | numFormat }}
+              </span>
+            </span>
+            <!-- share blockdit -->
+            <!-- <span v-if="datas.source == 'blockdit' && datas.engagement">
+              <span id="box-reaction" v-b-tooltip.hover title="Share">
+                <i class="fa fa-share"></i>
+                <span class="md-font">
+                  {{ datas.engagement | numFormat }}
+                </span>
+              </span>
+            </span> -->
             <!-- reaction-->
             <span v-if="datas.reaction">
               <span v-if="datas.reaction != ''">
@@ -440,20 +566,21 @@
                       {{ datas.reaction.like | numFormat }}
                     </span>
                   </span></span>
-                <span v-if="datas.reaction.shares">
-                  <span v-if="datas.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
-                    <i class="fa fa-share" v-if="datas.reaction.shares !== '0'"></i>
-                    <span class="md-font" v-if="datas.reaction.shares !== '0'">
-                      {{ datas.reaction.shares | numFormat }}
-                    </span>
-                  </span>
-                </span>
 
                 <span v-if="datas.reaction.share">
                   <span v-if="datas.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
                     <i class="fa fa-share" v-if="datas.reaction.share !== '0'"></i>
                     <span class="md-font" v-if="datas.reaction.share !== '0'">
                       {{ datas.reaction.share | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="datas.reaction.shares">
+                  <span v-if="datas.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                    <i class="fa fa-share" v-if="datas.reaction.shares !== '0'"></i>
+                    <span class="md-font" v-if="datas.reaction.shares !== '0'">
+                      {{ datas.reaction.shares | numFormat }}
                     </span>
                   </span>
                 </span>
@@ -608,14 +735,14 @@
         </template>
       </b-card>
     </div>
-    <ul class="pagination" v-if="getSentimentPost.data.length != 0">
+    <ul class="pagination" v-if="getDetailPost.length != 0">
       <li class="page-item" v-for="pageNumber in totalPages" :key="pageNumber">
         <span v-if="
           Math.abs(pageNumber - currentPage) < 3 ||
           pageNumber == totalPages ||
           pageNumber == 1
         ">
-          <a class="page-link md-font" v-bind:key="pageNumber" @click="setPage(pageNumber)" :class="{
+          <a class="page-link md-font" v-bind:key="pageNumber" href="#wordcloud" @click="setPage(pageNumber)" :class="{
             current: currentPage === pageNumber,
             last:
               pageNumber == totalPages &&
@@ -625,9 +752,9 @@
       </li>
     </ul>
     <input type="number" class="form-control md-font" v-model="gotopage" id="setpage" style="width: 150px"
-      v-if="getSentimentPost.data.length != 0" />
+      v-if="getDetailPost.length != 0" />
 
-    <span v-if="getSentimentPost.data.length != 0">
+    <span v-if="getDetailPost.length != 0">
       <button type="button" class="btn btn-default" @click="page()">
         <span id="submit" class="md-font">Go to Page</span>
       </button>
@@ -636,45 +763,55 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
-import { mapGetters } from "vuex";
 import moment from "moment";
+import "@justinribeiro/lite-tiktok";
 import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
 export default {
-  components: {
-    Highlighter,
-    VueGallerySlideshow,
-  },
   props: {
-    keySearch: {
+    checkpost: {
+      type: Boolean,
+    },
+    querySearch: {
       type: String,
       default: "",
     },
-    status: {
-      type: Number,
-      default: 1,
-    },
     social: {
       type: String,
-      default: "facebook",
+      default:
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
     },
-    //  offset:{
-    //   type:Number,
-    //   default:0,
-    // },
-    types: {
+    type: {
       type: String,
       default: "daily",
+    },
+    sentimentWord: {
+      type: Number,
+    },
+  },
+  watch: {
+    getQuerySearch() {
+      this.currentPage = 1;
+    },
+    getWordCloudSocial() {
+      this.currentPage = 1;
+      this.selectSentiment();
     },
   },
   data() {
     return {
-      username: "",
-      dataDomain: "",
-      default_avatar: "user.svg",
+      objId: "",
+      arrword: [],
+      myStyle: {
+        backgroundColor: "#f7dca2",
+      },
+      checked: true,
+      andkey: [],
+      heightword: [],
       visible: false,
       index: null,
       dataPhoto: [],
@@ -684,6 +821,7 @@ export default {
       end_date: "",
       valueDate: "",
       offset: 0,
+      username: "",
       btnPosStyle: {
         backgroundColor: "#54c69d",
         color: "#ffffff",
@@ -708,7 +846,7 @@ export default {
       sort: "",
       count: "",
       has_next: "",
-      gotopage: Number,
+      gotopage: "",
       img: "",
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
@@ -716,6 +854,9 @@ export default {
       imgig: require("@/assets/Instagram.png"),
       imgnw: require("@/assets/News.png"),
       imgyt: require("@/assets/Youtube.png"),
+      imgbd: require("@/assets/Blockdit.png"),
+      imgtt: require("@/assets/Tiktok.png"),
+      imgtd: require("@/assets/Threads.png"),
       user: require("@/assets/user.svg"),
       selectedStm: this.status,
       options: [
@@ -723,24 +864,38 @@ export default {
         { text: "Neutral", value: 0 },
         { text: "Negative", value: -1 },
       ],
+      selected: "",
+      optionsstm: [
+        { text: "Positive", value: "1" },
+        { text: "Neutral", value: "0" },
+        { text: "Negative", value: "-1" },
+        { text: "ทั้งหมด", value: "" },
+      ],
     };
+  },
+  components: {
+    Highlighter,
+    VueGallerySlideshow,
   },
   computed: {
     ...mapGetters([
-      "getSentimentPost",
-      "getDateChoice",
-      "getRangeStartdate",
-      "getRangeEnddate",
-      "getShowDomain",
+      "getDomainArr",
+      "getWordCloudDomain",
+      "getWordCloudStartDate",
+      "getWordCloudEndDate",
+      "getWordCloudSocial",
+      "getQuerySearch",
+      "getKeywords",
+      "getEditSentiment",
+      "getSelectedMonitor",
+      "getDetailPost",
+      "getLoadPostCloud",
+      "getPostsAll"
     ]),
 
-    highlightText() {
-      //this.search()
-      return this.keySearch.split();
-    },
     paginate() {
-      var data = this.getSentimentPost.data;
-      var count = this.getSentimentPost.count;
+      var data = this.getPostsAll;
+      var count = this.getPostsAll.count;
       var currentPage = this.currentPage;
       var totalPages = this.totalPages;
       //var resultCount = this.resultCount;
@@ -756,7 +911,7 @@ export default {
     },
     totalPages: function () {
       var itemsPerPage = this.itemsPerPage;
-      var count = this.getSentimentPost.count;
+      var count = this.getPostsAll.count;
       var length;
       if (count < 10) {
         length = 10;
@@ -764,7 +919,7 @@ export default {
         length = count;
       }
       var xs = Math.ceil(length / itemsPerPage);
-
+      console.log("total page:", xs);
       return xs;
     },
   },
@@ -807,12 +962,61 @@ export default {
       // Return the found location or a fallback message
       return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
     },
-    setAltImg(event) {
-      event.target.src = this.default_avatar;
+    highlightText(full_text) {
+      var word = [];
+      if (this.checked) {
+        word.push(...this.heightword, this.getQuerySearch);
+        if (this.andkey.length) {
+          this.andkey.forEach(function (key) {
+            //
+            if (
+              key.length == 2 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1])
+            ) {
+
+
+              word.push(...key);
+            }
+
+            if (
+              key.length == 3 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2])
+            ) {
+              word.push(...key);
+            }
+            if (
+              key.length == 4 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2]) &&
+              full_text.includes(key[3])
+            ) {
+              word.push(...key);
+            }
+          });
+        }
+        return word;
+      } else {
+        word.push(this.getQuerySearch);
+      }
+      return word;
+    },
+    selectSentiment() {
+      this.offset = 0;
+      this.pageApi(this.sort, this.offset);
+      this.currentPage = 1;
     },
     onClick(i, data) {
+      console.log(data);
       this.index = i;
       this.dataPhoto = data;
+    },
+    clickImage(index) {
+      this.currentImageFather = index;
+      this.overlayActiveFather = true;
     },
     selectData(sort, offset) {
       offset = this.offset;
@@ -823,36 +1027,59 @@ export default {
       this.end_date = moment(this.valueDate[1])
         .format()
         .slice(0, 10);
-
-      this.$store.dispatch("fetchSentimentPost", {
+      console.log(this.start_date);
+      this.$store.dispatch("fetchPosts", {
         start_date: this.start_date,
         end_date: this.end_date,
-        source: this.social,
-        sentiment: this.status,
-        sort_by: sort,
+        keywords: this.getKeywords,
+        domain: this.getWordCloudDomain,
+        sentiment: this.selected,
         offset: offset,
-        domain: this.dataDomain,
+        sort_by: sort,
+        querySearch: this.getQuerySearch,
+        source: this.getWordCloudSocial,
+        monitor: this.getSelectedMonitor,
       });
     },
-    pageApi(sort, offset) {
+    async pageApi(sort, offset, querySearch) {
+      const arrdomain = localStorage.getItem("domainArr");
+      let domain = this.getWordCloudDomain.toString();
+      if (domain == "All" || domain == "") {
+        // console.log('เข้าDomain',arrdomain);
+        domain = arrdomain;
+      }
+      await this.axios
+        .get(
+          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
+          domain
+        )
+        .then((response) => (this.arrword = response.data[0]));
+      var k = this.arrword.Keywords;
+      var ka = this.arrword.and_keywords;
+      let result = ka.map((key) => {
+        return key.split("+");
+      });
+      this.andkey = result;
+      this.heightword = k;
       offset = this.offset;
       sort = this.sort;
-      // keySearch=this.keySearch
-      //this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:sort,offset:offset,keyword:keySearch});
-      this.$store.dispatch("fetchSentimentPost", {
-        start_date: this.getRangeStartdate,
-        end_date: this.getRangeEnddate,
-        source: this.social,
-        sentiment: this.status,
-        sort_by: sort,
+      this.$store.dispatch("fetchPosts", {
+        start_date: this.getWordCloudStartDate,
+        end_date: this.getWordCloudEndDate,
+        domain: this.getWordCloudDomain,
+        sentiment: this.selected,
         offset: offset,
-        domain: this.dataDomain,
+        sort_by: sort,
+        querySearch: querySearch,
+        source: this.getWordCloudSocial,
+        monitor: this.getSelectedMonitor,
       });
     },
     page() {
       var pageNumber;
       if (
-        parseInt(this.gotopage) > Math.ceil(this.getSentimentPost.count / 10) ||
+        parseInt(this.gotopage) >
+        Math.ceil(this.getPostsAll.count / 10) ||
         this.gotopage.includes("-")
       ) {
         alert("Wrong number");
@@ -862,25 +1089,27 @@ export default {
       }
       this.setPage(pageNumber);
       this.gotopage = "";
-
+      console.log(pageNumber);
     },
     setPage: function (pageNumber) {
       this.currentPage = pageNumber;
-
+      console.log(this.currentPage);
+      console.log("page num:", typeof (pageNumber));
       //Call new data from api here
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
-
+        console.log("offset : ", this.offset);
       } else {
         this.offset = 0;
       }
-      if (this.keySearch != "") {
-        this.pageApi(this.sort, 0, this.keySearch);
+      if (this.querySearch != "") {
+        this.pageApi(this.sort, 0, this.querySearch);
       } else {
+        console.log("setPage else");
         this.pageApi(this.sort, this.offset);
-      }
 
-      //this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:"",offset:this.offset});
+      }
+      console.log("#box-domain");
     },
     tabactive() {
       document.getElementById("eltab1").style.borderColor = "#fed16e";
@@ -889,7 +1118,7 @@ export default {
       this.offset = 0;
       this.sort = "";
       this.currentPage = 1;
-      this.pageApi(this.sort, this.offset);
+      this.pageApi(this.sort, this.offset, this.querySearch);
       // this.offset=0
       // this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:"",offset:this.offset});
     },
@@ -900,7 +1129,7 @@ export default {
       this.offset = 0;
       this.currentPage = 1;
       this.sort = "descend";
-      this.pageApi(this.sort, this.offset);
+      this.pageApi(this.sort, this.offset, this.querySearch);
       // this.offset=0
       // this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:'descend',offset:this.offset});
     },
@@ -911,7 +1140,7 @@ export default {
       this.offset = 0;
       this.currentPage = 1;
       this.sort = "engagement";
-      this.pageApi(this.sort, this.offset);
+      this.pageApi(this.sort, this.offset, this.querySearch);
       //   this.offset=0
       // this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:'engagement',offset:this.offset});
     },
@@ -926,50 +1155,161 @@ export default {
       }
       this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?").then(
         () => {
-          if (v !== this.status) {
-            this.$store.dispatch("editSentimentPost", {
-              sentiment: v,
-              uid: uid,
+          const encoded = encodeURI(uid);
+          var _this = this;
+          var config = {
+            method: "get",
+            url:
+              "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
+              encoded +
+              "&sentiment=" +
+              v,
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+              "Content-Type": "application/json",
+            },
+          };
+          this.axios(config)
+            .then(function (response) {
+              console.log(response);
+              if (_this.selected == "") {
+                if (v == 1) {
+                  _this.getDetailPost[k].sentiment = 1;
+                  _this.getDetailPost[k].user_sentiment[_this.objId] = 1;
+                } else if (v == 0) {
+                  _this.getDetailPost[k].sentiment = 0;
+                  _this.getDetailPost[k].user_sentiment[_this.objId] = 0;
+                } else {
+                  _this.getDetailPost[k].sentiment = -1;
+                  _this.getDetailPost[k].user_sentiment[_this.objId] = -1;
+                }
+              } else {
+                console.log("in 1");
+                if (v == _this.selected) {
+                  console.log("in 11");
+                  _this.getDetailPost[k].sentiment = v;
+                  _this.getDetailPost[k].user_sentiment[_this.objId] = v;
+                } else {
+                  console.log("in 12");
+                  _this.getDetailPost.splice(k, 1);
+                }
+              }
+            })
+            .catch(function (response) {
+              console.log("errrrrrr", response.message);
             });
-            this.getSentimentPost.data.splice(k, 1);
-            this.$fire({
-              title: "แก้ไขสำเร็จ",
-              type: "success",
-              showConfirmButton: false,
-              timer: 1000,
-            });
-          } else {
-            this.$alert("Sentiment เป็น " + err + " แล้ว!").then(() => { });
-          }
+          // if (v !== this.getDetailPost[k].sentiment) {
+          //   this.$store.dispatch("editSentimentPost", {
+          //     sentiment: v,
+          //     uid: uid,
+          //   });
+          //   if (this.selected == "") {
+          //     if (v == 1) {
+          //       this.getDetailPost[k].sentiment = 1;
+          //     } else if (v == 0) {
+          //       this.getDetailPost[k].sentiment = 0;
+          //     } else {
+          //       this.getDetailPost[k].sentiment = -1;
+          //     }
+          //   } else {
+          //     this.getDetailPost.splice(k, 1);
+          //   }
+          //   // this.getDetailPost.splice(k, 1);
+          //   this.$fire({
+          //     title: "แก้ไขสำเร็จ",
+          //     type: "success",
+          //     showConfirmButton: false,
+          //     timer: 1000,
+          //   });
+          // } else {
+          //   this.$alert("Sentiment เป็น " + err + " แล้ว!").then(() => {});
+          // }
         }
       );
     },
   },
-  created(sort, offset) {
-    this.username = localStorage.getItem("username");
-    let domainName = this.getShowDomain.map((key) => {
-      return key.name;
+  async mounted(sort, offset) {
+    this.$emitter.on("sendKeyword", (val) => {
+      console.log('val', val);
+      this.pageApi(this.sort, this.offset, val);
     });
-    this.dataDomain = domainName;
+    this.username = localStorage.getItem("username");
+    this.objId = localStorage.getItem("objId");
     offset = this.offset;
     sort = this.sort;
-    this.$store.dispatch("fetchSentimentPost", {
-      start_date: this.getRangeStartdate,
-      end_date: this.getRangeEnddate,
-      source: this.social,
-      sentiment: this.status,
-      sort_by: sort,
-      offset: offset,
-      domain: this.dataDomain,
-    });
-  },
-  destroyed() {
-    this.$destroy();
-  },
+    console.log(offset, sort);
+    const arrdomain = localStorage.getItem("domainArr");
+    this.$store.dispatch("fetchDomain");
+    let domain = this.getWordCloudDomain.toString();
+    if (domain == "All" || domain == "") {
+      // console.log('เข้าDomain',arrdomain);
+      domain = arrdomain;
+    }
+    //   await this.axios
+    //     .get(
+    //       "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
+    //         domain
+    //     )
+    //     .then((response) => (this.arrword = response.data[0]));
+    //   var k = this.arrword.Keywords;
+    //   var ka = this.arrword.and_keywords;
+    //   let result = ka.map((key) => {
+    //     return key.split("+");
+    //   });
+    //   this.andkey = result;
+    //   this.heightword = k;
+  }
+  // async created(sort, offset) {
+  //   this.username = localStorage.getItem("username");
+  //   this.objId = localStorage.getItem("objId");
+  //   offset = this.offset;
+  //   sort = this.sort;
+  //   console.log(offset, sort);
+  //   const arrdomain = localStorage.getItem("domainArr");
+  //   this.$store.dispatch("fetchDomain");
+  //   let domain = this.getWordCloudDomain.toString();
+  //   if (domain == "All" || domain == "") {
+  //     console.log('เข้าDomain',arrdomain);
+  //     domain = arrdomain;
+  //   }
+  //   await this.axios
+  //     .get(
+  //       "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
+  //         domain
+  //     )
+  //     .then((response) => (this.arrword = response.data[0]));
+  //   var k = this.arrword.Keywords;
+  //   var ka = this.arrword.and_keywords;
+  //   let result = ka.map((key) => {
+  //     return key.split("+");
+  //   });
+  //   this.andkey = result;
+  //   this.heightword = k;
+
+  //   // let temp = result.join();
+  //   // temp = temp.split(",");
+  //   // this.heightword = k.concat(temp);
+  // },
 };
 </script>
 
 <style scoped>
+.box-hl {
+  border-radius: 10px;
+}
+
+.highlight4 {
+  background-color: #f7dca2;
+  padding: 0 2px;
+}
+
+.all {
+  background-color: #fed16e;
+  color: white;
+  width: 80px;
+  padding: 7px;
+}
+
 p {
   margin-bottom: 0rem;
 }
@@ -1055,6 +1395,35 @@ p {
   border: 1px solid #eaeff3;
 }
 
+.fa-external-link {
+  margin-left: 5px;
+  text-decoration: none;
+  padding: 6px 6px;
+  border-radius: 20px;
+  color: #2c3e50;
+}
+
+.fa-external-link:hover {
+  background: #ccc;
+  color: #696d71;
+  cursor: pointer;
+}
+
+#export-btn {
+  margin: 0px 20px;
+  color: #495057;
+  background-color: #e9ecef;
+  border-color: #e9ecef;
+  border-radius: 9px;
+  box-shadow: 0 2px 5px 0 rgb(0 0 0 / 20%);
+}
+
+#export-btn:hover {
+  color: white;
+  background-color: #495057;
+  border-color: #495057;
+}
+
 .highlight-search {
   background-color: #fed16e;
   padding: 0 2px;
@@ -1135,6 +1504,7 @@ a.last::before {
 }
 
 .img-thumbnail {
+  height: 240px;
   object-fit: cover;
   width: fit-content;
   cursor: pointer;
@@ -1342,20 +1712,6 @@ a.last::before {
   text-align: initial;
 }
 
-.fa-external-link {
-  margin-left: 5px;
-  text-decoration: none;
-  padding: 6px 6px;
-  border-radius: 20px;
-  color: #2c3e50;
-}
-
-.fa-external-link:hover {
-  background: #ccc;
-  color: #696d71;
-  cursor: pointer;
-}
-
 .user-img {
   width: 46px;
   z-index: 1;
@@ -1426,12 +1782,12 @@ card-img,
 
 #tab-view {
   text-align: end;
-  padding-left: 50px;
+  /* padding-left: 50px; */
 }
 
 #tab-all {
   margin-top: 30px;
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 }
 
 @media only screen and (min-width: 0px) and (max-width: 1050px) {
@@ -1475,7 +1831,11 @@ card-img,
   }
 }
 
-@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {}
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
+  .all {
+    padding: 10px !important;
+  }
+}
 
 @media only screen and (min-width: 375px) and (max-width: 815px) {
   .card-text {
@@ -1484,6 +1844,11 @@ card-img,
 }
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
+  .box-hl {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
   #picmore {
     margin: -42px;
     margin-right: -1px;
@@ -1515,13 +1880,6 @@ card-img,
 }
 
 @media only screen and (min-width: 0px) and (max-width: 600px) {
-  #cmt-time {
-    float: none;
-    display: block;
-    color: #7b7d7f;
-    font-size: small;
-  }
-
   .card-text {
     font-size: 4vw;
   }
@@ -1614,6 +1972,13 @@ card-img,
   }
 
   #img-title {
+    width: 50px;
+    display: block;
+    margin: auto;
+    margin-bottom: 5px;
+  }
+
+  .all {
     width: 50px;
     display: block;
     margin: auto;

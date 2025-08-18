@@ -52,7 +52,7 @@ export const WordcloudService = {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
-    domId = "",
+      domId = "",
       key = "",
       mo = "",
       src = "",
@@ -77,7 +77,7 @@ export const WordcloudService = {
     } else {
       dom = "";
     }
-if (payload.domain_ids) {
+    if (payload.domain_ids) {
       domId = `&domain_id=${payload.domain_ids}`;
     } else {
       domId = "";
@@ -94,7 +94,8 @@ if (payload.domain_ids) {
         dom +
         mo +
         src +
-        dash +domId
+        dash +
+        domId
     );
   },
 
@@ -283,8 +284,7 @@ if (payload.domain_ids) {
   },
 };
 export const RankingService = {
-
-  getDomainRanking(payload) {  
+  getDomainRanking(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     return ApiService.get(`/v1/domain/?limit=${payload.limit}`);
@@ -297,8 +297,8 @@ export const RankingService = {
   getRanking(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    var subdom="";
-    if (payload.subdomain&&payload.subdomain.length) {
+    var subdom = "";
+    if (payload.subdomain && payload.subdomain.length) {
       subdom = `&subdomain=${payload.subdomain}`;
     } else {
       subdom = "";
@@ -484,7 +484,7 @@ export const TemplateService = {
   DeleteDomain(payload) {
     Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.put(`v2/domain/deleteDomain?id=${payload.id }`);
+    return ApiService.put(`v2/domain/deleteDomain?id=${payload.id}`);
   },
   // DeleteDomain(payload) {
   //   ApiService.setHeader()
@@ -571,7 +571,6 @@ export const TemplateService = {
   },
 };
 export const MonitorService = {
-
   EditStatusHashtag(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
@@ -594,7 +593,7 @@ export const MonitorService = {
   },
   getLocation(payload) {
     Vue.axios.defaults.baseURL = API_URL;
-    let query, account, sentiment,sdate,edate;
+    let query, account, sentiment, sdate, edate;
     if (payload.query) {
       query = `&query=${payload.query}`;
     } else {
@@ -625,7 +624,9 @@ export const MonitorService = {
       `v1/searchLocation/?sort_by=${payload.sort_by}&offset=${payload.offset}&source=${payload.source}` +
         query +
         account +
-        sentiment+sdate+edate
+        sentiment +
+        sdate +
+        edate
     );
   },
   delMonitor(payload) {
@@ -760,12 +761,12 @@ export const DomainService = {
       stm = "",
       source = "",
       dash = "",
-      findkey =""
-      if(payload.querySearch){
-        findkey=`&querySearch=${payload.querySearch}`
-      }else{
-        findkey=""
-      }
+      findkey = "";
+    if (payload.querySearch) {
+      findkey = `&querySearch=${payload.querySearch}`;
+    } else {
+      findkey = "";
+    }
     if (payload.dashboard) {
       dash = `&dashboard=${payload.dashboard}`;
     } else {
@@ -791,7 +792,8 @@ export const DomainService = {
         stm +
         dm +
         source +
-        dash+findkey
+        dash +
+        findkey
     );
   },
   getPostDomain(payload) {
@@ -801,12 +803,12 @@ export const DomainService = {
       stm = "",
       source = "",
       dash = "",
-      findkey =""
-      if(payload.querySearch){
-        findkey=`&querySearch=${payload.querySearch}`
-      }else{
-        findkey=""
-      }
+      findkey = "",mor="";
+    if (payload.querySearch) {
+      findkey = `&querySearch=${payload.querySearch}`;
+    } else {
+      findkey = "";
+    }
     if (payload.dashboard) {
       dash = `&dashboard=${payload.dashboard}`;
     } else {
@@ -827,12 +829,18 @@ export const DomainService = {
     } else {
       stm = "";
     }
+     if (payload.mor) {
+      mor = `&monitor=${payload.mor}`;
+    } else {
+      mor = "";
+    }
     return ApiService.get(
       `/v2/userposts/getSentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
         stm +
         dm +
         source +
-        dash+findkey
+        dash +
+        findkey+mor
     );
   },
   getPostDomain2(payload) {
