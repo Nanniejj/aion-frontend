@@ -240,9 +240,9 @@ export default {
                 method: "get",
                 url: "https://api2.cognizata.com/api/v2/monitor/getTotalPostsHashtag/",
                 params: {
-                uid: '#'+ this.$route.query.uid,
-                start: this.start + 'T00:00:00',
-                end: this.end + 'T23:59:59'
+                uid: "#" + this.$route.query.uid,
+                start: this.start + "T00:00:00",
+                end: this.end + "T23:59:59"
                 },
                 headers: {
                 Authorization: "Bearer " + localStorage.getItem("token"),
@@ -254,26 +254,29 @@ export default {
                 const response = await this.axios(config);
                 const data = response.data;
                 if (!Array.isArray(data)) {
-                console.error('API response is not an array:', data);
+                console.error("API response is not an array:", data);
                 return;
                 }
 
-                const counts = data.map(item => item.count);
-                const sources = data.map(item => item.source);
+                // สร้าง object เก็บ count ตาม source
+                const countMap = {};
+                data.forEach(item => {
+                countMap[item.source] = item.count;
+                });
 
-                this.series = [{ data: counts }];
+                // ใช้ categories จาก chartOptions เป็นตัวกำหนดลำดับ
+                const orderedCounts = this.chartOptions.xaxis.categories.map(source => countMap[source] || 0);
+
+                this.series = [{ data: orderedCounts }];
                 this.chartOptions = {
                 ...this.chartOptions,
-                // xaxis: {
-                //     ...this.chartOptions.xaxis,
-                //     categories: sources
-                // },
                 dataLabels: {
                     ...this.chartOptions.dataLabels,
                     formatter: this.formatDataLabel
                 }
                 };
-                this.total = counts.reduce((sum, val) => sum + val, 0);
+
+                this.total = orderedCounts.reduce((sum, val) => sum + val, 0);
             } catch (error) {
                 console.error(error);
             }

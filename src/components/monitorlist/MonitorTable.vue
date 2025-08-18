@@ -40,16 +40,16 @@
             </b-col>
             <!-- <b-col class="w-100" style="height: 2px; background: #fed16e;"></b-col> -->
             <!-- <div class="h-25 d-inline-block bg-info" style="width: 120px;"></div> -->
-            <b-col cols="12" lg=""  class="px-0">
+            <b-col cols="12" xl=""  class="px-0">
                 <b-row class="align-items-center mx-0">
                     <b-col cols="12" md="auto" class="">
-                        <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-lg-0 ml-lg-auto">
+                        <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-xl-0 ml-lg-auto">
                             <ImportPlatform class="col col-md-auto  mr-3 px-0" v-if="type == 'targetlist'" @close="reload"/>
                             <CreateMonitor class="col col-md-auto px-0" :class="{'w-100':type == 'hashtaglist'}" :tabsMonitor="type" @close="reload"/>
                         </div>
                     </b-col>
                     <b-col class="">
-                        <b-form-group label-for="search-input" class="mt-3 mt-lg-0 col-12 col-sm px-0">
+                        <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
                             <b-input-group-append>
                                 <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
                                     class="w-100 mr-2"></b-form-input>
