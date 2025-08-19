@@ -110,14 +110,24 @@
                             End User
                         </b-button>
                     </b-button-group>
+                    <b-row class="m-0">
+                        <b-col v-if="influencerLevel && influencerLevel === 'top star' " class="px-0 py-3 text-info">
+                            ผู้ติดตามมากกว่า {{ followers[0] | numFormat  }} คน
+                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                        </b-col>
+                        <b-col v-if="influencerLevel && influencerLevel !== 'top star' " class="px-0 py-3 text-info">
+                            ผู้ติดตาม {{ followers[0] | numFormat  }} - {{ followers[1] | numFormat }} คน
+                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                        </b-col>
+                    </b-row>
                 </div>
                 <div>
                     <label for="followers" class="mt-2">ผู้ติดตาม</label>
                     <vue-slider
                         class="px-0"
-                        v-model="filterRules.followers"
-                        :min="0"
-                        :max="10"
+                        v-model="followers"
+                        :min="100"
+                        :max="999999999"
                         :interval="1"
                         :enable-cross="false"
                         :dot-size="18"
@@ -127,14 +137,21 @@
                         :process-style="{ backgroundColor: '#17a2b8' }"
                         :dot-style="{ backgroundColor: '#17a2b8', border: 'none' }"
                     />
+                    <b-form-checkbox
+                        class="my-2"
+                        v-model="resetFollower"
+                        @change="onResetFollowers"
+                        >
+                        ไม่จำกัดช่วงผู้ติดตาม
+                    </b-form-checkbox>
                 </div>
                 <div>
                     <label for="followers" class="mt-2">ช่วงอายุ</label>
                     <vue-slider
                         class="px-0"
-                        v-model="filterRules.followers"
+                        v-model="filterRules.age"
                         :min="0"
-                        :max="10"
+                        :max="100"
                         :interval="1"
                         :enable-cross="false"
                         :dot-size="18"
@@ -144,6 +161,13 @@
                         :process-style="{ backgroundColor: '#17a2b8' }"
                         :dot-style="{ backgroundColor: '#17a2b8', border: 'none' }"
                     />
+                    <b-form-checkbox
+                        class="my-2"
+                        v-model="resetAge"
+                        @change="onResetAge"
+                        >
+                        ไม่จำกัดช่วงอายุ
+                    </b-form-checkbox>
                 </div>
                 <b-form-group label="หมวดหมู่ Influencer">
                     <!-- <b-form-select v-model="filterRules.category" :options="categories"></b-form-select> -->
@@ -295,24 +319,24 @@
                             End User
                         </b-button>
                     </b-button-group>
-                    <!-- <b-row class="m-0">
-                        <b-col v-if="filterRules.influencerLevel && filterRules.influencerLevel === 'top_star' " class="px-0 py-3 text-info">
-                            ผู้ติดตามมากกว่า {{ filterRules.followers[0] | numFormat  }} คน
+                    <b-row class="m-0">
+                        <b-col v-if="influencerLevel && influencerLevel === 'top star' " class="px-0 py-3 text-info">
+                            ผู้ติดตามมากกว่า {{ followers[0] | numFormat  }} คน
                             <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
                         </b-col>
-                        <b-col v-if="filterRules.influencerLevel && filterRules.influencerLevel !== 'top_star' " class="px-0 py-3 text-info">
-                            ผู้ติดตาม {{ filterRules.followers[0] | numFormat  }} - {{ filterRules.followers[1] | numFormat }} คน
+                        <b-col v-if="influencerLevel && influencerLevel !== 'top star' " class="px-0 py-3 text-info">
+                            ผู้ติดตาม {{ followers[0] | numFormat  }} - {{ followers[1] | numFormat }} คน
                             <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
                         </b-col>
-                    </b-row> -->
+                    </b-row>
                 </div>
-                <!-- <div>
+                <div>
                     <label for="followers" class="mt-2">ผู้ติดตาม</label>
                     <vue-slider
                         class="px-0"
-                        v-model="filterRules.followers"
+                        v-model="followers"
                         :min="100"
-                        :max="99999999"
+                        :max="999999999"
                         :interval="1"
                         :enable-cross="false"
                         :dot-size="18"
@@ -322,7 +346,14 @@
                         :process-style="{ backgroundColor: '#17a2b8' }"
                         :dot-style="{ backgroundColor: '#17a2b8', border: 'none' }"
                     />
-                </div> -->
+                    <b-form-checkbox
+                        class="my-2"
+                        v-model="resetFollower"
+                        @change="onResetFollowers"
+                        >
+                        ไม่จำกัดช่วงผู้ติดตาม
+                    </b-form-checkbox>
+                </div>
                 <div>
                     <label for="followers" class="mt-2">ช่วงอายุ</label>
                     <vue-slider
@@ -418,11 +449,13 @@ export default {
     data() {
         return {
             resetAge: true,
+            resetFollower: true,
             businessTypes: [],
             selectedTypes:null,
             selectedProvince:null,
             selectedDistrict:null,
-            selectedSubdistrict:null,
+            selectedSubdistrict: null,
+            followers: [],
             filterRules: {
                 source:null,
                 search: "",
@@ -520,6 +553,17 @@ export default {
                 this.filterRules.age = [0,100];
             }
         },
+        onResetFollowers() {
+            if (this.resetFollower) {
+                // ถ้า checkbox ถูกติ๊ก → รีเซ็ตเป็น array ว่าง
+                this.followers = [];
+                this.filterRules.followers = [];
+                this.influencerLevel = null;
+            } else {
+                this.followers = [0, 900000000];
+                this.influencerLevel = null;
+            }
+        },
         resetFollowers() {
             this.influencerLevel = null;
             this.filterRules.followers = [];
@@ -534,34 +578,36 @@ export default {
                 // เลือกตัวใหม่
                 this.influencerLevel = level;
                 this.filterRules.followers = level;
+                this.setFollowersByLevel(level);
+                // this.resetFollower = false;
             }
             console.log("filter rules === ", this.filterRules);
         },
-        // setFollowersByLevel(level) {
-        //     switch (level) {
-        //         case 'top_star':
-        //             this.filterRules.followers = [1000001] // มากกว่า 1 ล้าน
-        //             // this.filterRules.followers = [1000001, Infinity] // มากกว่า 1 ล้าน
-        //             break
-        //         case 'macro':
-        //             this.filterRules.followers = [100001, 1000000] // 1 แสน ถึง 1 ล้าน
-        //             break
-        //         case 'micro':
-        //             this.filterRules.followers = [10001, 100000] // 1 หมื่น ถึง 1 แสน
-        //             break
-        //         case 'nano':
-        //             this.filterRules.followers = [1001, 10000] // 1 พัน ถึง 1 หมื่น
-        //             break
-        //         case 'end_user':
-        //             this.filterRules.followers = [101, 1000] // 100 ถึง 1 พัน
-        //             break
-        //         default:
-        //         this.filterRules.followers = [] // เคลียร์ถ้าไม่ได้เลือก
-        //         break
-        //     }
-        //     console.log("filter ==== ", this.filterRules);
+        setFollowersByLevel(level) {
+            switch (level) {
+                case 'top star':
+                    this.followers = [100000] // มากกว่า 1 ล้าน
+                    // this.followers = [1000001, Infinity] // มากกว่า 1 ล้าน
+                    break
+                case 'macro':
+                    this.followers = [100001, 1000000] // 1 แสน ถึง 1 ล้าน
+                    break
+                case 'micro':
+                    this.followers = [10001, 100000] // 1 หมื่น ถึง 1 แสน
+                    break
+                case 'nano':
+                    this.followers = [1001, 10000] // 1 พัน ถึง 1 หมื่น
+                    break
+                case 'end user':
+                    this.followers = [101, 1000] // 100 ถึง 1 พัน
+                    break
+                default:
+                this.followers = [] // เคลียร์ถ้าไม่ได้เลือก
+                break
+            }
+            console.log("filter ==== ", this.filterRules);
             
-        // },
+        },
         updateInfluencerType(selected) {
             // แปลง array ของ object → array ของ value
             this.filterRules.influencer_type = selected.map(item => item.value);
@@ -700,7 +746,15 @@ export default {
         isSelected(data,gender) {
             return data.includes(gender)
         },
+        handleFilter() {
+            if (this.followers && this.followers.length > 0) {
+                this.filterRules.followers = this.followers;
+            } else {
+                this.filterRules.followers = [];
+            }
+        },
         applyFilters() {
+            this.handleFilter();
             // Emit the filter criteria to the parent component
             this.$emit("filter-applied", this.filterRules);
         },

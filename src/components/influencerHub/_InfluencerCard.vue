@@ -1,16 +1,19 @@
 <template lang="">
     <b-card 
         :img-src="influencer.profile_image" 
-        img-alt="Image" img-top
-        body-class="rounded-bottom text-left pb-3 px-3"
+        img-alt="Image" 
+        img-top
+        body-class="text-left p-0"
         img-top-class="rounded-top"
-        overlay
-        class="overflow-hidden h-100"
-        style="cursor:pointer;"
+        class="overflow-hidden h-100 p-3 shadow-lg rounded-3"
+        footer-bg-variant="white"
+        footer-border-variant="white"
+        footer-class="border-0 p-0 text-left"
+        style="cursor:pointer; border-radius: 2.25rem;"
         @click="linkToProfile()"
     >
-        <div class="bg-custom position-absolute" :class="'bg-' + influencer.source"  style="top:-180px">
-            <b-col cols="auto" class="p-1"> 
+        <div class="bg-custom position-absolute" style="top:10px;left:5px;">
+            <b-col cols="auto" class="p-2"> 
                 <div class="bg-white rounded-circle">
                     <img v-if="influencer.source == 'twitter'" src="@/assets/Twitter.png" class="social-imgs" />
                     <img v-if="influencer.source == 'facebook'" src="@/assets/Facebook.png" class="social-imgs" />
@@ -24,63 +27,52 @@
                 </div>
             </b-col>
         </div>
-        <!-- <div class=" mt-2 position-absolute" style="top:5px">
-            <b-badge style="background-color:#ffe6e6 !important;" class="mr-2" v-for="(item, index) in influencerTypes" :key="index" pill variant="light" >
-                {{ item.text }}
-            </b-badge>
-        </div> -->
-        <b-row  class="py-3 justify-content-between">
-            <b-col cols="auto" class="d-flex pr-0">
-                <h5 class="font-weight-bold text-truncate mb-0 mr-1">
+        
+        <b-row  class="m-0 justify-content-between">
+            <b-col cols="auto" class="d-flex px-0 mt-1">
+                <span style="font-size:18px;" class="font-weight-bold text-truncate mb-0 mr-1">
                     {{ influencer.name || influencer.uid  }}
-                </h5>
+                </span>
                 <span v-if="influencer.age" class="text-secondary">({{influencer.age}} ปี)</span>
-                <!-- <span v-else class="text-secondary" style="forn-size:14px">ไม่ระบุอายุ</span> -->
-                
-                <!-- <div class="d-flex align-items-center text-secondary" style="font-size: 14px">
-                    <i class="fa fa-tag mr-2"/>
-                    <span v-if="influencer.department">{{ getDepartmentType(influencer.department) }}</span>
-                    <span v-else>ไม่ระบุประเภทธุรกิจ</span>
-                </div> -->
-                <!-- {{influencer.source}} -->
             </b-col>
-            <b-col cols="auto" class=""> 
-                <b-badge v-if="influencer.species" class="mr-2" style="background-color: #fed06ea4; color: #2c3e50;" pill>
+            <b-col cols="auto" class="px-0 mt-1"> 
+                <b-badge v-if="influencer.species" class="mr-2 badge-custom" pill>
                     {{ getSpeciesName(influencer.species) }}
                 </b-badge>
-                <b-badge v-if="influencer.sex" pill variant="info">{{ getSexText(influencer.sex) }}</b-badge>
+                <b-badge v-if="influencer.sex" pill :class="'badge-' + influencer.sex">{{ getSexText(influencer.sex) }}</b-badge>
             </b-col>
-            <b-col cols="12" v-if="influencer.department" style="font-size:14px"  class="text-secondary">
+            <b-col cols="12" v-if="influencer.department" style="font-size:14px"  class="text-secondary px-0">
                 {{ getDepartmentType(influencer.department) }} 
             </b-col>
         </b-row>
-
+        <b-row v-if="!provinceName && !districtName && !subDistrictName" class="m-0">
+            <b-col v-if="provinceName || districtName || subDistrictName" class="d-flex px-0" style="font-size: 14px">
+                <i class="fa fa-map-marker mr-2" style="color: #fed06ea4;"/>
+                <span >
+                    {{ provinceName }} {{ `, ${districtName}` }} {{ `, ${subDistrictName}` }}
+                </span>
+                <!-- <span v-else class="text-secondary" style="font-size: 13px">ไม่ระบุพื้นที่</span> -->
+            </b-col>
+        </b-row>
         <b-card-text>
-            <b-row cols="2" class="mb-3">
+            <b-row cols="2" align-v="end" class="my-3 mx-0">
                 <b-col class="text-center">
-                    <div v-b-tooltip.hover="'ผู้ติดตาม: ' + (influencer.followers ? influencer.followers.toLocaleString() : '0')"   class="bold" style="font-size:18px;">{{ formatNumber(influencer.followers) }}</div>
+                    <div v-b-tooltip.hover="'ผู้ติดตาม: ' + (influencer.followers ? influencer.followers.toLocaleString() : '0')"   class="bold text-info" style="font-size:18px;">{{ formatNumber(influencer.followers) }}</div>
                     <div style="font-size:14px;">Followers</div>
                 </b-col>
-                <b-col class="text-center">
-                    <div v-b-tooltip.hover="'กำลังติดตาม: ' + (influencer.followings ? influencer.followings.toLocaleString() : '0')"  class="bold" style="font-size:18px;">{{ formatNumber(influencer.followings) }}</div>
+                <b-col class="text-center border-left">
+                    <div v-b-tooltip.hover="'กำลังติดตาม: ' + (influencer.followings ? influencer.followings.toLocaleString() : '0')"  class="bold text-info" style="font-size:18px;">{{ formatNumber(influencer.followings) }}</div>
                     <div style="font-size:14px;">Following</div>
                 </b-col>
             </b-row>
-            <b-row align-v="end" class="m-0">
-                <b-col class="d-flex px-0" style="font-size: 14px">
-                    <i class="fa fa-map-marker mr-2" style="color: #fed06ea4;"/>
-                    <span v-if="provinceName || districtName || subDistrictName">
-                        {{ subDistrictName }} {{ districtName }} {{ provinceName }}
-                    </span>
-                    <span v-else class="text-secondary" style="font-size: 13px">ไม่ระบุพื้นที่</span>
-                </b-col>
-            </b-row>
+        </b-card-text>
+        <template #footer>
             <div class=" mt-2">
-                <b-badge style="background-color:#ffe6e6 !important;" class="mr-2" v-for="(item, index) in influencerTypes" :key="index" pill variant="light" >
+                <b-badge style="background-color:#fed06ea4 !important;" class="mr-2" v-for="(item, index) in influencerTypes" :key="index" pill variant="light" >
                     {{ item.text }}
                 </b-badge>
             </div>
-        </b-card-text>
+        </template>
     </b-card>
 </template>
 <script>
@@ -276,10 +268,32 @@ export default {
 }
 </script>
 <style scoped>
+    .badge-male {
+        color: #17a2b8; /* สี info */
+        border: 1px solid #17a2b8;
+        background-color: transparent;
+    }
+    .badge-female {
+        color: #ffbcbc; /* สี info */
+        border: 1px solid #ffbcbc;
+        background-color: transparent;
+    }
+    /* .badge-lgbtq+ {
+        color: #ffbcbc; 
+        border: 1px solid #ffbcbc;
+        background-color: transparent;
+    } */
+    .badge-custom{
+        color: #2c3e50;
+        background: linear-gradient(90deg,#FDD071  0%,  #ffbcbc 100%);
+    }
     .bg-custom{
-        background-color: aliceblue;
+        background-color: rgb(255, 255, 255);
         border-bottom-left-radius: 50%;
         border-bottom-right-radius: 50%;
+        border-top-left-radius: 50%;
+        border-top-right-radius: 50%;
+        z-index: 2;
         /* padding-left: 10px;
         padding-right: 10px;
         padding-bottom: 5px; */
@@ -295,32 +309,21 @@ export default {
     .bg-threads    { background-color: #000000; } /* ดำ Threads */
 
     .social-imgs {
-        width: 45px;
+        width: 55px;
     }
 
     .card-img, .card-img-bottom, .card-img-top {
         flex-shrink: 0;
         width: 100%;
-        height: 210px;
+        height: 200px;
         object-fit: cover;
+        border-radius: 1.25rem;
         
     }
 
     .card-body {
-        backdrop-filter: blur(12px);
-        position: relative;
-        margin-top: -30px;
-        box-shadow: none !important;
-        text-shadow: none !important;
-        background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0) 0%,      /* โปร่งใสด้านบน */
-            rgba(255, 255, 255, 0.4) 40%,   /* เริ่มขาวขึ้น */
-            rgba(255, 255, 255, 0.8) 60%,  /* ขาวเกือบทึบ */
-            rgba(255, 255, 255, 1) 90%     /* ขาวทึบด้านล่าง */
-        );
         padding-top:30px;
         z-index: 1;
-    
+  
     }
 </style>

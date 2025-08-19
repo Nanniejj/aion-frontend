@@ -14,7 +14,7 @@
             <b-row cols="1" cols-md="2" cols-xl="3" v-if="influencers && influencers.length !== 0" class="m-0">
                 <b-col 
                     v-for="(influencer, index) in influencers" :key="index"
-                    class="mb-4"
+                    class="mb-4 pr-0"
                 >
                     <InfluencerCard 
                         :influencer="influencer"
