@@ -5,6 +5,13 @@
             background-color="rgba(255, 255, 255, 0.3)"
             color="#b6ac9a" 
         />
+
+        <!-- time line -->
+        <!-- <b-row class="m-0">
+            <b-col cols="12" class="px-0">
+                <Timeline/>
+            </b-col>
+        </b-row> -->
         <div id="total-post" class="pt-5">
             <!-- header  -->
             <div class="col-12 px-0 h6 text-left">
@@ -506,12 +513,13 @@ import SentimentButton from "./_SentimentButton.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 // import "@justinribeiro/lite-tiktok";
 import { debounce } from 'lodash';
-
+import Timeline from "../_Timeline.vue";
 export default {
     components: {
         SentimentButton,
         VueGallerySlideshow,
         // Highlighter,
+        Timeline
     },
     props: {
         source: {

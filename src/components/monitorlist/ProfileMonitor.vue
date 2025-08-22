@@ -578,6 +578,17 @@
             </b-col>
         </b-row>
 
+        <!-- time line -->
+        <!-- <b-row class="m-0">
+            <b-col cols="12" class="px-0">
+                <Timeline 
+                    :source="selectedSource"
+                    :start="valueDate[0]"
+                    :end="valueDate[1]"
+                />
+            </b-col>
+        </b-row> -->
+
         <!-- posts -->
         <TabPost 
             :source="selectedSource"
@@ -604,10 +615,12 @@ import moment from "moment";
 
 import ProfileWordCloud from './profileTabs/_ProfileWordCloud.vue'
 import HashtagBarChar from "../chart/HashtagBarChar.vue"
+import Timeline from "./_Timeline.vue"
 export default {
     components: {
         TabDomain,
         TabHashtag,
+        Timeline,
         TabPost,
         Multiselect,
         ProfileWordCloud,
@@ -677,6 +690,7 @@ export default {
                 { text: 'สัตว์เลี้ยง', value: 'pet' },
                 { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
                 { text: 'องค์กร / บริษัท', value: 'company' },
+                { text: 'รัฐบาล', value: 'government' },
                 { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
                 { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
                 { text: 'เด็ก / ทารก', value: 'kid' },

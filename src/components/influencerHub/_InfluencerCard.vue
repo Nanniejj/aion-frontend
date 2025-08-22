@@ -5,11 +5,11 @@
         img-top
         body-class="text-left p-0"
         img-top-class="rounded-top"
-        class="overflow-hidden h-100 p-3 shadow-lg rounded-3"
+        class="overflow-hidden h-100 p-3 rounded-3"
         footer-bg-variant="white"
         footer-border-variant="white"
         footer-class="border-0 p-0 text-left"
-        style="cursor:pointer; border-radius: 2.25rem;"
+        style="cursor:pointer; border-radius: 2.25rem;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .2);"
         @click="linkToProfile()"
     >
         <div class="bg-custom position-absolute" style="top:10px;left:5px;">
@@ -45,7 +45,7 @@
                 {{ getDepartmentType(influencer.department) }} 
             </b-col>
         </b-row>
-        <b-row v-if="!provinceName && !districtName && !subDistrictName" class="m-0">
+        <b-row class="m-0 my-2">
             <b-col v-if="provinceName || districtName || subDistrictName" class="d-flex px-0" style="font-size: 14px">
                 <i class="fa fa-map-marker mr-2" style="color: #fed06ea4;"/>
                 <span >
