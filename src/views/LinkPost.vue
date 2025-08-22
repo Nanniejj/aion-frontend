@@ -2,7 +2,7 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
 
-    <div class="container my-3 d-none">
+    <div class="container my-3 ">
 
       <!-- Filters Card -->
       <b-card class="mb-3 shadow-sm">
@@ -62,6 +62,18 @@
               <b-form-input type="number" min="1" max="100" v-model.number="filters.limit" />
               <small class="text-muted">1–100</small>
             </b-form-group>
+            <b-form-group label="โหมดผลลัพธ์" class="pr-md-3">
+  <b-form-radio-group
+    v-model="filters.view_mode"
+    :options="[
+      { value: 'posts', text: 'ปกติ (ตามโพสต์)' },
+      { value: 'daily', text: 'รายวัน (Top10/วัน)' }
+    ]"
+    buttons
+    button-variant="outline-primary"
+    size="sm"
+  />
+</b-form-group>
 
           </div>
 
@@ -88,13 +100,26 @@
       </div>
 
       <!-- Timeline -->
-      <timeline-posts :items="postsFromApi" :direction="horizontal" v-else />
+     <timeline-posts
+  :items="postsFromApi"
+  :mode="filters.view_mode"
+  v-else
+/>
 
-      <!-- Pagination -->
-      <div class="d-flex justify-content-center my-3" v-if="!loading && totalPages > 1">
-        <b-pagination v-model="filters.page" :per-page="filters.limit" :total-rows="count" @input="changePage"
-          first-number last-number align="center" />
-      </div>
+      <!-- ซ่อนปุ่มเพจในโหมดรายวัน -->
+<div
+  class="d-flex justify-content-center my-3"
+  v-if="!loading && totalPages > 1 && filters.view_mode === 'posts'"
+>
+  <b-pagination
+    v-model="filters.page"
+    :per-page="filters.limit"
+    :total-rows="count"
+    @input="changePage"
+    first-number last-number
+    align="center"
+  />
+</div>
 
       <TimelinePosts  />
     </div>
@@ -113,6 +138,7 @@ export default {
 
   data() {
     return {
+      
       loading: false,
       postsFromApi: [],
       count: 0,
@@ -129,7 +155,7 @@ export default {
       filters: {
         sentiment: ['1', '0', '-1'],           // multi
         keywordInput: 'รั้ว กัมพูชา', // ผู้ใช้พิมพ์ด้วยเว้นวรรค/เครื่องหมาย +
-
+ view_mode: 'posts',
         source: ['facebook', 'tiktok', 'twitter'], // multi
         sort_by: 'descend',                  // 'descend' | 'recent' | 'engagement'
         limit: 10,
@@ -198,90 +224,161 @@ export default {
       }
     },
 
-    async apiTimeline() {
-      this.loading = true;
-      try {
-        const params = {
-          sentiment: (this.filters.sentiment || []).join(','),          // '1,0,-1'
-          keyword: this.buildKeywordParam(),                            
-          start: this.filters.startLocal,          
-          end: this.filters.endLocal,               
-          source: (this.filters.source || []).join(','),                // 'facebook,tiktok,twitter'
-          sort_by: this.filters.sort_by === 'recent' ? undefined : this.filters.sort_by,
-          limit: this.filters.limit,
-          page: this.filters.page
-        };
-
-        // ลบ key ที่ไม่มีค่าออก เพื่อลดความสับสน
-        Object.keys(params).forEach(k => (params[k] == null || params[k] === '') && delete params[k]);
-
-        const { data } = await this.axios.request({
-          method: 'GET',
-          url: 'http://localhost:3000/api/v2/userposts/getFulltextPost',
-          params
-        });
-
-        // รองรับทั้งแบบ {count, data, totalPages} หรือ {data, next_cursor}
-        this.postsFromApi = data.data || [];
-        this.count = data.count || 0;
-        this.totalPages = data.totalPages || Math.ceil((this.count || 0) / (this.filters.limit || 1));
-
-      } catch (e) {
-        console.error(e);
-        this.postsFromApi = [];
-        this.count = 0;
-        this.totalPages = 0;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    handleSearch() {
-      this.filters.page = 1;
-      this.apiTimeline();
-    },
-
-    changePage() {
-      this.apiTimeline();
-    },
-
-    resetFilters() {
-      this.filters = {
-        sentiment: ['1', '0', '-1'],
-        keywordInput: '',
-        startLocal: this.valueDate[0] + "T00:00:00",
-        endLocal:  this.valueDate[1] + "T23:59:59",
-        source: [],
-        sort_by: 'descend',
-        limit: 10,
-        page: 1
-      };
-      this.apiTimeline();
-    },
-
-   
+   getDaysInclusive(startYMD, endYMD) {
+    const days = [];
+    let cur = moment(startYMD, 'YYYY-MM-DD');
+    const end = moment(endYMD, 'YYYY-MM-DD');
+    while (cur.isSameOrBefore(end, 'day')) {
+      days.push(cur.format('YYYY-MM-DD'));
+      cur = cur.add(1, 'day');
+    }
+    return days;
   },
 
+  async apiTimeline() {
+    // แตกแขนงตามโหมด
+    if (this.filters.view_mode === 'daily') {
+      return this.apiTimelineDaily();
+    }
+    // -------- โหมดปกติ (ตามโพสต์) เหมือนเดิม --------
+    this.loading = true;
+    try {
+      const params = {
+        sentiment: (this.filters.sentiment || []).join(','),
+        keyword: this.buildKeywordParam(),
+        start: this.filters.startLocal,
+        end: this.filters.endLocal,
+        source: (this.filters.source || []).join(','),
+        sort_by: this.filters.sort_by === 'recent' ? undefined : this.filters.sort_by,
+        limit: this.filters.limit,
+        page: this.filters.page,
+      };
+      Object.keys(params).forEach(k => (params[k] == null || params[k] === '') && delete params[k]);
+
+      const { data } = await this.axios.request({
+        method: 'GET',
+        url: 'https://api2.cognizata.com/api/v2/userposts/getFulltextPost',
+        params
+      });
+
+      this.postsFromApi = data.data || [];
+      this.count = data.count || 0;
+      this.totalPages = data.totalPages || Math.ceil((this.count || 0) / (this.filters.limit || 1));
+    } catch (e) {
+      console.error(e);
+      this.postsFromApi = [];
+      this.count = 0;
+      this.totalPages = 0;
+    } finally {
+      this.loading = false;
+    }
+  },
+
+  // -------- โหมดรายวัน (ยิงทีละวัน วันละ 10) --------
+  async apiTimelineDaily() {
+    this.loading = true;
+    try {
+      const startYMD = this.valueDate?.[0];
+      const endYMD   = this.valueDate?.[1];
+      const days = this.getDaysInclusive(startYMD, endYMD);
+
+      const common = {
+        sentiment: (this.filters.sentiment || []).join(','),
+        keyword: this.buildKeywordParam(),
+        source: (this.filters.source || []).join(','),
+        // ให้เคารพการเรียงที่เลือก (descend/recent/engagement)
+        sort_by: this.filters.sort_by === 'recent' ? undefined : this.filters.sort_by,
+        limit: 10,
+        page: 1,
+      };
+
+      const grouped = [];
+      // ยิงทีละวัน (เรียงตาม days ที่ได้มา)
+      for (const ymd of days) {
+        const params = {
+          ...common,
+          start: `${ymd}T00:00:00`,
+          end:   `${ymd}T23:59:59`,
+        };
+        Object.keys(params).forEach(k => (params[k] == null || params[k] === '') && delete params[k]);
+
+        try {
+          const { data } = await this.axios.request({
+            method: 'GET',
+            url: 'https://api2.cognizata.com/api/v2/userposts/getFulltextPost',
+            params
+          });
+          const items = (data?.data || []);
+          if (items.length) {
+            grouped.push({
+              date: ymd,     // ใช้สำหรับแสดงหัววัน
+              items,         // 10 โพสต์ของวันนั้น
+            });
+          } else {
+            // ถ้าอยากแสดงวันที่ว่าง ให้ push ด้วย items: []
+            // grouped.push({ date: ymd, items: [] })
+          }
+        } catch (e) {
+          console.error('daily fetch error', ymd, e);
+          // ข้ามวันนั้นไป
+        }
+      }
+
+      // ตั้งค่าให้องค์ประกอบ TimelinePosts ใช้รูปแบบกลุ่ม
+      this.postsFromApi = grouped; // [{date, items:[...]}]
+      this.count = grouped.length;
+      this.totalPages = 0; // โหมดรายวันไม่ใช้เพจ
+    } finally {
+      this.loading = false;
+    }
+  },
+
+  handleSearch() {
+    this.filters.page = 1;
+    this.apiTimeline();
+  },
+
+  changePage() {
+    // ใช้เฉพาะโหมดปกติ
+    if (this.filters.view_mode === 'posts') {
+      this.apiTimeline();
+    }
+  },
+
+  resetFilters() {
+    this.filters = {
+      sentiment: ['1', '0', '-1'],
+      keywordInput: '',
+      startLocal: this.valueDate[0] + "T00:00:00",
+      endLocal:   this.valueDate[1] + "T23:59:59",
+      source: [],
+      sort_by: 'descend',
+      limit: 10,
+      page: 1,
+      view_mode: 'posts', // รีเซ็ตกลับโหมดปกติ
+    };
+    this.apiTimeline();
+  },
+  },
   async mounted() {
-    // // ตั้งค่าเริ่มต้น (ถ้าอยากเป็นวันนี้)
-    // if (this.valueDate[0] == null) {
-    //   this.filters.startLocal =
-    //     moment(new Date())
-    //       .format()
-    //       .slice(0, 10) + "T00:00:00";
-    //   this.filters.endLocal =
-    //     moment(new Date())
-    //       .format()
-    //       .slice(0, 10) + "T23:59:59";
-    // } else {
-    //   this.filters.startLocal = this.valueDate[0] + "T00:00:00";
-    //   this.filters.endLocal = this.valueDate[1] + "T23:59:59";
-    // }
+    // ตั้งค่าเริ่มต้น (ถ้าอยากเป็นวันนี้)
+    if (this.valueDate[0] == null) {
+      this.filters.startLocal =
+        moment(new Date())
+          .format()
+          .slice(0, 10) + "T00:00:00";
+      this.filters.endLocal =
+        moment(new Date())
+          .format()
+          .slice(0, 10) + "T23:59:59";
+    } else {
+      this.filters.startLocal = this.valueDate[0] + "T00:00:00";
+      this.filters.endLocal = this.valueDate[1] + "T23:59:59";
+    }
 
-
-    // let domain = localStorage.getItem("domainArr");
-    // this.$store.commit("setDomainArr", domain);
-    // this.apiTimeline();
+    let domain = localStorage.getItem("domainArr");
+    this.$store.commit("setDomainArr", domain);
+    this.apiTimeline();
   }
 };
 </script>

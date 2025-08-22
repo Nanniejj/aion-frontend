@@ -28,7 +28,7 @@
       },
       maxHeight: {
         type: String,
-        default: '51px'
+        default: '55px'
       }
     },
     data() {

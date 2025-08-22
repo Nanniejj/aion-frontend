@@ -7,7 +7,7 @@
   >
   <!-- {{ post }} -->
     <div class="position-relative">
-      <b-card-img
+      <img
         cover
         :src="post.photos[0]"
         v-if="post.photos && post.photos.length"

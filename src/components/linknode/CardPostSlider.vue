@@ -16,7 +16,7 @@
   <!-- {{ currentPosts }} -->
         <div class="slider" ref="slider">
           <b-row>
-            <span class="d-flex box-flex-small" style="width:85vw;padding:0 20px;">
+            <span class="d-flex box-flex-small" >
              <!-- {{ currentPosts }} -->
               <CardPost
                 v-for="(post, index) in currentPosts"
@@ -155,6 +155,9 @@ export default {
 };
 </script>
 <style scoped>
+.box-flex-small{
+    width:65vw;padding:0 20px;
+}
 .fa-external-link {
   display: inline-block;
   /* ทำให้ขอบครอบคลุมตัวไอคอน */

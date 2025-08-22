@@ -1,66 +1,112 @@
 <template>
   <div class="timeline-wrapper">
     <div class="timeline">
-      <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
-        <!-- จุดวงกลมบนเส้น -->
-        <div>
-          <!-- <CardPost /> -->
-        </div>
-        <div class="timeline-dot">
+      <!-- โหมดรายวัน -->
+      {{ isDaily }} {{ mode }}
+      <template v-if="isDaily">
 
-          <span class="h4">
-            {{ formatDay(it.date) }} {{ formatMoth(it.date) }}
-            <!-- {{ formatTime(it.date) }} 
-            {{ formatYear(it.date) }} -->
-          </span>
-          <span v-if="it.profile_image">
-            <b-avatar @error="user" size="47px" :src="it.profile_image" loading="lazy" class="imgpro"
-              v-if="it.source != 'blockdit'"></b-avatar>
-            <b-avatar @error="user" size="47px" :src="it.profile_image" loading="lazy" v-else></b-avatar>
-          </span>
-          <span v-else> <b-avatar size="45px"></b-avatar></span>
+        <div v-for="(day, idx) in items" :key="day.date || idx" class="timeline-item d-flex">
 
-          <img v-if="it.source === 'twitter'" :src="imgtw" class="social-img" />
-          <img v-if="it.source === 'facebook'" :src="imgfb" class="social-img" />
-          <img v-if="it.source === 'pantip'" :src="imgpt" class="social-img" />
-          <img v-if="it.source === 'youtube'" :src="imgyt" class="social-img" />
-          <img v-if="it.source === 'news'" :src="imgnw" class="social-img" />
-          <img v-if="it.source === 'instagram'" :src="imgig" class="social-img" />
-          <img v-if="it.source === 'blockdit'" :src="imgbd" class="social-img" />
-          <img v-if="it.source === 'tiktok'" :src="imgtt" class="social-img" />
-          <img v-if="it.source === 'threads'" :src="imgtd" class="social-img" />
-          <div class="ml-auto text-muted small d-flex">
-            <!-- {{ formatDate(it.date) }} -->
+          <div class="timeline-dot">
+            <span class="h4">
+              <!-- แสดงวันที่ของบัคเก็ต -->
+              {{ formatThaiDayLabel(day.date) }}
+            </span>
+
+            <!-- ใช้รูปโปรไฟล์/ไอคอนจากโพสต์แรกของวัน ถ้ามี -->
+            <template v-if="day.items && day.items.length">
+              <span v-if="day.items[0].profile_image">
+                <b-avatar size="47px" :src="day.items[0].profile_image" loading="lazy" class="imgpro"
+                  v-if="day.items[0].source != 'blockdit'"></b-avatar>
+                <b-avatar size="47px" :src="day.items[0].profile_image" loading="lazy" v-else></b-avatar>
+              </span>
+              <span v-else><b-avatar size="45px"></b-avatar></span>
+
+              <img v-if="day.items[0].source === 'twitter'" :src="imgtw" class="social-img" />
+              <img v-if="day.items[0].source === 'facebook'" :src="imgfb" class="social-img" />
+              <img v-if="day.items[0].source === 'pantip'" :src="imgpt" class="social-img" />
+              <img v-if="day.items[0].source === 'youtube'" :src="imgyt" class="social-img" />
+              <img v-if="day.items[0].source === 'news'" :src="imgnw" class="social-img" />
+              <img v-if="day.items[0].source === 'instagram'" :src="imgig" class="social-img" />
+              <img v-if="day.items[0].source === 'blockdit'" :src="imgbd" class="social-img" />
+              <img v-if="day.items[0].source === 'tiktok'" :src="imgtt" class="social-img" />
+              <img v-if="day.items[0].source === 'threads'" :src="imgtd" class="social-img" />
+            </template>
+
+            <span class="line"></span>
           </div>
-          <span class="line"></span>
-        </div>
 
-        <!-- เนื้อหา -->
-        <b-card>
-          <div v-if="items && items.length">
-            <!-- {{ items }} -->
-            <CardPostSlider :clusters="items"  title="Hot Topics"
-              />
+          <!-- เนื้อหา รายวัน -->
+          <div class="flex-grow-1">
+            <div v-if="day.items && day.items.length">
+              <div class="text-right">
+                <b-button @click="toggle(idx)" size="sm">เลือกข้อมูล</b-button>
+              </div>
 
-            <!-- ถ้ายังต้องการปุ่มเลือกวันที่แบบที่มีอยู่ คอมโพเนนต์ Slider ก็มีให้แล้ว
-         แต่ถ้าจะใช้ของเดิม ให้ซ่อนในหน้านี้เพื่อไม่ซ้ำซ้อน -->
+              <!-- โพสต์แรกของวัน -->
+              <CardTitle :post="day.items[0]" v-if="!isOpen(idx)" class="mx-2" />
+
+              <!-- รายการ 10 โพสต์ของวันนั้น -->
+              <CardPostSlider v-else :clusters="day.items" :title="`Hot Topics • ${formatThaiDayLabel(day.date)}`" />
+            </div>
+
+            <div v-else class="text-muted small mx-2">
+              ไม่มีข้อมูลในวันนี้
+            </div>
           </div>
-        </b-card>
-      </div>
+        </div>
+      </template>
+
+      <!-- โหมดปกติ (ตามโพสต์) -->
+      <template v-else>
+        <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
+          <!-- {{ items }} -->
+          <div class="timeline-dot">
+            <span class="h4">
+              {{ formatDay(it.date) }} {{ formatMoth(it.date) }}
+            </span>
+
+            <span v-if="it.profile_image">
+              <b-avatar size="47px" :src="it.profile_image" loading="lazy" class="imgpro"
+                v-if="it.source != 'blockdit'"></b-avatar>
+              <b-avatar size="47px" :src="it.profile_image" loading="lazy" v-else></b-avatar>
+            </span>
+            <span v-else><b-avatar size="45px"></b-avatar></span>
+
+            <img v-if="it.source === 'twitter'" :src="imgtw" class="social-img" />
+            <img v-if="it.source === 'facebook'" :src="imgfb" class="social-img" />
+            <img v-if="it.source === 'pantip'" :src="imgpt" class="social-img" />
+            <img v-if="it.source === 'youtube'" :src="imgyt" class="social-img" />
+            <img v-if="it.source === 'news'" :src="imgnw" class="social-img" />
+            <img v-if="it.source === 'instagram'" :src="imgig" class="social-img" />
+            <img v-if="it.source === 'blockdit'" :src="imgbd" class="social-img" />
+            <img v-if="it.source === 'tiktok'" :src="imgtt" class="social-img" />
+            <img v-if="it.source === 'threads'" :src="imgtd" class="social-img" />
+            <span class="line"></span>
+          </div>
+
+          <!-- การ์ดเดี่ยวตามโพสต์ -->
+          <div class="flex-grow-1">
+            <CardTitle :post="it" :domain="currentDomain" class="mx-2" />
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
+
 
 <script>
 import moment from "moment";
 import 'moment/locale/th'
 import CardPostSlider from "./CardPostSlider";
 import CardPost from "./CardPost.vue";
+import CardTitle from "./CardTitle.vue";
 // import 'moment-timezone'   // ต้องมีถ้าจะใช้ .tz()
 export default {
   name: "TimelinePosts",
   components: {
-    CardPostSlider,CardPost
+    CardPostSlider, CardTitle
   },
   props: {
     // ส่ง array เข้ามาได้; ถ้าไม่ส่งจะใช้ sampleData ด้านล่าง
@@ -68,9 +114,12 @@ export default {
       type: Array,
       default: () => [],
     },
+    mode: { type: String, default: 'posts' } // 'posts' | 'daily'
   },
   data() {
     return {
+      openMap: {},
+      show: false,
       sampleData: [
         {
           _id: "68a53c9436c9caad58c66626",
@@ -140,6 +189,11 @@ export default {
     };
   },
   computed: {
+    
+    isDaily() {
+      // ถ้ารายการแรกมีฟิลด์ items แปลว่ามาแบบ grouped by day
+      return Array.isArray(this.items?.[0]?.items) && this.mode === 'daily';
+    },
     // mappedItems() {
     //   const src = (this.items && this.items.length) ? this.items : this.sampleData;
     //   return src
@@ -160,6 +214,15 @@ export default {
     // },
   },
   methods: {
+     formatThaiDayLabel(ymd) {
+      return moment(ymd, 'YYYY-MM-DD').format('ll');
+    },
+    toggle(idx) {
+      this.$set(this.openMap, idx, !this.openMap[idx]);
+    },
+    isOpen(idx) {
+      return !!this.openMap[idx];
+    },
     formatDate(date) {
       let dates = moment(date).subtract(7, 'hours')
       let date2 = moment(dates).format('ll');
