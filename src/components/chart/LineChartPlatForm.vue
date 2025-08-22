@@ -96,9 +96,8 @@ export default {
           "https://api2.cognizata.com/api/v2/userposts/getChartDataPlatform?source=" +
           this.getNamePlatform +
           sdate +
-          edate +
-          "&domain=" +
-          this.getDomainArr,
+          edate ,
+        
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -167,9 +166,7 @@ export default {
           method: "get",
           url:
             "https://api2.cognizata.com/api/v2/userposts/getChartDataPlatform?source=" +
-            this.getNamePlatform +
-            "&domain=" +
-            this.getDomainArr,
+            this.getNamePlatform ,
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
             "Content-Type": "application/json",

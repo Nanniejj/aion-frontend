@@ -117,7 +117,7 @@ export default {
        start_date: this.sdate,
       end_date: this.edate,
       source:this.getNamePlatform,
-      domain: 'All',
+      // domain: 'All',
       dashboard:true
       
     });

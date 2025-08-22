@@ -662,7 +662,7 @@ export default {
             }
         },
         selectDate() {
-            console.log(this.valueDate[0], this.valueDate[1]);
+           // console.log(this.valueDate[0], this.valueDate[1]);
             if (this.valueDate.length == 0) {
                 this.start = "";
                 this.end = "";

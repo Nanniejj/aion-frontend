@@ -107,6 +107,7 @@
     "mutationobserver-shim": "^0.3.7",
     "popper.js": "^1.16.1",
     "portal-vue": "^2.1.7",
+    "postcss-clean": "^1.2.2",
     "prettier": "^1.19.1",
     "sass": "^1.26.11",
     "sass-loader": "^10.0.2",

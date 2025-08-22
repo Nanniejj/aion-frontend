@@ -898,7 +898,7 @@ export default {
       commit("setLoadPostTab", true);
       try {
         const res = await DomainService.getPostDomain(payload);
-        console.log("payload", payload);
+        // console.log("payload", payload);
         commit("setLoadPostTab", false);
         var post = res.data.data;
         var pair = { read: true };
@@ -925,7 +925,7 @@ export default {
       commit("setLoadPostTab", true);
       try {
         const res = await DomainService.getPostDomainv1(payload);
-        console.log("payload", payload);
+        // console.log("payload", payload);
         commit("setLoadPostTab", false);
         var post = res.data.data;
         var pair = { read: true };
@@ -976,7 +976,7 @@ export default {
       commit("setLoadPostTab", true);
       try {
         const res = await DomainService.getPostDomain(payload);
-        console.log("payload", payload);
+        // console.log("payload", payload);
         commit("setLoadPostTab", false);
         var post = res.data.data;
         var pair = { read: true };

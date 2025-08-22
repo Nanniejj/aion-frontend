@@ -296,7 +296,7 @@ export default {
     async deleteDomain({ commit, state }, payload) {
       try {
         const res = await TemplateService.DeleteDomain(payload);
-        console.log("payload", payload);
+        // console.log("payload", payload);
         const index = state.itemsDomain.findIndex((dm) => dm.id === payload.id);
         console.log(index,state.itemsDomain);
         state.itemsDomain.splice(index, 1);

@@ -188,7 +188,7 @@ export default {
     //   this.monitor = true
     // },
     selectData() {
-      console.log(this.valueDate[0], this.valueDate[1]);
+     // console.log(this.valueDate[0], this.valueDate[1]);
       this.start_date = this.valueDate[0] + "T00:00:00";
       this.end_date = this.valueDate[1] + "T23:59:59";
       this.$store.commit("setWordCloudStartDate", this.start_date);

@@ -50,17 +50,23 @@
           <b-row align-h="end"> </b-row>
         </b-container>
         <b-container>
-          <b-row style="padding-bottom: 200px">
+          <b-row style="padding-bottom: 200px" v-if="dataSum">
             <Summary class="mt-2" :dataSum="dataSum" />
-            <Facebook :dataSum="dataSum.summary.platform_data.facebook || {}" :dataPlatform="dataPlatform.facebook || {}"/>
-            <Twitter :dataSum="dataSum.summary.platform_data.twitter || {}" :dataPlatform="dataPlatform.twitter || {}" />
+            <Facebook :dataSum="dataSum.summary.platform_data.facebook || {}"
+              :dataPlatform="dataPlatform.facebook || {}" />
+            <Twitter :dataSum="dataSum.summary.platform_data.twitter || {}"
+              :dataPlatform="dataPlatform.twitter || {}" />
             <Pantip :dataSum="dataSum.summary.platform_data.pantip || {}" :dataPlatform="dataPlatform.pantip || {}" />
             <News :dataSum="dataSum.summary.platform_data.news || {}" :dataPlatform="dataPlatform.news || {}" />
-            <Youtube :dataSum="dataSum.summary.platform_data.youtube || {}" :dataPlatform="dataPlatform.youtube || {}" />
-            <Instagram :dataSum="dataSum.summary.platform_data.instagram || {}" :dataPlatform="dataPlatform.instagram || {}" />
-            <Blockdit :dataSum="dataSum.summary.platform_data.blockdit || {}" :dataPlatform="dataPlatform.blockdit || {}" />
+            <Youtube :dataSum="dataSum.summary.platform_data.youtube || {}"
+              :dataPlatform="dataPlatform.youtube || {}" />
+            <Instagram :dataSum="dataSum.summary.platform_data.instagram || {}"
+              :dataPlatform="dataPlatform.instagram || {}" />
+            <Blockdit :dataSum="dataSum.summary.platform_data.blockdit || {}"
+              :dataPlatform="dataPlatform.blockdit || {}" />
             <Tiktok :dataSum="dataSum.summary.platform_data.tiktok || {}" :dataPlatform="dataPlatform.tiktok || {}" />
-            <Threads :dataSum="dataSum.summary.platform_data.threads || {}" :dataPlatform="dataPlatform.threads || {}" />
+            <Threads :dataSum="dataSum.summary.platform_data.threads || {}"
+              :dataPlatform="dataPlatform.threads || {}" />
           </b-row>
         </b-container>
       </div>
@@ -131,7 +137,7 @@ export default {
   data: function () {
     return {
       dataSum: null,
-      dataPlatform:null,
+      dataPlatform: null,
       domainData: "",
       sdate: "",
       edate: "",
@@ -244,7 +250,7 @@ export default {
   },
   methods: {
     apidash() {
-    this.$store.commit("setLoadStatus", true);
+      this.$store.commit("setLoadStatus", true);
       // let sdate, edate, today;
 
 
@@ -252,7 +258,7 @@ export default {
       // sdate = "start_date=" + today + "T00:00:00";
       // edate = "&end_date=" + today + "T23:59:59";
       if (this.valueDate[0] != null) {
-        console.log(this.valueDate[0], this.valueDate[1]);
+       // console.log(this.valueDate[0], this.valueDate[1]);
         this.start_date = this.valueDate[0] + "T00:00:00";
         this.end_date = this.valueDate[1] + "T23:59:59";
       } else {
@@ -278,6 +284,7 @@ export default {
       this.axios(config)
         .then((response) => {
           this.dataSum = response.data
+          //this.$store.commit('setSum', response.data)
           // console.log('dataSum', this.dataSum);
 
         })
@@ -285,7 +292,7 @@ export default {
           console.log(error);
 
         });
-         var config2 = {
+      var config2 = {
         method: "get",
         url:
           "https://api2.cognizata.com/api/v2/platform/getSentimentStat?" +
@@ -300,8 +307,9 @@ export default {
       this.axios(config2)
         .then((response) => {
           this.dataPlatform = response.data
+         // this.$store.commit('setStat', response.data)
           // console.log('dataSum', this.dataPlatform);
-this.$store.commit("setLoadStatus", false);
+          this.$store.commit("setLoadStatus", false);
         })
         .catch(function (error) {
           console.log(error);
@@ -311,40 +319,40 @@ this.$store.commit("setLoadStatus", false);
     selectData() {
       this.apidash()
       if (this.valueDate[0] != null) {
-        console.log(this.valueDate[0], this.valueDate[1]);
+        // console.log(this.valueDate[0], this.valueDate[1]);
         this.start_date = this.valueDate[0] + "T00:00:00";
         this.end_date = this.valueDate[1] + "T23:59:59";
         this.$store.commit("setRageStartdate", this.start_date);
         this.$store.commit("setRageEnddate", this.end_date);
 
-      //   this.$store.dispatch("fetchSentimentStatDashboard", {
-      //     start_date: this.start_date,
-      //     end_date: this.end_date,
-      //     domain: 'All'
-      //     // domain: this.domainData
-      //   });
-      //   this.$store.dispatch("fetchAllstats", {
-      //     start_date: this.start_date,
-      //     end_date: this.end_date,
-      //     domain: 'All'
-      //   });
-      // } else {
-      //   let today = moment(new Date())
-      //     .format()
-      //     .slice(0, 10);
-      //   this.start_date = today + "T00:00:00";
-      //   this.end_date = today + "T23:59:59";
-      //   this.$store.dispatch("fetchSentimentStatDashboard", {
-      //     start_date: this.start_date,
-      //     end_date: this.end_date,
-      //     domain: 'All'
-      //     // domain: this.domainData
-      //   });
-      //   this.$store.dispatch("fetchAllstats", {
-      //     start_date: this.start_date,
-      //     end_date: this.end_date,
-      //     domain: 'All'
-      //   });
+        //   this.$store.dispatch("fetchSentimentStatDashboard", {
+        //     start_date: this.start_date,
+        //     end_date: this.end_date,
+        //     domain: 'All'
+        //     // domain: this.domainData
+        //   });
+        //   this.$store.dispatch("fetchAllstats", {
+        //     start_date: this.start_date,
+        //     end_date: this.end_date,
+        //     domain: 'All'
+        //   });
+        // } else {
+        //   let today = moment(new Date())
+        //     .format()
+        //     .slice(0, 10);
+        //   this.start_date = today + "T00:00:00";
+        //   this.end_date = today + "T23:59:59";
+        //   this.$store.dispatch("fetchSentimentStatDashboard", {
+        //     start_date: this.start_date,
+        //     end_date: this.end_date,
+        //     domain: 'All'
+        //     // domain: this.domainData
+        //   });
+        //   this.$store.dispatch("fetchAllstats", {
+        //     start_date: this.start_date,
+        //     end_date: this.end_date,
+        //     domain: 'All'
+        //   });
       }
     },
     print() {
@@ -360,16 +368,16 @@ this.$store.commit("setLoadStatus", false);
     let today = moment(new Date())
       .format()
       .slice(0, 10);
-    console.log("moment", moment(new Date()).format());
+    // console.log("moment", moment(new Date()).format());
     this.start_date = today + "T00:00:00";
     this.$store.commit("setRageStartdate", this.start_date);
     this.end_date = today + "T23:59:59";
     this.$store.commit("setRageEnddate", this.end_date);
-    this.$store.dispatch("fetchAllstats", {
-      start_date: this.start_date,
-      end_date: this.end_date,
-      domain: 'All'
-    });
+    // this.$store.dispatch("fetchAllstats", {
+    //   start_date: this.start_date,
+    //   end_date: this.end_date,
+    //   domain: 'All'
+    // });
     await this.$store.dispatch("fetchDomain");
     let domainName = this.getShowDomain.map(key => {
       return key.name;
@@ -377,12 +385,12 @@ this.$store.commit("setLoadStatus", false);
     this.domainData = domainName;
     this.$store.commit("setDomainArr", this.domainData);
     // console.log(domainName);
-    await this.$store.dispatch("fetchSentimentStatDashboard", {
-      start_date: this.start_date,
-      end_date: this.end_date,
-      domain: 'All'
-      // domain: domainName
-    });
+    // await this.$store.dispatch("fetchSentimentStatDashboard", {
+    //   start_date: this.start_date,
+    //   end_date: this.end_date,
+    //   domain: 'All'
+    //   // domain: domainName
+    // });
   }
 };
 </script>

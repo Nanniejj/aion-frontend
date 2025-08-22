@@ -163,7 +163,7 @@ export default {
 
     loadData() {
       if (this.objectData) {
-        console.log("โหลดข้อมูลใหม่:", this.dataKeyword);
+        //console.log("โหลดข้อมูลใหม่:", this.dataKeyword);
         this.objectName = this.objectData.object_name || "";
         this.editKeywords = [...(this.objectData.keywords || [])];
         this.editAndKeywords = [...(this.objectData.and_keywords || [])];
@@ -174,10 +174,10 @@ export default {
 
   mounted() {
     this.loadData();
-    console.log("****EditObjectKeyword");
-    console.log("ได้รับค่า objectId:", this.objectId);
-    console.log("ได้รับค่า subdomainId:", this.subdomainId);
-    console.log("ได้รับค่า dataKeyword:", this.dataKeyword);
+    // console.log("****EditObjectKeyword");
+    // console.log("ได้รับค่า objectId:", this.objectId);
+    // console.log("ได้รับค่า subdomainId:", this.subdomainId);
+    // console.log("ได้รับค่า dataKeyword:", this.dataKeyword);
 
 
   },

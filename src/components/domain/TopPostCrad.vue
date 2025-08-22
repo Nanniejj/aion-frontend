@@ -894,14 +894,14 @@ export default {
       });
     } else {
       this.$store.commit("setTopPostDomain", "");
-      this.$store.dispatch("fetchTopPostPlatform", {
+      this.$store.dispatch("fetchPostDomain", {
         start_date: this.sdate,
         end_date: this.edate,
         source: this.getNamePlatform,
         // sentiment: this.status,
         sort_by: "engagement",
         offset: 0,
-        domain: "All",
+       // domain: "All",
         // dashboard: true,
       });
     }

@@ -7,7 +7,7 @@
         background-color="rgba(255, 255, 255, 0.3)"
         color="#b6ac9a"
       />
-
+<!-- {{ getStatPlatform }} -->
       <b-container>
         <b-row align-h="center" class="mb-3">
           <img
@@ -56,9 +56,9 @@
             class="imgstt"
           />
         </b-row>
-        <b-row class="m-2">
-          <b-col v-if="getNamePlatform != 'news'">
-            <div class="bold">{{ getStat.users | numFormat }}</div>
+        <b-row class="m-2" v-if="getStatPlatform2">
+          <b-col v-if="getNamePlatform != 'news'" >
+            <div class="bold">{{ getStatPlatform2.users | numFormat }}</div>
             <div>Users</div>
           </b-col>
           <b-col v-if="getNamePlatform == 'news'">
@@ -69,97 +69,100 @@
                 open = true;
               "
             >
-              {{ getStat.users | numFormat }}
+              {{ getStatPlatform2.users | numFormat }}
             </div>
             <span @click="open = true">Source</span>
           </b-col>
           <b-col  class="border-left">
-            <div class="bold">{{ getStat.post+  getStat.comment| numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post+  getStatPlatform2.comment || 0 | numFormat }}</div>
             <div>Messages</div>
           </b-col>
           <b-col v-if="getNamePlatform == 'news'" class="border-left">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post || 0 | numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'twitter'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post || 0 | numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'twitter'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment || 0 | numFormat }}</div>
             <div>Comments</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'facebook'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post|| 0 | numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'facebook'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment || 0| numFormat }}</div>
             <div>Comments</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'pantip'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post || 0| numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'pantip'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment|| 0 | numFormat }}</div>
             <div>Comments</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'youtube'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post || 0 | numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'youtube'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment || 0| numFormat }}</div>
             <div>Comments</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'instagram'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post || 0| numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'instagram'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment || 0| numFormat }}</div>
             <div>Comments</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'blockdit'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post || 0| numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'blockdit'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment|| 0 | numFormat }}</div>
             <div>Comments</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'tiktok'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post || 0| numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'tiktok'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment || 0| numFormat }}</div>
             <div>Comments</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'threads'">
-            <div class="bold">{{ getStat.post | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.post|| 0 | numFormat }}</div>
             <div>Posts</div>
           </b-col>
           <b-col class="border-left" v-if="getNamePlatform == 'threads'">
-            <div class="bold">{{ getStat.comment | numFormat }}</div>
+            <div class="bold">{{ getStatPlatform2.comment || 0| numFormat }}</div>
             <div>Comments</div>
           </b-col>
         </b-row>
         <div class="text-center mt-4 mb-2 bold">Summary</div>
+
+        <!-- {{ getSumStatPlatform.summary.platform_data }} -->
+        <!-- {{ getSum }} -->
         <b-row class="comment-post" v-if="getSum">
           <b-col v-b-tooltip.hover title="Posts">
             <div>
-              <i class="far fa-paper-plane" /> {{ getSum.post | numFormat }}
+              <i class="far fa-paper-plane" /> {{ getSum.total_post_all|| 0 | numFormat }}
             </div>
           </b-col>
           <b-col class="border-left" v-b-tooltip.hover title="Comments">
             <div>
-              <i class="far fa-comments" /> {{ getSum.comment | numFormat }}
+              <i class="far fa-comments" /> {{(getSum.total_message_all - getSum.total_post_all) || 0| numFormat }}
             </div>
           </b-col>
           <b-col class="border-left" v-b-tooltip.hover title="Users">
-            <div><i class="fas fa-users" /> {{ getSum.users | numFormat }}</div>
+            <div><i class="fas fa-users" /> {{ getSum.total_user_all || 0| numFormat }}</div>
           </b-col>
           <!-- <b-col class="border-left" v-b-tooltip.hover title="Crawler">
             <div>
@@ -202,7 +205,7 @@ import moment from "moment";
 export default {
     watch:{
 getArrDate(){
-  console.log('this.getNewslt',this.getNewslt);
+  // console.log('this.getNewslt',this.getNewslt);
   this.getNewslt
   this.listNews()
 }
@@ -247,51 +250,53 @@ getArrDate(){
       "getSumBlockdit",
       "getBlockdit",
       "getThreads",
-      "getSumThreads"
+      "getSumThreads",
+      "getStatPlatform",
+      "getSumStatPlatform"
     ]),
-    getStat() {
+    getStatPlatform2() {
       var data;
       if (this.getNamePlatform == "twitter") {
-        data = this.getTwitter;
+        data = this.getStatPlatform.twitter;
       } else if (this.getNamePlatform == "facebook") {
-        data = this.getFacebook;
+        data = this.getStatPlatform.facebook;
       } else if (this.getNamePlatform == "pantip") {
-        data = this.getPantip;
+        data = this.getStatPlatform.pantip;
       } else if (this.getNamePlatform == "youtube") {
-        data = this.getYoutube;
+        data = this.getStatPlatform.youtube;
       } else if (this.getNamePlatform == "news") {
-        data = this.getNews;
+        data = this.getStatPlatform.news;
       } else if (this.getNamePlatform == "instagram"){
-        data = this.getInstagram;
+        data = this.getStatPlatform.instagram;
       }else if (this.getNamePlatform == "tiktok"){
-        data = this.getTiktok;
+        data = this.getStatPlatform.tiktok;
       }else if (this.getNamePlatform == "threads"){
-        data = this.getThreads;
+        data = this.getStatPlatform.threads;
       }else{
-         data = this.getBlockdit;
+         data = this.getStatPlatform.blockdit;
       }
       return data;
     },
     getSum() {
       var data;
       if (this.getNamePlatform == "twitter") {
-        data = this.getSumTwitter;
+        data = this.getSumStatPlatform.summary.platform_data.twitter;
       } else if (this.getNamePlatform == "facebook") {
-        data = this.getSumFacebook;
+        data = this.getSumStatPlatform.summary.platform_data.facebook;
       } else if (this.getNamePlatform == "pantip") {
-        data = this.getSumPantip;
+        data = this.getSumStatPlatform.summary.platform_data.pantip;
       } else if (this.getNamePlatform == "youtube") {
-        data = this.getSumYoutube;
+        data = this.getSumStatPlatform.summary.platform_data.youtube;
       } else if (this.getNamePlatform == "news") {
-        data = this.getSumNews;
+        data = this.getSumStatPlatform.summary.platform_data.news;
       } else if (this.getNamePlatform == "instagram"){
-        data = this.getSumInstagram;
+        data = this.getSumStatPlatform.summary.platform_data.instagram;
       }else if (this.getNamePlatform == "tiktok"){
-        data = this.getSumTiktok;
+        data = this.getSumStatPlatform.summary.platform_data.tiktok;
       }else if (this.getNamePlatform == "threads"){
-        data = this.getSumThreads;
+        data = this.getSumStatPlatform.summary.platform_data.threads;
       }else{
-        data = this.getSumBlockdit;
+        data = this.getSumStatPlatform.summary.platform_data.blockdit;
       }
       return data;
     },
@@ -334,7 +339,7 @@ getArrDate(){
     },
     listNews() {
       let arrA = this.getNewslt.totalAccount;
-           console.log('arrA',arrA);
+          //  console.log('arrA',arrA);
       let arrB = [
         "suratthani",
         "linenews",
@@ -398,7 +403,7 @@ getArrDate(){
       let difference = arrA
         .filter((x) => !arrB.includes(x))
         .concat(arrB.filter((x) => !arrA.includes(x)));
-        console.log("difference", difference);
+        // console.log("difference", difference);
       this.dif = difference;
     },
   },
@@ -414,22 +419,22 @@ getArrDate(){
   },
   async created() {
     let today = moment(new Date()).format().slice(0, 10);
-    console.log("moment", moment(new Date()).format());
+    // console.log("moment", moment(new Date()).format());
     this.start_date = today + "T00:00:00";
     //this.$store.commit("setRageStartdate", this.start_date);
     this.end_date = today + "T23:59:59";
     //this.$store.commit("setRageEnddate", this.end_date);
-    this.$store.dispatch("fetchAllstats", {
-      start_date: this.start_date,
-      end_date: this.end_date,
-        domain: 'All'
-    });
+    // this.$store.dispatch("fetchAllstats", {
+    //   start_date: this.start_date,
+    //   end_date: this.end_date,
+    //     domain: 'All'
+    // });
 
-    await this.$store.dispatch("fetchSentimentStatDashboard", {
-      start_date: this.start_date,
-      end_date: this.end_date,
-      domain: 'All',
-    });
+    // await this.$store.dispatch("fetchSentimentStatDashboard", {
+    //   start_date: this.start_date,
+    //   end_date: this.end_date,
+    //   domain: 'All',
+    // });
   },
 };
 </script>

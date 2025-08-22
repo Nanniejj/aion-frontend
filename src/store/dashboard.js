@@ -1,6 +1,23 @@
 import { DashboardService } from "@/common/api.services";
 export default {
   state: {
+    statplatform:  {
+      facebook:{}, twitter:{}, pantip:{}, news:{}, youtube:{},
+      instagram:{}, blockdit:{}, tiktok:{}, threads:{}
+    },
+    sumstatplatform: { summary: {
+        platform_data: {
+          twitter: {},
+          facebook: {},
+          pantip: {},
+          youtube: {},
+          news: {},
+          instagram: {},
+          tiktok: {},
+          threads: {},
+          blockdit: {},
+        },
+      }},
     datacraw: {
       crawler_pantip: 0,
       crawler_twitter: 0,
@@ -17,9 +34,9 @@ export default {
       preprocess_instagram: 0,
       preprocess_youtube: 0,
       preprocess_news: 0,
-      preprocess_blockdit:0,
-      preprocess_tiktok:0,
-      preprocess_threads:0
+      preprocess_blockdit: 0,
+      preprocess_tiktok: 0,
+      preprocess_threads: 0,
     },
     sumdb: [],
     editData: [],
@@ -73,7 +90,7 @@ export default {
       users: 0,
       total_sentiments: { positive: 0, neutral: 0, negative: 0 },
     },
-    threads:{
+    threads: {
       post: 0,
       comment: 0,
       users: 0,
@@ -186,6 +203,12 @@ export default {
     backlogs: [],
   },
   getters: {
+    getStatPlatform: (state) => {
+      return state.statplatform;
+    },
+    getSumStatPlatform: (state) => {
+      return state.sumstatplatform;
+    },
     getCraw: (state) => {
       return state.datacraw;
     },
@@ -287,6 +310,12 @@ export default {
     },
   },
   mutations: {
+    setStatPlatform: (state, payload) => {
+      state.statplatform = payload;
+    },
+    setSumStatPlatform: (state, payload) => {
+      state.sumstatplatform = payload;
+    },
     setEditSentiment: (state, payload) => {
       state.editData = payload;
     },
@@ -580,7 +609,7 @@ export default {
         commit("setTimelineNews", [result, ...temp]);
         commit("setLoadStatus", false);
       } catch (error) {
-        commit('setLoadStatus', false );
+        commit("setLoadStatus", false);
         alert("ระบบไม่สามารถโหลดข้อมูลได้ในขณะนี้");
       }
     },

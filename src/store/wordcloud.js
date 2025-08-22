@@ -1308,7 +1308,7 @@ export default {
     },
     async fetchSentimentDetail({ commit }, payload) {
       commit("setLoadPostCloud", true);
-      console.log("payload", payload);
+      // console.log("payload", payload);
 
       try {
         const res = await WordcloudService.getSentimentDetail(payload);

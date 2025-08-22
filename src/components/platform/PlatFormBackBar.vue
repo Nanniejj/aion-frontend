@@ -12,57 +12,32 @@
                 <span v-if="getNamePlatform == 'twitter'"> X </span>
                 <span v-else-if="getNamePlatform == 'pantip'"> board </span>
                 <span v-else>{{ getNamePlatform }} </span>
-                </span
-              >
+              </span>
             </h5>
           </div>
         </div>
         <!-- for desktop -->
         <span id="flowBoxes">
-          <div
-            class="rightt hov"
-            @click="backPlatform"
-            style="cursor: pointer; color: #4c412b"
-          >
+          <div class="rightt hov" @click="backPlatform" style="cursor: pointer; color: #4c412b">
             <a>Platform</a>
             <span class="prt"> /</span>
           </div>
           <div class="leftt rightt hov active" style="cursor: pointer">
-            <a style="margin-left: 18px"
-              ><span class="txx"
-                ><span v-if="getNamePlatform == 'twitter'"> X </span>
+            <a style="margin-left: 18px"><span class="txx"><span v-if="getNamePlatform == 'twitter'"> X </span>
                 <span v-else-if="getNamePlatform == 'pantip'"> board </span>
 
-                <span v-else>{{ getNamePlatform }} </span></span
-              >
+                <span v-else>{{ getNamePlatform }} </span></span>
             </a>
           </div>
         </span>
       </b-col>
       <b-col class="text-lg-right mt-sm-2 mt-md-4 mt-lg-2">
-        <section
-          id="date-picker"
-          class="d-inline position-relative align-bottom"
-        >
-          <date-picker
-            v-model="valueDate"
-            type="date"
-            range
-            placeholder="เลือกช่วงเวลา"
-            size="sm"
-            :disabled-date="(date) => date >= new Date()"
-            value-type="format"
-            format="YYYY-MM-DD"
-            @change="checkDateRange()"
-            id="date-domain"
-            >{{ valueDate }}</date-picker
-          >
+        <section id="date-picker" class="d-inline position-relative align-bottom">
+          <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" size="sm"
+            :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
+            @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
         </section>
-        <i
-          class="fas fa-print fa-2x d-inline ml-2 mr-3"
-          style="cursor: pointer"
-          @click="printWindow()"
-        ></i>
+        <i class="fas fa-print fa-2x d-inline ml-2 mr-3" style="cursor: pointer" @click="printWindow()"></i>
       </b-col>
     </b-row>
     <!-- <div class="text-md-right mt-3 mr-4">
@@ -128,9 +103,78 @@ export default {
         this.selectData();
       }
     },
+    apidash() {
+      this.$store.commit("setLoadStatus", true);
+      // let sdate, edate, today;
+
+
+      // today = moment(new Date()).format().slice(0, 10);
+      // sdate = "start_date=" + today + "T00:00:00";
+      // edate = "&end_date=" + today + "T23:59:59";
+      if (this.valueDate[0] != null) {
+       // console.log(this.valueDate[0], this.valueDate[1]);
+        this.start_date = this.valueDate[0] + "T00:00:00";
+        this.end_date = this.valueDate[1] + "T23:59:59";
+      } else {
+        let today = moment(new Date())
+          .format()
+          .slice(0, 10);
+        this.start_date = today + "T00:00:00";
+        this.end_date = today + "T23:59:59";
+      }
+
+      var config = {
+        method: "get",
+        url:
+          "https://api2.cognizata.com/api/v2/platform/getAllstats?" +
+          "start_date=" + this.start_date + "&end_date=" +
+          this.end_date,
+        // +"&source="+this.source,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      this.axios(config)
+        .then((response) => {
+          this.dataSum = response.data
+          this.$store.commit('setSumStatPlatform', this.dataSum)
+
+        })
+        .catch(function (error) {
+          console.log(error);
+
+        });
+      var config2 = {
+        method: "get",
+        url:
+          "https://api2.cognizata.com/api/v2/platform/getSentimentStat?" +
+          "start_date=" + this.start_date + "&end_date=" +
+          this.end_date,
+        // +"&source="+this.source,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      this.axios(config2)
+        .then((response) => {
+          this.dataPlatform = response.data
+          this.$store.commit('setStatPlatform', this.dataPlatform)
+
+          // this.$store.commit('setStat', response.data)
+          //console.log('dataSum', this.dataPlatform);
+          this.$store.commit("setLoadStatus", false);
+        })
+        .catch(function (error) {
+          console.log(error);
+
+        });
+    },
     selectData() {
       this.$emitter.emit("crawdash", this.selected);
-      console.log(this.valueDate[0], this.valueDate[1]);
+
+      // console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         this.start_date =
           moment(new Date())
@@ -144,7 +188,7 @@ export default {
         this.start_date = this.valueDate[0] + "T00:00:00";
         this.end_date = this.valueDate[1] + "T23:59:59";
       }
-
+      this.apidash()
       this.$store.commit("setSdateDm", this.start_date);
       this.$store.commit("setEdateDm", this.end_date);
       this.$store.commit("setArrDate", this.valueDate);
@@ -153,14 +197,14 @@ export default {
       this.axios
         .get(
           "https://api2.cognizata.com/api/v2/userposts/getNews?source=news&start=" +
-            this.start_date +
-            "&end=" +
-            this.end_date +
-            "&domain=" +
-            this.getDomainArr
+          this.start_date +
+          "&end=" +
+          this.end_date +
+          "&domain=" +
+          this.getDomainArr
         )
         .then((response) => this.$store.commit("setNewslt", response.data[0]));
-      console.log("acc", this.getNewslt);
+      // console.log("acc", this.getNewslt);
       let objword, objtop;
       if (this.selected) {
         objtop = {
@@ -169,7 +213,7 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: 'All',
+          // domain: 'All',
           dashboard: true,
         };
       } else {
@@ -179,7 +223,7 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: 'All',
+          // domain: 'All',
         };
       }
       //wordcloud
@@ -187,7 +231,7 @@ export default {
         start_date: this.start_date,
         end_date: this.end_date,
         source: this.getNamePlatform,
-        domain: 'All',
+        // domain: 'All',
         dashboard: true,
       };
       this.$store.dispatch("fetchWordCloud", objword);
@@ -207,16 +251,17 @@ export default {
 
       // });
 
-      this.$store.dispatch("fetchSentimentStatDashboard", {
-        start_date: this.start_date,
-        end_date: this.end_date,
-        domain: 'All'
-      });
-      this.$store.dispatch("fetchAllstats", {
-        start_date: this.start_date,
-        end_date: this.end_date,
-          domain: 'All'
-      });
+
+      // this.$store.dispatch("fetchSentimentStatDashboard", {
+      //   start_date: this.start_date,
+      //   end_date: this.end_date,
+      //   domain: 'All'
+      // });
+      // this.$store.dispatch("fetchAllstats", {
+      //   start_date: this.start_date,
+      //   end_date: this.end_date,
+      //     domain: 'All'
+      // });
     },
     backPlatform() {
       this.$store.commit("setToPlatform", true);
@@ -227,30 +272,24 @@ export default {
       let today = moment(new Date())
         .format()
         .slice(0, 10);
-      console.log("moment", moment(new Date()).format());
-      this.start_date = today + "T00:00:00";
-      this.$store.commit("setRageStartdate", this.start_date);
-      this.end_date = today + "T23:59:59";
-      this.$store.commit("setRageEnddate", this.end_date);
-      this.$store.dispatch("fetchAllstats", {
-        start_date: this.start_date,
-        end_date: this.end_date,
-          domain: 'All'
-      });
-      // await this.$store.dispatch("fetchDomain");
-      // let domainName = this.getShowDomain.map((key) => {
-      //   return key.name;
+      // this.start_date = today + "T00:00:00";
+      // this.$store.commit("setRageStartdate", this.start_date);
+      // this.end_date = today + "T23:59:59";
+      // this.$store.commit("setRageEnddate", this.end_date);
+      // this.$store.dispatch("fetchAllstats", {
+      //   start_date: this.start_date,
+      //   end_date: this.end_date,
+      //     domain: 'All'
       // });
-      // this.domainData = domainName;
-      // this.$store.commit("setDomainArr", this.domainData);
-      console.log(domainName);
-      this.$store.dispatch("fetchSentimentStatDashboard", {
-        start_date: this.start_date,
-        end_date: this.end_date,
-        domain: 'All',
-      });
+
+
+      // this.$store.dispatch("fetchSentimentStatDashboard", {
+      //   start_date: this.start_date,
+      //   end_date: this.end_date,
+      //   domain: 'All',
+      // });
     },
-    printWindow: function() {
+    printWindow: function () {
       try {
         window.print();
       } catch (err) {
@@ -259,6 +298,7 @@ export default {
     },
   },
   mounted() {
+     this.selectData();
     this.$emitter.on("clickSelect", async (val) => {
       this.selected = val;
       this.selectData();
@@ -271,18 +311,23 @@ export default {
 .txx {
   text-transform: capitalize;
 }
+
 .fa-print {
   font-size: 27px;
 }
-#date-picker > div > div > input {
+
+#date-picker>div>div>input {
   width: 67% !important;
 }
+
 .mx-input-wrapper {
   width: 67% !important;
 }
+
 #flowPhone {
   display: none;
 }
+
 #flowBoxes {
   font-size: x-large;
   font-weight: bold;
@@ -290,6 +335,7 @@ export default {
   margin-left: 30px;
   padding: 20px;
 }
+
 #flowBoxes div {
   display: inline-block;
   position: relative;
@@ -336,21 +382,26 @@ export default {
   -o-transform: translate(-10px, 4px) rotate(20deg);
   transform: translate(-15px, 4px) rotate(45deg);
 }
+
 #flowBoxes .active {
   background-color: #4c412b;
   color: white;
 }
+
 #flowBoxes div.active:after {
   background-color: #4c412b;
 }
+
 @media only screen and (min-width: 0px) and (max-width: 750px) {
   #flowBoxes {
     display: none;
   }
+
   #flowPhone {
     display: -webkit-box;
     padding: 8px 10px;
   }
+
   .fa-print {
     font-size: 25px;
   }

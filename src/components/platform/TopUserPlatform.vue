@@ -576,9 +576,7 @@ export default {
           "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?source=" +
           this.getNamePlatform +
           sdate +
-          edate +
-          "&domain=" +
-          this.getDomainArr,
+          edate ,
         // +"&source="+this.source,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -618,9 +616,7 @@ export default {
         "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?source=" +
         this.getNamePlatform +
         sdate +
-        edate +
-        "&domain=" +
-        this.getDomainArr,
+        edate ,
       // +"&source="+this.source,
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token"),

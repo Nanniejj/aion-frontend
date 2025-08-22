@@ -21,7 +21,7 @@
             <div class="total-all">
               <div class="h4 bold mb-0 dp ">
                 <b-row>
-                  <b-col class="border-right" style="border-left: 0px solid #9e9e9e !important">
+                  <b-col class="border-right" style="border-left: 0px solid #9e9e9e !important" >
                     <div style="font-size:small;font-weight: 400;" class="text-sub">รายวัน</div>
                     <div v-b-tooltip.top :title="(dataSum.summary.total_message) | numFormat"> {{
                       formatCash(dataSum.summary.total_message||0) }} </div>
@@ -364,6 +364,9 @@ export default {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+/* .total-all{
+  font-size:15px;
+} */
   .bg-box-stat {
   margin: 2px 0px;
 }
@@ -400,7 +403,7 @@ export default {
 
   .total-all {
     /* font-size: 10pt; */
-    font-weight: bold;
+    /* font-weight: bold; */
   }
 
   .comment-post {
@@ -417,6 +420,9 @@ export default {
 
   #date-picker {
     margin: unset !important;
+  }
+  .h4 {
+    zoom: 85%;
   }
 }
 </style>
