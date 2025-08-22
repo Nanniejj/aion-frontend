@@ -1,7 +1,7 @@
 <template>
     <div class="py-3 mt-3">
-        <b-row cols="2" class="align-items-center mb-3" align-h="between">
-            <b-col cols="12" lg=""  class="mt-3">
+        <b-row cols="2" class="align-items-center mb-3 mx-0" align-h="between">
+            <b-col cols="12" lg=""  class="">
                 <div class="row w-100 m-0 align-items-center">
                     <div v-if="type === 'targetlist'" class="col-auto pl-0"> <img v-if="filters.source == 'twitter'" src="@/assets/Twitter.png"
                             class="social-imgs" />
@@ -27,35 +27,50 @@
                         </b-row>
                     </div>
 
-                    <b-form-select v-if="type === 'targetlist'" class="col col-lg-3 mr-3" id="source-select" v-model="filters.source" :options="sourceOptions"
+                    <b-form-select v-if="type === 'targetlist'" 
+                    class="col col-lg-3 mr-md-3" id="source-select" 
+                    v-model="filters.source" :options="sourceOptions"
                     ></b-form-select>
-                    <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-sm-0 ml-sm-auto">
-                        <ImportPlatform class="col mr-3 px-0" v-if="type == 'targetlist'" @close="reload"/>
-                        <CreateMonitor class="col-auto px-0" :class="{'w-100':type == 'hashtaglist'}" :tabsMonitor="type" @close="reload"/>
-                    </div>
+                    <!-- <b-form-select v-if="type === 'targetlist'" class="col col-lg-3 mr-3" id="source-select" v-model="filters.source" :options="sourceOptions"
+                    ></b-form-select> -->
+                    <b-input-group v-if="type === 'targetlist'" 
+                        class="align-items-center col-12 col-md px-0 mt-3 mt-md-0"
+                    >
+                    <template #prepend>
+                        <span style="background: #fed16e;" class="input-group-text">ค้นหาจำนวนผู้ติดตาม</span>
+                    </template>
+
+                    <b-form-select
+                        id="source-select"
+                        v-model="followers"
+                        :options="followerOptions"
+                        @change="onSearch"
+                    ></b-form-select>
+                    </b-input-group>
+                    
                 </div>
             </b-col>
             <!-- <b-col class="w-100" style="height: 2px; background: #fed16e;"></b-col> -->
             <!-- <div class="h-25 d-inline-block bg-info" style="width: 120px;"></div> -->
-            <b-col cols="12" lg="auto"  class="d-flex mt-3">
-                <b-form-group label-for="search-input" class="mb-0">
-                    <b-input-group-append>
-                        <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
-                            class="w-100 mr-2"></b-form-input>
-                        <b-button variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
-                    </b-input-group-append>
-                </b-form-group>
-                <b-col>
-                    <!-- <MissingTargets :missingTargets="missingTargets"/> -->
-                    <!-- <b-avatar variant="primary" icon="people-fill" size="40px"></b-avatar>
-                    <b-badge
-                        pill
-                        variant="warning"
-                        style="background: #fed16e;color: #fed16e;position: absolute; top: 20px; right: 10px; transform: translate(0%, 0%);"
-                    >
-                        .
-                    </b-badge> -->
-                </b-col>
+            <b-col cols="12" xl=""  class="px-0">
+                <b-row class="align-items-center mx-0">
+                    
+                    <b-col class="">
+                        <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
+                            <b-input-group-append>
+                                <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
+                                    class="w-100 mr-2"></b-form-input>
+                                <b-button variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
+                            </b-input-group-append>
+                        </b-form-group>
+                    </b-col>
+                    <b-col cols="12" md="auto" class="px-0">
+                        <div class="col-12 col-sm-auto d-flex px-0 mt-3 mt-xl-0 ml-lg-auto">
+                            <ImportPlatform class="col col-md-auto  mr-3 px-0" v-if="type == 'targetlist'" @close="reload"/>
+                            <CreateMonitor class="col col-md-auto px-0" :class="{'w-100':type == 'hashtaglist'}" :tabsMonitor="type" @close="reload"/>
+                        </div>
+                    </b-col>
+                </b-row>
             </b-col>
         </b-row>
 
@@ -72,7 +87,6 @@
 
             <b-form-select id="source-select" v-model="filters.source" :options="sourceOptions"
                 style="width: 100px;"></b-form-select>
-
         </b-form>
 
         <div  class="boxlist-card py-3">
@@ -85,6 +99,7 @@
                 :items="data || []" 
                 :fields="fields" 
                 hover responsive 
+                show-details
                 :busy="load" 
                 :head-variant="headVariant"
                 :table-variant="tableVariant" 
@@ -94,6 +109,7 @@
                 :outlined="outlined" 
                 empty-filtered-text="ไม่พบข้อมูล"
                 :small="small" thead-class="d-none" stacked="md"
+                :tbody-tr-class="rowClass"
             >
                 <!-- <template #empty>
                     <div class="text-center text-muted">ไม่มีข้อมูล</div>
@@ -141,24 +157,72 @@
                     </div>
                    
                 </template>
+
                 <template #cell(insert_timestamp)="data">
                     <span class="small"> {{ formatDate(data.item.insert_timestamp) }}</span>
                 </template>
 
+                <template #cell(influencer_type)="data">
+                    <!-- <b-badge class="p-2" style="font-size: 14px;" v-if="data.item.influencer_condition" variant="info" > -->
+                        <!-- <div v-if="data.item.influencer_condition" class="d-flex align-items-center">
+                            <i class="fas fa-star mr-2" style="color: #fed16e;"></i>
+                            {{ getInfluConditions(data.item.influencer_condition) }}
+                        </div> -->
+                        <div v-if="data.item.influencer_condition" class="rounded-lg float-right badge-custom px-3 py-2">
+                            <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                                alt="sparkling" style="filter: brightness(0) invert(1);"/>
+                            <span class="md-font ml-2">{{ getInfluConditions(data.item.influencer_condition) }}</span>
+                        </div>
+                </template>
+
                 <template #cell(action)="data">
-                    <span v-if="type === 'targetlist'" class="fas fa-user-alt-slash text-danger" v-b-tooltip.hover title="เลิกติดตาม" size="sm"
-                        @click="delProfile(data.item)"></span>
-                    <span v-if="type === 'hashtaglist'" 
-                    class="fas fa-trash text-danger" v-b-tooltip.hover title="ลบแฮชแท็ก" size="sm"
-                        @click="delHashtag(data.item,data.index)"></span>
-                    <!-- <i class="fas fa-user-check"></i><i class="fas fa-user-plus"></i> -->
-                    <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูข้อมูลส่วนตัว" size="sm"
-                        @click="linkToProfile(data.item)"></span>
+                    <b-row cols="3" class="m-0 justify-content-end align-items-center flex-nowrap">
+                        <b-col cols="auto" class="p-0">
+                            <b-button v-if="data.item.followers >= 100000 && !data.item.influencer_condition" 
+                                @click="data.toggleDetails" variant="warning" size="sm" pill style="background-color: #fed16e;">
+                                <span v-b-tooltip.hover title="ตรวจพบบัญชีที่อาจเป็น Influencer" class="float-right">
+                                    <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                                        alt="sparkling" style="filter: brightness(0) invert(1);" />
+                                    <!-- <span class="md-font ml-2">Label</span> -->
+                                </span>
+                            </b-button>
+                        </b-col>
+                        <b-col cols="auto" class="p-0">
+                            <span v-if="type === 'targetlist'" class="fas fa-user-alt-slash text-danger" v-b-tooltip.hover title="เลิกติดตาม" size="sm"
+                                @click="delProfile(data.item)"></span>
+                            <span v-if="type === 'hashtaglist'" 
+                            class="fas fa-trash text-danger" v-b-tooltip.hover title="ลบแฮชแท็ก" size="sm"
+                                @click="delHashtag(data.item,data.index)"></span>
+                        </b-col>
+                        <b-col cols="auto" class="p-0">
+                            <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูข้อมูลส่วนตัว" size="sm"
+                                @click="linkToProfile(data.item)"></span>
+                        </b-col>
+                    </b-row>
                     <!-- <span class="fas fa-list-ul text-info" v-b-tooltip.hover 
                         title="ดูข้อมูลส่วนตัว" size="sm"
                     ></span> -->
+                     <!-- <b-button
+                        size="sm"
+                        variant="info"
+                        @click="data.toggleDetails"
+                    >
+                        {{ data.detailsShowing ? 'ซ่อน' : 'ดูเพิ่ม' }}
+                    </b-button> -->
                 </template>
-                
+
+                <!-- แถวรายละเอียด -->
+                <template #row-details="row">
+                    <b-card class="text-left" style="max-height:300px;overflow-y:auto;">
+                        <b-row class="bold my-2 mx-0">
+                            <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
+                            <span class="ml-2">
+                                ตรวจสอบข้อมูล
+                            </span>
+                        </b-row>
+                        <!-- {{ row.item.summarize }} -->
+                    </b-card>
+                </template>
             </b-table>
             <div v-if="data.length === 0 && !load">
                 ไม่พบข้อมูล
@@ -185,6 +249,7 @@ import MissingTargets from "./MissingTargets.vue";
 // import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+// import { warn } from "@vue/composition-api";
 // import { mapGetters } from "vuex";
 export default {
     components: {
@@ -206,6 +271,7 @@ export default {
             debounceTimeout: null,
             currentPage: 1,
             perPage: 10,
+            followers:null,
             filters: {
                 type: '',
                 source: ''
@@ -216,12 +282,26 @@ export default {
                 { key: 'source', label: 'source' },
                 // { key: 'link', label: 'ลิงก์เพจ' },
                 { key: 'insert_timestamp', label: 'เวลาล่าสุด' },
+                { key: 'influencer_type', label: '' },
                 { key: 'action', label: '' }
             ],
             typeOptions: [
                 { value: '', text: 'ทั้งหมด' },
                 { value: 'targetlist', text: 'Target List' },
                 { value: 'hashtaglist', text: 'Hashtag List' }
+            ],
+            followerOptions: [
+                { value: null , text: 'ไม่ระบุ' },
+                { value: 1000, text: 'มากกว่า 1,000 follower' },
+                { value: 10000, text: 'มากกว่า 10,000 follower' },
+                { value: 100000, text: 'มากกว่า 100,000 follower' },
+                { value: 1000000, text: 'มากกว่า 1,000,000 follower' }
+            ],
+            influConditions: [
+                // {text: 'เลือกระดับ Influencer', value: null,  disabled: true },
+                {text: 'ผู้มีอิทธิพลจากยอดติดตาม', value:'follower'},
+                {text: 'ผู้มีอิทธิพลจากโพส', value:'impact'},
+                {text: 'คนทั่วไป', value:'none'},
             ],
             striped: false,
             bordered: false,
@@ -273,12 +353,37 @@ export default {
         filters: {
             deep: true,
             handler() {
-                console.log("handler === ",this.currentPage);
+                // console.log("handler === ",this.currentPage);
                 this.apiMonitorList();
             }
         }
     },
     methods: {
+         rowClass(item) {
+            // console.log(item.influencer_condition);
+            
+            if (!item) return
+            // สมมติอยากให้แถวที่ influencer_condition = "VIP" มีพื้นหลังเหลือง
+            if (item.influencer_condition) {
+                return ''; // ใช้คลาส bg-warning ที่กำหนดไว้ใน CSS
+                // return 'bg-warning'; // ใช้คลาส bg-warning ที่กำหนดไว้ใน CSS
+            }
+            // // แถวที่ถูกลบ -> สีแดงจาง
+            // if (item.deleted) {
+            // return 'table-danger'
+            // }
+            return '' // default ไม่มีคลาส
+        },
+        getInfluConditions(value) {
+            // console.log(value);
+            if (value == null) {
+                return 'ไม่ระบุ';
+            }
+            const found = this.influConditions.find(item => item.value === value);
+            // console.log(found);
+
+            return found ? found.text : 'ไม่ระบุ';
+        },
         checkSearch() {
             if (!this.search) {
                 this.apiMonitorList();
@@ -321,7 +426,7 @@ export default {
             window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
         },
         reload() {
-            console.log("reloadddddd");
+            // console.log("reloadddddd");
             
             this.$emit('setReface')
             this.apiMonitorList()
@@ -403,7 +508,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     var hashtag = item.uid.replace("#", "");
-                    console.log(hashtag,item.source,index);
+                    // console.log(hashtag,item.source,index);
                     
                     this.$store.dispatch("DeleteMonitor", {
                         hashtag: hashtag,
@@ -435,7 +540,7 @@ export default {
         },
         async apiMonitorList() {
             this.load = true;
-            console.log('apiMonitorList ===',this.currentPage);
+            // console.log('apiMonitorList ===',this.currentPage);
             
             const config = {
                 method: "get",
@@ -446,7 +551,9 @@ export default {
                      ...(this.filters.type === 'targetlist' && { source: this.filters.source || undefined }),
                     page: this.currentPage,
                     limit: this.perPage,
-                    search:this.search
+                    search: this.search,
+                    ...((this.filters.type === 'targetlist' && this.followers != null) && { followers: this.followers })
+                    // ...(this.followers != null && { followers: this.followers }),
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -459,8 +566,8 @@ export default {
                 const resData = response.data;
                 this.data = resData.data || [];
                 this.totalRows = resData.pagination?.totalCount || this.data.length;
-                console.log(this.totalRows);
-                console.log(this.currentPage);                
+                // console.log(this.totalRows);
+                // console.log(this.currentPage);                
                 // this.currentPage = resData.pagination?.currentPage || 1;
                 this.load = false;
                 // if (this.filters.type) {
@@ -488,7 +595,7 @@ export default {
                 const res = await this.axios(config);
                 const result = res.data?.data || [];
                 this.missingTargets = result
-                console.log("this.missingTargets ==== ",this.missingTargets);
+                // console.log("this.missingTargets ==== ",this.missingTargets);
                 
 
                 // this.allSubdomainData = subdomains; // เก็บทั้ง subdomain และ objects ไว้ใช้ต่อ
@@ -517,7 +624,7 @@ export default {
     },
     async mounted() {
         this.filters.type = this.type;
-        await this.getMissingTargets();
+        // await this.getMissingTargets();
     }
 };
 
@@ -525,6 +632,13 @@ export default {
 </script>
 
 <style scoped>
+.badge-custom{
+    color: #2c3e50;
+    background: linear-gradient(90deg,#FDD071  0%,  #ffbcbc 100%);
+}
+.bg-warning {
+  background-color: #fff4dc !important;
+}
 .swal2-icon.swal2-warning::before {
     content: "" !important;
 }

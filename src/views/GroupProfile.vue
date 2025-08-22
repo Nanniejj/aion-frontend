@@ -2,38 +2,14 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
     <div id="content">
-      <div class="d-flex">
-        <h1 class="title ">Monitor</h1>
-        <div class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor" style="position:relative;margin-left: auto; 
-margin-right: 0;">
-          <!-- ในหน้า monitor -->
-          <div class="icon-monitor1" @click="$router.push('/monitor')">
-            <b-iconstack font-scale="2">
-              <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="display" scale="0.5"></b-icon>
-            </b-iconstack>
-            <div class="d-block h6 text-center my-0">Monitor (old ver.)</div>
-          </div>
-
-          <div class="mr-3 icon-monitor2" @click="toMonitor('Feed')">
-            <b-iconstack font-scale="2">
-              <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="file-post" scale="0.5"></b-icon>
-            </b-iconstack>
-            <div class="d-block h6 text-center my-0">Feed</div>
-          </div>
-          <div class="icon-monitor3" @click="toMonitor('Report')">
-            <b-iconstack font-scale="2">
-              <b-icon stacked icon="circle"></b-icon>
-              <b-icon stacked icon="file-earmark-bar-graph" scale="0.5"></b-icon>
-            </b-iconstack>
-            <div class="d-block h6 text-center my-0">Report</div>
-          </div>
-
+        <div class="m-auto" style="width: 85%;">
+            <h1 class="title m-0">Group</h1>
+            <div class="d-flex align-items-center mb-3">
+                <b-col @click="toMonitor('MonitorList')" cols="auto pl-0" style="cursor: pointer;" class="m-0">Monitor</b-col>
+                <b-icon icon="chevron-right" class=""/>
+            </div>
+            <ProfileGroup />
         </div>
-      </div>
-      <MonitorMain />
-
     </div>
   </div>
 </template>
@@ -41,15 +17,17 @@ margin-right: 0;">
 <script>
 import HomeNav from "@/components/HomeNav.vue";
 // import ProfileMonitor from '@/components/monitor/ProfileMonitor.vue';
-import MonitorMain from "@/components/monitorlist/MonitorMain.vue";
+import ProfileGroup from "@/components/monitorlist/ProfileGroup.vue";
 import { mapGetters } from "vuex";
 export default {
   components: {
     HomeNav,
-    MonitorMain, //ProfileMonitor
+    ProfileGroup,
   },
   data: function () {
-    return {};
+    return {
+        // type : this.$route.query.type
+    };
   },
   computed: {
     ...mapGetters([
@@ -59,7 +37,8 @@ export default {
       "getItemsProfile",
       "getFieldsProfile",
       "getProfile",
-      "getListMonitorProfile",
+        "getListMonitorProfile",
+      "getToLinkProfile"
     ]),
   },
   methods: {
@@ -68,6 +47,8 @@ export default {
     },
   },
   async mounted() {
+    // console.log(this.type);
+    
     // if (this.getSocialMo == "") {
     //     await this.$store.dispatch("fatchListMonitor");
     //   } else {

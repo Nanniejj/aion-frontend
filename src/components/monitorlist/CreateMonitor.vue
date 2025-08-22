@@ -349,7 +349,8 @@ export default {
                 twitter: [],
                 pantip: [],
                 blockdit: [],
-                threads:[]
+                threads:[],
+                news:[]
             },
             platformText: {
                 facebook: 'Facebook',
@@ -475,7 +476,7 @@ export default {
             if (tag.includes("pantip.com")) return 'pantip';
             if (tag.includes("blockdit.com")) return 'blockdit';
             if (tag.includes("threads.com")) return 'threads';
-            return null;
+            return 'news';
         },
         onTagsInput(tags) {
             // ✨ 1. Normalize URLs
@@ -605,29 +606,29 @@ export default {
             }
 
             // ✅ อนุญาตเฉพาะแพลตฟอร์มที่กำหนด
-            const allowedHosts = [
-                'facebook.com', 'www.facebook.com',
-                'tiktok.com', 'www.tiktok.com',
-                'youtube.com', 'www.youtube.com', 'youtu.be',
-                'instagram.com', 'www.instagram.com',
-                'twitter.com', 'www.twitter.com', 'x.com', 'www.x.com',
-                'pantip.com', 'www.pantip.com',
-                'blockdit.com', 'www.blockdit.com',
-                'www.threads.com'
-            ];
+            // const allowedHosts = [
+            //     'facebook.com', 'www.facebook.com',
+            //     'tiktok.com', 'www.tiktok.com',
+            //     'youtube.com', 'www.youtube.com', 'youtu.be',
+            //     'instagram.com', 'www.instagram.com',
+            //     'twitter.com', 'www.twitter.com', 'x.com', 'www.x.com',
+            //     'pantip.com', 'www.pantip.com',
+            //     'blockdit.com', 'www.blockdit.com',
+            //     'www.threads.com'
+            // ];
 
-            const hostname = urlObj.hostname.toLowerCase();
-            const isAllowed = allowedHosts.some(domain => hostname.endsWith(domain));
+            // const hostname = urlObj.hostname.toLowerCase();
+            // const isAllowed = allowedHosts.some(domain => hostname.endsWith(domain));
 
-            if (!isAllowed) {
-                Swal.fire({
-                icon: 'error',
-                title: 'ไม่รองรับแพลตฟอร์มนี้',
-                text: 'กรุณาใช้ลิงก์จาก Facebook, Tiktok, Youtube, Instagram, Twitter, Pantip, Threads หรือ Blockdit เท่านั้น',
-                showConfirmButton: true
-                });
-                return false;
-            }
+            // if (!isAllowed) {
+            //     Swal.fire({
+            //     icon: 'error',
+            //     title: 'ไม่รองรับแพลตฟอร์มนี้',
+            //     text: 'กรุณาใช้ลิงก์จาก Facebook, Tiktok, Youtube, Instagram, Twitter, Pantip, Threads หรือ Blockdit เท่านั้น',
+            //     showConfirmButton: true
+            //     });
+            //     return false;
+            // }
             return true;
         },
         // validator(tag) {

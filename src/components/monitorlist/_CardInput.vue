@@ -897,16 +897,23 @@ export default {
 
                 if (data.status === "success") {
                     const previews = {
-                        title: data.data.title,
+                        title: data.data.publisher === "X" 
+                            ? this.cleanAuthor(data.data.author)
+                            : data.data.title,
                         description: data.data.description,
                         image: data.data.image?.url || "",
                         site: data.data.publisher || "Unknown",
                         url,
                     };
+                    
                     this.img = data.data.image?.url || fallbackImage;
                     console.log("Microlink previews ==== ", previews);
-                    this.selectedData.profile_image = this.img;
-                    this.selectedData.name = this.extractName(previews.title);
+                    this.selectedData.profile_image = data.data.image?.url || null;
+                    if (this.selectedData.source === 'news') {
+                    this.selectedData.name = previews.site;
+                    } else {
+                        this.selectedData.name = this.extractName(previews.title);
+                    }
                     this.selectedData.followers =  previews.description
                         ? this.extractFollowers(previews.description)
                         : null;
@@ -921,6 +928,12 @@ export default {
             }
             this.exportData();
         },
+        cleanAuthor(author) {
+            if (!author) return "";
+
+            // ลบข้อความในวงเล็บ () ทั้งหมด
+            return author.replace(/\s*\([^)]*\)/g, "").trim();
+        },
         extractName(title) {
             // ดึงชื่อก่อน (@username)
             const match = title.match(/^(.*?)\s*\(@/);
@@ -929,6 +942,8 @@ export default {
             // ลบ emoji / icon ออก
             name = name.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
 
+            // ลบ " on X" ถ้ามี
+            name = name.replace(/\s+on X$/, "");
             // ตัดเว้นวรรคเกินออก
             return name.trim();
         },

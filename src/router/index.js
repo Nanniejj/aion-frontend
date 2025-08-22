@@ -358,6 +358,15 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "login" */ "../views/MonitorProfile.vue")
   },
+   {
+    path: "/groupProfile",
+    name: "GroupProfile",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/GroupProfile.vue")
+  },
   
   {
     path: "/feed",

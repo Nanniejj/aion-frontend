@@ -220,7 +220,7 @@ export default {
     compareDate(lastused) {
       var now = new Date();
       var then = moment(lastused);
-      console.log("now", now, "then", then);
+    //   console.log("now", now, "then", then);
       var ms = moment(now, "DD/MM/YYYY HH:mm:ss").diff(
         moment(then, "DD/MM/YYYY HH:mm:ss")
       );
@@ -231,7 +231,7 @@ export default {
         txts = "";
       if (d.days() > 0) {
         txtd = String(d.days()) + "วัน ";
-        console.log("txtd", txtd);
+        // console.log("txtd", txtd);
       } else {
         txtd = "";
       }

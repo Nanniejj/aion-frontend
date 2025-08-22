@@ -57,18 +57,18 @@
                                     <b-avatar class="" size="45" text="All" style="background-color: #fed16e;left: -30px;"></b-avatar>
                                 </span>
                             </span>
-                            <div class="h6 py-2">
+                            <div class="h6 py-2 ">
                                 <a v-if="type == 'hashtaglist'" class="" v-bind:href="profile.link_original" target="_blank"
                                     style="color: #2c3e50"> 
                                     <h4 class="py-2 text-truncate" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
-                                    <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" /><br>
                                     ({{ totalPost | numFormat }} posts)
                                 </a> 
-                                <a v-else class="" v-bind:href="profile.link_original" target="_blank"
+                                <a v-else class="d-flex align-items-center justify-content-center" v-bind:href="profile.link_original" target="_blank"
                                     style="color: #2c3e50"> 
                                     <h4 class="py-2 text-truncate">{{ profile.name || data.account_name || profile.uid }}</h4>
                                     <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
                                 </a> 
+                                
                             </div>
 
                             <b-col v-if="type == 'hashtaglist'">
@@ -90,17 +90,32 @@
                                 <b-button v-if="selectedSource !== 'all'" variant="info" pill :pressed="false" @click="selectedSource = 'all'" class="shadow-r px-4 my-4">All Platform</b-button>
                             </b-col>
                         </b-col>
+                        <b-col v-if="type == 'targetlist'" cols="12" class="my-2 px-4">
+                            <b-row v-if="province_id && district_id && subDistrict_id" class="m-0 justify-content-center">
+                                <b-col cols="auto" class="px-0">
+                                    <i class="fa fa-map-marker d-inline"/>
+                                </b-col>
+                                <b-col class="text-truncate text-left">
+                                    <span v-if="province_id" class="text-icon text-center text-truncate d-inline-block">
+                                        <b>{{ selectedProvince }}</b>
+                                    </span>
+                                    <span v-if="district_id" class="text-icon text-center text-truncate d-inline-block">
+                                        <b>, {{ selectedDistrict }}</b>
+                                    </span>
+                                    <span v-if="subDistrict_id" class="text-icon text-center text-truncate d-inline-block">
+                                        <b>, {{  selectedSubDistrict }}</b>
+                                    </span>
+                                    <span v-if="!province_id && !district_id && !subDistrict_id" class="text-icon text-center">
+                                        <b>ไม่ระบุพื้นที่</b>
+                                    </span>
+                                </b-col>
+                            </b-row>
+                        </b-col> 
                     </b-row>
                 </div>
             </b-col>
             <b-col lg="8" class="text-left px-0 pl-lg-3">
-                <!-- <h4 class="py-2" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
-                <h4 class="py-2" v-else>{{ profile.name || profile.uid || data.account_name}}</h4> -->
-
-                <!-- <b-badge v-if="profile.species" variant="info" class="mr-1 text-capitalize" pill>{{ getSpeciesName(profile.species) }}</b-badge>
-                <b-badge v-if="profile.department" class="mr-2" style="background-color: #fed06ea4; color: #2c3e50;" pill>
-                    {{ getDepartmentType(profile.department) }}
-                </b-badge> -->
+                
                 <b-card-text v-if="type === 'hashtaglist'" class="my-2">
                     <HashtagBarChar 
                         :start="valueDate[0]"
@@ -139,89 +154,66 @@
                                 </b-badge>
                             </b-col>
                             <b-col cols="12" class="text-left">
-                                <b-row cols="2" cols-sm="2" class="">
+                                <b-row cols="2" cols-sm="4" class="">
                                     <b-col class="my-2">
-                                        <b-row class="justify-content-center justify-content-sm-start">
-                                            <b-col cols="auto">
+                                        <b-row class="justify-content-center">
+                                            <b-col cols="12" class="text-center">
                                                 <i class="fa fas fa-users fa-2x d-inline" style="color: #fed06ea4;"/>
                                             </b-col>
-                                            <b-col cols="auto">
-                                            <div class="text-icon text-center">
-                                                <b style="font-size: 20px;">{{ profile.followers| numFormat }}</b>
-                                                Followers
-                                            </div>
+                                            <b-col cols="12">
+                                                <div class="text-icon text-center">
+                                                    <b style="font-size: 20px;">{{ profile.followers| numFormat }}</b>
+                                                </div>
                                             </b-col>
+                                            Followers
                                         </b-row>
                                     </b-col>
                                     <b-col class="my-2">
-                                        <b-row class="justify-content-center justify-content-sm-start">
-                                            <b-col cols="auto">
+                                        <b-row class="justify-content-center text-center">
+                                            <b-col cols="12">
                                                 <i class="fa fas fa-star fa-2x d-inline" style="color: #fed06ea4;"/>
                                             </b-col>
-                                            <b-col cols="auto">
+                                            <b-col cols="12">
                                                 <div class="text-icon text-center">
                                                     <b style="font-size: 20px;">{{ profile.following| numFormat }}</b>
-                                                    Following
+                                                </div>
+                                            </b-col>
+                                            Following
+                                        </b-row>
+                                    </b-col>
+                                    <b-col class="my-2">
+                                        <b-row class="justify-content-center text-center">
+                                            <b-col cols="12">
+                                                <i class="fas fa-transgender-alt fa-2x d-inline" style="color: #fed06ea4;"/>
+                                            </b-col>
+                                            <b-col cols="12">
+                                                <div class="text-icon text-center">
+                                                    <b>{{ getsexTh(profile.sex) }}</b>
                                                 </div>
                                             </b-col>
                                         </b-row>
                                     </b-col>
                                     <b-col class="my-2">
-                                        <b-row class="justify-content-center justify-content-sm-start">
-                                            <b-col cols="auto">
-                                                <i class="fas fa-transgender-alt fa-2x d-inline" style="color: #fed06ea4;"/>
-                                            </b-col>
-                                            <b-col cols="auto">
-                                            <div class="text-icon text-center">
-                                                <b>{{ getsexTh(profile.sex) }}</b>
-                                            </div>
-                                            </b-col>
-                                        </b-row>
-                                    </b-col>
-                                    <b-col class="my-2">
-                                        <b-row class="justify-content-center justify-content-sm-start">
-                                            <b-col cols="auto">
+                                        <b-row class="justify-content-center text-center">
+                                            <b-col cols="12">
                                                 <i class="fa fa-birthday-cake fa-2x d-inline" style="color: #fed06ea4;"/>
                                             </b-col>
-                                            <b-col cols="auto">
+                                            <b-col cols="12">
                                                 <div class="text-icon text-center">
                                                     <b>{{ profile.age ? `${profile.age} ปี` : 'ไม่ระบุอายุ' }}</b>
                                                 </div>
                                             </b-col>
                                         </b-row>
                                     </b-col>
-                                    
                                 </b-row>
-                                <b-col cols="12" class="my-2">
-                                    <b-row class="d-flex">
-                                        <b-col cols="auto" class="pl-0">
-                                            
-                                            <i class="fa fa-map-marker fa-2x d-inline" style="color: #fed06ea4;"/>
-                                        </b-col>
-                                        <b-col class="text-truncate">
-                                            <span v-if="province_id" class="text-icon text-center text-truncate d-inline-block">
-                                                <b>{{ selectedProvince }}</b>
-                                            </span>
-                                            <span v-if="district_id" class="text-icon text-center text-truncate d-inline-block">
-                                                <b>, {{ selectedDistrict }}</b>
-                                            </span>
-                                            <span v-if="subDistrict_id" class="text-icon text-center text-truncate d-inline-block">
-                                                <b>, {{  selectedSubDistrict }}</b>
-                                            </span>
-                                            <span v-if="!province_id && !district_id && !subDistrict_id" class="text-icon text-center">
-                                                <b>ไม่ระบุพื้นที่</b>
-                                            </span>
-                                        </b-col>
-                                    </b-row>
-                                </b-col> 
                             </b-col>
                             
                             <!-- influencer type -->
                             <b-row v-if="profile.influencer_type && profile.influencer_type.length !== 0" class="m-0 w-100 ">
-                                <div class="col-12">
-                                    <h5 class="text-center font-weight-bold ">หมวดหมู่ Influencer</h5>
-                                </div>
-                                <div class="col-12">
+                                <div class="col-12 pt-3">
+                                    <!-- <div class="col-12 pt-3">
+                                        <h6 class="text-center">หมวดหมู่ Influencer</h6>
+                                    </div> -->
                                     <b-row cols="1" cols-sm="2" cols-lg="4" class="px-5 py-3 w-100" style="background-color: #fed06ea4; border-radius: 90px;">
                                         <b-col v-for="(item, index) in profile.influencer_type.length > 4 
                                             ? profile.influencer_type.slice(0, 3) 
@@ -229,19 +221,19 @@
                                             :key="index"
                                         >
                                             <b-row class="text-center">
-                                                <b-col cols="12">
-                                                    <b-avatar v-if="getIcon(item).startsWith('fa-')" size="3rem">
+                                                <b-col cols="12" class="" >
+                                                    <b-avatar v-if="getIcon(item).startsWith('fa-')" size="4rem" style="background-color: #17a2b8;">
                                                         <i class="fas" :class="getIcon(item)" style="font-size: 2rem;"></i>
                                                     </b-avatar>
 
                                                     <!-- ถ้าไม่ใช่ fa- ให้ใช้แบบ icon ปกติ -->
-                                                    <b-avatar v-else :icon="getIcon(item)" size="3rem"></b-avatar>
+                                                    <b-avatar v-else :icon="getIcon(item)" style="background-color: #17a2b8;" size="4rem"></b-avatar>
                                                     <!-- <b-avatar :icon="getIcon(item)" size="6rem"></b-avatar> -->
                                                 </b-col>
                                                 <b-col cols="12">
-                                                <div class="text-icon">
-                                                    {{ getInfluencerTypeName(item) }}
-                                                </div>
+                                                    <div class="text-icon" style="font-size: 13px;">
+                                                        {{ getInfluencerTypeName(item) }}
+                                                    </div>
                                                 </b-col>
                                             </b-row>
                                         </b-col>
@@ -249,7 +241,7 @@
                                         <b-col v-if="profile.influencer_type && profile.influencer_type.length > 4">
                                             <b-row class="text-center">
                                                 <b-col cols="12">
-                                                    <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="3rem"></b-avatar>
+                                                    <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="6rem"></b-avatar>
                                                 </b-col>
                                                 <b-col cols="" class="px-0">
                                                     More
@@ -586,6 +578,17 @@
             </b-col>
         </b-row>
 
+        <!-- time line -->
+        <!-- <b-row class="m-0">
+            <b-col cols="12" class="px-0">
+                <Timeline 
+                    :source="selectedSource"
+                    :start="valueDate[0]"
+                    :end="valueDate[1]"
+                />
+            </b-col>
+        </b-row> -->
+
         <!-- posts -->
         <TabPost 
             :source="selectedSource"
@@ -612,10 +615,12 @@ import moment from "moment";
 
 import ProfileWordCloud from './profileTabs/_ProfileWordCloud.vue'
 import HashtagBarChar from "../chart/HashtagBarChar.vue"
+import Timeline from "./_Timeline.vue"
 export default {
     components: {
         TabDomain,
         TabHashtag,
+        Timeline,
         TabPost,
         Multiselect,
         ProfileWordCloud,
@@ -685,6 +690,7 @@ export default {
                 { text: 'สัตว์เลี้ยง', value: 'pet' },
                 { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
                 { text: 'องค์กร / บริษัท', value: 'company' },
+                { text: 'รัฐบาล', value: 'government' },
                 { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
                 { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
                 { text: 'เด็ก / ทารก', value: 'kid' },
@@ -1396,7 +1402,7 @@ export default {
 .gradient-bg {
     /* min-height: 150px; */
     background: linear-gradient(90deg, #fed06ea4, #ffe6e6);
-    color: white;
+    /* color: white; */
 }
 .user-img {
     width: 70px;
