@@ -4,33 +4,82 @@
       <!-- โหมดรายวัน -->
       {{ isDaily }} {{ mode }}
       <template v-if="isDaily">
-
-        <div v-for="(day, idx) in items" :key="day.date || idx" class="timeline-item d-flex">
-
+        <div
+          v-for="(day, idx) in items"
+          :key="day.date || idx"
+          class="timeline-item d-flex"
+        >
           <div class="timeline-dot">
-            <span class="h4">
+            <span class="h4 date-label">
               <!-- แสดงวันที่ของบัคเก็ต -->
-              {{ formatThaiDayLabel(day.date) }}
+              {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
             </span>
 
             <!-- ใช้รูปโปรไฟล์/ไอคอนจากโพสต์แรกของวัน ถ้ามี -->
             <template v-if="day.items && day.items.length">
-              <span v-if="day.items[0].profile_image">
-                <b-avatar size="47px" :src="day.items[0].profile_image" loading="lazy" class="imgpro"
-                  v-if="day.items[0].source != 'blockdit'"></b-avatar>
-                <b-avatar size="47px" :src="day.items[0].profile_image" loading="lazy" v-else></b-avatar>
+              <span v-if="day.items[0].profile_image" class="story-ring">
+                <b-avatar
+                  size="57px"
+                  :src="day.items[0].profile_image"
+                  loading="lazy"
+                  v-if="day.items[0].source != 'blockdit'"
+                ></b-avatar>
+                <b-avatar
+                  size="57px"
+                  :src="day.items[0].profile_image"
+                  loading="lazy"
+                  v-else
+                ></b-avatar>
               </span>
-              <span v-else><b-avatar size="45px"></b-avatar></span>
+              <span v-else>
+                <b-avatar size="45px"></b-avatar>
+              </span>
 
-              <img v-if="day.items[0].source === 'twitter'" :src="imgtw" class="social-img" />
-              <img v-if="day.items[0].source === 'facebook'" :src="imgfb" class="social-img" />
-              <img v-if="day.items[0].source === 'pantip'" :src="imgpt" class="social-img" />
-              <img v-if="day.items[0].source === 'youtube'" :src="imgyt" class="social-img" />
-              <img v-if="day.items[0].source === 'news'" :src="imgnw" class="social-img" />
-              <img v-if="day.items[0].source === 'instagram'" :src="imgig" class="social-img" />
-              <img v-if="day.items[0].source === 'blockdit'" :src="imgbd" class="social-img" />
-              <img v-if="day.items[0].source === 'tiktok'" :src="imgtt" class="social-img" />
-              <img v-if="day.items[0].source === 'threads'" :src="imgtd" class="social-img" />
+              <img
+                v-if="day.items[0].source === 'twitter'"
+                :src="imgtw"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'facebook'"
+                :src="imgfb"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'pantip'"
+                :src="imgpt"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'youtube'"
+                :src="imgyt"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'news'"
+                :src="imgnw"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'instagram'"
+                :src="imgig"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'blockdit'"
+                :src="imgbd"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'tiktok'"
+                :src="imgtt"
+                class="social-img"
+              />
+              <img
+                v-if="day.items[0].source === 'threads'"
+                :src="imgtd"
+                class="social-img"
+              />
             </template>
 
             <span class="line"></span>
@@ -44,44 +93,104 @@
               </div>
 
               <!-- โพสต์แรกของวัน -->
-              <CardTitle :post="day.items[0]" v-if="!isOpen(idx)" class="mx-2" />
+              <CardTitle
+                :post="day.items[0]"
+                v-if="!isOpen(idx)"
+                class="mx-2"
+              />
 
               <!-- รายการ 10 โพสต์ของวันนั้น -->
-              <CardPostSlider v-else :clusters="day.items" :title="`Hot Topics • ${formatThaiDayLabel(day.date)}`" />
+              <CardPostSlider
+                v-else
+                :clusters="day.items"
+                :title="`Hot Topics • ${formatThaiDayLabel(day.date)}`"
+              />
             </div>
 
-            <div v-else class="text-muted small mx-2">
-              ไม่มีข้อมูลในวันนี้
-            </div>
+            <div v-else class="text-muted small mx-2">ไม่มีข้อมูลในวันนี้</div>
           </div>
         </div>
       </template>
 
       <!-- โหมดปกติ (ตามโพสต์) -->
       <template v-else>
-        <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
+        <div
+          v-for="(it, idx) in items"
+          :key="it._id || idx"
+          class="timeline-item d-flex"
+        >
           <!-- {{ items }} -->
           <div class="timeline-dot">
-            <span class="h4">
+            <span class="h4 date-label bold" v-if="sort !== 'engagement'">
               {{ formatDay(it.date) }} {{ formatMoth(it.date) }}
+              <span class="h6"> {{ formatTime(it.date) }}</span>
+            </span>
+            <span class="h4 date-label bold" v-else>
+              {{ it.engagement | numFormat }}
+
+              <div class="h6"
+                >{{ formatDate(it.date) }}</div
+              >
             </span>
 
             <span v-if="it.profile_image">
-              <b-avatar size="47px" :src="it.profile_image" loading="lazy" class="imgpro"
-                v-if="it.source != 'blockdit'"></b-avatar>
-              <b-avatar size="47px" :src="it.profile_image" loading="lazy" v-else></b-avatar>
+              <b-avatar
+                size="47px"
+                :src="it.profile_image"
+                loading="lazy"
+                class="imgpro"
+                v-if="it.source != 'blockdit'"
+              ></b-avatar>
+              <b-avatar
+                size="47px"
+                :src="it.profile_image"
+                loading="lazy"
+                v-else
+              ></b-avatar>
             </span>
             <span v-else><b-avatar size="45px"></b-avatar></span>
 
-            <img v-if="it.source === 'twitter'" :src="imgtw" class="social-img" />
-            <img v-if="it.source === 'facebook'" :src="imgfb" class="social-img" />
-            <img v-if="it.source === 'pantip'" :src="imgpt" class="social-img" />
-            <img v-if="it.source === 'youtube'" :src="imgyt" class="social-img" />
+            <img
+              v-if="it.source === 'twitter'"
+              :src="imgtw"
+              class="social-img"
+            />
+            <img
+              v-if="it.source === 'facebook'"
+              :src="imgfb"
+              class="social-img"
+            />
+            <img
+              v-if="it.source === 'pantip'"
+              :src="imgpt"
+              class="social-img"
+            />
+            <img
+              v-if="it.source === 'youtube'"
+              :src="imgyt"
+              class="social-img"
+            />
             <img v-if="it.source === 'news'" :src="imgnw" class="social-img" />
-            <img v-if="it.source === 'instagram'" :src="imgig" class="social-img" />
-            <img v-if="it.source === 'blockdit'" :src="imgbd" class="social-img" />
-            <img v-if="it.source === 'tiktok'" :src="imgtt" class="social-img" />
-            <img v-if="it.source === 'threads'" :src="imgtd" class="social-img" />
+            <img
+              v-if="it.source === 'instagram'"
+              :src="imgig"
+              class="social-img"
+            />
+            <img
+              v-if="it.source === 'blockdit'"
+              :src="imgbd"
+              class="social-img"
+            />
+            <img
+              v-if="it.source === 'tiktok'"
+              :src="imgtt"
+              class="social-img"
+            />
+            <img
+              v-if="it.source === 'threads'"
+              :src="imgtd"
+              class="social-img"
+            />
             <span class="line"></span>
           </div>
 
@@ -98,7 +207,7 @@
 
 <script>
 import moment from "moment";
-import 'moment/locale/th'
+import "moment/locale/th";
 import CardPostSlider from "./CardPostSlider";
 import CardPost from "./CardPost.vue";
 import CardTitle from "./CardTitle.vue";
@@ -106,7 +215,8 @@ import CardTitle from "./CardTitle.vue";
 export default {
   name: "TimelinePosts",
   components: {
-    CardPostSlider, CardTitle
+    CardPostSlider,
+    CardTitle,
   },
   props: {
     // ส่ง array เข้ามาได้; ถ้าไม่ส่งจะใช้ sampleData ด้านล่าง
@@ -114,7 +224,8 @@ export default {
       type: Array,
       default: () => [],
     },
-    mode: { type: String, default: 'posts' } // 'posts' | 'daily'
+    mode: { type: String, default: "posts" }, // 'posts' | 'daily'
+    sort: { type: String, default: "" },
   },
   data() {
     return {
@@ -127,17 +238,14 @@ export default {
           source: "news",
           account_name: "thebetter",
           date: "2025-08-20T00:00:00.000Z",
-          full_text:
-            "พลเอกประวิตร วงษ์สุวรรณ ... ที่ โรงพยาบาลพระมงกุฎฯ ...",
+          full_text: "พลเอกประวิตร วงษ์สุวรรณ ... ที่ โรงพยาบาลพระมงกุฎฯ ...",
           photos: [
             "https://www.thebetter.co.th/upload/news/thumb/34343.jpg?t=1755659409",
           ],
           post_type: "post",
-          profile_image:
-            "https://www.thebetter.co.th/theme/img/logo.svg",
+          profile_image: "https://www.thebetter.co.th/theme/img/logo.svg",
           sentiment: 0,
-          url_post:
-            "https://www.thebetter.co.th/news/news/34343",
+          url_post: "https://www.thebetter.co.th/news/news/34343",
         },
         {
           _id: "68a546cf36c9caad58caf69c",
@@ -154,8 +262,7 @@ export default {
           profile_image:
             "https://ch3plus.com/static/images/ch3plusnews2021/logo/logo-ch3plus_news.svg",
           sentiment: 0,
-          url_post:
-            "https://ch3plus.com/news/political/morning/446099",
+          url_post: "https://ch3plus.com/news/political/morning/446099",
         },
         {
           _id: "68a56b9736c9caad58db705f",
@@ -172,8 +279,7 @@ export default {
           profile_image:
             "https://thestatestimes.com/storage/author/20210331115717bL915.jpg",
           sentiment: 0,
-          url_post:
-            "https://thestatestimes.com/post/2025082006",
+          url_post: "https://thestatestimes.com/post/2025082006",
         },
       ],
       imgtw: require("@/assets/Twitter.png"),
@@ -189,10 +295,9 @@ export default {
     };
   },
   computed: {
-    
     isDaily() {
       // ถ้ารายการแรกมีฟิลด์ items แปลว่ามาแบบ grouped by day
-      return Array.isArray(this.items?.[0]?.items) && this.mode === 'daily';
+      return Array.isArray(this.items?.[0]?.items) && this.mode === "daily";
     },
     // mappedItems() {
     //   const src = (this.items && this.items.length) ? this.items : this.sampleData;
@@ -214,8 +319,8 @@ export default {
     // },
   },
   methods: {
-     formatThaiDayLabel(ymd) {
-      return moment(ymd, 'YYYY-MM-DD').format('ll');
+    formatThaiDayLabel(ymd) {
+      return moment(ymd, "YYYY-MM-DD").format("ll");
     },
     toggle(idx) {
       this.$set(this.openMap, idx, !this.openMap[idx]);
@@ -224,25 +329,25 @@ export default {
       return !!this.openMap[idx];
     },
     formatDate(date) {
-      let dates = moment(date).subtract(7, 'hours')
-      let date2 = moment(dates).format('ll');
-      return date2
+      let dates = moment(date).subtract(7, "hours");
+      let date2 = moment(dates).format("ll");
+      return date2;
     },
     formatDay(date) {
-      let dates = moment(date).subtract(7, 'hours')
-      let date2 = moment(dates).format('ll');
-      return date2.split(" ")[0]
+      let dates = moment(date).subtract(7, "hours");
+      let date2 = moment(dates).format("ll");
+      return date2.split(" ")[0];
     },
     formatMoth(date) {
-      let dates = moment(date).subtract(7, 'hours')
-      let date2 = moment(dates).format('ll');
-      return date2.split(" ")[1]
+      let dates = moment(date).subtract(7, "hours");
+      let date2 = moment(dates).format("ll");
+      return date2.split(" ")[1];
     },
     formatYear(date) {
-      return date.slice(0, 4)
+      return date.slice(0, 4);
     },
     formatTime(date) {
-      return date.slice(11, 16)
+      return date.slice(11, 16);
     },
 
     sentimentText(val) {
@@ -262,6 +367,22 @@ export default {
 </script>
 
 <style scoped>
+.story-ring {
+  display: inline-flex;
+  padding: 3px; /* ระยะห่างวงแหวน */
+  border-radius: 50%;
+  background: conic-gradient(#feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
+  /* ไล่สีแบบ IG */
+}
+
+.story-ring .b-avatar {
+  border: 2px solid white; /* ให้รูปไม่ติดกับวงแหวน */
+  border-radius: 50%;
+}
+
+.date-label {
+  width:102px;
+}
 .social-img {
   width: 29px;
   margin-top: -27px;
@@ -327,7 +448,6 @@ export default {
 .profile-img {
   width: 44px;
   height: 44px;
-
 }
 
 /* รูปคอนเทนท์ใหญ่ */

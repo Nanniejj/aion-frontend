@@ -1,60 +1,117 @@
 <template>
-  <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative" v-if="post">
-    <!-- {{ post }} -->
+  <b-card
+    img-alt="Image"
+    img-top
+    class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd"
+    v-if="post"
+  >
     <div class="position-relative">
+      <div
+        class="position-absolute pl-1 pt-1 pb-1"
+        style="
+          bottom: 0;
+          right: -15px;
+          background-color: white;
+          border-top-left-radius: 50%;
+          border-bottom-left-radius: 50%;
+          z-index:999
+        "
+      >
+        <!-- {{ post.sentiment }} -->
+        <b-avatar
+          variant="success"
+          icon="emoji-smile"
+          v-if="post.sentiment == 1"
+        />
+        <b-avatar
+          variant="primary"
+          icon="emoji-neutral"
+          v-if="post.sentiment == 0"
+        />
+        <b-avatar
+          variant="danger"
+          icon="emoji-frown"
+          v-if="post.sentiment == -1"
+        />
+      </div>
       <b-row>
         <b-col>
           <div class="text-left bold d-flex align-items-center mt-2">
             <!-- <b-avatar size="32" :src="post.profile_image" class="mr-2" /> -->
             <span>{{ post.account_name }}</span>
           </div>
-          <div class="my-2 py-3" style="height:200px;overflow-y:auto;">
-
-            <ReadMoreBox :item="{ title: post.full_text }" :maxHeight="'122px'" />
+          <div class="my-2 py-3" style="height: 200px; overflow-y: auto">
+            <ReadMoreBox
+              :item="{ title: post.full_text }"
+              :maxHeight="'122px'"
+            />
           </div>
         </b-col>
-        <b-col cols="12" md="4"  v-if="post.photos&&post.photos.length">
-          <div class="position-absolute pl-1 pt-1 pb-1"
-            style="bottom:0;right:0;background-color:white;border-top-left-radius:50%;border-bottom-left-radius:50%;">
-            <b-avatar variant="success" icon="emoji-smile" v-if="sentimentString === 'positive'" />
-            <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" />
-            <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" />
-          </div>
-          <b-card-img cover :src="post.photos[0]" v-if="post.photos && post.photos.length" style="height:200px;" />
-          <div v-else class="h5 text-center"
-            style="height:200px;background-color:rgb(237 231 221);display:flex;justify-content:center;align-items:center;flex-direction:column;">
+        <b-col cols="12" md="4" v-if="post.photos && post.photos.length" style="overflow:hidden;">
+           <!-- border-radius: 20px; -->
+          <div>
+          <b-card-img
+            class="position-absolute pl-1 pt-1 pb-1 img-cover"
+            style="bottom: 0; right: 0;"
+            cover
+            :src="post.photos[0]"
+            v-if="post.photos && post.photos.length"
+          />
+          <div
+            v-else
+            class="h5 text-center"
+            style="
+              height: 200px;
+              background-color: rgb(237 231 221);
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              flex-direction: column;
+            "
+          >
             <i class="fa fa-newspaper-o fa-2x"></i>
             {{ domain || post.source || "ไม่ทราบแหล่งที่มา" }}
           </div>
+          </div>
         </b-col>
-
       </b-row>
 
-
-      <div class="bold h6 position-absolute mt-1 text-right" style="top:-3px;right:1px;">
+      <div
+        class="bold h6 position-absolute mt-1 text-right"
+        style="top: -3px; right: 1px"
+      >
         <span class="d-inline-block box-link">
-          <a :href="post.url_post" class="fa fa-external-link" target="_blank"><span> Link </span></a>
+          <a :href="post.url_post" class="fa fa-external-link" target="_blank"
+            ><span> Link </span></a
+          >
         </span>
       </div>
 
-      <div class="bold h6 position-absolute mt-1 text-right" style="bottom:-6px;left:1px;">
-        <span class="d-inline-block box-link" @click="$emit('goPost', { post, type: 'posts' })">
-          <i class="far fa-paper-plane"></i> <span class="bold">1</span> Post
-        </span>
-        <span class="d-inline-block box-link" @click="$emit('goPost', { post, type: 'engages' })">
-          📈 <span class="bold">{{ post.engagement | numFormat }} Engages</span>
+      <div
+        class="bold h6 position-absolute mt-1 text-right"
+        style="bottom: -6px; left: 1px"
+      >
+        <span
+          class="d-inline-block box-link"
+          @click="$emit('goPost', { post, type: 'engages' })"
+        >
+          <i class="fas fa-chart-line"></i>
+          <span class="bold"> {{ post.engagement | numFormat }} Engages</span>
         </span>
         <span class="d-inline-block box-link">
-          👍 <span class="bold">{{ post.likes_count | numFormat }} Likes</span>
+          <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
+          {{ post.likes_count | numFormat }} Likes</span
+        >
+
+        <!-- {{post}} -->
+        <span class="d-inline-block box-link">
+          <i class="fa fa-comment ml-2" aria-hidden="true"></i>
+          <span class="bold">
+            {{ post.comments_count | numFormat }} comment</span
+          >
         </span>
       </div>
-
-
     </div>
-
-
-
-
 
     <!-- <div class="bold h6 position-absolute" style="bottom:15px;left:50%;transform:translateX(-50%);">
       <b-avatar variant="primary" style="background-color:#eee !important;color:#595959">
@@ -88,14 +145,7 @@ export default {
     index: { type: Number, default: 0 },
     domain: { type: String, default: "" },
   },
-  computed: {
-    sentimentString() {
-      if (this.post.sentiment === -1) return "negative";
-      if (this.post.sentiment === 0) return "neutral";
-      if (this.post.sentiment === 1) return "positive";
-      return "neutral";
-    },
-  },
+  computed: {},
   filters: {
     numFormat(n) {
       if (!n) return 0;
@@ -109,6 +159,18 @@ export default {
 };
 </script>
 <style scoped>
+.img-cover {
+  width: auto;
+  height: 212px;
+  border-radius: 20px;
+  /* box-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px; */
+}
+.card-sd {
+  border: 0px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
+    rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+  border-radius: 20px;
+}
 .social-img {
   width: 29px;
   margin-top: -27px;
@@ -117,12 +179,9 @@ export default {
   z-index: 9999;
 }
 
-
-
 .profile-img {
   width: 44px;
   height: 44px;
-
 }
 
 h5 {
