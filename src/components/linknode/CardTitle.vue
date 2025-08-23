@@ -2,19 +2,19 @@
   <b-card
     img-alt="Image"
     img-top
-    class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd"
+    class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd my-2"
     v-if="post"
   >
     <div class="position-relative">
       <div
         class="position-absolute pl-1 pt-1 pb-1"
         style="
-          bottom: 0;
+          top: 0;
           right: -15px;
           background-color: white;
           border-top-left-radius: 50%;
           border-bottom-left-radius: 50%;
-          z-index:999
+          z-index: 999;
         "
       >
         <!-- {{ post.sentiment }} -->
@@ -35,82 +35,75 @@
         />
       </div>
       <b-row>
+        <b-col
+          cols="12"
+          md="3"
+          v-if="post.photos && post.photos.length"
+          class="img-col"
+        >
+          <!-- รูป preview -->
+          <b-card-img
+            class="img-cover"
+            :src="post.photos[0]"
+            @click="showImage = true"
+          />
+
+          <!-- Modal แสดงรูปเต็ม -->
+          <b-modal v-model="showImage" size="xl" centered hide-footer>
+            <img
+              :src="post.photos[0]"
+              class="w-100"
+              style="max-height: 80vh; object-fit: contain"
+            />
+          </b-modal>
+        </b-col>
+
         <b-col>
           <div class="text-left bold d-flex align-items-center mt-2">
             <!-- <b-avatar size="32" :src="post.profile_image" class="mr-2" /> -->
-            <span>{{ post.account_name }}</span>
+            <span>{{ post.account_name }} </span>
+            <span class="d-inline-block box-link ml-2" style="color:#000">
+              <a
+                :href="post.url_post"
+                class="fa fa-external-link"
+                target="_blank"
+              ></a>
+            </span>
           </div>
-          <div class="my-2 py-3" style="height: 200px; overflow-y: auto">
+          <div class="my-2 py-3" style="max-height: 200px; overflow-y: auto">
             <ReadMoreBox
               :item="{ title: post.full_text }"
-              :maxHeight="'122px'"
+              :maxHeight="'70px'"
             />
           </div>
-        </b-col>
-        <b-col cols="12" md="4" v-if="post.photos && post.photos.length" style="overflow:hidden;">
-           <!-- border-radius: 20px; -->
-          <div>
-          <b-card-img
-            class="position-absolute pl-1 pt-1 pb-1 img-cover"
-            style="bottom: 0; right: 0;"
-            cover
-            :src="post.photos[0]"
-            v-if="post.photos && post.photos.length"
-          />
           <div
-            v-else
-            class="h5 text-center"
-            style="
-              height: 200px;
-              background-color: rgb(237 231 221);
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              flex-direction: column;
-            "
+            class="bold h6 position-absolute mt-1 text-right"
+            style="bottom: -6px; left: 1px"
           >
-            <i class="fa fa-newspaper-o fa-2x"></i>
-            {{ domain || post.source || "ไม่ทราบแหล่งที่มา" }}
-          </div>
+            <span
+              class="d-inline-block box-link"
+              @click="$emit('goPost', { post, type: 'engages' })"
+            >
+              <i class="fas fa-chart-line"></i>
+              <span class="bold">
+                {{ post.engagement | numFormat }} Engages</span
+              >
+            </span>
+            <span class="d-inline-block box-link">
+              <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
+              {{ post.likes_count | numFormat }} Likes</span
+            >
+
+            <!-- {{post}} -->
+            <span class="d-inline-block box-link">
+              <i class="fa fa-comment ml-2" aria-hidden="true"></i>
+              <span class="bold">
+                {{ post.comments_count | numFormat }} comment</span
+              >
+            </span>
           </div>
         </b-col>
       </b-row>
-
-      <div
-        class="bold h6 position-absolute mt-1 text-right"
-        style="top: -3px; right: 1px"
-      >
-        <span class="d-inline-block box-link">
-          <a :href="post.url_post" class="fa fa-external-link" target="_blank"
-            ><span> Link </span></a
-          >
-        </span>
-      </div>
-
-      <div
-        class="bold h6 position-absolute mt-1 text-right"
-        style="bottom: -6px; left: 1px"
-      >
-        <span
-          class="d-inline-block box-link"
-          @click="$emit('goPost', { post, type: 'engages' })"
-        >
-          <i class="fas fa-chart-line"></i>
-          <span class="bold"> {{ post.engagement | numFormat }} Engages</span>
-        </span>
-        <span class="d-inline-block box-link">
-          <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
-          {{ post.likes_count | numFormat }} Likes</span
-        >
-
-        <!-- {{post}} -->
-        <span class="d-inline-block box-link">
-          <i class="fa fa-comment ml-2" aria-hidden="true"></i>
-          <span class="bold">
-            {{ post.comments_count | numFormat }} comment</span
-          >
-        </span>
-      </div>
     </div>
 
     <!-- <div class="bold h6 position-absolute" style="bottom:15px;left:50%;transform:translateX(-50%);">
@@ -145,6 +138,11 @@ export default {
     index: { type: Number, default: 0 },
     domain: { type: String, default: "" },
   },
+  data() {
+    return {
+      showImage: false,
+    };
+  },
   computed: {},
   filters: {
     numFormat(n) {
@@ -176,7 +174,7 @@ export default {
   margin-top: -27px;
   margin-left: 35px;
   height: 29px;
-  z-index: 9999;
+  z-index: 99;
 }
 
 .profile-img {
@@ -186,5 +184,38 @@ export default {
 
 h5 {
   font-weight: 600;
+}
+.img-col {
+  overflow: hidden;
+}
+
+.img-cover {
+  width: 100%;
+  height: 212px; /* fix ความสูง */
+  object-fit: cover; /* รูปไม่บีบ */
+  border-radius: 20px;
+}
+img-cover {
+  width: 100%;
+  height: 212px;
+  object-fit: cover;
+  border-radius: 20px;
+  cursor: pointer; /* แสดงว่าเป็นรูปคลิกได้ */
+  transition: transform 0.3s ease-in-out;
+}
+.img-cover:hover {
+  transform: scale(1.05);
+}
+/* responsive: ถ้าหน้าจอเล็กลง ให้ลดความสูง */
+@media (max-width: 768px) {
+  .img-cover {
+    height: 160px;
+  }
+}
+
+@media (max-width: 576px) {
+  .img-cover {
+    height: 140px;
+  }
 }
 </style>

@@ -10,14 +10,28 @@
           class="timeline-item d-flex"
         >
           <div class="timeline-dot">
-            <span class="h4 date-label">
-              <!-- แสดงวันที่ของบัคเก็ต -->
+           <span class="h4 date-label bold" v-if="sort !== 'engagement'">
               {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
+              <span class="h6"> {{ formatTime(day.date) }}</span>
+            </span>
+            <span class="h4 date-label bold" v-else-if="day.items && day.items.length">
+               <span class="h4 date-label bold" >
+              {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
+              <span class="h6"> {{ formatTime(day.date) }}</span>
+            </span>
+             <span class="h6">{{ day.items[0].engagement | numFormat }}</span> 
+
+              <!-- <div class="h6"
+                >{{ formatDate(day.date) }}</div
+              > -->
             </span>
 
             <!-- ใช้รูปโปรไฟล์/ไอคอนจากโพสต์แรกของวัน ถ้ามี -->
             <template v-if="day.items && day.items.length">
-              <span v-if="day.items[0].profile_image" class="story-ring">
+               <!-- <span v-if="day.items[0].photos&&day.items[0].photos[0]" >
+                <b-img :src="day.items[0].photos[0]"></b-img>
+               </span> -->
+              <span v-if="day.items[0].profile_image" class="story-ring ">
                 <b-avatar
                   size="57px"
                   :src="day.items[0].profile_image"
@@ -231,57 +245,6 @@ export default {
     return {
       openMap: {},
       show: false,
-      sampleData: [
-        {
-          _id: "68a53c9436c9caad58c66626",
-          uid: "https://www.thebetter.co.th/news/news/34343",
-          source: "news",
-          account_name: "thebetter",
-          date: "2025-08-20T00:00:00.000Z",
-          full_text: "พลเอกประวิตร วงษ์สุวรรณ ... ที่ โรงพยาบาลพระมงกุฎฯ ...",
-          photos: [
-            "https://www.thebetter.co.th/upload/news/thumb/34343.jpg?t=1755659409",
-          ],
-          post_type: "post",
-          profile_image: "https://www.thebetter.co.th/theme/img/logo.svg",
-          sentiment: 0,
-          url_post: "https://www.thebetter.co.th/news/news/34343",
-        },
-        {
-          _id: "68a546cf36c9caad58caf69c",
-          uid: "https://ch3plus.com/news/political/morning/446099",
-          source: "news",
-          account_name: "ch3plus",
-          date: "2025-08-20T00:00:00.000Z",
-          full_text:
-            "วันนี้ 20 สิงหาคม เวลา 08.30 น. พลเอกประวิตร ... ณ โรงพยาบาลพระมงกุฎฯ ...",
-          photos: [
-            "https://assets.ch3plus.com/newsch/2025/08/273953639143.jpg",
-          ],
-          post_type: "post",
-          profile_image:
-            "https://ch3plus.com/static/images/ch3plusnews2021/logo/logo-ch3plus_news.svg",
-          sentiment: 0,
-          url_post: "https://ch3plus.com/news/political/morning/446099",
-        },
-        {
-          _id: "68a56b9736c9caad58db705f",
-          source: "news",
-          uid: "https://thestatestimes.com/post/2025082006",
-          account_name: "thestatestimes",
-          date: "2025-08-20T00:00:00.000Z",
-          full_text:
-            "(20 ส.ค. 68) เวลา 8.30 น พลเอกประวิตร ... โรงพยาบาลพระมงกุฎฯ ...",
-          photos: [
-            "https://thestatestimes.com/storage/post_display/20250820112516kXdPh.jpg",
-          ],
-          post_type: "post",
-          profile_image:
-            "https://thestatestimes.com/storage/author/20210331115717bL915.jpg",
-          sentiment: 0,
-          url_post: "https://thestatestimes.com/post/2025082006",
-        },
-      ],
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
       imgpt: require("@/assets/board.png"),

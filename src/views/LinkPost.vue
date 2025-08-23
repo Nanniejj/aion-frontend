@@ -42,11 +42,14 @@
               </section>
             </b-col>
             <b-col>
+              {{filters.source}}
               <v-select
                 :options="sourceOptions"
                 v-model="filters.source"
                 id="search-input"
                 label="text"
+                :reduce="source => source.value"
+              
                 class="mb-2 select-sort"
                 placeholder="Select Platform"
                 multiple
@@ -77,9 +80,9 @@
               <b-form-select
                 v-model="filters.sort_by"
                 :options="[
-                  { value: 'descend', text: 'เก่า → ใหม่ (date ASC)' },
-                  { value: 'recent', text: 'ใหม่ → เก่า (date DESC)' },
-                  { value: 'engagement', text: 'Engagement มาก → น้อย' },
+                  { value: 'descend', text: 'โพสต์เก่าสุด' },
+                  { value: 'recent', text: 'โพสต์ล่าสุด' },
+                  { value: 'engagement', text: 'Engagement' },
                 ]"
               />
             </b-form-group>
@@ -136,7 +139,12 @@
       </div>
 
       <!-- Timeline -->
-      <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" v-else />
+      <timeline-posts
+        :items="postsFromApi"
+        :mode="filters.view_mode"
+        :sort="filters.sort_by"
+        v-else
+      />
 
       <!-- ซ่อนปุ่มเพจในโหมดรายวัน -->
       <div
@@ -198,13 +206,16 @@ export default {
 
       // สามารถปรับรายการให้ตรงกับระบบจริงของคุณ
       sourceOptions: [
+        { value: null, text: "All Platform" },
         { value: "facebook", text: "Facebook" },
-        { value: "twitter", text: "Twitter/X" },
-        { value: "tiktok", text: "TikTok" },
+        { value: "twitter", text: "X" },
+        { value: "pantip", text: "Board" },
         { value: "news", text: "News" },
         { value: "youtube", text: "YouTube" },
         { value: "instagram", text: "Instagram" },
         { value: "blockdit", text: "Blockdit" },
+        { value: "tiktok", text: "Tiktok" },
+        { value: "threads", text: "Threads" },
       ],
     };
   },
@@ -274,6 +285,7 @@ export default {
       if (this.filters.view_mode === "daily") {
         return this.apiTimelineDaily();
       }
+      console.log("this.filters.source ", this.filters.source);
       // -------- โหมดปกติ (ตามโพสต์) เหมือนเดิม --------
       this.loading = true;
       try {
