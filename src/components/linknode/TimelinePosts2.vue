@@ -1,25 +1,24 @@
 <template>
   <div class="timeline-wrapper">
     <div class="timeline">
+      <!-- {{ items }} -->
       <!-- โหมดรายวัน -->
-      {{ isDaily }} {{ mode }}
+      <!-- {{ isDaily }} {{ mode }} -->
       <template v-if="isDaily">
-        <div
-          v-for="(day, idx) in items"
-          :key="day.date || idx"
-          class="timeline-item d-flex"
-        >
+        <div v-for="(day, idx) in items" :key="day.date || idx" class="timeline-item d-flex">
           <div class="timeline-dot">
-           <span class="h4 date-label bold" v-if="sort !== 'engagement'">
+            <!-- {{ day.date }} -->
+            <span class="h4 date-label bold" v-if="sort !== 'engagement'">
               {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
               <span class="h6"> {{ formatTime(day.date) }}</span>
             </span>
             <span class="h4 date-label bold" v-else-if="day.items && day.items.length">
-               <span class="h4 date-label bold" >
-              {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
-              <span class="h6"> {{ formatTime(day.date) }}</span>
-            </span>
-             <span class="h6">{{ day.items[0].engagement | numFormat }}</span> 
+              <span class="h4 date-label bold">
+
+                {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
+                <span class="h6"> {{ formatTime(day.date) }}</span>
+              </span>
+              <span class="h6">{{ day.items[0].engagement | numFormat }}</span>
 
               <!-- <div class="h6"
                 >{{ formatDate(day.date) }}</div
@@ -28,97 +27,47 @@
 
             <!-- ใช้รูปโปรไฟล์/ไอคอนจากโพสต์แรกของวัน ถ้ามี -->
             <template v-if="day.items && day.items.length">
-               <!-- <span v-if="day.items[0].photos&&day.items[0].photos[0]" >
+              <!-- <span v-if="day.items[0].photos&&day.items[0].photos[0]" >
                 <b-img :src="day.items[0].photos[0]"></b-img>
                </span> -->
               <span v-if="day.items[0].profile_image" class="story-ring ">
-                <b-avatar
-                  size="57px"
-                  :src="day.items[0].profile_image"
-                  loading="lazy"
-                  v-if="day.items[0].source != 'blockdit'"
-                ></b-avatar>
-                <b-avatar
-                  size="57px"
-                  :src="day.items[0].profile_image"
-                  loading="lazy"
-                  v-else
-                ></b-avatar>
+                <b-avatar size="57px" :src="day.items[0].profile_image" loading="lazy"
+                  v-if="day.items[0].source != 'blockdit'"></b-avatar>
+                <b-avatar size="57px" :src="day.items[0].profile_image" loading="lazy" v-else></b-avatar>
               </span>
               <span v-else>
                 <b-avatar size="45px"></b-avatar>
               </span>
 
-              <img
-                v-if="day.items[0].source === 'twitter'"
-                :src="imgtw"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'facebook'"
-                :src="imgfb"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'pantip'"
-                :src="imgpt"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'youtube'"
-                :src="imgyt"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'news'"
-                :src="imgnw"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'instagram'"
-                :src="imgig"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'blockdit'"
-                :src="imgbd"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'tiktok'"
-                :src="imgtt"
-                class="social-img"
-              />
-              <img
-                v-if="day.items[0].source === 'threads'"
-                :src="imgtd"
-                class="social-img"
-              />
+              <img v-if="day.items[0].source === 'twitter'" :src="imgtw" class="social-img" />
+              <img v-if="day.items[0].source === 'facebook'" :src="imgfb" class="social-img" />
+              <img v-if="day.items[0].source === 'pantip'" :src="imgpt" class="social-img" />
+              <img v-if="day.items[0].source === 'youtube'" :src="imgyt" class="social-img" />
+              <img v-if="day.items[0].source === 'news'" :src="imgnw" class="social-img" />
+              <img v-if="day.items[0].source === 'instagram'" :src="imgig" class="social-img" />
+              <img v-if="day.items[0].source === 'blockdit'" :src="imgbd" class="social-img" />
+              <img v-if="day.items[0].source === 'tiktok'" :src="imgtt" class="social-img" />
+              <img v-if="day.items[0].source === 'threads'" :src="imgtd" class="social-img" />
             </template>
 
             <span class="line"></span>
           </div>
 
           <!-- เนื้อหา รายวัน -->
-          <div class="flex-grow-1">
-            <div v-if="day.items && day.items.length">
+          <div style="width: 89%;">
+            <div v-if="day.items && day.items.length" class="position-relative">
               <div class="text-right">
-                <b-button @click="toggle(idx)" size="sm">เลือกข้อมูล</b-button>
+               <i class="fa fa-shuffle" @click="toggle(idx)" style="cursor: pointer;color:#17a2b8;"></i>
               </div>
 
               <!-- โพสต์แรกของวัน -->
-              <CardTitle
-                :post="day.items[0]"
-                v-if="!isOpen(idx)"
-                class="mx-2"
-              />
+              <CardTitle :post="day.items[0]" v-if="!isOpen(idx)" class="mx-2" />
 
               <!-- รายการ 10 โพสต์ของวันนั้น -->
-              <CardPostSlider
-                v-else
-                :clusters="day.items"
-                :title="`Hot Topics • ${formatThaiDayLabel(day.date)}`"
-              />
+              <CardPostSlider v-else :clusters="day.items" :title="`${formatThaiDayLabel(day.date)}`"
+                @selectPost="post => replaceDayPost(idx, post)" :ymd="day.date" :initial-sort="sort"
+                :has-more="day._hasMore" @requestLoadMore="payload => $emit('loadMoreDay', payload)"
+                @requestChangeSort="payload => $emit('changeDaySort', payload)"  :day-loading="dayLoadingMap && dayLoadingMap[day.date]"  />
             </div>
 
             <div v-else class="text-muted small mx-2">ไม่มีข้อมูลในวันนี้</div>
@@ -128,11 +77,7 @@
 
       <!-- โหมดปกติ (ตามโพสต์) -->
       <template v-else>
-        <div
-          v-for="(it, idx) in items"
-          :key="it._id || idx"
-          class="timeline-item d-flex"
-        >
+        <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
           <!-- {{ items }} -->
           <div class="timeline-dot">
             <span class="h4 date-label bold" v-if="sort !== 'engagement'">
@@ -142,69 +87,25 @@
             <span class="h4 date-label bold" v-else>
               {{ it.engagement | numFormat }}
 
-              <div class="h6"
-                >{{ formatDate(it.date) }}</div
-              >
+              <div class="h6">{{ formatDate(it.date) }}</div>
             </span>
 
             <span v-if="it.profile_image">
-              <b-avatar
-                size="47px"
-                :src="it.profile_image"
-                loading="lazy"
-                class="imgpro"
-                v-if="it.source != 'blockdit'"
-              ></b-avatar>
-              <b-avatar
-                size="47px"
-                :src="it.profile_image"
-                loading="lazy"
-                v-else
-              ></b-avatar>
+              <b-avatar size="47px" :src="it.profile_image" loading="lazy" class="imgpro"
+                v-if="it.source != 'blockdit'"></b-avatar>
+              <b-avatar size="47px" :src="it.profile_image" loading="lazy" v-else></b-avatar>
             </span>
             <span v-else><b-avatar size="45px"></b-avatar></span>
 
-            <img
-              v-if="it.source === 'twitter'"
-              :src="imgtw"
-              class="social-img"
-            />
-            <img
-              v-if="it.source === 'facebook'"
-              :src="imgfb"
-              class="social-img"
-            />
-            <img
-              v-if="it.source === 'pantip'"
-              :src="imgpt"
-              class="social-img"
-            />
-            <img
-              v-if="it.source === 'youtube'"
-              :src="imgyt"
-              class="social-img"
-            />
+            <img v-if="it.source === 'twitter'" :src="imgtw" class="social-img" />
+            <img v-if="it.source === 'facebook'" :src="imgfb" class="social-img" />
+            <img v-if="it.source === 'pantip'" :src="imgpt" class="social-img" />
+            <img v-if="it.source === 'youtube'" :src="imgyt" class="social-img" />
             <img v-if="it.source === 'news'" :src="imgnw" class="social-img" />
-            <img
-              v-if="it.source === 'instagram'"
-              :src="imgig"
-              class="social-img"
-            />
-            <img
-              v-if="it.source === 'blockdit'"
-              :src="imgbd"
-              class="social-img"
-            />
-            <img
-              v-if="it.source === 'tiktok'"
-              :src="imgtt"
-              class="social-img"
-            />
-            <img
-              v-if="it.source === 'threads'"
-              :src="imgtd"
-              class="social-img"
-            />
+            <img v-if="it.source === 'instagram'" :src="imgig" class="social-img" />
+            <img v-if="it.source === 'blockdit'" :src="imgbd" class="social-img" />
+            <img v-if="it.source === 'tiktok'" :src="imgtt" class="social-img" />
+            <img v-if="it.source === 'threads'" :src="imgtd" class="social-img" />
             <span class="line"></span>
           </div>
 
@@ -233,6 +134,7 @@ export default {
     CardTitle,
   },
   props: {
+    dayLoading: { type: Boolean, default: false },
     // ส่ง array เข้ามาได้; ถ้าไม่ส่งจะใช้ sampleData ด้านล่าง
     items: {
       type: Array,
@@ -282,6 +184,13 @@ export default {
     // },
   },
   methods: {
+    replaceDayPost(idx, post) {
+      // อัปเดตโพสต์แรกของวันให้เป็นตัวที่เลือก
+      if (this.items[idx]?.items?.length) {
+        this.$set(this.items[idx].items, 0, post);
+        this.toggle(idx); // ปิด slider กลับไปโชว์ CardTitle
+      }
+    },
     formatThaiDayLabel(ymd) {
       return moment(ymd, "YYYY-MM-DD").format("ll");
     },
@@ -297,7 +206,9 @@ export default {
       return date2;
     },
     formatDay(date) {
-      let dates = moment(date).subtract(7, "hours");
+      let dates = this.isDaily
+        ? moment(date)
+        : moment(date).subtract(7, "hours");
       let date2 = moment(dates).format("ll");
       return date2.split(" ")[0];
     },
@@ -332,26 +243,29 @@ export default {
 <style scoped>
 .story-ring {
   display: inline-flex;
-  padding: 3px; /* ระยะห่างวงแหวน */
+  padding: 3px;
+  /* ระยะห่างวงแหวน */
   border-radius: 50%;
   background: conic-gradient(#feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
   /* ไล่สีแบบ IG */
 }
 
 .story-ring .b-avatar {
-  border: 2px solid white; /* ให้รูปไม่ติดกับวงแหวน */
+  border: 2px solid white;
+  /* ให้รูปไม่ติดกับวงแหวน */
   border-radius: 50%;
 }
 
 .date-label {
-  width:102px;
+  width: 102px;
 }
+
 .social-img {
   width: 29px;
   margin-top: -27px;
   margin-left: 35px;
   height: 29px;
-  z-index: 9999;
+  z-index: 99;
 }
 
 /* wrapper ให้มี padding ข้าง ๆ */

@@ -78,7 +78,7 @@
           </div>
           <div
             class="bold h6 position-absolute mt-1 text-right"
-            style="bottom: -6px; left: 1px"
+            style="bottom: -6px; left: 1px;background-color: white;"
           >
             <span
               class="d-inline-block box-link"

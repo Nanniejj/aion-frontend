@@ -1,79 +1,92 @@
 <template>
-  <b-card
-    img-alt="Image"
-    img-top
-    class="box-spotnews black slider-item mx-2 p-1 position-relative"
-    v-if="post"
-  >
-  <!-- {{ post }} -->
+  <b-card class="box-spotnews black slider-item mx-2 p-1 position-relative" v-if="post" style="overflow: hidden;" >
+    <!-- {{ post }} -->
+<!-- {{loadingCard}} -->
+
     <div class="position-relative">
-      <img
-        cover
-        :src="post.photos[0]"
-        v-if="post.photos && post.photos.length"
-        style="height:200px;"
-      />
-      <div
-        v-else
-        class="h5 text-center"
-        style="height:200px;background-color:rgb(237 231 221);display:flex;justify-content:center;align-items:center;flex-direction:column;"
-      >
+      <div class="small text-muted text-left  position-absolute" style="top:-12;left:0;">
+        <!-- {{ formatDate(post.date) }}  -->
+        {{ formatTime(post.date) }}
+      </div>
+      <b-img :src="post.photos[0]" v-if="post.photos && post.photos.length"
+        style="height:150px; width:100%; object-fit:cover; object-position:center;"></b-img>
+      <!-- <b-img cover :src="post.photos[0]" v-if="post.photos && post.photos.length" style="height:150px;" /> -->
+      <!-- <div v-else class="h5 text-center"
+        style="height:150px;background-color:rgb(237 231 221);display:flex;justify-content:center;align-items:center;flex-direction:column;">
         <i class="fa fa-newspaper-o fa-2x"></i>
         {{ domain || post.source || "ไม่ทราบแหล่งที่มา" }}
-      </div>
+      </div> -->
 
-      <div class="bold h6 position-absolute mt-1 text-right" style="top:-3px;right:1px;">
-        <span class="d-inline-block box-link">
-          <a :href="post.url_post" class="fa fa-external-link" target="_blank"><span> Link </span></a>
-        </span>
-      </div>
-
-      <div class="bold h6 position-absolute mt-1 text-right" style="bottom:-6px;left:1px;">
-        <span class="d-inline-block box-link" @click="$emit('goPost', { post, type:'posts' })">
-          <i class="far fa-paper-plane"></i> <span class="bold">1</span> Post
-        </span>
-        <span class="d-inline-block box-link" @click="$emit('goPost', { post, type:'engages' })">
-          📈 <span class="bold">{{ post.engagement | numFormat }} Engages</span>
-        </span>
-        <span class="d-inline-block box-link">
-          👍 <span class="bold">{{ post.likes_count | numFormat }} Likes</span>
-        </span>
-      </div>
-
-      <div
-        class="position-absolute pl-1 pt-1 pb-1"
-        style="bottom:0;right:0;background-color:white;border-top-left-radius:50%;border-bottom-left-radius:50%;"
-      >
-        <b-avatar variant="success" icon="emoji-smile" v-if="sentimentString === 'positive'" />
-        <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" />
-        <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" />
-      </div>
     </div>
 
-    <div class="my-2 py-3" style="height:135px;overflow-y:auto;">
-      <ReadMoreBox :item="{ title: post.full_text }" />
+    <div class="position-absolute pl-1 pt-1 pb-1"
+      style="top:0;right:0;background-color:azure;border-top-left-radius:50%;border-bottom-left-radius:50%;">
+      <b-avatar variant="success" icon="emoji-smile" v-if="sentimentString === 'positive'" size="34" />
+      <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" size="34" />
+      <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" size="34" />
+    </div>
+    <div class="my-2 py-3" style="height:120px;overflow-y:auto;">
+      <ReadMoreBox :item="{ title: post.full_text }" class="small"  />
     </div>
 
-    <div class="text-left small d-flex align-items-center mt-2">
+    <!-- <div class="text-left small d-flex align-items-center mt-2">
       <b-avatar size="32" :src="post.profile_image" class="mr-2" />
       <span>{{ post.account_name }}</span>
+    </div> -->
+
+    <div class="position-absolute" style="bottom:15px;left:10px;background-color:white;width: 100%;" >
+      <div class=" text-left d-block small my-1 text-muted" style="font-size: 11px;">
+         <span
+              class="d-inline-block box-link"
+              @click="$emit('goPost', { post, type: 'engages' })"
+            >
+              <i class="fas fa-chart-line"></i>
+              <span>
+                {{ post.engagement | numFormat }} </span
+              >
+            </span>
+            <span class="d-inline-block box-link">
+              <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
+              {{ post.likes_count | numFormat }} </span
+            >
+
+            <!-- {{post}} -->
+            <span class="d-inline-block box-link">
+              <i class="fa fa-comment ml-2" aria-hidden="true"></i>
+              <span >
+                {{ post.comments_count | numFormat }} </span
+              >
+            </span>
+      </div>
+      <b-avatar size="34" :src="post.profile_image" class="mr-2" />
+      <img v-if="post.source === 'twitter'" :src="imgtw" class="social-img" />
+      <img v-if="post.source === 'facebook'" :src="imgfb" class="social-img" />
+      <img v-if="post.source === 'pantip'" :src="imgpt" class="social-img" />
+      <img v-if="post.source === 'youtube'" :src="imgyt" class="social-img" />
+      <img v-if="post.source === 'news'" :src="imgnw" class="social-img" />
+      <img v-if="post.source === 'instagram'" :src="imgig" class="social-img" />
+      <img v-if="post.source === 'blockdit'" :src="imgbd" class="social-img" />
+      <img v-if="post.source === 'tiktok'" :src="imgtt" class="social-img" />
+      <img v-if="post.source === 'threads'" :src="imgtd" class="social-img" />
+      <span class="small account-name ml-2 ">{{ post.account_name }}</span> <span class="d-inline-block box-link small">
+        <a :href="post.url_post" class="fa fa-external-link text-muted" target="_blank"></a>
+      </span>
+
+
     </div>
 
-    <div class="bold h6 position-absolute" style="bottom:15px;left:50%;transform:translateX(-50%);">
-      <b-avatar variant="primary" style="background-color:#eee !important;color:#595959">
-        <b>{{ index + 1 }}</b>
-      </b-avatar>
-    </div>
   </b-card>
 </template>
 
 <script>
 import ReadMoreBox from "./ReadMore.vue";
-
+import moment from "moment";
+import "moment/locale/th";
 export default {
   name: "CardPost",
   components: { ReadMoreBox },
   props: {
+    loadingCard: { type: Boolean, default: false }, 
     post: {
       type: Object,
       default: () => ({
@@ -90,6 +103,20 @@ export default {
     },
     index: { type: Number, default: 0 },
     domain: { type: String, default: "" },
+  },
+  data() {
+    return {
+      imgtw: require("@/assets/Twitter.png"),
+      imgfb: require("@/assets/Facebook.png"),
+      imgpt: require("@/assets/board.png"),
+      imgig: require("@/assets/Instagram.png"),
+      imgnw: require("@/assets/News.png"),
+      imgyt: require("@/assets/Youtube.png"),
+      imgbd: require("@/assets/Blockdit.png"),
+      imgtt: require("@/assets/Tiktok.png"),
+      imgtd: require("@/assets/Threads.png"),
+      user: require("@/assets/user.svg"),
+    }
   },
   computed: {
     sentimentString() {
@@ -109,9 +136,57 @@ export default {
       return (n / 1e12).toFixed(1) + "T";
     },
   },
+  methods: {
+    formatTime(date) {
+      return date.slice(11, 16);
+    },
+
+    formatDate(date) {
+      let dates = moment(date).subtract(7, "hours");
+      let date2 = moment(dates).format("ll");
+      return date2;
+    },
+  },
 };
 </script>
 <style scoped>
+.box-spotnews:hover {
+  cursor: pointer;
+  transform: translateY(-5px) scale(1.005) translateZ(0);
+box-shadow: rgba(42, 142, 155, 0.38)  0px 0px 0px 3px;
+ /* background: #2A7B9B;
+background: linear-gradient(90deg,rgba(42, 123, 155, 0.38) 0%, rgba(87, 199, 133, 0.43) 50%, rgba(237, 221, 83, 0.29) 100%); */
+  /* box-shadow: 0 24px 36px rgba(0,0,0,0.11),
+    0 24px 46px var(--box-shadow-color); */
+}
+.social-img {
+  width: 27px !important;
+  margin-top: 0px !important;
+  margin-left: -16px !important;
+  height: 27px !important;
+  z-index: 99;
+}
+
+.box-spotnews {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  border: 0px;
+  height: 350px !important;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+}
+
+.account-name {
+  display: inline-block;
+  max-width: 160px;
+  /* ปรับขนาดตามที่ต้องการ */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  text-align: left;
+}
+
 .social-img {
   width: 29px;
   margin-top: -27px;
@@ -170,7 +245,7 @@ export default {
   border-left: 4px solid #0d6efd;
   border-radius: 12px;
   padding: 12px 14px;
-  height: 250px;
+  height: 200px;
 }
 
 /* โปรไฟล์เป็นวงกลมขนาดพอดี */

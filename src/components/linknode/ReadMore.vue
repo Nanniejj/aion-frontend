@@ -3,12 +3,12 @@
       <div
         :style="{ height: showFull ? 'auto' : maxHeight, overflow: 'hidden' }"
         ref="textBox"
-        class="mb-1"
+        class="mb-1 text-left "
       >
         {{ item.title }}
       </div>
   
-      <div v-if="isOverflowing" class="text-right">
+      <div v-if="isOverflowing" class="text-right ">
         <button @click="toggleShow" class="btn btn-link p-0 text-right">
           <span class="small" style="color: #3d6fa1;">
             {{ showFull ? 'ย่อข้อความ' : 'อ่านเพิ่ม' }}

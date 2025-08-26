@@ -47,8 +47,8 @@
               </b-form-group>
             </b-col>
             <b-col cols="12" md="4">
-              <section id="date-picker" class="d-inline position-relative align-bottom ">
-                <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
+              <section id="date-picker" class="d-inline position-relative align-bottom">
+                <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" size="sm"
                   :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
                   @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
               </section>
@@ -94,19 +94,18 @@
       <!-- Loading -->
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
-          color="#17a2b891" />
+            color="#17a2b891" />
       </div>
 
 
       <!-- Timeline -->
-      <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
-        @changeDaySort="changeDaySort" v-else />
+      <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" v-else />
       <div v-if="filters.view_mode === 'posts' && !loading && filters.page < totalPages" class="text-center my-2 pb-5">
         <div class="text-center mb-3 py-5" v-if="loadingMore">
           <vue-element-loading :active="loadingMore" size="80" background-color="rgba(255, 255, 255, 0.5)"
             color="#17a2b891" />
         </div>
-        <b-button variant="outline-info" @click="loadMorePosts" pill v-else>
+        <b-button variant="outline-info" @click="loadMorePosts" pill  v-else>
           <span> <i class="fa fa-plus" aria-hidden="true"></i> Timeline</span>
         </b-button>
       </div>
@@ -127,10 +126,9 @@ export default {
 
   data() {
     return {
-      dayLoadingMap: {},
-      dayPageMap: {},      // { '2025-08-26': 1, ... }
-      dayLimitMap: {},     // { '2025-08-26': 10, ... } (ถ้าต้องการปรับต่อวัน)
-      daySortMap: {},      // { '2025-08-26': 'engagement' | 'descend' | 'recent' }
+        dayPageMap: {},      // { '2025-08-26': 1, ... }
+    dayLimitMap: {},     // { '2025-08-26': 10, ... } (ถ้าต้องการปรับต่อวัน)
+    daySortMap: {},      // { '2025-08-26': 'engagement' | 'descend' | 'recent' }
       loading: false,
       loadingMore: false,
       postsFromApi: [],
@@ -197,26 +195,20 @@ export default {
         .map((g) => g.trim().split(/[+\s]+/).filter(Boolean).join("+"))
         .join(",");
     },
-    buildParamsForDay(ymd, overrides = {}) {
-      const sortRaw = overrides.sort_by ?? this.daySortMap[ymd] ?? this.filters.sort_by;
-      const page = overrides.page ?? this.dayPageMap[ymd] ?? 1;
-      const limit = overrides.limit ?? this.dayLimitMap[ymd] ?? 10;
-
+    buildParamsForDay(ymd) {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
         source: this.filters.source.join(","),
-        // ถ้า 'recent' ให้ไม่ส่ง (ตามโค้ดเดิมของคุณ)
-        sort_by: sortRaw === "recent" ? undefined : sortRaw,
-        limit,
-        page,
+        sort_by: this.filters.sort_by === "recent" ? undefined : this.filters.sort_by,
+        limit: 10,
+        page: 1,
         start: `${ymd}T00:00:00`,
-        end: `${ymd}T23:59:59`,
+        end: `${ymd}T23:59:59`
       };
       Object.keys(p).forEach((k) => (p[k] == null || p[k] === "") && delete p[k]);
       return p;
     },
-
     async apiTimeline() {
       if (this.filters.view_mode === 'daily') return this.apiTimelineDaily();
       this.loading = true;
@@ -241,80 +233,25 @@ export default {
         const startYMD = this.valueDate?.[0];
         const endYMD = this.valueDate?.[1];
         const days = this.getDaysInclusive(startYMD, endYMD);
-        const grouped = [];
-
+        const commonGrouped = [];
         for (const ymd of days) {
-          // ตั้งค่าเริ่มต้นต่อวัน
-          if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
-          if (!this.daySortMap[ymd]) this.$set(this.daySortMap, ymd, this.filters.sort_by);
-          if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
-
           const params = this.buildParamsForDay(ymd);
           try {
             const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
-            grouped.push({ date: ymd, items: data?.data || [], _hasMore: (data?.data?.length || 0) >= params.limit });
+            if (data?.data?.length) {
+              commonGrouped.push({ date: ymd, items: data.data });
+            }
           } catch (err) {
             console.warn("daily error", ymd, err);
-            grouped.push({ date: ymd, items: [], _hasMore: false });
           }
         }
-
-        this.postsFromApi = grouped;
-        this.count = grouped.length;
+        this.postsFromApi = commonGrouped;
+        this.count = commonGrouped.length;
         this.totalPages = 0;
       } finally {
         this.loading = false;
       }
     },
-    async loadMoreDay({ date }) {
-      this.$set(this.dayLoadingMap, date, true);    
-      const cur = this.dayPageMap[date] || 1;
-      this.$set(this.dayPageMap, date, cur + 1);
-
-      const params = this.buildParamsForDay(date, { page: cur + 1 });
-      try {
-        const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
-        const more = data?.data || [];
-
-        // หน้าเพจ: loadMoreDay({ date })
-        const i = this.postsFromApi.findIndex(d => d.date === date);
-        if (i !== -1) {
-          const old = this.postsFromApi[i].items || [];
-          const oldIds = new Set(old.map(p => p._id || `${p.source}:${p.url_post}`)); // สำรอง key
-          const moreNoDup = more.filter(p => !oldIds.has(p._id || `${p.source}:${p.url_post}`));
-          const merged = [...old, ...moreNoDup];
-
-          this.$set(this.postsFromApi[i], 'items', merged);
-          this.$set(this.postsFromApi[i], '_hasMore', more.length >= (params.limit || 10));
-        }
-         this.$set(this.dayLoadingMap, date, false);    
-      } catch (e) {
-        console.error("loadMoreDay error", e);
-      }
-    },
-    async changeDaySort({ date, sort_by }) {
-       this.$set(this.dayLoadingMap, date, true);
-      // เซฟ sort ของวัน
-      this.$set(this.daySortMap, date, sort_by);
-      // รีเซ็ตหน้า
-      this.$set(this.dayPageMap, date, 1);
-
-      const params = this.buildParamsForDay(date, { page: 1, sort_by });
-      try {
-        const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
-        const rows = data?.data || [];
-        const i = this.postsFromApi.findIndex(d => d.date === date);
-        if (i !== -1) {
-          this.$set(this.postsFromApi[i], 'items', rows);
-          this.$set(this.postsFromApi[i], '_hasMore', rows.length >= (params.limit || 10));
-        }
-         this.$set(this.dayLoadingMap, date, false);
-      } catch (e) {
-        console.error("changeDaySort error", e);
-      }
-    },
-
-
     getDaysInclusive(startYMD, endYMD) {
       const days = [];
       let cur = moment(startYMD, "YYYY-MM-DD");
@@ -381,10 +318,6 @@ export default {
 </script>
 
 <style scoped>
-.mx-input{
-  
-}
-
 * {
   font-family: "Prompt", "FontAwesome", sans-serif;
 }
