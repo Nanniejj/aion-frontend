@@ -244,6 +244,7 @@ export default {
 .story-ring {
   display: inline-flex;
   padding: 3px;
+  z-index: 99;
   /* ระยะห่างวงแหวน */
   border-radius: 50%;
   background: conic-gradient(#feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
@@ -336,5 +337,22 @@ export default {
 /* ปรับระยะเล็กน้อย */
 h5 {
   font-weight: 600;
+}
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+  .timeline-dot{
+    width: 30px;
+  }
+  .date-label{
+    font-size: 17px;
+    width: 60px;
+  }
+  .timeline{
+    margin-left: 0px;
+  }
+  .b-avatar.imgpro.badge-secondary{
+    width: 43px !important;
+    height: 43px !important;
+  }
+
 }
 </style>

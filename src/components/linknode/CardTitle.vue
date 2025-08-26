@@ -62,7 +62,7 @@
           <div class="text-left bold d-flex align-items-center mt-2">
             <!-- <b-avatar size="32" :src="post.profile_image" class="mr-2" /> -->
             <span>{{ post.account_name }} </span>
-            <span class="d-inline-block box-link ml-2" style="color:#000">
+            <span class="d-inline-block box-link ml-2" style="color: #000">
               <a
                 :href="post.url_post"
                 class="fa fa-external-link"
@@ -70,36 +70,32 @@
               ></a>
             </span>
           </div>
-          <div class="my-2 py-3" style="max-height: 200px; overflow-y: auto">
+          <div class=" read-m">
             <ReadMoreBox
               :item="{ title: post.full_text }"
               :maxHeight="'70px'"
             />
           </div>
           <div
-            class="bold h6 position-absolute mt-1 text-right"
-            style="bottom: -6px; left: 1px;background-color: white;"
+            class="bold small text-muted position-absolute mt-1 text-right"
+            style="bottom: -6px; left: 1px; background-color: white"
           >
             <span
               class="d-inline-block box-link"
               @click="$emit('goPost', { post, type: 'engages' })"
             >
               <i class="fas fa-chart-line"></i>
-              <span class="bold">
-                {{ post.engagement | numFormat }} Engages</span
-              >
+              <span class="bold"> {{ post.engagement | numFormat }} </span>
             </span>
             <span class="d-inline-block box-link">
               <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
-              {{ post.likes_count | numFormat }} Likes</span
-            >
+              {{ post.likes_count | numFormat }}
+            </span>
 
             <!-- {{post}} -->
             <span class="d-inline-block box-link">
               <i class="fa fa-comment ml-2" aria-hidden="true"></i>
-              <span class="bold">
-                {{ post.comments_count | numFormat }} comment</span
-              >
+              <span class="bold"> {{ post.comments_count | numFormat }} </span>
             </span>
           </div>
         </b-col>
@@ -157,6 +153,10 @@ export default {
 };
 </script>
 <style scoped>
+.read-m {
+  max-height: 200px;
+  overflow-y: auto;
+}
 .img-cover {
   width: auto;
   height: 212px;
