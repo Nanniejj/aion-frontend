@@ -1,5 +1,6 @@
 export default {
   state: {
+    loadCardPost: false,
     showIntro: false,
     loadTotalReport: false,
     loadReportStat: false,
@@ -25,9 +26,12 @@ export default {
     loadHashIssue: false,
     loadPostIssue: false,
     loadAllPostIssue: false,
-    loadTopUserF:false
+    loadTopUserF: false,
   },
   getters: {
+    getLoadCardPost: (state) => {
+      return state.loadCardPost;
+    },
     getShowIntro: (state) => {
       return state.showIntro;
     },
@@ -109,7 +113,10 @@ export default {
   },
 
   mutations: {
-    setShowIntro: (state, payload)=> {
+    setLoadCardPost: (state, payload) => {
+      state.loadCardPost = payload;
+    },
+    setShowIntro: (state, payload) => {
       state.showIntro = payload;
     },
     setLoadTotalReport: (state, payload) => {

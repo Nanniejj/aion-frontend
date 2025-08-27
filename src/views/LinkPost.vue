@@ -16,7 +16,7 @@
           <b-row>
             <b-col cols="12" md="8">
               <b-form-group label="" label-for="kw" class="pr-md-3 flex-grow-1">
-                <b-form-input id="kw" v-model.trim="filters.keywordInput"
+                <b-form-input id="kw" v-model.trim="formFilters.keywordInput"
                   placeholder="เช่น พระมงกุฎฯ ประวิตร, กรุงเทพ" />
               </b-form-group>
             </b-col>
@@ -25,59 +25,51 @@
               <!-- Sentiment -->
               <b-form-group class="pr-md-3">
                 <!-- <span class="text-muted small">sentiment</span> -->
-                <b-form-checkbox-group v-model="filters.sentiment" :options="sentimentOptions" />
+                <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
               </b-form-group>
             </b-col>
 
             <b-col cols="12" md="4">
               <!-- {{filters.source}} -->
-              <v-select :options="sourceOptions" v-model="filters.source" id="search-input" label="text"
+              <v-select :options="sourceOptions" v-model="formFilters.source" id="search-input" label="text"
                 :reduce="source => source.value" class="mb-2 select-sort" placeholder="Select Platform"
                 multiple></v-select>
             </b-col>
 
             <b-col cols="12" md="4">
-              <!-- Sort -->
-              <b-form-group class="pr-md-3">
-                <b-form-select v-model="filters.sort_by" :options="[
-                  { value: 'descend', text: 'โพสต์เก่าสุด' },
-                  { value: 'recent', text: 'โพสต์ล่าสุด' },
-                  { value: 'engagement', text: 'Engagement' },
-                ]" />
-              </b-form-group>
+
+              <b-form-select v-model="formFilters.sort_by" class="mb-2" :options="[
+                { value: 'descend', text: 'โพสต์เก่าสุด' },
+                { value: 'recent', text: 'โพสต์ล่าสุด' },
+                { value: 'engagement', text: 'Engagement' },
+              ]" />
+
             </b-col>
             <b-col cols="12" md="4">
-              <section id="date-picker" class="d-inline position-relative align-bottom ">
+              <section id="date-picker">
                 <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
                   :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
                   @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
               </section>
             </b-col>
 
-            <b-col cols="12" md="auto">
-              <!-- <small class="text-muted">1–100</small> -->
-              <!-- Limit/Page -->
-              <!-- <b-form-group  class="pr-md-3">
-                <b-form-input type="number" min="1" max="100" v-model.number="filters.limit" />จำนวนข้อมูล
-               
-              </b-form-group> -->
-            </b-col>
+
 
           </b-row>
 
-          <b-row align-h="end">
-            <b-col cols="12" md="auto">
+          <b-row align-h="end" class="mt-2">
+            <b-col cols="auto" md="auto">
               <b-form-group class="pr-md-3">
-                <b-form-radio-group v-model="filters.view_mode" :options="[
+                <b-form-radio-group v-model="formFilters.view_mode" :options="[
                   { value: 'posts', text: 'ตามเวลา' },
                   { value: 'daily', text: 'รายวัน' },
                 ]" buttons button-variant="outline-info" size="md" />
               </b-form-group>
             </b-col>
-            <b-col cols="12" md="auto">
+            <b-col cols="auto" md="auto">
               <div>
                 <div class="align-self-end mb-3">
-                  <b-button type="submit" variant="info" class="mr-2 px-5" :disabled="loading">
+                  <b-button type="submit" variant="info" class=" px-4" :disabled="loading">
                     ค้นหา
                   </b-button>
                   <!-- <b-button variant="outline-secondary" @click="resetFilters" :disabled="loading">
@@ -100,7 +92,7 @@
 
       <!-- Timeline -->
       <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
-        @changeDaySort="changeDaySort" v-else />
+        @changeDaySort="changeDaySort"  :count="count" v-else />
       <div v-if="filters.view_mode === 'posts' && !loading && filters.page < totalPages" class="text-center my-2 pb-5">
         <div class="text-center mb-3 py-5" v-if="loadingMore">
           <vue-element-loading :active="loadingMore" size="80" background-color="rgba(255, 255, 255, 0.5)"
@@ -124,6 +116,34 @@ import "vue-select/dist/vue-select.css";
 import moment from "moment";
 export default {
   components: { HomeNav, LinkMain2, TimelinePosts },
+watch: {
+  'formFilters.source'(val, old) {
+    const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
+    const arr = toArr(val);
+    const oldArr = toArr(old);
+
+    // กรณีไม่ได้เลือกอะไรเลย -> กลับไป All
+    if (arr.length === 0) {
+      this.formFilters.source = [null];
+      return;
+    }
+
+    // ถ้ามีทั้ง null และอย่างอื่นอยู่พร้อมกัน
+    if (arr.includes(null) && arr.length > 1) {
+      const clickedAllJustNow = !oldArr.includes(null); // null ถูกเพิ่มมาใหม่ในรอบนี้
+      if (clickedAllJustNow) {
+        // ผู้ใช้เพิ่งกด All -> clear อื่น เหลือ All
+        this.formFilters.source = [null];
+      } else {
+        // ผู้ใช้เพิ่งกด platform อื่น ในขณะที่มี All อยู่ -> เอา All ออก
+        this.formFilters.source = arr.filter(v => v !== null);
+      }
+      return;
+    }
+  }
+}
+
+,
 
   data() {
     return {
@@ -145,7 +165,16 @@ export default {
         sentiment: ["1", "0", "-1"],
         keywordInput: "บิ๊กเต่า ภูมิธรรม",
         view_mode: "posts",
-        source: ["facebook", "tiktok", "twitter"],
+        source: [null],
+        sort_by: "descend",
+        limit: 10,
+        page: 1
+      },
+      formFilters: {
+        sentiment: ["1", "0", "-1"],
+        keywordInput: "บิ๊กเต่า ภูมิธรรม",
+        view_mode: "posts",
+         source: [null],
         sort_by: "descend",
         limit: 10,
         page: 1
@@ -189,6 +218,13 @@ export default {
     if (this.observer) this.observer.disconnect();
   },
   methods: {
+     sourceParam(list) {
+    const arr = Array.isArray(list) ? list : (list == null ? [] : [list]);
+    // ถ้าเลือก All (null) หรือไม่มีอะไรเลย -> ไม่ต้องส่ง source
+    if (arr.length === 0 || arr.includes(null)) return undefined;
+    return arr.join(',');
+  },
+
     buildKeywordParam() {
       const raw = (this.filters.keywordInput || "").trim();
       if (!raw) return "";
@@ -205,7 +241,7 @@ export default {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
-        source: this.filters.source.join(","),
+       source: this.sourceParam(this.filters.source), 
         // ถ้า 'recent' ให้ไม่ส่ง (ตามโค้ดเดิมของคุณ)
         sort_by: sortRaw === "recent" ? undefined : sortRaw,
         limit,
@@ -236,84 +272,196 @@ export default {
       }
     },
     async apiTimelineDaily() {
-      this.loading = true;
+  this.loading = true;
+  try {
+    const startYMD = this.valueDate?.[0];
+    const endYMD = this.valueDate?.[1];
+    const days = this.getDaysInclusive(startYMD, endYMD);
+    const grouped = [];
+
+    for (const ymd of days) {
+      if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
+      if (!this.daySortMap[ymd]) this.$set(this.daySortMap, ymd, this.filters.sort_by);
+      if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
+
+      const params = this.buildParamsForDay(ymd);
       try {
-        const startYMD = this.valueDate?.[0];
-        const endYMD = this.valueDate?.[1];
-        const days = this.getDaysInclusive(startYMD, endYMD);
-        const grouped = [];
+        const { data } = await this.axios.get(
+          "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+          { params }
+        );
+        const items = data?.data || [];
+        const countTotal = (typeof data?.count === 'number')
+          ? data.count
+          : items.length; // เผื่อ API ไม่ส่ง count มา
 
-        for (const ymd of days) {
-          // ตั้งค่าเริ่มต้นต่อวัน
-          if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
-          if (!this.daySortMap[ymd]) this.$set(this.daySortMap, ymd, this.filters.sort_by);
-          if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
-
-          const params = this.buildParamsForDay(ymd);
-          try {
-            const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
-            grouped.push({ date: ymd, items: data?.data || [], _hasMore: (data?.data?.length || 0) >= params.limit });
-          } catch (err) {
-            console.warn("daily error", ymd, err);
-            grouped.push({ date: ymd, items: [], _hasMore: false });
-          }
-        }
-
-        this.postsFromApi = grouped;
-        this.count = grouped.length;
-        this.totalPages = 0;
-      } finally {
-        this.loading = false;
+        grouped.push({
+          date: ymd,
+          items,
+          _hasMore: items.length >= (params.limit || 10),
+          // ✅ new fields (ไม่ทับ key เก่า)
+          countTotal,                 // จำนวนทั้งหมดของวันนั้น
+          countShown: items.length,   // จำนวนที่แสดงอยู่ตอนนี้
+        });
+      } catch (err) {
+        console.warn("daily error", ymd, err);
+        grouped.push({
+          date: ymd,
+          items: [],
+          _hasMore: false,
+          countTotal: 0,
+          countShown: 0,
+        });
       }
-    },
-    async loadMoreDay({ date }) {
-      this.$set(this.dayLoadingMap, date, true);    
-      const cur = this.dayPageMap[date] || 1;
-      this.$set(this.dayPageMap, date, cur + 1);
+    }
 
-      const params = this.buildParamsForDay(date, { page: cur + 1 });
-      try {
-        const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
-        const more = data?.data || [];
+    this.postsFromApi = grouped;
+    this.count = grouped.reduce((sum, d) => sum + (d.countTotal || 0), 0); // รวมทั้งช่วง
+    this.totalPages = 0;
+  } finally {
+    this.loading = false;
+  }
+},
+async loadMoreDay({ date }) {
+  this.$set(this.dayLoadingMap, date, true);
+  const cur = this.dayPageMap[date] || 1;
+  this.$set(this.dayPageMap, date, cur + 1);
 
-        // หน้าเพจ: loadMoreDay({ date })
-        const i = this.postsFromApi.findIndex(d => d.date === date);
-        if (i !== -1) {
-          const old = this.postsFromApi[i].items || [];
-          const oldIds = new Set(old.map(p => p._id || `${p.source}:${p.url_post}`)); // สำรอง key
-          const moreNoDup = more.filter(p => !oldIds.has(p._id || `${p.source}:${p.url_post}`));
-          const merged = [...old, ...moreNoDup];
+  const params = this.buildParamsForDay(date, { page: cur + 1 });
+  try {
+    const { data } = await this.axios.get(
+      "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+      { params }
+    );
+    const more = data?.data || [];
 
-          this.$set(this.postsFromApi[i], 'items', merged);
-          this.$set(this.postsFromApi[i], '_hasMore', more.length >= (params.limit || 10));
-        }
-         this.$set(this.dayLoadingMap, date, false);    
-      } catch (e) {
-        console.error("loadMoreDay error", e);
+    const i = this.postsFromApi.findIndex(d => d.date === date);
+    if (i !== -1) {
+      const old = this.postsFromApi[i].items || [];
+      const oldIds = new Set(old.map(p => p._id || `${p.source}:${p.url_post}`));
+      const moreNoDup = more.filter(p => !oldIds.has(p._id || `${p.source}:${p.url_post}`));
+      const merged = [...old, ...moreNoDup];
+
+      this.$set(this.postsFromApi[i], 'items', merged);
+      this.$set(this.postsFromApi[i], '_hasMore', more.length >= (params.limit || 10));
+      // ✅ อัปเดตจำนวนที่แสดง
+      this.$set(this.postsFromApi[i], 'countShown', merged.length);
+      // (ไม่ต้องอัปเดต countTotal ถ้า API ส่งมาอยู่แล้ว; ถ้าอยากอัปเดตก็ใช้ data.count ?? เดิม)
+    }
+    this.$set(this.dayLoadingMap, date, false);
+  } catch (e) {
+    console.error("loadMoreDay error", e);
+  }
+},
+
+
+    // async apiTimelineDaily() {
+    //   this.loading = true;
+    //   try {
+    //     const startYMD = this.valueDate?.[0];
+    //     const endYMD = this.valueDate?.[1];
+    //     const days = this.getDaysInclusive(startYMD, endYMD);
+    //     const grouped = [];
+
+    //     for (const ymd of days) {
+    //       // ตั้งค่าเริ่มต้นต่อวัน
+    //       if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
+    //       if (!this.daySortMap[ymd]) this.$set(this.daySortMap, ymd, this.filters.sort_by);
+    //       if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
+
+    //       const params = this.buildParamsForDay(ymd);
+    //       try {
+    //         const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
+    //         grouped.push({ date: ymd, items: data?.data || [], _hasMore: (data?.data?.length || 0) >= params.limit });
+    //       } catch (err) {
+    //         console.warn("daily error", ymd, err);
+    //         grouped.push({ date: ymd, items: [], _hasMore: false });
+    //       }
+    //     }
+
+    //     this.postsFromApi = grouped;
+    //     this.count = grouped.length;
+    //     this.totalPages = 0;
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
+    // async loadMoreDay({ date }) {
+    //   this.$set(this.dayLoadingMap, date, true);
+    //   const cur = this.dayPageMap[date] || 1;
+    //   this.$set(this.dayPageMap, date, cur + 1);
+
+    //   const params = this.buildParamsForDay(date, { page: cur + 1 });
+    //   try {
+    //     const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
+    //     const more = data?.data || [];
+
+    //     // หน้าเพจ: loadMoreDay({ date })
+    //     const i = this.postsFromApi.findIndex(d => d.date === date);
+    //     if (i !== -1) {
+    //       const old = this.postsFromApi[i].items || [];
+    //       const oldIds = new Set(old.map(p => p._id || `${p.source}:${p.url_post}`)); // สำรอง key
+    //       const moreNoDup = more.filter(p => !oldIds.has(p._id || `${p.source}:${p.url_post}`));
+    //       const merged = [...old, ...moreNoDup];
+
+    //       this.$set(this.postsFromApi[i], 'items', merged);
+    //       this.$set(this.postsFromApi[i], '_hasMore', more.length >= (params.limit || 10));
+    //     }
+    //     this.$set(this.dayLoadingMap, date, false);
+    //   } catch (e) {
+    //     console.error("loadMoreDay error", e);
+    //   }
+    // },
+    // async changeDaySort({ date, sort_by }) {
+    //   this.$set(this.dayLoadingMap, date, true);
+    //   // เซฟ sort ของวัน
+    //   this.$set(this.daySortMap, date, sort_by);
+    //   // รีเซ็ตหน้า
+    //   this.$set(this.dayPageMap, date, 1);
+
+    //   const params = this.buildParamsForDay(date, { page: 1, sort_by });
+    //   try {
+    //     const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
+    //     const rows = data?.data || [];
+    //     const i = this.postsFromApi.findIndex(d => d.date === date);
+    //     if (i !== -1) {
+    //       this.$set(this.postsFromApi[i], 'items', rows);
+    //       this.$set(this.postsFromApi[i], '_hasMore', rows.length >= (params.limit || 10));
+    //     }
+    //     this.$set(this.dayLoadingMap, date, false);
+    //   } catch (e) {
+    //     console.error("changeDaySort error", e);
+    //   }
+    // },
+
+async changeDaySort({ date, sort_by }) {
+  this.$set(this.dayLoadingMap, date, true);
+  this.$set(this.daySortMap, date, sort_by);
+  this.$set(this.dayPageMap, date, 1);
+
+  const params = this.buildParamsForDay(date, { page: 1, sort_by });
+  try {
+    const { data } = await this.axios.get(
+      "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+      { params }
+    );
+    const rows = data?.data || [];
+    const i = this.postsFromApi.findIndex(d => d.date === date);
+    if (i !== -1) {
+      this.$set(this.postsFromApi[i], 'items', rows);
+      this.$set(this.postsFromApi[i], '_hasMore', rows.length >= (params.limit || 10));
+      // ✅ reset countShown ตามของใหม่
+      this.$set(this.postsFromApi[i], 'countShown', rows.length);
+      // ✅ (อัปเดต countTotal ถ้า API ให้มา)
+      if (typeof data?.count === 'number') {
+        this.$set(this.postsFromApi[i], 'countTotal', data.count);
       }
-    },
-    async changeDaySort({ date, sort_by }) {
-       this.$set(this.dayLoadingMap, date, true);
-      // เซฟ sort ของวัน
-      this.$set(this.daySortMap, date, sort_by);
-      // รีเซ็ตหน้า
-      this.$set(this.dayPageMap, date, 1);
-
-      const params = this.buildParamsForDay(date, { page: 1, sort_by });
-      try {
-        const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
-        const rows = data?.data || [];
-        const i = this.postsFromApi.findIndex(d => d.date === date);
-        if (i !== -1) {
-          this.$set(this.postsFromApi[i], 'items', rows);
-          this.$set(this.postsFromApi[i], '_hasMore', rows.length >= (params.limit || 10));
-        }
-         this.$set(this.dayLoadingMap, date, false);
-      } catch (e) {
-        console.error("changeDaySort error", e);
-      }
-    },
-
+    }
+    this.$set(this.dayLoadingMap, date, false);
+  } catch (e) {
+    console.error("changeDaySort error", e);
+  }
+},
 
     getDaysInclusive(startYMD, endYMD) {
       const days = [];
@@ -331,7 +479,7 @@ export default {
         keyword: this.buildKeywordParam(),
         start: this.valueDate[0] + "T00:00:00",
         end: this.valueDate[1] + "T23:59:59",
-        source: this.filters.source.join(","),
+        source: this.sourceParam(this.filters.source),
         sort_by: this.filters.sort_by === "recent" ? undefined : this.filters.sort_by,
         limit: this.filters.limit,
         page: this.filters.page
@@ -372,7 +520,8 @@ export default {
       }
     },
     handleSearch() {
-      this.filters.page = 1;
+      //this.filters.page = 1;
+      this.filters = { ...this.filters, ...this.formFilters, page: 1 }
       this.postsFromApi = [];
       this.apiTimeline();
     }
@@ -381,8 +530,8 @@ export default {
 </script>
 
 <style scoped>
-.mx-input{
-  
+.mx-datepicker-range {
+  width: 100% !important;
 }
 
 * {
@@ -407,7 +556,8 @@ export default {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
-  height: 38.5px;
+  height: 38.5px !important;
+  ;
   padding: 6px 30px;
   padding-left: 10px;
   font-size: 14px;
@@ -418,5 +568,12 @@ export default {
   border-radius: 4px;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .0);
+}
+
+/* จอมือถือ */
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+  .form-group .bv-no-focus-ring :nth-child(1) {
+    zoom: 85%
+  }
 }
 </style>

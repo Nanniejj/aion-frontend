@@ -18,7 +18,7 @@
                 {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
                 <span class="h6"> {{ formatTime(day.date) }}</span>
               </span>
-              <span class="h6">{{ day.items[0].engagement | numFormat }}</span>
+              <div class="h6 mt-1"> <i class="fas fa-chart-line"></i> {{ day.items[0].engagement | numFormat }}</div>
 
               <!-- <div class="h6"
                 >{{ formatDate(day.date) }}</div
@@ -36,7 +36,7 @@
                 <b-avatar size="57px" :src="day.items[0].profile_image" loading="lazy" v-else></b-avatar>
               </span>
               <span v-else>
-                <b-avatar size="45px"></b-avatar>
+                <b-avatar size="57px"></b-avatar>
               </span>
 
               <img v-if="day.items[0].source === 'twitter'" :src="imgtw" class="social-img" />
@@ -57,7 +57,15 @@
           <div style="width: 89%;">
             <div v-if="day.items && day.items.length" class="position-relative">
               <div class="text-right">
-               <i class="fa fa-shuffle" @click="toggle(idx)" style="cursor: pointer;color:#17a2b8;"></i>
+                <i class="fa fa-shuffle" @click="toggle(idx)" style="cursor: pointer;color:#17a2b8;"></i>
+                <span class="ml-2 small text-muted">
+                  <!-- {{ day.countShown }} /  -->
+                  {{ day.countTotal }} โพสต์
+                  <!-- <span v-if="day._hasMore">(+)</span> -->
+                </span>
+                <!-- <span class="ml-2 small text-muted">
+                  {{ count }} โพสต์
+                </span> -->
               </div>
 
               <!-- โพสต์แรกของวัน -->
@@ -67,7 +75,8 @@
               <CardPostSlider v-else :clusters="day.items" :title="`${formatThaiDayLabel(day.date)}`"
                 @selectPost="post => replaceDayPost(idx, post)" :ymd="day.date" :initial-sort="sort"
                 :has-more="day._hasMore" @requestLoadMore="payload => $emit('loadMoreDay', payload)"
-                @requestChangeSort="payload => $emit('changeDaySort', payload)"  :day-loading="dayLoadingMap && dayLoadingMap[day.date]"  />
+                @requestChangeSort="payload => $emit('changeDaySort', payload)"
+                :day-loading="dayLoadingMap && dayLoadingMap[day.date]" />
             </div>
 
             <div v-else class="text-muted small mx-2">ไม่มีข้อมูลในวันนี้</div>
@@ -91,11 +100,11 @@
             </span>
 
             <span v-if="it.profile_image">
-              <b-avatar size="47px" :src="it.profile_image" loading="lazy" class="imgpro"
+              <b-avatar size="57px" :src="it.profile_image" loading="lazy" class="imgpro"
                 v-if="it.source != 'blockdit'"></b-avatar>
-              <b-avatar size="47px" :src="it.profile_image" loading="lazy" v-else></b-avatar>
+              <b-avatar size="57px" :src="it.profile_image" loading="lazy" v-else></b-avatar>
             </span>
-            <span v-else><b-avatar size="45px"></b-avatar></span>
+            <span v-else><b-avatar size="49px"></b-avatar></span>
 
             <img v-if="it.source === 'twitter'" :src="imgtw" class="social-img" />
             <img v-if="it.source === 'facebook'" :src="imgfb" class="social-img" />
@@ -140,6 +149,7 @@ export default {
       type: Array,
       default: () => [],
     },
+    count: { type: Number, default: 0 },
     mode: { type: String, default: "posts" }, // 'posts' | 'daily'
     sort: { type: String, default: "" },
   },
@@ -185,12 +195,34 @@ export default {
   },
   methods: {
     replaceDayPost(idx, post) {
-      // อัปเดตโพสต์แรกของวันให้เป็นตัวที่เลือก
-      if (this.items[idx]?.items?.length) {
-        this.$set(this.items[idx].items, 0, post);
-        this.toggle(idx); // ปิด slider กลับไปโชว์ CardTitle
+      const day = this.items[idx];
+      if (!day || !Array.isArray(day.items) || !day.items.length) return;
+
+      const keyOf = (p) => (p && (p._id || `${p.source}:${p.url_post}`));
+      const list = [...day.items];
+
+      const selKey = keyOf(post);
+      const found = list.findIndex(p => keyOf(p) === selKey);
+
+      if (found === 0) {
+        // เลือกตัวที่อยู่หัวอยู่แล้ว
+        this.toggle(idx);
+        return;
       }
-    },
+
+      if (found > 0) {
+        // มีในลิสต์อยู่แล้ว -> ย้ายขึ้นหัว
+        list.splice(found, 1);
+        list.unshift(post);
+      } else {
+        // ไม่มีในลิสต์ -> ใส่ขึ้นหัว
+        list.unshift(post);
+      }
+
+      this.$set(this.items[idx], 'items', list);
+      this.toggle(idx); // ปิด slider กลับไปโชว์ CardTitle
+    }
+    ,
     formatThaiDayLabel(ymd) {
       return moment(ymd, "YYYY-MM-DD").format("ll");
     },
@@ -323,9 +355,9 @@ export default {
 }
 
 /* โปรไฟล์เป็นวงกลมขนาดพอดี */
-.profile-img {
-  width: 44px;
-  height: 44px;
+.b-avatar.imgpro.badge-secondary {
+  width: 55px;
+  height: 55px;
 }
 
 /* รูปคอนเทนท์ใหญ่ */
@@ -338,20 +370,24 @@ export default {
 h5 {
   font-weight: 600;
 }
+
 @media only screen and (min-width: 0px) and (max-width: 800px) {
-  .timeline-dot{
+  .timeline-dot {
     width: 30px;
   }
-  .date-label{
+
+  .date-label {
     font-size: 17px;
     width: 60px;
   }
-  .timeline{
+
+  .timeline {
     margin-left: 0px;
   }
-  .b-avatar.imgpro.badge-secondary{
-    width: 43px !important;
-    height: 43px !important;
+
+  .b-avatar.imgpro.badge-secondary {
+    width: 47px !important;
+    height: 47px !important;
   }
 
 }

@@ -1,29 +1,13 @@
 <template>
   <div class="py-2 mx-0 box-spot-bg">
-    <vue-element-loading
-      :active="loading"
-      size="80"
-      background-color="rgba(255,255,255,0.5)"
-      color="#b6ac9a"
-    />
+    <vue-element-loading :active="loading" size="80" background-color="rgba(255,255,255,0.5)" color="#b6ac9a" />
     <div class="text-left d-none">
-      <b-form-select
-        size="sm"
-        v-model="localSort"
-        :options="[
-          { value: 'descend', text: 'โพสต์เก่าสุด' },
-          { value: 'recent', text: 'โพสต์ล่าสุด' },
-          { value: 'engagement', text: 'Engagement' },
-        ]"
-        class="mr-2 w-50"
-        @change="emitChangeSort"
-      />
-      <b-button
-        size="sm"
-        variant="outline-info"
-        @click="emitLoadMore"
-        :disabled="!hasMore"
-      >
+      <b-form-select size="sm" v-model="localSort" :options="[
+        { value: 'descend', text: 'โพสต์เก่าสุด' },
+        { value: 'recent', text: 'โพสต์ล่าสุด' },
+        { value: 'engagement', text: 'Engagement' },
+      ]" class="mr-2 w-50" @change="emitChangeSort" />
+      <b-button size="sm" variant="outline-info" @click="emitLoadMore" :disabled="!hasMore">
         <i class="fa fa-plus mr-1"></i> เพิ่มข้อมูล
       </b-button>
     </div>
@@ -31,61 +15,26 @@
       <span class="h6 mr-1 d-inline-block">{{ title }}</span>
 
     </div> -->
-    <div
-      class="text-right position-absolute"
-      style="right: 24px; z-index: 99; top: -27px; z-index: 99"
-    >
+    <div class="text-right position-absolute" style="right: 24px; z-index: 99; top: -27px; z-index: 99">
       <!-- ปุ่ม sort เป็น icons -->
-      <b-button
-        size="sm"
-        variant="outline-info"
-        class="p-1 mr-2"
-        :class="{ active: localSort === 'descend' }"
-        @click="setSort('descend')"
-        v-b-tooltip.hover
-        title="โพสต์เก่าสุด"
-        pill
-      >
+      <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'descend' }"
+        @click="setSort('descend')" v-b-tooltip.hover title="โพสต์เก่าสุด" pill>
         <i class="fa fa-arrow-down-a-z"></i>
       </b-button>
 
-      <b-button
-        size="sm"
-        variant="outline-info"
-        class="p-1 mr-2"
-        :class="{ active: localSort === 'recent' }"
-        @click="setSort('recent')"
-        v-b-tooltip.hover
-        title="โพสต์ล่าสุด"
-        pill
-      >
+      <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'recent' }"
+        @click="setSort('recent')" v-b-tooltip.hover title="โพสต์ล่าสุด" pill>
         <i class="fa fa-arrow-up-a-z"></i>
       </b-button>
 
-      <b-button
-        size="sm"
-        variant="outline-info"
-        class="p-1 mr-2"
-        :class="{ active: localSort === 'engagement' }"
-        @click="setSort('engagement')"
-        v-b-tooltip.hover
-        title="Engagement"
-        pill
-      >
+      <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'engagement' }"
+        @click="setSort('engagement')" v-b-tooltip.hover title="Engagement" pill>
         <i class="fa fa-fire"></i>
       </b-button>
 
       <!-- ปุ่ม load more -->
-      <b-button
-        size="sm"
-        variant="outline-info"
-        class="p-1"
-        @click="emitLoadMore"
-        :disabled="!hasMore"
-        v-b-tooltip.hover
-        title="โหลดเพิ่มของวันนี้"
-        pill
-      >
+      <b-button size="sm" variant="outline-info" class="p-1" @click="emitLoadMore" :disabled="!hasMore"
+        v-b-tooltip.hover title="โหลดเพิ่มของวันนี้" pill>
         <i class="fa fa-plus"></i>
       </b-button>
     </div>
@@ -95,34 +44,35 @@
 
       <!-- Slider -->
       <div class="slider-container">
-        <b-button class="slider-button btn-left" @click="scrollLeft"
-          ><i class="fa fa-chevron-left"></i
-        ></b-button>
+        <b-button class="slider-button btn-left" @click="scrollLeft"><i class="fa fa-chevron-left"></i></b-button>
 
         <div class="slider" ref="slider">
           <b-row>
             <span class="d-flex box-flex-small">
               <!-- {{ currentPosts }} -->
 
-              <CardPost
+              <!-- <CardPost
                 v-for="(post, index) in currentPosts"
                 :key="post._id || index"
                 :post="post"
                 :index="index"
                 :domain="currentDomain"
-                @click.native="$emit('selectPost', post)"
+                 @click.native="$emit('selectPost', post)"
                 class="mx-2"
                 :loading-card="
                   dayLoading || selectingId === (post._id || post.url_post)
                 "
-              />
+              /> -->
+              <CardPost v-for="(post, index) in currentPosts" :key="post._id || `${post.source}:${post.url_post}`"
+                :post="post" :index="index" :domain="currentDomain" @click.native="$emit('selectPost', post)"
+                class="mx-2" :loading-card="dayLoading || selectingId === (post._id || post.url_post)" />
+
+
             </span>
           </b-row>
         </div>
 
-        <b-button class="slider-button btn-right" @click="scrollRight"
-          ><i class="fa fa-chevron-right"></i
-        ></b-button>
+        <b-button class="slider-button btn-right" @click="scrollRight"><i class="fa fa-chevron-right"></i></b-button>
       </div>
 
       <!-- Date pills -->
@@ -195,25 +145,28 @@ export default {
     },
 
     currentPosts() {
-      const arr = (this.currentCluster || []).filter(
-        (p) => p && (p.full_text || (p.posts && p.posts.length))
-      );
+      const arr = (this.currentCluster || []).filter(p => p && (p.full_text || (p.posts && p.posts.length)));
+
+      // dedupe โดยใช้ key เดิม
+      const keyOf = (p) => (p && (p._id || `${p.source}:${p.url_post}`));
+      const seen = new Set();
+      const uniq = [];
+      for (const p of arr) {
+        const k = keyOf(p);
+        if (!k || seen.has(k)) continue;
+        seen.add(k);
+        uniq.push(p);
+      }
 
       if (this.localSort === "engagement") {
-        return [...arr].sort(
-          (a, b) => (b.engagement || 0) - (a.engagement || 0)
-        );
+        return uniq.sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
       }
       if (this.localSort === "recent") {
-        return [...arr].sort((a, b) => new Date(b.date) - new Date(a.date)); // ใหม่→เก่า
+        return uniq.sort((a, b) => new Date(b.date) - new Date(a.date));
       }
-      // 'descend' (ของคุณหมายถึงเก่าสุดก่อน) ↔ ถ้าอยากเก่าสุด→ใหม่:
-      return [...arr].sort((a, b) => new Date(a.date) - new Date(b.date)); // เก่า→ใหม่
+      return uniq.sort((a, b) => new Date(a.date) - new Date(b.date));
     },
 
-    currentDomain() {
-      return "สื่อสังคมออนไลน์";
-    },
   },
   watch: {
     selectIndex() {
@@ -550,8 +503,8 @@ export default {
   /* จอมือถือ */
   @media only screen and (min-width: 0px) and (max-width: 800px) {
     .slider-button.btn-left {
-         background: #fed06ebf;
-          color: white;
+      background: #fed06ebf;
+      color: white;
       border: none;
       padding: 5px 11px;
       /* margin: 36px 4px; */
@@ -559,6 +512,7 @@ export default {
       border-radius: 15px;
       font-size: 20px;
     }
+
     .slider-button.btn-right {
       position: absolute;
       z-index: 99999;
@@ -567,6 +521,7 @@ export default {
       background: #fed06ebf;
       color: white;
     }
+
     .box-link {
       font-size: 12px !important;
     }
@@ -598,8 +553,9 @@ export default {
     .slider-item {
       width: 290px;
     }
+
     .mx-datepicker-range {
-        width: 100% !important;
+      width: 100% !important;
     }
   }
 }
