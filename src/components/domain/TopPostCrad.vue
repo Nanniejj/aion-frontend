@@ -562,11 +562,12 @@
                   v-if="postDomain.summarize && postDomain.summarize.length">
                   <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
                     <div>
-                      <div class="bold my-2">
-                        <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
-                        Comments Analysis
-                      </div>
-                      <div v-html="formatSummarize(postDomain.summarize)"></div>
+                        <div class="bold my-2">
+                            <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
+                            Comments Analysis
+                        </div>
+                        <div v-html="formatSummarize(postDomain.summarize)"></div>
+                        <SummarizeCommentChart :series="handleSeries()"/>
                     </div>
                   </b-card>
                 </b-collapse>
@@ -664,8 +665,10 @@ import moment from "moment";
 import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
+
+import SummarizeCommentChart from "../chart/SummarizeCommentChart.vue";
 export default {
-  components: { VueGallerySlideshow, Highlighter },
+  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart },
   props: {
     tpyeCard: {
       type: String,
@@ -726,148 +729,177 @@ export default {
       "getClickDomainId"
     ]),
   },
-  methods: {
-    formatSummarize(text) {
-      if (!text) return '';
-      const paragraphs = text.split(/\n\n+/).map(p =>
-        `<p style="margin: 0 0 6px; line-height: 1.4;">${p.replace(/\n/g, '<br>')}</p>`
-      );
-      return paragraphs.join('');
-    },
-    filterNumbers(numbers) {
-      // Create a copy of the numbers array and sort by length
-      const filtered = [...numbers].sort(
-        (a, b) => a.toString().length - b.toString().length
-      );
+    methods: {
+        handleSeries() {
+            const keys = ["agree", "disagree", "neutral"];
+            
+            // สุ่มค่าเริ่มต้น
+            let arr = Array.from({ length: keys.length }, () => Math.random());
+            
+            
+            // ผลรวมทั้งหมด
+            const sum = arr.reduce((a, b) => a + b, 0);
+            
+            // แปลงเป็นเปอร์เซนต์รวม 100
+            arr = arr.map(x => +(x / sum * 100).toFixed(1));
+            
+            // ปรับตัวสุดท้ายให้รวมเท่ากับ 100
+            const total = arr.reduce((a, b) => a + b, 0);
+            arr[arr.length - 1] += +(100 - total).toFixed(1);
+            
+            // สร้าง object ()
+            const obj = {
+                agree: arr[0],
+                disagree: arr[1],
+                neutral: arr[2]
+            };
+            console.log(obj);
+            // return array ตามลำดับ [agree, disagree, neutral]
+            return [obj.agree, obj.disagree, obj.neutral];
+        },
 
-      for (let i = 0; i < filtered.length; i++) {
-        for (let j = i + 1; j < filtered.length; j++) {
-          const num1 = filtered[i].toString();
-          const num2 = filtered[j].toString();
+        formatSummarize(text) {
+            if (!text) return '';
+            // this.getChartLable(text);
+            const paragraphs = text.split(/\n\n+/).map(p =>
+            `<p style="margin: 0 0 6px; line-height: 1.4;">${p.replace(/\n/g, '<br>')}</p>`
+        );
+        return paragraphs.join('');
+        },
+        filterNumbers(numbers) {
+        // Create a copy of the numbers array and sort by length
+        const filtered = [...numbers].sort(
+            (a, b) => a.toString().length - b.toString().length
+        );
 
-          // If num1 matches the start of num2, remove num1
-          if (num2.startsWith(num1)) {
-            filtered.splice(i, 1); // Remove num1
-            i--; // Adjust index after removal
-            break; // Restart the inner loop
-          }
+        for (let i = 0; i < filtered.length; i++) {
+            for (let j = i + 1; j < filtered.length; j++) {
+            const num1 = filtered[i].toString();
+            const num2 = filtered[j].toString();
+
+            // If num1 matches the start of num2, remove num1
+            if (num2.startsWith(num1)) {
+                filtered.splice(i, 1); // Remove num1
+                i--; // Adjust index after removal
+                break; // Restart the inner loop
+            }
+            }
         }
-      }
 
-      return filtered; // Return filtered array
-    },
-    matchGeocode(geocode) {
-      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
-      let found = null;
+        return filtered; // Return filtered array
+        },
+        matchGeocode(geocode) {
+        const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+        let found = null;
 
-      // กรองข้อมูลตามความยาว geocode
-      if (geocodeStr.length === 2) {
-        found = provinces[geocodeStr];
-      } else if (geocodeStr.length === 4) {
-        found = districts[geocodeStr];
-      } else if (geocodeStr.length === 6) {
-        found = subdistricts[geocodeStr];
-      }
+        // กรองข้อมูลตามความยาว geocode
+        if (geocodeStr.length === 2) {
+            found = provinces[geocodeStr];
+        } else if (geocodeStr.length === 4) {
+            found = districts[geocodeStr];
+        } else if (geocodeStr.length === 6) {
+            found = subdistricts[geocodeStr];
+        }
 
-      // Return the found location or a fallback message
-      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
-    },
-    getTheSelected(k, v, uid) {
-      var err;
-      if (v == 1) {
-        err = "Positive";
-      } else if (v == 0) {
-        err = "Neutral";
-      } else {
-        err = "Negative";
-      }
-      this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?").then(
-        () => {
-          const encoded = encodeURI(uid);
-          var _this = this;
-          var config = {
-            method: "get",
-            url:
-              "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
-              encoded +
-              "&sentiment=" +
-              v,
-            headers: {
-              Authorization: "Bearer " + localStorage.getItem("token"),
-              "Content-Type": "application/json",
-            },
-          };
-          this.axios(config)
-            .then(function (response) {
-              console.log(response);
+        // Return the found location or a fallback message
+        return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+        },
+        getTheSelected(k, v, uid) {
+        var err;
+        if (v == 1) {
+            err = "Positive";
+        } else if (v == 0) {
+            err = "Neutral";
+        } else {
+            err = "Negative";
+        }
+        this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?").then(
+            () => {
+            const encoded = encodeURI(uid);
+            var _this = this;
+            var config = {
+                method: "get",
+                url:
+                "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
+                encoded +
+                "&sentiment=" +
+                v,
+                headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+                },
+            };
+            this.axios(config)
+                .then(function (response) {
+                console.log(response);
 
-              if (v == 1) {
-                _this.getTopPostDomain[k].sentiment = 1;
-                _this.getTopPostDomain[k].user_sentiment[_this.objId] = 1;
-              } else if (v == 0) {
-                _this.getTopPostDomain[k].sentiment = 0;
-                _this.getTopPostDomain[k].user_sentiment[_this.objId] = 0;
-              } else {
-                _this.getTopPostDomain[k].sentiment = -1;
-                _this.getTopPostDomain[k].user_sentiment[_this.objId] = -1;
-              }
-            })
-            .catch(function (response) {
-              console.log("errrrrrr", response.message);
+                if (v == 1) {
+                    _this.getTopPostDomain[k].sentiment = 1;
+                    _this.getTopPostDomain[k].user_sentiment[_this.objId] = 1;
+                } else if (v == 0) {
+                    _this.getTopPostDomain[k].sentiment = 0;
+                    _this.getTopPostDomain[k].user_sentiment[_this.objId] = 0;
+                } else {
+                    _this.getTopPostDomain[k].sentiment = -1;
+                    _this.getTopPostDomain[k].user_sentiment[_this.objId] = -1;
+                }
+                })
+                .catch(function (response) {
+                console.log("errrrrrr", response.message);
+                });
+            }
+        );
+        },
+        highlightText(full_text) {
+        var word = [];
+        if (this.checked) {
+            word.push(...this.heightword);
+            if (this.andkey.length) {
+            this.andkey.forEach(function (key) {
+
+                if (
+                key.length == 2 &&
+                full_text.includes(key[0]) &&
+                full_text.includes(key[1])
+                ) {
+
+
+                word.push(...key);
+                }
+
+                if (
+                key.length == 3 &&
+                full_text.includes(key[0]) &&
+                full_text.includes(key[1]) &&
+                full_text.includes(key[2])
+                ) {
+                word.push(...key);
+                }
+                if (
+                key.length == 4 &&
+                full_text.includes(key[0]) &&
+                full_text.includes(key[1]) &&
+                full_text.includes(key[2]) &&
+                full_text.includes(key[3])
+                ) {
+                word.push(...key);
+                }
             });
+
+
+            }
         }
-      );
+        return word;
+        },
+        setAltImg(event) {
+        event.target.src = this.default_avatar;
+        },
+        onClick(i, data) {
+            console.log(data);
+            this.index = i;
+            this.dataPhoto = data;
+        },
     },
-    highlightText(full_text) {
-      var word = [];
-      if (this.checked) {
-        word.push(...this.heightword);
-        if (this.andkey.length) {
-          this.andkey.forEach(function (key) {
-
-            if (
-              key.length == 2 &&
-              full_text.includes(key[0]) &&
-              full_text.includes(key[1])
-            ) {
-
-
-              word.push(...key);
-            }
-
-            if (
-              key.length == 3 &&
-              full_text.includes(key[0]) &&
-              full_text.includes(key[1]) &&
-              full_text.includes(key[2])
-            ) {
-              word.push(...key);
-            }
-            if (
-              key.length == 4 &&
-              full_text.includes(key[0]) &&
-              full_text.includes(key[1]) &&
-              full_text.includes(key[2]) &&
-              full_text.includes(key[3])
-            ) {
-              word.push(...key);
-            }
-          });
-
-
-        }
-      }
-      return word;
-    },
-    setAltImg(event) {
-      event.target.src = this.default_avatar;
-    },
-    onClick(i, data) {
-      console.log(data);
-      this.index = i;
-      this.dataPhoto = data;
-    },
-  },
   destroyed() {
     this.$store.commit("setTopPostDomain", "");
   },

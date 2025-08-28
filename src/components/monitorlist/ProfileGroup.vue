@@ -21,7 +21,7 @@
             <b-col lg="8" class="text-left px-0">
                 <h5 class="font-weight-bold text-info p-0">Platform</h5>
                 <b-row cols="2" cols-sm="3" cols-lg="4" cols-xl="6" class="h-75 align-items-center">
-                    <b-col v-for="target in groupDetails.targetlist" :key="target.id" class="px-0 mb-3">
+                    <b-col v-for="target in groupDetails.targetlist.slice(0, 5)" :key="target.id" class="px-0 mb-3">
                         <b-row class="m-0 text-center align-items-center">
                             <b-col cols="12" class="px-1 mb-2">
                                <b-avatar :src="target.image">
@@ -35,9 +35,27 @@
                                     <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
                                     <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
                                 </b-avatar>
+                                <!-- <b-avatar
+                                    v-if="groupDetails.targetlist.length > 5"
+                                    :text="'+' + (groupDetails.targetlist.length - 5)"
+                                    variant="secondary"
+                                ></b-avatar> -->
+                            </b-col>
+                            <b-col class="text-truncate">
+                                {{ target.name || target.uid || 'N/A' }}
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                    <b-col v-if="groupDetails.targetlist.length > 5" class="px-0 mb-3">
+                        <b-row class="m-0 text-center align-items-center">
+                            <b-col cols="12" class="px-1 mb-2">
+                                <b-avatar
+                                    :text="'+' + (groupDetails.targetlist.length - 5)"
+                                    variant="secondary"
+                                ></b-avatar>
                             </b-col>
                             <b-col>
-                                {{ target.name || target.uid || 'N/A' }}
+                                สมาชิกอื่น ๆ
                             </b-col>
                         </b-row>
                     </b-col>
@@ -54,7 +72,7 @@
                     </b-col>
                     <b-col cols="auto" class="px-0">
                         <b-row class="m-0">
-                            <b-col cols="auto" class="px-0">
+                            <b-col cols="auto" class="px-0 pt-2">
                                 <date-picker
                                     v-model="valueDate"
                                     type="date"
@@ -70,7 +88,7 @@
                                     {{ valueDate }}
                                 </date-picker>
                             </b-col>
-                            <b-col cols="auto" class="pr-0">
+                            <b-col cols="auto" class="pr-0 pt-2">
                                 <div class="text-center">
                                     เรียงจาก :
                                     <b-button class="sort-btn" @click="toggleSort" pill size="sm">

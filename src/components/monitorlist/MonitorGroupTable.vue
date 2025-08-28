@@ -65,7 +65,7 @@
                 <template #cell(source)="data">
                     <!-- {{ data.item.targetlist }} -->
                     <b-avatar-group size="40px">
-                        <b-avatar v-for="(target, index) in data.item.targetlist" :key="index" :src="target.image">
+                        <b-avatar v-for="(target, index) in data.item.targetlist.slice(0, 4)" :key="index" :src="target.image">
                             <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
                             <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
                             <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="social-img" />
@@ -76,6 +76,12 @@
                             <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
                             <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
                         </b-avatar>
+                        <!-- ถ้าเกิน 5 ตัว ให้แสดง Avatar +เพิ่มอีก n -->
+                        <b-avatar 
+                            v-if="data.item.targetlist.length > 4" 
+                            :text="'+' + (data.item.targetlist.length - 4)"
+                            variant="secondary"
+                        ></b-avatar>
                     </b-avatar-group>
                 </template>
                 <template #cell(type)="data">
@@ -92,7 +98,6 @@
                     @click="linkToProfile(data.item)"></span>
                     <span class="fas fa-trash text-danger" v-b-tooltip.hover
                         title="ลบกลุ่ม" @click="deleteGroup(data.item.group_id)" size="sm"></span>
-                    
                 </template>
                 <template #row-details="data">
                     <!-- {{ data.toggleDetails }} -->
