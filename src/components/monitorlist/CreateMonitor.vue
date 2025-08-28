@@ -164,8 +164,8 @@
                 <div class="col-12 px-0" v-if="addTarget.length">
 
                     <!-- {{ facebook }} -->
-                    <div class="col-12 px-0 pt-3" v-for="(platform, platformName) in platforms" :key="platformName">
-                        <div v-if="platform.length">
+                    <div class="col-12 px-0 pt-3" v-for="(platform, platformName) in platforms" :key="platformName" v-if="platform.length">
+                        <div v-if="platform.length" >
                             <b class="mb-2 text-capitalize">{{ platformName }} ({{ platform.length }})</b>
                             <hr class="my-2"/>
                             <b-row cols="1" lg-cols="2" xl-cols="2">

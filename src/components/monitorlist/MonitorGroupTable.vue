@@ -5,7 +5,7 @@
                 <div class="d-flex flex-wrap justify-content-start align-items-center">
                     <b-avatar text="All" size="45" style="background-color: #fed16e;"></b-avatar>
                     <div class="col-auto bold align-content-center" style="font-size: 20px;">
-                        {{ data.length.toLocaleString() }} รายการ
+                        {{ totalRows.toLocaleString() }} รายการ
                     </div>
                 </div>
             </b-col>
@@ -44,18 +44,22 @@
         <div class="boxlist-card py-3">
             <br>
             <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
-            <b-table v-if="data.length !== 0" show-details :items="data || []" :fields="fields" hover responsive :busy="load"
+            <b-table 
+                ref="table"
+                v-if="data.length !== 0" show-details 
+                :items="data || []" :fields="fields" hover responsive :busy="load"
                 :head-variant="headVariant" :table-variant="tableVariant" :striped="striped" :bordered="bordered"
-                :borderless="borderless" :outlined="outlined" empty-filtered-text="ไม่พบข้อมูล" :small="small"
-                
-                thead-class="d-none" stacked="md">
+                :borderless="borderless" :outlined="outlined" 
+                empty-filtered-text="ไม่พบข้อมูล" :small="small"
+                thead-class="d-none" stacked="md"
+            >
                 <template #cell(id)="data">
                     {{ data.index + 1 + (currentPage - 1) * perPage }}
                 </template>
                 <template #cell(name)="data">
-                    <div class="d-flex justify-content-start align-items-center">
+                    <b-col class="text-left text-truncate">
                         {{ data.item.group_name }}
-                    </div>
+                    </b-col>
                 </template>
 
                 <template #cell(source)="data">
@@ -83,7 +87,7 @@
                 <template #cell(action)="data">
                     
                     <span class="fas fa-user-edit text-custom" v-b-tooltip.hover
-                        title="แก้ไขกลุ่ม" @click="handleClick(data)" size="sm"></span>
+                        title="แก้ไขกลุ่ม" @click="toggleDetails(data)" size="sm"></span>
                     <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                     @click="linkToProfile(data.item)"></span>
                     <span class="fas fa-trash text-danger" v-b-tooltip.hover
@@ -93,7 +97,7 @@
                 <template #row-details="data">
                     <!-- {{ data.toggleDetails }} -->
                     <!-- <b-card class="text-left" style="max-height:300px;overflow-y:auto;"> -->
-                    <b-row cols="1" cols-md="2" class="mx-0">
+                    <b-row v-show="expandedRow === data.index"  cols="1" cols-md="2" class="mx-0">
                         <b-col class="p-0 border-right">
                             <b-row v-if="data.item.targetlist && data.item.targetlist.length !== 0" class="bold my-2 mx-0 px-0">
                                 รายชื่อบัญชีในกลุ่ม {{ data.item.targetlist.length }} รายการ
@@ -128,7 +132,7 @@
                                                 <b-col cols="auto" class="p-0 text-right">
                                                     <b-row cols="1" class="m-0 h-100 justify-content-end">
                                                         <b-col class="px-1 py-0">
-                                                            <i class="fa fa-close text-danger" @click="apiDeleteTarget(data.item.group_id,target._id)" style="font-size:14px;cursor: pointer;"></i>
+                                                            <i class="fa fa-close text-danger" @click="confirmDeleteTarget(data,target._id)" style="font-size:14px;cursor: pointer;"></i>
                                                         </b-col>
                                                         <b-col align-self="end" class="p-0 text-right">
                                                             <b-avatar class="" size="25px" :src="target.image">
@@ -157,7 +161,7 @@
                                         รายชื่อบัญชีใหม่ {{ newTargets.length }} รายการ
                                     </b-col>
                                     <b-col class="d-flex justify-content-end">
-                                        <b-button class="mr-2" variant="success" @click="confirmAddTargets()">
+                                        <b-button class="mr-2" variant="success" @click="confirmAddTargets(data)">
                                             <i class="fa fa-save"></i>
                                         </b-button>
                                         <b-button variant="danger" @click="newTargets = []">
@@ -235,10 +239,11 @@
                             </b-col>
                             <vue-element-loading :active="loadTargets" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
                             <b-row cols="1" cols-lg="1" cols-xl="2" class="m-0 body-scrollable">
-                                <b-col v-for="target in targetLists" :key="target.id" class="h-auto pl-0 pr-2 mb-2">
+                                <b-col v-for="target in targetLists.filter(t => !data.item.targetlist.some(x => x._id === t._id))" :key="target.id" class="h-auto pl-0 pr-2 mb-2">
                                     <b-card
                                         bg-variant="white" text-variant=""
-                                        class="mb-2 h-100" body-class="px-2 pt-0 pb-2"
+                                        class="card-target mb-2 h-100" body-class="px-2 pt-0 pb-2"
+                                        :class="['card-target mb-2 h-100', { 'is-selected': newTargets.includes(target) }]"
                                         @click="handleNewTarget(target)"
                                     >
                                         <b-card-text class="h-100">
@@ -318,7 +323,6 @@ import CreateGroup from "./CreateGroup.vue";
 // import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
-// import { h } from "vue";
 // import { mapGetters } from "vuex";
 export default {
     components: {
@@ -333,6 +337,8 @@ export default {
     data() {
         return {
             // openRowId: null, // เก็บ ID ของแถวที่เปิดอยู่
+            expandedRow: null,
+            expandedRowData: null, // เก็บ data object ของแถวที่เปิด
             load: false,
             loadTargets: false,
             allData: [],  // เก็บข้อมูลทั้งหมด
@@ -443,9 +449,27 @@ export default {
                 console.warn("ข้อมูลนี้มีอยู่แล้ว:", newItem);
             }
         },
-        handleClick(data) {
-            data.toggleDetails()
-            this.setSelectedGroup(data.item)
+        toggleDetails(data) {
+            // ถ้าเป็นแถวเดิม -> ปิด
+            if (this.expandedRow === data.index) {
+                data.toggleDetails(false)
+                this.expandedRow = null
+                this.expandedRowData = null
+                return
+            }
+
+            // ถ้ามีแถวเก่าเปิดอยู่ -> ปิดก่อน
+            if (this.expandedRowData) {
+                this.expandedRowData.toggleDetails(false)
+            }
+
+            // เปิดแถวใหม่
+            data.toggleDetails(true);
+            this.newTargets = [];
+            this.targetLists = [];
+            this.expandedRow = data.index;
+            this.expandedRowData = data;
+            this.setSelectedGroup(data.item);
         },
         async setSelectedGroup(item) {
             this.searchTarget = item.group_name || '';
@@ -483,6 +507,7 @@ export default {
                 name: "GroupProfile",
                 query: {
                     id: item.group_id,
+                    name: item.group_name,
                     // uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
                     // source: item.source,
                     // type: this.type
@@ -502,7 +527,7 @@ export default {
                 source: item.source
             }))
         },
-        confirmAddTargets() {
+        confirmAddTargets(data) {
             if (this.newTargets.length > 0) {
                 Swal.fire({
                     title: 'ยืนยันการเพิ่มเป้าหมาย',
@@ -519,6 +544,7 @@ export default {
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        this.toggleDetails(data)
                         let newTargets = this.transformToTarget(this.newTargets);
                         this.apiAddTarget(newTargets);
                     }
@@ -526,6 +552,29 @@ export default {
             } else {
                 Swal.fire('ไม่มีเป้าหมายใหม่', 'กรุณาเลือกเป้าหมายก่อนเพิ่ม', 'info');
             }
+        },
+        confirmDeleteTarget(data, target_id) {
+            console.log(data, target_id);
+            
+            Swal.fire({
+                title: 'ยืนยันการลบเป้าหมาย',
+                text: "คุณต้องการลบเป้าหมายนี้หรือไม่?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก',
+                didOpen: () => {
+                    const iconContent = document.querySelector('.swal2-icon-content');
+                    if (iconContent) iconContent.style.display = 'none';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.apiDeleteTarget(data.item.group_id, target_id);
+                    this.toggleDetails(data);
+                }
+            });
         },
         async apiAddTarget(newTargets) {
             this.load = true;
@@ -562,26 +611,10 @@ export default {
                 });
         },
         async apiDeleteTarget(group_id, target_id) {
-            const result = await Swal.fire({
-                title: 'ยืนยันการลบเป้าหมาย',
-                text: "คุณต้องการลบเป้าหมายนี้หรือไม่?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'ลบ',
-                cancelButtonText: 'ยกเลิก',
-                didOpen: () => {
-                    const iconContent = document.querySelector('.swal2-icon-content');
-                    if (iconContent) iconContent.style.display = 'none';
-                }
-            });
-
-            if (result.isConfirmed) {
-                this.load = true;
-                const config = {
-                    method: "delete",
-                    url: `https://api2.cognizata.com/api/v2/monitor/deleteTargetlist`,
+            this.load = true;
+            const config = {
+                method: "delete",
+                url: `https://api2.cognizata.com/api/v2/monitor/deleteTargetlist`,
                     data: {
                         group_id: group_id,
                         targetlist_id: target_id
@@ -610,7 +643,7 @@ export default {
                         console.error(error);
                         Swal.fire('ผิดพลาด', 'ไม่สามารถลบเป้าหมายได้', 'error');
                     });
-            }
+            
         },
         async deleteGroup(group_id) {
             const result = await Swal.fire({
@@ -768,6 +801,19 @@ export default {
 </script>
 
 <style scoped>
+.card-target {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card-target:hover {
+    border-color: #17a2b8;
+    box-shadow: 10px 10px 15px rgba(23, 162, 184, 0.6); /* กรอบเรืองแสงสีน้ำเงิน */
+    cursor: pointer;
+}
+.card-target.is-selected {
+  border: 2px solid #17a2b8; /* ขอบสีฟ้าเมื่ออยู่ใน newTargets */
+  box-shadow: 0 0 12px rgba(23, 162, 184, 0.6);
+}
 .body-scrollable {
     /* min-height: 70vh; */
     max-height: 50vh;

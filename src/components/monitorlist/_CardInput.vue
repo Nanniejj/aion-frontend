@@ -910,7 +910,10 @@ export default {
                     console.log("Microlink previews ==== ", previews);
                     this.selectedData.profile_image = data.data.image?.url || null;
                     if (this.selectedData.source === 'news') {
-                    this.selectedData.name = previews.site;
+                        this.selectedData.name = 
+                            previews.title === "Just a moment..."
+                                ? this.getNewsName(previews.site)
+                                : this.getNewsName(previews.title);
                     } else {
                         this.selectedData.name = this.extractName(previews.title);
                     }
@@ -927,6 +930,20 @@ export default {
                 }
             }
             this.exportData();
+        },
+        getNewsName(str) {
+            if (!str) return "";
+            let result = str.trim();
+
+            // เอาเฉพาะก่อน |, :, - (ถ้ามี)
+            result = result.split("|")[0]
+                    .split(":")[0]
+                    .split("-")[0]
+                    .trim();
+
+            // ถ้ามี .com ให้ตัดออก
+            result = result.replace(/\.com$/i, "").trim();
+            return result;
         },
         cleanAuthor(author) {
             if (!author) return "";
