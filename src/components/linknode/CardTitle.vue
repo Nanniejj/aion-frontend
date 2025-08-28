@@ -1,6 +1,6 @@
 <template>
   <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd my-2"
-    v-if="post" >
+    v-if="post">
     <div class="position-relative">
       <div class="position-absolute pl-1 pt-1 pb-1" style="
           top: 0;
@@ -18,13 +18,18 @@
       <b-row>
         <b-col cols="12" md="3" v-if="post.photos && post.photos.length" class="img-col">
           <!-- รูป preview -->
-          <b-card-img class="img-cover" :src="post.photos[0]" @click="showImage = true" />
+          <b-card-img class="img-cover"
+            :src="(post.source === 'tiktok' ? require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
+            @click="showImage = true" />
 
           <!-- Modal แสดงรูปเต็ม -->
           <b-modal v-model="showImage" size="xl" centered hide-footer>
-            <img :src="post.photos[0]" class="w-100" style="max-height: 80vh; object-fit: contain" />
+            <img
+              :src="(post.source === 'tiktok' ? require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
+              class="w-100" style="max-height: 80vh; object-fit: contain" />
           </b-modal>
         </b-col>
+
 
         <b-col>
           <div class="text-left bold d-flex align-items-center mt-2 flex-wrap">
@@ -38,8 +43,8 @@
             </span>
           </div>
 
-          <div class=" read-m mt-md-2">
-            <ReadMoreBox :item="{ title: post.full_text }" :maxHeight="'90px'" />
+          <div class=" read-m mt-md-2" v-if="post.full_text">
+            <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'90px'" />
           </div>
           <div class="bold small text-muted position-absolute mt-1 text-right"
             style="bottom: -6px; left: 1px; background-color: white">
@@ -47,17 +52,53 @@
               <i class="fas fa-chart-line"></i>
               <span class="bold"> {{ post.engagement | numFormat }} </span>
             </span>
-            <span class="d-inline-block box-link">
+            <span class="d-inline-block box-link" v-if="post.likes_count">
               <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
               {{ post.likes_count | numFormat }}
             </span>
 
             <!-- {{post}} -->
-            <span class="d-inline-block box-link">
+            <span class="d-inline-block box-link" v-if="post.comments_count">
               <i class="fa fa-comment ml-2" aria-hidden="true"></i>
               <span class="bold"> {{ post.comments_count | numFormat }} </span>
             </span>
-
+            <span v-if="post.retweets_count" class="d-inline-block box-link ml-2">
+              <i class="fal fa-retweet"></i>
+              {{ post.retweets_count | numFormat }}
+            </span>
+            <span v-if="post.shares_count" class="d-inline-block box-link ml-2">
+              <i class="fa fa-share"></i>
+              {{ post.shares_count | numFormat }}
+            </span>
+            <span v-if="post.views_count" class="d-inline-block box-link ml-2">
+              <i class="fas fa-eye"></i>
+              {{ post.views_count | numFormat }}
+            </span>
+            <!-- Reactions -->
+            <span v-if="post.reaction">
+              <span v-if="post.reaction.view_count" class="d-inline-block box-link ml-2">
+                <i class="fas fa-eye"></i>
+                {{ post.reaction.view_count | numFormat }}
+              </span>
+              <span v-if="post.reaction.Love" class="d-inline-block box-link ml-2">
+                ❤️ {{ post.reaction.Love | numFormat }}
+              </span>
+              <span v-if="post.reaction.Wow" class="d-inline-block box-link ml-2">
+                😮 {{ post.reaction.Wow | numFormat }}
+              </span>
+              <span v-if="post.reaction.Haha" class="d-inline-block box-link ml-2">
+                😂 {{ post.reaction.Haha | numFormat }}
+              </span>
+              <span v-if="post.reaction.Sad" class="d-inline-block box-link ml-2">
+                😢 {{ post.reaction.Sad | numFormat }}
+              </span>
+              <span v-if="post.reaction.Angry" class="d-inline-block box-link ml-2">
+                😡 {{ post.reaction.Angry | numFormat }}
+              </span>
+              <span v-if="post.reaction.Hug" class="d-inline-block box-link ml-2">
+                🤗 {{ post.reaction.Hug | numFormat }}
+              </span>
+            </span>
           </div>
 
         </b-col>
@@ -122,7 +163,10 @@ export default {
 };
 </script>
 <style scoped>
-
+.badge-primary {
+  color: #fff;
+  background-color: #2876ca;
+}
 
 .account-name {
   font-size: 15px;
@@ -210,11 +254,18 @@ img-cover {
   }
 
 }
+
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   .read-m {
-  font-size: 14px;
+    font-size: 14px;
+  }
+  
+.card-sd {
+max-width: 289px;
 }
+
 }
+
 @media (max-width: 576px) {
   .img-cover {
     height: 140px;

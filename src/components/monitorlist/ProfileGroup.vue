@@ -54,7 +54,7 @@
                     </b-col>
                     <b-col cols="auto" class="px-0">
                         <b-row class="m-0">
-                            <b-col cols="auto" class="px-0">
+                            <b-col cols="auto" class="px-0 pt-2">
                                 <date-picker
                                     v-model="valueDate"
                                     type="date"
@@ -70,7 +70,7 @@
                                     {{ valueDate }}
                                 </date-picker>
                             </b-col>
-                            <b-col cols="auto" class="pr-0">
+                            <b-col cols="auto" class="pr-0 pt-2">
                                 <div class="text-center">
                                     เรียงจาก :
                                     <b-button class="sort-btn" @click="toggleSort" pill size="sm">
@@ -172,6 +172,8 @@ export default {
                 alert("เลือกช่วงเวลาได้ไม่เกิน 7 วัน");
                 this.valueDate = []; // reset ค่า
             }else {
+                console.log('check');
+                
                 this.page = 1; // reset page
                 this.apiGetPost();
             }

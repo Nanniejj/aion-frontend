@@ -15,7 +15,7 @@
       <span class="h6 mr-1 d-inline-block">{{ title }}</span>
 
     </div> -->
-    <div class="text-right position-absolute" style="right: 24px; z-index: 99; top: -27px; z-index: 99">
+    <div class="text-right position-absolute" style="right: 111px; z-index: 99; top: -27px; z-index: 99">
       <!-- ปุ่ม sort เป็น icons -->
       <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'descend' }"
         @click="setSort('descend')" v-b-tooltip.hover title="โพสต์เก่าสุด" pill>
@@ -29,12 +29,12 @@
 
       <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'engagement' }"
         @click="setSort('engagement')" v-b-tooltip.hover title="Engagement" pill>
-        <i class="fa fa-fire"></i>
+        <i class="fas fa-chart-line"></i>
       </b-button>
 
       <!-- ปุ่ม load more -->
       <b-button size="sm" variant="outline-info" class="p-1" @click="emitLoadMore" :disabled="!hasMore"
-        v-b-tooltip.hover title="โหลดเพิ่มของวันนี้" pill>
+        v-b-tooltip.hover title="โหลดเพิ่ม" pill>
         <i class="fa fa-plus"></i>
       </b-button>
     </div>

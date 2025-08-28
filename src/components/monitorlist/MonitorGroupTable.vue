@@ -12,7 +12,7 @@
             <b-col cols="12" md="auto">
                 <div class="d-flex flex-wrap justify-content-end align-items-center">
                     <!-- <CreateMonitor class="col col-md-auto px-0" :class="{'w-100':type == 'hashtaglist'}" :tabsMonitor="type" @close="reload"/> -->
-                    <b-form-group label-for="search-input" class="mt-3 mt-xl-0 mr-lg-2 px-0 mb-0">
+                    <b-form-group label-for="search-input" class="mt-3 mt-xl-0 mr-md-2 px-0 mb-0 ">
                         <b-input-group-append>
                             <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
                                 class="mr-2"></b-form-input>
@@ -20,7 +20,9 @@
                                 class="shadow-r px-4">ค้นหา</b-button>
                         </b-input-group-append>
                     </b-form-group>
-                    <CreateGroup @close="reload"/>
+                    <b-col cols="12" sm="" class="pt-3 px-0 ml-sm-2">
+                        <CreateGroup @close="reload"/>
+                    </b-col>
                 </div>
             </b-col>
         </b-row>

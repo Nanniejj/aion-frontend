@@ -2,12 +2,13 @@
   <b-card class="box-spotnews black slider-item mx-2 p-1 position-relative" v-if="post" style="overflow: hidden;">
     <!-- {{ post }} -->
     <!-- {{loadingCard}} -->
-
+    <vue-element-loading :active="getLoadCardPost" size="80" background-color="rgba(255, 255, 255, 0.5)"
+      color="#b6ac9a" />
     <div class="position-relative">
 
-      <b-img :src="post.photos[0]" v-if="post.photos && post.photos.length"
+      <b-img      :src="(post.source === 'tiktok' ? require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')" v-if="post.photos && post.photos.length"
         style="height:150px; width:100%; object-fit:cover; object-position:center;"></b-img>
-        
+
       <!-- <b-img cover :src="post.photos[0]" v-if="post.photos && post.photos.length" style="height:150px;" /> -->
       <!-- <div v-else class="h5 text-center"
         style="height:150px;background-color:rgb(237 231 221);display:flex;justify-content:center;align-items:center;flex-direction:column;">
@@ -30,6 +31,39 @@
           <span>
             {{ post.comments_count | numFormat }} </span>
         </span>
+        <span v-if="post.retweets_count" class="d-inline-block box-link">
+          <i class="fal fa-retweet"></i>
+          {{ post.retweets_count | numFormat }}
+        </span>
+        <span v-if="post.shares_count" class="d-inline-block box-link">
+          <i class="fa fa-share"></i>
+          {{ post.shares_count | numFormat }}
+        </span>
+        <span v-if="post.views_count" class="d-inline-block box-link">
+          <i class="fas fa-eye"></i>
+          {{ post.views_count | numFormat }}
+        </span>
+        <!-- Reactions -->
+        <span v-if="post.reaction">
+          <span v-if="post.reaction.Love" class="d-inline-block box-link">
+            ❤️ {{ post.reaction.Love | numFormat }}
+          </span>
+          <span v-if="post.reaction.Wow" class="d-inline-block box-link">
+            😮 {{ post.reaction.Wow | numFormat }}
+          </span>
+          <span v-if="post.reaction.Haha" class="d-inline-block box-link">
+            😂 {{ post.reaction.Haha | numFormat }}
+          </span>
+          <span v-if="post.reaction.Sad" class="d-inline-block box-link">
+            😢 {{ post.reaction.Sad | numFormat }}
+          </span>
+          <span v-if="post.reaction.Angry" class="d-inline-block box-link">
+            😡 {{ post.reaction.Angry | numFormat }}
+          </span>
+          <span v-if="post.reaction.Hug" class="d-inline-block box-link">
+            🤗 {{ post.reaction.Hug | numFormat }}
+          </span>
+        </span>
       </div>
     </div>
 
@@ -39,8 +73,8 @@
       <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" size="34" />
       <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" size="34" />
     </div>
-    <div class="my-2 " style="height:100%;overflow-y:auto;">
-      <ReadMoreBox :item="{ title: post.full_text }" :maxHeight="'auto'" class="small" />
+    <div class="my-2 " style="height:100%;overflow-y:auto;"  v-if="post.full_text">
+      <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'auto'" class="small" />
     </div>
 
     <!-- <div class="text-left small d-flex align-items-center mt-2">
@@ -48,7 +82,8 @@
       <span>{{ post.account_name }}</span>
     </div> -->
 
-        <div class="position-absolute text-left" style="bottom:0px;left:0px;background-color:white;width: 100%;height: 50px;"></div>
+    <div class="position-absolute text-left"
+      style="bottom:-6px;left:0px;background-color:white;width: 100%;height: 52px;"></div>
     <div class="position-absolute text-left" style="bottom:15px;left:10px;background-color:white;width: 100%;">
 
       <b-avatar size="34" :src="post.profile_image" class="mr-2" />
@@ -77,6 +112,7 @@
 import ReadMoreBox from "./ReadMore.vue";
 import moment from "moment";
 import "moment/locale/th";
+import { mapGetters } from "vuex";
 export default {
   name: "CardPost",
   components: { ReadMoreBox },
@@ -114,6 +150,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters([
+      "getLoadCardPost",
+    ]),
     sentimentString() {
       if (this.post.sentiment === -1) return "negative";
       if (this.post.sentiment === 0) return "neutral";
@@ -262,4 +301,5 @@ background: linear-gradient(90deg,rgba(42, 123, 155, 0.38) 0%, rgba(87, 199, 133
 h5 {
   font-weight: 600;
 }
+
 </style>

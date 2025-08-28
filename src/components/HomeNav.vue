@@ -247,11 +247,11 @@
                 ><center><strong>Report</strong></center></router-link
               >
               <router-link
-                to="/politician"
+                to="/timeline"
                 class="dropdown-item"
                 :class="{ dropdownStyle: isActive13 }"
                 id="nav-router"
-                ><center><strong>Politician</strong></center></router-link
+                ><center><strong>Timeline</strong></center></router-link
               >
 
               <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
@@ -593,14 +593,14 @@
                   >Monitor</router-link
                 >
               </b-dropdown-item>
-              <b-dropdown-item  to="/politician">
+              <b-dropdown-item  to="/timeline">
                 <router-link
-                  to="/politician"
+                  to="/timeline"
                   tag="a"
                   :style="dropdownStyle"
                   :class="{ dropdownStyle: isActive13}"
                   id="dp-txt"
-                  >Politician</router-link
+                  >Timeline</router-link
                 >
               </b-dropdown-item>
               <b-dropdown-item  to="/feed">
@@ -806,7 +806,7 @@ export default {
     isActive2() {
       return (
         this.$route.name === "Monitor" ||
-        this.$route.name === "Feed" ||this.$route.name === "Report"||this.$route.name === "politician"
+        this.$route.name === "Feed" ||this.$route.name === "Report"||this.$route.name === "timeline"
       );
     },
     // isActive2() {

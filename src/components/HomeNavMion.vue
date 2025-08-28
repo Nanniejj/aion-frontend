@@ -373,7 +373,7 @@ export default {
     isActive2() {
       return (
         this.$route.name === "monitor" ||
-        this.$route.name === "feed" ||this.$route.name === "report"||this.$route.name === "politician"
+        this.$route.name === "feed" ||this.$route.name === "report"||this.$route.name === "timeline"
       );
     },
     isActive3() {
@@ -407,7 +407,7 @@ export default {
       return this.$route.name === "report";
     },
     isActive13() {
-      return this.$route.name === "politician";
+      return this.$route.name === "timeline";
     },
   },
   created() {

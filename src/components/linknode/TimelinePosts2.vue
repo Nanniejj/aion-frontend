@@ -18,7 +18,8 @@
                 {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
                 <span class="h6"> {{ formatTime(day.date) }}</span>
               </span>
-              <div class="h6 mt-1"> <i class="fas fa-chart-line"></i> {{ day.items[0].engagement | numFormat }}</div>
+              <div class="h6 mt-1" v-b-tooltip.hover :title="day.items[0].engagement | numFormat"> <i
+                  class="fas fa-chart-line"></i> {{ numFormat(day.items[0].engagement) }}</div>
 
               <!-- <div class="h6"
                 >{{ formatDate(day.date) }}</div
@@ -57,10 +58,11 @@
           <div style="width: 89%;">
             <div v-if="day.items && day.items.length" class="position-relative">
               <div class="text-right">
-                <i class="fa fa-shuffle" @click="toggle(idx)" style="cursor: pointer;color:#17a2b8;"></i>
-                <span class="ml-2 small text-muted">
+                <i class="fa fa-shuffle" @click="toggle(idx)" style="cursor: pointer;color:#17a2b8;" v-b-tooltip.hover
+                  title="สลับโพสต์"></i>
+                <span class="ml-2 small ">
                   <!-- {{ day.countShown }} /  -->
-                  {{ day.countTotal }} โพสต์
+                 <b> {{ day.countTotal | numFormat }}</b> โพสต์
                   <!-- <span v-if="day._hasMore">(+)</span> -->
                 </span>
                 <!-- <span class="ml-2 small text-muted">
@@ -86,17 +88,19 @@
 
       <!-- โหมดปกติ (ตามโพสต์) -->
       <template v-else>
+        <div class="text-right allpost"> ทั้งหมด <b>{{ count|| 0 | numFormat }} </b>  โพสต์</div>
         <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
           <!-- {{ items }} -->
           <div class="timeline-dot">
-            <span class="h4 date-label bold" v-if="sort !== 'engagement'">
-              {{ formatDay(it.date) }} {{ formatMoth(it.date) }}
-              <span class="h6"> {{ formatTime(it.date) }}</span>
-            </span>
-            <span class="h4 date-label bold" v-else>
-              {{ it.engagement | numFormat }}
+            <div class=" date-label" v-if="sort !== 'engagement'">
+              <div class="h4  bold "> {{ formatDay(it.date) }} {{ formatMoth(it.date) }}</div>
 
-              <div class="h6">{{ formatDate(it.date) }}</div>
+              <div class="h6 d-block"> <i class="fa fa-clock-o" aria-hidden="true"></i> {{ formatTime(it.date) }}</div>
+            </div>
+            <span class="h5 date-label bold" v-else v-b-tooltip.hover :title="it.engagement | numFormat">
+              <i class="fas fa-chart-line"></i> {{ numFormat(it.engagement) }}
+
+              <div class="h6 mt-1"> {{ formatDay(it.date) }} {{ formatMoth(it.date) }} {{ formatTime(it.date) }} </div>
             </span>
 
             <span v-if="it.profile_image">
@@ -117,7 +121,6 @@
             <img v-if="it.source === 'threads'" :src="imgtd" class="social-img" />
             <span class="line"></span>
           </div>
-
           <!-- การ์ดเดี่ยวตามโพสต์ -->
           <div class="flex-grow-1">
             <CardTitle :post="it" :domain="currentDomain" class="mx-2" />
@@ -194,6 +197,14 @@ export default {
     // },
   },
   methods: {
+    numFormat(n) {
+      if (!n) return 0;
+      if (n < 1e3) return n;
+      if (n < 1e6) return (n / 1e3).toFixed(1) + "K";
+      if (n < 1e9) return (n / 1e6).toFixed(1) + "M";
+      if (n < 1e12) return (n / 1e9).toFixed(1) + "B";
+      return (n / 1e12).toFixed(1) + "T";
+    },
     replaceDayPost(idx, post) {
       const day = this.items[idx];
       if (!day || !Array.isArray(day.items) || !day.items.length) return;
@@ -273,6 +284,7 @@ export default {
 </script>
 
 <style scoped>
+
 .story-ring {
   display: inline-flex;
   padding: 3px;
@@ -371,14 +383,37 @@ h5 {
   font-weight: 600;
 }
 
+
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+ .allpost{
+  font-size: 13px;
+ }
   .timeline-dot {
     width: 30px;
+    margin-right: 3px;
+  }
+
+  span.h4.date-label.bold>div {
+    font-size: 12px;
   }
 
   .date-label {
-    font-size: 17px;
-    width: 60px;
+    font-size: 14px;
+    z-index: 99;
+  }
+
+  .timeline-dot>div>div.h4.bold {
+    font-size: 15px;
+    width: 100px;
+    margin-bottom: 1px;
+  }
+
+  div.timeline-dot>span.h5.date-label.bold>div {
+    font-size: 12px;
+  }
+
+  div.timeline-dot>div>div.h6.d-block {
+    font-size: 12px !important;
   }
 
   .timeline {
