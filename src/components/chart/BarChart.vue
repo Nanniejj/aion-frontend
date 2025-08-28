@@ -509,20 +509,17 @@ export default {
 .imgs {
     width: 38px;
     display: block;
-    margin-bottom: 13px;
+   margin-bottom: 13.3px;
 }
-
 @media only screen and (min-width: 0px) and (max-width: 1220px) {
     .col-10 {
         right: 23px !important;
     }
 }
-
 @media only screen and (min-width: 0px) and (max-width: 991px) {
     .col-2 {
         text-align: -webkit-right;
     }
 }
-
 @media only screen and (min-width: 0px) and (max-width: 750px) {}
 </style>

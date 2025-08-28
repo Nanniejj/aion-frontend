@@ -164,10 +164,10 @@ export default {
 
   mounted() {
     this.loadData();
-    console.log("****EditObjectKeyword");
-    console.log("ได้รับค่า objectId:", this.objectId);
-    console.log("ได้รับค่า subdomainId:", this.subdomainId);
-    console.log("ได้รับค่า dataKeyword:", this.dataKeyword);
+    // console.log("****EditObjectKeyword");
+    // console.log("ได้รับค่า objectId:", this.objectId);
+    // console.log("ได้รับค่า subdomainId:", this.subdomainId);
+    // console.log("ได้รับค่า dataKeyword:", this.dataKeyword);
 
 
   },

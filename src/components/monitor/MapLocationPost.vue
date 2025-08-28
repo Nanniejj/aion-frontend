@@ -1903,7 +1903,7 @@ export default {
       this.typeMap = payload.type;
       this.currentPage = 1;
       this.$store.dispatch("apiLocationPost", payload);
-      console.log("payload", payload);
+      // console.log("payload", payload);
       payload.sentiment = "1,0,-1";
       this.$store.dispatch("apiMapStatic", payload);
     }

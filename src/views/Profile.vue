@@ -7,8 +7,7 @@
     <div id="content">
       <h1 class="title">Profile</h1>
       <h4 class="title-monitor">
-        <span @click="$router.go(-1)" style="cursor: pointer"
-          >{{ getToLinkProfile }}
+        <span @click="$router.go(-1)" style="cursor: pointer">{{ getToLinkProfile }}
         </span>
         <i class="fas fa-angle-right" /><span id="active">Profile </span>
       </h4>
@@ -19,29 +18,16 @@
             <ProflieInfo />
           </b-col>
           <b-col md="12" lg="8">
-            <section
-              id="date-picker"
-              class="
+            <section id="date-picker" class="
                 d-block
                 position-relative
                 align-bottom
                 text-right
                 mt-sm-3 mt-md-3 mt-lg-0 mt-3
-              "
-            >
-              <date-picker
-                v-model="valueDate"
-                type="date"
-                range
-                placeholder="เลือกช่วงเวลา"
-                size="sm"
-                :disabled-date="(date) => date >= new Date()"
-                value-type="format"
-                format="YYYY-MM-DD"
-                @change="checkDateRange"
-                id="date-domain"
-                >{{ valueDate }}</date-picker
-              >
+              ">
+              <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" size="sm"
+                :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
+                @change="checkDateRange" id="date-domain">{{ valueDate }}</date-picker>
             </section>
             <ProflieTab />
             <!-- <GetRelationList/>  -->
@@ -74,7 +60,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getProfileMonitor", "getProfileData", "getLoadStatus","getToLinkProfile","getValSource","getTabName"]),
+    ...mapGetters(["getProfileMonitor", "getProfileData", "getLoadStatus", "getToLinkProfile", "getValSource", "getTabName"]),
   },
   methods: {
     checkDateRange() {
@@ -86,19 +72,19 @@ export default {
       if (diffDays > 31) {
         alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
         this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
-      }else{
+      } else {
         this.selectData(); // Call your existing method
       }
     },
-    back(){
-      if (this.getToLinkProfile=="Monitor") {
-        this.$router.push({name:'Monitor'})
-      }else{
-        this.$router.push({name:'Influencertop'})
+    back() {
+      if (this.getToLinkProfile == "Monitor") {
+        this.$router.push({ name: 'Monitor' })
+      } else {
+        this.$router.push({ name: 'Influencertop' })
       }
     },
     selectData() {
-      console.log(this.valueDate[0], this.valueDate[1]);
+      // console.log(this.valueDate[0], this.valueDate[1]);
       if (this.valueDate[0] == null) {
         this.start_date = "";
         this.end_date = "";
@@ -121,29 +107,29 @@ export default {
       // });
     },
   },
-  
+
   async created() {
-if ( this.$route.name=="Profile") {
-          this.$store.commit('setTabName','profile')
-          localStorage.setItem("tab", 'profile');
-      }else if(this.$route.name=='Hashtag'){
-         this.$store.commit('setTabName','hashtag')
-          localStorage.setItem("tab", 'hashtag');
-        }else{
-          this.$store.commit('setTabName','location')
-        }
-    
+    if (this.$route.name == "Profile") {
+      this.$store.commit('setTabName', 'profile')
+      localStorage.setItem("tab", 'profile');
+    } else if (this.$route.name == 'Hashtag') {
+      this.$store.commit('setTabName', 'hashtag')
+      localStorage.setItem("tab", 'hashtag');
+    } else {
+      this.$store.commit('setTabName', 'location')
+    }
+
 
     if (this.getToLinkProfile) {
       localStorage.setItem("router", this.getToLinkProfile);
-    
-    }else{
-      this.$store.commit("setToLinkProfile",localStorage.getItem("router"));
+
+    } else {
+      this.$store.commit("setToLinkProfile", localStorage.getItem("router"));
     }
 
-     
+
     this.$store.commit("setTabStatus", true);
-    if (localStorage.getItem("tab")== "profile") {
+    if (localStorage.getItem("tab") == "profile") {
       if (this.getProfileData) {
         localStorage.setItem("acc", this.getProfileData);
         this.$store.dispatch("fetchProfileMonitor", {
@@ -153,21 +139,21 @@ if ( this.$route.name=="Profile") {
           sort_by: "",
           source: this.getValSource,
         });
-        this.$store.dispatch('fetchProfileHash',{query:this.getProfileData,api_type:"account",top_type:"hashtag", sort_by: "",  source: this.getValSource})
+        this.$store.dispatch('fetchProfileHash', { query: this.getProfileData, api_type: "account", top_type: "hashtag", sort_by: "", source: this.getValSource })
       } else {
         console.log("F5", localStorage.getItem("acc"));
         this.$store.commit("setProfileData", localStorage.getItem("acc"));
-         this.$store.dispatch("fetchProfileMonitor", {
+        this.$store.dispatch("fetchProfileMonitor", {
           query: localStorage.getItem("acc"),
           api_type: "account",
           top_type: "domain",
           sort_by: "",
           source: this.getValSource,
         });
-         this.$store.dispatch('fetchProfileHash',{query:localStorage.getItem("acc"),api_type:"account",top_type:"hashtag", sort_by: "",  source: this.getValSource,})
+        this.$store.dispatch('fetchProfileHash', { query: localStorage.getItem("acc"), api_type: "account", top_type: "hashtag", sort_by: "", source: this.getValSource, })
       }
-  // this.$store.commit('setTabStatus',false)
-  // await this.$store.dispatch('fetchProfileHash',{query:this.getProfileData,api_type:"account",top_type:"hashtag", sort_by: "",})
+      // this.$store.commit('setTabStatus',false)
+      // await this.$store.dispatch('fetchProfileHash',{query:this.getProfileData,api_type:"account",top_type:"hashtag", sort_by: "",})
 
     } else {
       if (this.getHashtagData) {
@@ -194,11 +180,11 @@ if ( this.$route.name=="Profile") {
         this.$store.commit("setCnt2", this.getCnt);
       }
     }
-    
+
   },
- 
-    
-  
+
+
+
 };
 </script>
 
@@ -208,15 +194,18 @@ if ( this.$route.name=="Profile") {
   font-weight: 800;
   margin-left: 10px;
 }
+
 .title-monitor a {
   cursor: pointer;
   color: #2c3e50;
 }
+
 .title-monitor {
   text-align: start;
   margin-left: 9%;
   margin-bottom: 20px !important;
 }
+
 .title {
   margin-left: 9%;
 }
@@ -228,6 +217,7 @@ if ( this.$route.name=="Profile") {
   min-height: 100vh;
   padding: 0;
 }
+
 /* @media (max-width: 1200px){
 .col-lg-8 {
     flex: 0 0 100%;
@@ -239,6 +229,7 @@ if ( this.$route.name=="Profile") {
 }
 } */
 @media (min-width: 1200px) {
+
   .container,
   .container-lg,
   .container-md,
@@ -247,6 +238,7 @@ if ( this.$route.name=="Profile") {
     max-width: 90%;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 600px) {
   .title {
     display: none;

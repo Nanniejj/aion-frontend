@@ -485,7 +485,7 @@ const routes = [
       import(/* webpackChunkName: "DomainList" */ "../views/AllPost.vue")
   },
   {
-    path: "/linkpost",
+    path: "/timeline",
     name: "LinkPost",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route

@@ -98,7 +98,7 @@ export default {
     },
     selectData(){
       if(this.valueDate[0]!=null){
-        console.log(this.valueDate[0], this.valueDate[1]);
+        //console.log(this.valueDate[0], this.valueDate[1]);
         this.start_date=this.valueDate[0]+"T00:00:00"
         this.end_date=this.valueDate[1]+"T23:59:59"
         this.$store.commit('setRageStartdate',this.start_date)

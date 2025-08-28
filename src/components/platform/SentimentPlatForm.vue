@@ -95,28 +95,30 @@ export default {
       "getNamePlatform",
       "getBlockdit",
       "getTiktok",
-      "getThreads"
+      "getThreads",
+       "getStatPlatform",
+      "getSumStatPlatform"
     ]),
     getData(){
       var data;
       if (this.getNamePlatform == "twitter") {
-        data = this.getTwitter.total_sentiments;
+        data = this.getStatPlatform.twitter.total_sentiments || 0;
       } else if (this.getNamePlatform == "facebook") {
-        data = this.getFacebook.total_sentiments;
+        data = this.getStatPlatform.facebook.total_sentiments || 0;
       } else if (this.getNamePlatform == "pantip") {
-        data = this.getPantip.total_sentiments;
+        data = this.getStatPlatform.pantip.total_sentiments|| 0;
       } else if (this.getNamePlatform == "youtube") {
-        data = this.getYoutube.total_sentiments;
+        data = this.getStatPlatform.youtube.total_sentiments|| 0;
       } else if (this.getNamePlatform == "news") {
-        data = this.getNews.total_sentiments;
+        data = this.getStatPlatform.news.total_sentiments || 0;
       }else if (this.getNamePlatform == "blockdit") {
-        data = this.getBlockdit.total_sentiments;
+        data = this.getStatPlatform.blockdit.total_sentiments|| 0;
       } else if (this.getNamePlatform == "tiktok") {
-        data = this.getTiktok.total_sentiments;
+        data = this.getStatPlatform.tiktok.total_sentiments || 0;
       }else if (this.getNamePlatform == "threads") {
-        data = this.getThreads.total_sentiments;
+        data = this.getStatPlatform.threads.total_sentiments|| 0;
       } else {
-        data = this.getInstagram.total_sentiments;
+        data = this.getStatPlatform.instagram.total_sentiments || 0;
       }
       return data
     }

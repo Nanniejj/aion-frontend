@@ -108,7 +108,7 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: 'All',
+         
           dashboard: true,
         };
       } else {
@@ -118,11 +118,11 @@ export default {
           sort_by: "engagement",
           offset: 0,
           source: this.getNamePlatform,
-          domain: 'All',
+    
         };
       }
       if (this.$route.name!=='Domain') {
-        this.$store.dispatch("fetchTopPostPlatform", objtop);
+        this.$store.dispatch("fetchPostDomain", objtop);
       }else{
         this.$store.dispatch("fetchPostDomain", objtop);
       }

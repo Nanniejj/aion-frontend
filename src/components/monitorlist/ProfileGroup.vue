@@ -190,6 +190,8 @@ export default {
                 alert("เลือกช่วงเวลาได้ไม่เกิน 7 วัน");
                 this.valueDate = []; // reset ค่า
             }else {
+                console.log('check');
+                
                 this.page = 1; // reset page
                 this.apiGetPost();
             }

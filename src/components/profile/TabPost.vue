@@ -1298,7 +1298,7 @@ export default {
           console.log("keyword1", this.domainKeyword, this.getClickDomain);
           if (this.menu == "platform") {
             sc = this.getSocialPlatform;
-            domains = "All";
+            // domains = "All";
             dash = this.crawdash;
           } else {
             sc = this.getSocialDomain;
@@ -1390,7 +1390,7 @@ export default {
       if (this.api == "location") {
         if (this.pageMenu == "domain") {
           if (this.menu == "platform") {
-            checkApi = "fetchAllPostPlatform";
+            checkApi = "fetchAllPostDomain";
           } else {
             checkApi = "fetchAllPostDomain";
           }

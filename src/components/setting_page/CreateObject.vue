@@ -52,7 +52,7 @@
           </b-form-group>
 
           <!-- ปุ่มบันทึก & ปิด -->
-    
+
           <div class="d-flex justify-content-end mt-3">
             <b-button style="background-color: #646462; border:  #646462;" @click="closeModal">ปิดหน้าต่าง</b-button>
             <b-button style="background-color: #50c1d0; color: black; border:#50c1d0;" class="ml-2"
@@ -83,8 +83,8 @@ export default {
       keywords: [],
       and_keywords: [],
       not_keywords: [],
-      andKeywords:[],
-      notKeywords:[],
+      andKeywords: [],
+      notKeywords: [],
       statusMessage: "", // ข้อความแสดงสถานะ
       statusClass: "", // สไตล์ข้อความสถานะ
     };
@@ -138,9 +138,8 @@ export default {
             },
           }
         );
+        this.clearForm()
         this.$store.dispatch("resetDomainLastUpdate", this.$route.query.id);
-
-        //console.log("Object created successfully:", response.data);
         this.$emitter.emit("callApiListSubdomain", response.data);
         this.closeModal();
         this.$fire({
@@ -170,6 +169,7 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   border-color: #dee2e600;
 }
+
 .badge-warning {
   background-color: #ffc107;
   color: black;
