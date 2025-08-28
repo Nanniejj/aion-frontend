@@ -1,7 +1,7 @@
 <template lang="">
     <b-card 
         :img-src="influencer.profile_image" 
-        img-alt="Image" 
+        img-alt="ไม่มีข้อมูลรูปภาพ" 
         img-top
         body-class="text-left p-0"
         img-top-class="rounded-top"

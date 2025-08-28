@@ -12,10 +12,10 @@
                         @click="selectButton('hashtag')">
                         <b-icon icon="hash" font-scale="1.5"></b-icon> Hashtag
                     </b-button>
-                    <!-- <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'group' ? 'custom' : 'outline-custom'"
+                    <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'group' ? 'custom' : 'outline-custom'"
                         @click="selectButton('group')">
                         <b-icon icon="diagram2-fill" font-scale="1.5"></b-icon> Groups
-                    </b-button> -->
+                    </b-button>
                 </b-button-group>
             </b-button-toolbar>
         </div>
@@ -24,7 +24,7 @@
 
         <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'"  @setReface="handleReface"/>
         <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'"  @setReface="handleReface" @total="(data) => total = data"/>
-        <!-- <MonitorGroupTable v-if="activeButton == 'group'" :type="'grouplist'"  @setReface="handleReface" @total="(data) => total = data"/> -->
+        <MonitorGroupTable v-if="activeButton == 'group'" :type="'grouplist'"  @setReface="handleReface" @total="(data) => total = data"/>
     </div>
 </template>
 

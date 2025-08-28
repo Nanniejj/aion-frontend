@@ -6,12 +6,7 @@
             color="#b6ac9a" 
         />
 
-        <!-- time line -->
-        <!-- <b-row class="m-0">
-            <b-col cols="12" class="px-0">
-                <Timeline/>
-            </b-col>
-        </b-row> -->
+        
         <div id="total-post" class="pt-5">
             <!-- header  -->
             <div class="col-12 px-0 h6 text-left">
@@ -85,7 +80,16 @@
                     </b-col>
                 </b-row>
             </b-form-group>
-
+            <!-- time line -->
+            <!-- <b-col cols="12" class="p-0">
+                <b-row class="m-0">
+                    <span>Timeline </span>
+                    <b-col cols="12" class="px-0">
+                        <Timeline :timelineItems="posts"/>
+                    </b-col>
+                </b-row>
+            </b-col> -->
+            
             <!-- card post -->
              <div v-if="posts.length !== 0">
                 <div v-for="(post,index) in posts" :key="'post- '+ index"  class="col-12 mb-4 px-0">
@@ -569,7 +573,7 @@ export default {
             getLoadPostTab: false,
             selected: null,
             selectedSort: "",
-            valueDate: [],
+            valueDate: this.startAndEnd,
             // valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
             start_date: "",
             end_date: "",
@@ -610,8 +614,9 @@ export default {
         }
     },
     created() {
-        this.scheduleChartUpdate = debounce(this.apiUserPosts, 100);
-        this.valueDate = [this.start,this.end]
+        this.valueDate = [this.start, this.end]
+        // this.checkDateRange();
+        // this.apiUserPosts()
     },
     methods: {
         exportSource() {
@@ -667,10 +672,11 @@ export default {
                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
             }else{
                 this.selectDate(); // Call your existing method
+                // this.apiUserPosts();
             }
         },
         selectDate() {
-            console.log(this.valueDate[0], this.valueDate[1]);
+            // console.log(this.valueDate[0], this.valueDate[1]);
             if (this.valueDate.length == 0) {
                 this.start = "";
                 this.end = "";
@@ -679,7 +685,7 @@ export default {
                 this.end = this.valueDate[1];
                 this.$emit('update:start', this.valueDate[0]);
                 this.$emit('update:end', this.valueDate[1]);
-                this.apiUserPosts();
+               
             }
             this.$store.commit("setSDateProfile", this.start);
             this.$store.commit("setEDateProfile", this.end);
@@ -687,6 +693,8 @@ export default {
         },
        
         apiUserPosts() {
+            console.log('apiUserPosts called');
+
             const isHashtagList = this.$route.query.type === 'hashtaglist';
             this.getLoadPostTab = true;
             const config = {
@@ -713,7 +721,7 @@ export default {
 
             this.axios(config)
             .then((response) => {
-                console.log(response);
+                // console.log(response);
                 
                 const newData = response.data?.data || [];
                 this.total = response.data?.count || 0;
@@ -739,18 +747,11 @@ export default {
             .catch((error) => {
                 this.getLoadPostTab = false;
                 this.posts = [];
-                console.error(error);
+                // console.error(error);
             });
         },  
     },
     mounted() {
-        // this.checkDateRange();
-        // this.apiUserPosts();
-        // if (condition) {
-
-        // } else {
-
-        // }
         this.platform = this.source; 
         if (this.$route.query.type !== 'targetlist') {
             this.valueDate = [this.start, this.end];
@@ -760,24 +761,33 @@ export default {
     watch: {
         source: {
             handler(newVal, oldVal) {
-                console.log("new == ", newVal);
-                console.log("oldVal == ", oldVal);
+            const isTargetList = this.$route.query.type === 'targetlist'
 
-                // โหลดทุกครั้งที่ source เปลี่ยน (รวมถึงครั้งแรกที่ mount)
-                if (newVal !== oldVal || oldVal === undefined) {
-                    this.apiUserPosts();
+            if (isTargetList) {
+                // ✅ ถ้าเป็น targetlist → ห้ามว่าง
+                if (newVal && oldVal) {
+                    this.apiUserPosts()
                 }
+            } else {
+                console.log('hashtag case');
+                
+                // ✅ กรณีปกติ เหมือนเดิม
+                if (newVal !== oldVal || oldVal === undefined) {
+                    this.apiUserPosts()
+                }
+            }
             },
-            // immediate: this.$route.query.type === 'targetlist' // ✅ เรียกครั้งแรกด้วย
+            // immediate: true // หรือใช้เงื่อนไขเหมือนด้านบนก็ได้
         },
         startAndEnd: {
-            handler([newStart, newEnd]) {
-            // อัปเดต valueDate
-            this.valueDate = [newStart, newEnd];
-
-            // เรียก API แบบ debounce
-                // this.scheduleChartUpdate();
-                this.apiUserPosts();
+            handler([newStart, newEnd], [oldStart, oldEnd]) {
+                console.log("watch startAndEnd old : ", oldStart, oldEnd);
+                console.log("watch startAndEnd new : ", newStart, newEnd);
+                if (newStart !== oldStart && newEnd !== oldEnd) {
+                    this.valueDate = [newStart, newEnd];
+                    this.apiUserPosts();
+                    // this.checkDateRange();
+                }
             },
             immediate: true
         },

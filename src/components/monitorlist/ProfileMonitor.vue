@@ -565,7 +565,7 @@
         </b-row>
 
         <!-- Top Domain & hashtag  -->
-        <b-row class="mt-5 mx-0">
+        <!-- <b-row class="mt-5 mx-0">
             <b-col class="px-0">
                 <TabDomain 
                     :source="selectedSource"
@@ -576,18 +576,73 @@
                     @select-chart="(data) => setKeyWord(data)"
                 />
             </b-col>
-        </b-row>
+        </b-row> -->
 
         <!-- time line -->
-        <!-- <b-row class="m-0">
+        <b-row class="m-0">
             <b-col cols="12" class="px-0">
-                <Timeline 
-                    :source="selectedSource"
-                    :start="valueDate[0]"
-                    :end="valueDate[1]"
-                />
+                <b-row class="justify-content-between align-items-center mb-3 mx-0">
+                    <b-col cols="12" sm="auto" class="text-left px-0">
+                        <h4 class="mb-0">Posts Timeline</h4>
+                    </b-col>
+                    <b-col cols="12" sm="" class="px-0">
+                        <b-row cols="2" class="m-0 w-100 justify-content-sm-end align-items-center" style="gap: 10px;">
+                            <b-col sm="auto" class="align-self-end px-0 pt-2">
+                                <date-picker
+                                    v-model="valueDate"
+                                    type="date"
+                                    range
+                                    placeholder="เลือกช่วงเวลา"
+                                    size="sm"
+                                    :disabled-date="(date) => date >= new Date()"
+                                    value-type="format"
+                                    format="YYYY-MM-DD"
+                                    id="date-domain"
+                                    class="w-100"
+                                >
+                                    <!-- @change="checkDateRange()" -->
+                                    {{ valueDate }}
+                                </date-picker>
+                            </b-col>
+                            <b-col cols="auto" class="px-0 pt-2 text-center">
+                                <!-- <div class="text-center w-auto"> -->
+                                    <span class="d-none d-md-inline">
+                                        เรียงจาก :
+                                    </span>
+                                    <b-button class="sort-btn" @click="toggleSort" pill size="sm">
+                                        {{ selectedSort === 'descend' ? 'เก่า → ใหม่' : 'ใหม่ → เก่า' }}
+                                    </b-button>
+                                <!-- </div> -->
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                </b-row>
             </b-col>
-        </b-row> -->
+            <b-col cols="12" class="px-0">
+                <Timeline :timelineItems="timelinePosts" />
+                <vue-element-loading 
+                    :active="loading" class="h-100" size="80" 
+                    background-color="rgba(255, 255, 255, 0.3)"
+                    color="#b6ac9a" 
+                />
+                <b-col v-if="timelinePosts.length > 0 && (next_offset || offset > 0)" class="p-0">
+                    <b-row v-if="(timelinePosts.length < totalTimelinePost)" @click="viewMore" class="justify-content-md-center align-items-center my-3 mx-0">
+                        <div class="text-center">
+                            <b-button class="sort-btn" pill size="sm">
+                                ดูเพิ่มเติม
+                            </b-button>
+                        </div>
+                    </b-row>
+                    <b-row v-else @click="resetView" class="justify-content-md-center align-items-center my-3 mx-0">
+                        <div class="text-center">
+                            <b-button class="sort-btn" pill size="sm">
+                                ย่อ timeline
+                            </b-button>
+                        </div>
+                    </b-row>
+                </b-col>
+            </b-col>
+        </b-row>
 
         <!-- posts -->
         <TabPost 
@@ -598,8 +653,8 @@
             :isBottom="alreadyAtBottom"
             :keyWord="keyWord"
             @totalPost="data =>totalPost = data"
-            @update:start="data => valueDate[0] = data"
-            @update:end="data => valueDate[1] = data"
+            @update:start="data => valueDate = [data, valueDate[1]]"
+            @update:end="data => valueDate = [valueDate[0], data]"
             @update-source="data => selectedSource = data"
         />
     </div>
@@ -631,8 +686,6 @@ export default {
         const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
         return {
             valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
-            // start_date: this.valueDate[0] + "T00:00:00",
-            // end_date: this.valueDate[1] + "T23:59:59",
             selectedSource:'all',
             alreadyAtBottom: false,
             type:this.$route.query.type,
@@ -681,7 +734,11 @@ export default {
             ],
             topDomain: [],
             topHashtags: [],
-            posts:[],
+            posts: [],
+            timelinePosts: [],
+            selected: null,
+            selectedSort: null,
+            loading: false,
             influencerTypes:[],
             speciesTypes:[
                 { text: 'บุคคลทั่วไป', value: 'people' },
@@ -690,7 +747,7 @@ export default {
                 { text: 'สัตว์เลี้ยง', value: 'pet' },
                 { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
                 { text: 'องค์กร / บริษัท', value: 'company' },
-                { text: 'รัฐบาล', value: 'government' },
+                { text: 'หน่วยงานราชการ', value: 'government' },
                 { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
                 { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
                 { text: 'เด็ก / ทารก', value: 'kid' },
@@ -703,15 +760,7 @@ export default {
                 {text: 'ผู้มีอิทธิพลจากยอดติดตาม', value:'follower'},
                 {text: 'ผู้มีอิทธิพลจากโพส', value:'impact'},
                 {text: 'คนทั่วไป', value:'none'},
-                // {text: 'เลือกระดับ Influencer', value: null},
-                // {text: 'ผู้ติดตามมากกว่า 1 ล้านคน', value:'topStar'},
-                // {text: 'ผู้ติดตามมากกว่า 1 แสน - 1 ล้านคน', value:'macro'},
-                // {text: 'ผู้ติดตามมากกว่า 1 หมื่น - 1 แสนคน', value:'micro'},
-                // {text: 'ผู้ติดตามมากกว่า 1 พัน - 1 หมื่นคน', value:'nano'},
-                // {text: 'ผู้ติดตามมากกว่า 1 - 1 พันคน', value:'endUser'},
             ],
-            // dataHashtagCloud:[],
-            // dataWordCloud: [],
             wordcloud_images: [],
             icon:[],
             keyWord: null,
@@ -732,16 +781,24 @@ export default {
                 { text: "ความงาม / สุขภาพ / ไลฟ์สไตล์", value: "lifestyle" },
                 { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" },
                 
-            ]
+            ],
+            offset: 0,
+            next_offset: null,
+            totalTimelinePost: 0,
         }
     },
     methods: {
+        viewMore() {
+            // this.offset += this.limit;
+            this.offset = this.next_offset;
+            this.apiTimelineUserPosts();
+        },
         updateFilterLocation() {
             this.location = this.location; // trigger setter → อัปเดต filterRules.location
         },
         async checkLocation() {
             if (!this.selectedData.location || this.selectedData.location.length === 0) {
-                console.log("ไม่มีข้อมูล location");
+                // console.log("ไม่มีข้อมูล location");
                 this.province_id = null;
                 this.district_id = null;
                 this.subDistrict_id = null;
@@ -751,7 +808,7 @@ export default {
                 return; // ออกจากฟังก์ชันทันที
             }
             const location = this.selectedData.location;
-            console.log("location ==== ", location);
+            // console.log("location ==== ", location);
             // กำหนดค่าพร้อมตรวจว่ามีข้อมูลครบหรือไม่
             this.province_id = location.length >= 1 ? location[0] : null;
             // ถ้ามี province_id → โหลดอำเภอ
@@ -793,7 +850,7 @@ export default {
             else {
                 this.selectedData.location = null;
             }
-            console.log("selectedData.location === ",  this.selectedData.location);
+            // console.log("selectedData.location === ",  this.selectedData.location);
             
         },
         checkDateRange() {
@@ -805,7 +862,10 @@ export default {
             if (diffDays > 31) {
                 alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
-            }else{
+            } else {
+                this.offset = 0;
+                this.timelinePosts = [];
+                this.apiTimelineUserPosts();
                 // this.selectDate(); // Call your existing method
             }
         },
@@ -835,7 +895,7 @@ export default {
 
             // ถ้าเลื่อนถึงล่างสุด และยังไม่เคย log
             if (isBottom && !this.alreadyAtBottom) {
-                console.log("isAtBottom : true");
+                // console.log("isAtBottom : true");
                 this.alreadyAtBottom = true;
 
             // ถ้ามีโหลด data ก็เรียกได้ที่นี่
@@ -888,30 +948,8 @@ export default {
         editProfile() {
             this.editable = !this.editable;
             this.checkProfile()
-            console.log('editable ', this.editable);
+            // console.log('edit/able ', this.editable);
         },
-        // getProvinceName(id) {
-        //     let pro_id = Number(id);
-        //     const province = this.provinces.find(item => item.value === pro_id)
-        //     this.selectedData.province = province ? province.text : ''
-        //     // this.selectedData.province =  this.provinces.find(item => item.value === id).text
-        // },
-        // getDistrictName(id) {
-        //     console.log(id,"districts ====== ",this.districts);
-        //     let val = Number(id)
-        //     if (!this.districts || !Array.isArray(this.districts)) return null;
-
-        //     const found = this.districts.find(item => item.value === val);
-        //     return found ? found.text : null;
-        // },
-        // getSubDistrictName(id) {
-        //     // if (!this.subDistricts || !Array.isArray(this.subDistricts)) return null;
-        //     let val = Number(id)
-        //     const found = this.subDistricts.find(item => item.value === val);
-        //     console.log(typeof(numId),"found subDistricts".found,this.subDistricts);
-
-        //     return found ? found.text : null;
-        // },
         async getProvinceNameById(id) {
             try {
                 const config = {
@@ -925,10 +963,10 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                console.log("procince === ",result.name_th);
+                // console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
-                console.error("apiGetInfluencers error:", error);
+                // console.error("apiGetInfluencers error:", error);
                 return null;
                 // this.influencers = [];
             }
@@ -949,10 +987,10 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                console.log("procince === ",result.name_th);
+                // console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
-                console.error("apiGetInfluencers error:", error);
+                // console.error("apiGetInfluencers error:", error);
                 return null;
                 // this.influencers = [];
             }
@@ -973,10 +1011,10 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                console.log("procince === ",result.name_th);
+                // console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
-                console.error("apiGetInfluencers error:", error);
+                // console.error("apiGetInfluencers error:", error);
                 return null;
                 // this.influencers = [];
             }
@@ -986,7 +1024,7 @@ export default {
         },
         getIcon(id) {
             const found = this.icon.find(item => item.id === id);
-            console.log("found === ",found);
+            // console.log("found === ",found);
             
             return found && found.icon ? found.icon : "people-fill";
         },
@@ -999,12 +1037,12 @@ export default {
             return found ? found.text : '-';
         },
         getInfluConditions(value) {
-            console.log(value);
+            // console.log(value);
             if (value == null) {
                 return '-';
             }
             const found = this.influConditions.find(item => item.value === value);
-            console.log(found);
+            // console.log(found);
             
             return found ? found.text : '-';
         },
@@ -1066,17 +1104,17 @@ export default {
                     "Content-Type": "application/json",
                 },
             };
-            console.log(config.params);
+            // console.log(config.params);
             
             this.axios(config)
             .then((response) => {
                 this.wordcloud_images = response.data.wordcloud_images || [];
-                console.log('this.wordcloud_images ', this.wordcloud_images);
+                // console.log('this.wordcloud_images ', this.wordcloud_images);
                 this.loadWordCloud = false;
             })
             .catch((error) => {
                 this.loadWordCloud = false;
-                console.error(error);
+                // console.error(error);
             });
         },
         async apiMonitorProfile() {
@@ -1099,7 +1137,7 @@ export default {
             this.axios(config)
             .then(async (response) => {
                 this.data = response.data || [];
-                console.log('this.data ', this.data);
+                // console.log('this.data ', this.data);
                 // this.data.profile_image = await this.checkImage(response.data.profile_image);
                 // console.log("image === ",this.data.profile_image);
             
@@ -1112,14 +1150,14 @@ export default {
                 }
                 this.topDomain = response.data?.topDomain
                 this.topHashtags = response.data?.topHashtag
-                console.log('this.profile ', this.profile);
+                // console.log('this.profile ', this.profile);
                 this.checkProfile();
                 this.checkLocation();
                 this.load = false;
             })
             .catch((error) => {
                 this.load = false;
-                console.error(error);
+                // console.error(error);
             });
         },
         apiGetProvinces() {
@@ -1143,13 +1181,13 @@ export default {
             this.axios(config)
             .then((response) => {
                 let result = response.data.data || [];
-                console.log(result);
+                // console.log(result);
                 
                 this.provinces = result.map(province => ({
                     text: province.name_th,
                     value: province.id
                 }));
-                console.log('this.provinces ', this.provinces);
+                // console.log('this.provinces ', this.provinces);
                 
                 // this.profile = response.data?.profile
                 // console.log('this.profile ', this.profile);
@@ -1157,7 +1195,7 @@ export default {
             })
             .catch((error) => {
                 this.load = false;
-                console.error(error);
+                // console.error(error);
             });
         },
         async apiGetDistrict(id) {
@@ -1182,10 +1220,10 @@ export default {
                     text: district.name_th,
                     value: district.id
                 }));
-                console.log(this.districts);
+                // console.log(this.districts);
                 
             } catch (error) {
-                console.error("apiGetDistrict error:", error);
+                // console.error("apiGetDistrict error:", error);
                 this.districts =  [];
             }
         },
@@ -1210,10 +1248,10 @@ export default {
                     value: subDistrict.id
                 }));
 
-                console.log(this.subDistricts);
+                // console.log(this.subDistricts);
                 
             } catch (error) {
-                console.error("apiGetDistrict error:", error);
+                // console.error("apiGetDistrict error:", error);
                 this.subDistricts = [];
             }
             
@@ -1247,9 +1285,9 @@ export default {
                 //     text: province.name_th,
                 //     value: province.id
                 // }));
-                console.log(this.icon);
+                // console.log(this.icon);
                 
-                console.log('this.influencerTypes ===== ', this.influencerTypes);
+                // console.log('this.influencerTypes ===== ', this.influencerTypes);
                 // this.influencerTypes.map(type => ({
                 //     value: type._id,     // หรือ type.id ก็ได้ ขึ้นกับ backend
                 //     text: type.name
@@ -1260,7 +1298,7 @@ export default {
             })
             .catch((error) => {
                 this.load = false;
-                console.error(error);
+                // console.error(error);
             });
         },
         apiUpdateProflie() {
@@ -1290,7 +1328,7 @@ export default {
                     department: this.selectedData.department
                 }]
             };
-            console.log("data ==== ", rawData);
+            // console.log("data ==== ", rawData);
             
             const config = {
                 method: "put",
@@ -1304,7 +1342,7 @@ export default {
 
             this.axios(config)
             .then((response) => {
-                console.log(response);
+                // console.log(response);
                 let result = response.data || [];
                 
                 this.load = false;
@@ -1340,10 +1378,76 @@ export default {
                 })
             });
         },
+        async apiTimelineUserPosts() {
+            console.log('apiTimelineUserPosts called');
+            const isHashtagList = this.$route.query.type === 'hashtaglist';
+            this.loading = true;
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/",
+                //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
+                params: {
+                    // account: this.$route.query.uid,
+                    ...(isHashtagList ? { hashtags: this.$route.query.uid } : { account: this.$route.query.uid }),
+                    ...(this.selectedSource !== 'all' ? { source: this.selectedSource } : {}), // ✅ ลบ key ถ้า source = 'all'
+                    ...(this.keyWord ? { query: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
+                    sort_by: this.selectedSort,
+                    sentiment: this.selected,
+                    offset: this.offset,
+                    start_date: this.valueDate[0]+ "T00:00:00",
+                    end_date:this.valueDate[1] + "T23:59:59"
+                },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                // console.log(response);
+                
+                const newData = response.data?.data || [];
+                // this.total = response.data?.count || 0;
+                this.totalTimelinePost = response.data?.count || 0;
+                this.loading = false;
+                this.next_offset = response.data.next_offset || null;
+                // กรองเอาโพสต์ใหม่ที่ยังไม่มีใน this.timelinePosts
+                if (response.data.next_offset) {
+                    this.offset = response.data.next_offset
+                }
+                // เพิ่ม showAll = false แล้วรวมกับ posts เดิม
+                const newPostsWithFlag = newData.map(post => ({
+                    ...post,
+                    showAll: false,
+                }));
+
+                this.timelinePosts = [...this.timelinePosts, ...newPostsWithFlag];
+                // this.timelinePosts =  newPostsWithFlag;
+                // this.$emit('totalPost', this.total);
+            })
+            .catch((error) => {
+                this.loading = false;
+                this.timelinePosts = [];
+                // console.error(error);
+            });
+        }, 
+        toggleSort() {
+            this.selectedSort = this.selectedSort === "" ? "descend" : "";
+            this.timelinePosts = [];
+            this.offset = 0;
+            this.apiTimelineUserPosts();
+        },
+        resetView() {
+            this.timelinePosts = [];
+            this.offset = 0;
+            this.apiTimelineUserPosts();
+        }
     },
     async mounted() {
         if (this.$route.query.type === 'targetlist') {
             this.selectedSource = this.$route.query.source;
+            await this.apiTimelineUserPosts();
         }else if (this.$route.query.type === 'hashtaglist') {
             this.selectedSource = 'all'
         }
@@ -1351,7 +1455,8 @@ export default {
         this.apiGetProvinces();
         this.apiGetInfluencerType();
         await this.getWordCloudImage();
-        console.log('this.selectedSource ==== ',this.selectedSource);
+        
+        // console.log('this.selectedSource ==== ',this.selectedSource);
     },
     computed: {
         location: {
@@ -1374,12 +1479,28 @@ export default {
         // ทุกครั้งที่ตัวเลือกเปลี่ยน ให้ location (computed) อัปเดต filterRules.location
         province_id: 'updateFilterLocation',
         district_id: 'updateFilterLocation',
-        subDistrict_id: 'updateFilterLocation'
+        subDistrict_id: 'updateFilterLocation',
+        valueDate: {
+            deep: true, // เฝ้าการเปลี่ยนแปลงภายใน array
+            handler(newVal, oldVal) {
+                console.log("valueDate timeline changed:", newVal);
+                if (newVal !== oldVal) {
+                    this.checkDateRange();
+                }
+                // this.checkDateRange()
+            }
+        }
     },
 }
 </script>
 
 <style scoped>
+.sort-btn{
+    background: linear-gradient(90deg,#FDD071 0%, #ffbcbc 100%);
+    border: none;
+    color: #2c3e50; /* ให้ตัวอักษรอ่านง่าย */
+    font-weight: bold;
+}
 .swal2-icon::before {
   content: none !important;
 }
