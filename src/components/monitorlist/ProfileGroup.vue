@@ -2,14 +2,14 @@
     <div>
          <!-- avatar  -->
         <b-row class="mx-0 mb-5">
-            <b-col lg="4" class="px-0 pr-lg-3">
+            <b-col lg="4" class="px-0 pr-lg-3 mb-2">
                 <div class="gradient-bg h-100 p-2" style="">
                     <b-avatar class="shadow-sm rounded badge-light rounded-circle"
-                        size="140px">
-                        <i class="fa fa-group" style="font-size:48px"></i>
+                        size="90px">
+                        <i class="fa fa-group" style="font-size:36px; color: #776167;"></i>
                     </b-avatar>
                     <b-col v-if="groupDetails" class="text-center px-0">
-                        <h4 class="mt-2 mb-0">{{ groupDetails.group_name || 'N/A' }}</h4>
+                        <h4 class="mt-2 mb-0" style="color: #776167;">{{ groupDetails.group_name || 'N/A' }}</h4>
                         <p v-if="groupDetails.targetlist" class="mb-1 text-muted" style="font-size: 0.9rem;">
                             <!-- ประเภท: {{ groupDetails.category || 'N/A' }} <br>
                             แพลตฟอร์ม: {{ groupDetails.source || 'N/A' }} <br> -->
@@ -19,11 +19,11 @@
                 </div>
             </b-col>
             <b-col lg="8" class="text-left px-0">
-                <h5 class="font-weight-bold text-info p-0">Platform</h5>
-                <b-row cols="2" cols-sm="3" cols-lg="4" cols-xl="6" class="h-75 align-items-center">
-                    <b-col v-for="target in groupDetails.targetlist" :key="target.id" class="px-0 mb-3">
+                <h5 class="font-weight-bold text-info p-0 mb-3">Platform</h5>
+                <b-row v-if="groupDetails.targetlist" cols="2" cols-sm="3" cols-lg="4" cols-xl="6" class="h-75 align-items-center">
+                    <b-col v-for="target in groupDetails.targetlist.slice(0, 5)" :key="target.id" class="px-0 mb-3">
                         <b-row class="m-0 text-center align-items-center">
-                            <b-col cols="12" class="px-1 mb-2">
+                            <b-col style="cursor: pointer;" @click="linkToProfile(target)"  cols="12" class="px-1 mb-2">
                                <b-avatar :src="target.image">
                                     <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
                                     <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
@@ -35,9 +35,29 @@
                                     <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
                                     <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
                                 </b-avatar>
+                                <!-- <b-avatar
+                                    v-if="groupDetails.targetlist.length > 5"
+                                    :text="'+' + (groupDetails.targetlist.length - 5)"
+                                    variant="secondary"
+                                ></b-avatar> -->
+                            </b-col>
+                            <b-col class="text-truncate">
+                                {{ target.name || target.uid || 'N/A' }}
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                    <b-col v-if="groupDetails.targetlist.length > 5" class="px-0 mb-3">
+                        <b-row  class="m-0 text-center align-items-center">
+                            <b-col @click="openGroupMembers"
+                                    style="cursor: pointer;" cols="12" class="px-1 mb-2">
+                                <b-avatar
+                                    
+                                    :text="'+' + (groupDetails.targetlist.length - 5)"
+                                    variant="secondary"
+                                ></b-avatar>
                             </b-col>
                             <b-col>
-                                {{ target.name || target.uid || 'N/A' }}
+                                สมาชิกอื่น ๆ
                             </b-col>
                         </b-row>
                     </b-col>
@@ -48,9 +68,18 @@
         <!-- time line -->
         <b-row class="m-0">
             <b-col cols="12" class="px-0">
-                <b-row class="justify-content-between align-items-center mb-3 mx-0">
+                <b-row id="timeline-container" class="justify-content-between align-items-center mb-3 mx-0">
                     <b-col cols="auto" class="px-0">
                         <h4 class="mb-0">Posts Timeline</h4>
+                    </b-col>
+                    <b-col class="">
+                        <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
+                            <b-input-group-append>
+                                <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
+                                    class="w-100 mr-2"></b-form-input>
+                                <b-button size="sm" variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
+                            </b-input-group-append>
+                        </b-form-group>
                     </b-col>
                     <b-col cols="auto" class="px-0">
                         <b-row class="m-0">
@@ -91,16 +120,16 @@
                 <Timeline :timelineItems="posts" />
                 <!-- page: {{ page }}, totalPage: {{ totalPage }}, total Posts: {{ total_posts }}, posts length: {{ posts.length }} -->
                 <b-col v-if="totalPage > 1" class="p-0">
-                    <b-row v-if="page !== totalPage && (total_posts > posts.length)" @click="onPageChange" class="justify-content-md-center align-items-center my-3 mx-0">
+                    <b-row v-if="page !== totalPage && (total_posts > posts.length)" class="justify-content-md-center align-items-center my-3 mx-0">
                         <div class="text-center">
-                            <b-button class="sort-btn" pill size="sm">
+                            <b-button @click="onPageChange" class="sort-btn" pill size="sm">
                                 ดูเพิ่มเติม
                             </b-button>
                         </div>
                     </b-row>
-                    <b-row v-else @click="resetPage" class="justify-content-center align-items-center my-3 mx-0">
+                    <b-row v-else class="justify-content-center align-items-center my-3 mx-0">
                         <div class="text-center">
-                            <b-button class="sort-btn" pill size="sm">
+                            <b-button @click="resetPage" class="sort-btn" pill size="sm">
                                 ย่อ timeline
                             </b-button>
                         </div>
@@ -108,17 +137,22 @@
                 </b-col>
             </b-col>
         </b-row>
+
+
+        <GroupMembers :groupName="groupDetails.group_name" :openModal="openModal" :targetlist="groupDetails.targetlist" @close="openModal = false"/>
     </div>
+    
 </template>
 <script>
 import Swal from 'sweetalert2'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 import moment from "moment";
 import Timeline from "./_Timeline.vue"
-import { post } from 'jquery';
+import GroupMembers from './GroupMembersModal.vue';
 export default {
     components: {
         Timeline,
+        GroupMembers
     },
     data() {
         const today = moment();
@@ -135,10 +169,40 @@ export default {
             posts: [],
             lastParamsSnapshot: null, // เก็บ params ล่าสุด
             loading: false,
-            groupDetails:{}
+            groupDetails: {},
+            openModal: false,
+            search: '',
         }
     },
     methods: {
+        linkToProfile(item) {
+            const routeData = this.$router.resolve({
+                name: "MonitorProfile",
+                query: {
+                    id: item._id,
+                    uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
+                    source: item.source,
+                    type: 'targetlist'
+                },
+            });
+            window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
+        },
+        openGroupMembers() {
+            this.openModal = true;
+            console.log("Group Members Modal Opened");
+        },
+        checkSearch() {
+            if (!this.search) {
+                this.apiGetPost();
+            }
+        },
+        onSearch() {
+            clearTimeout(this.debounceTimeout);
+            this.debounceTimeout = setTimeout(() => {
+                this.page = 1; // รีเซ็ตกลับหน้าแรก
+                this.apiGetPost();
+            }, 500);
+        },
         onPageChange() {
             this.page = this.page + 1;
             console.log("current page : ", this.page);
@@ -237,7 +301,8 @@ export default {
                     sort_by: this.selectedSort,
                     sentiment: this.selected,
                     from: this.valueDate[0],
-                    to: this.valueDate[1]
+                    to: this.valueDate[1],
+                   
                 };
 
                 // ตรวจสอบว่า params เปลี่ยนหรือไม่ (ไม่รวม page และ limit)
@@ -255,9 +320,10 @@ export default {
                     method: "get",
                     url: "https://api2.cognizata.com/api/v2/monitor/getGroupPost",
                     params: {
-                    ...params,
-                    page: this.page,
-                    limit: this.limit,
+                        ...params,
+                        page: this.page,
+                        limit: this.limit,
+                        search: this.search || undefined, // ส่ง search ถ้ามีค่า
                     },
                     headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),

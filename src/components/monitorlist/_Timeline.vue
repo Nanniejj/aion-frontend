@@ -30,7 +30,7 @@
                 <b-card class="timeline-card" 
                     header-class="d-flex align-items-center p-2"
                     body-class="p-1"
-                    footer-class="p-2"
+                    footer-class="p-2 timeline-footer"
                     header-bg-variant="transparent" 
                     :class="{
                         'no-top-right-radius': index % 2 === 0,
@@ -39,7 +39,7 @@
                     style="min-height: 200px;"
                 >
                     <template #header>
-                        <b-row class="m-0">
+                        <b-row class="m-0 align-items-center">
                             <b-col cols="auto" class="p-0 text-left">
                                 <b-avatar class="" size="45px" :src="item.image">
                                     <img v-if="item.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
@@ -53,7 +53,7 @@
                                     <img v-if="item.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
                                 </b-avatar>
                             </b-col>
-                            <b-col v-if="item.title" class="mb-0 text-info text-left">{{ item.title }}</b-col>
+                            <b-col class="mb-0 text-info text-left">{{ item.account_name }}</b-col>
                         </b-row>
                         <!-- <b-icon :icon="item.icon" font-scale="1.5" class="mr-2"></b-icon> -->
                     </template>
@@ -110,12 +110,26 @@
         <!-- <div v-else class="text-center text-muted mt-5">
             <p>ไม่พบข้อมูลโพสต์ในช่วงเวลาที่เลือก</p>
         </div> -->
+        <!-- FAB -->
+        <b-button
+            v-show="showFabButton && !disableFabButton"
+            variant="warning"
+            class="fab"
+            @click="scrollToTop"
+            style="background-color: #fed06ea4;"
+        >
+            <i class="fas fa-arrow-up"></i>
+        </b-button>
     </div>
 </template>
 
 <script>
 export default {
     props: {
+        disableFabButton: {
+            type: Boolean,
+            default: false
+        },
         source: {
             type: String,
             default: null
@@ -135,6 +149,7 @@ export default {
     },
     data() {
         return {
+            showFabButton: false,
             currentPage: 1,
             totalRows:0,
             perPage:10,
@@ -150,6 +165,12 @@ export default {
         startAndEnd() {
             return [this.start, this.end];
         },
+    },
+    mounted() {
+        window.addEventListener("scroll", this.handleScroll);
+    },
+    beforeDestroy() {
+        window.removeEventListener("scroll", this.handleScroll);
     },
     methods: {
         toggleSort() {
@@ -174,11 +195,39 @@ export default {
             let size = ((engagement - minEng) / (maxEng - minEng)) * (this.maxDotSize - this.minDotSize) + this.minDotSize;
             return Math.max(this.minDotSize, Math.min(this.maxDotSize, size)); // จำกัดช่วง
         },
+        handleScroll() {
+            // ถ้า scroll เกิน 700px ค่อยโชว์ปุ่ม
+            this.showFabButton = window.scrollY > 700;
+        },
+        scrollToTop() {
+            const el = document.getElementById("timeline-container");
+            if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          
+        }
     }
 };
 </script>
 
 <style scoped>
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 60px;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 1050;
+  font-size: 20px;
+}
+.timeline-footer {
+  /* background-color: #fed06ea4 !important; */
+}
 .post-image {
     width: 200px;
     max-width: 400px;          /* ให้กว้างเท่ากับสูง เพื่อทำเป็นวงกลม */

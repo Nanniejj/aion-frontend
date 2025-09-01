@@ -579,7 +579,7 @@
         </b-row> -->
 
         <!-- time line -->
-        <b-row class="m-0">
+        <b-row id="timeline-container" class="m-0">
             <b-col cols="12" class="px-0">
                 <b-row class="justify-content-between align-items-center mb-3 mx-0">
                     <b-col cols="12" sm="auto" class="text-left px-0">
@@ -619,7 +619,7 @@
                 </b-row>
             </b-col>
             <b-col cols="12" class="px-0">
-                <Timeline :timelineItems="timelinePosts" />
+                <Timeline :timelineItems="timelinePosts"  :disableFabButton="true"/>
                 <vue-element-loading 
                     :active="loading" class="h-100" size="80" 
                     background-color="rgba(255, 255, 255, 0.3)"
@@ -1450,6 +1450,7 @@ export default {
             await this.apiTimelineUserPosts();
         }else if (this.$route.query.type === 'hashtaglist') {
             this.selectedSource = 'all'
+            // await this.apiTimelineUserPosts();
         }
         await this.apiMonitorProfile();
         this.apiGetProvinces();
