@@ -20,8 +20,8 @@
                                 class="shadow-r px-4">ค้นหา</b-button>
                         </b-input-group-append>
                     </b-form-group>
-                    <b-col cols="12" sm="" class="pt-3 px-0 ml-sm-2">
-                        <CreateGroup @close="reload"/>
+                    <b-col cols="12" sm="" class="pt-3 pt-md-0 px-0 ml-sm-2">
+                        <CreateGroupModal @close="reload"/>
                     </b-col>
                 </div>
             </b-col>
@@ -94,8 +94,10 @@
 
                 <template #cell(action)="data">
                     
-                    <span class="fas fa-user-edit text-custom" v-b-tooltip.hover
-                        title="แก้ไขกลุ่ม" @click="toggleDetails(data)" size="sm"></span>
+                    <span class="fas fa-user-edit text-custom px-2" v-b-tooltip.hover
+                        title="แก้ไขกลุ่ม"  size="sm"></span>
+                    <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover
+                        title="เพิ่มสมาชิกกลุ่ม" @click="toggleDetails(data)" size="sm"></span>
                     <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                     @click="linkToProfile(data.item)"></span>
                     <span class="fas fa-trash text-danger" v-b-tooltip.hover
@@ -109,7 +111,7 @@
                             <b-row v-if="data.item.targetlist && data.item.targetlist.length !== 0" class="bold my-2 mx-0 px-0">
                                 รายชื่อบัญชีในกลุ่ม {{ data.item.targetlist.length }} รายการ
                             </b-row>
-                            <b-row cols="1" cols-lg="1" cols-xl="2" class="m-0">
+                            <b-row cols="1" cols-lg="1" cols-xl="2" class="m-0  body-scrollable">
                                 <b-col class="h-auto pl-0 pr-2 mb-2" v-for="target in data.item.targetlist" :key="target.id" >
                                     <b-card bg-variant="white" text-variant=""
                                         class="h-100" body-class="px-2 pt-0 pb-2"
@@ -162,68 +164,68 @@
                                 </b-col>
                             </b-row>
                             <hr v-if="(newTargets.length > 0) && (data.item.targetlist.length !== 0)">
-                            <b-col cols="12" class="p-0">
-                                <b-row v-if="newTargets.length > 0" class="bold my-2 mx-0 px-0">
-                                    <b-col class="p-0 text-left">
-                                        รายชื่อบัญชีใหม่ {{ newTargets.length }} รายการ
-                                    </b-col>
-                                    <b-col class="d-flex justify-content-end">
-                                        <b-button class="mr-2" variant="success" @click="confirmAddTargets(data)">
-                                            <i class="fa fa-save"></i>
-                                        </b-button>
-                                        <b-button variant="danger" @click="newTargets = []">
-                                            <i class="fa fa-times"></i>
-                                        </b-button>
-                                    </b-col>
-                                </b-row>
-                                <b-row cols="1" class="m-0 pr-3">
-                                    <b-card v-for="(target,index) in newTargets" :key="target.id" 
-                                        bg-variant="white" text-variant=""
-                                        class="mb-2" body-class="px-2 pt-0 pb-2"
-                                        
-                                    >
-                                    <b-card-text class="h-100">
-                                        
-                                        <b-row class="m-0 flex-nowrap h-100">
-                                            <b-col cols="auto" class="p-0">
-                                                <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
-                                                </b-avatar>
-                                                <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
-                                            </b-col>
-                                            <b-col class="text-left p-2 w-50">
-                                                <span>{{ target.name || target.uid }}</span>
-                                                    
-                                                <div class="d-flex">
-                                                    <a @click.prevent="openLink(target.link_original)" class="text-truncate d-block text-info">
-                                                        {{ target.link_original }}
-                                                    </a>
-                                                </div>
-                                            </b-col>
-                                            <b-col cols="auto" class="p-0 text-right">
-                                                <b-row cols="1" class="m-0 h-100 justify-content-end">
-                                                    <b-col class="px-1 py-0">
-                                                        <i class="fa fa-close text-danger" @click="deleteNewTarget(index)" style="font-size:14px;cursor: pointer;"></i>
-                                                    </b-col>
-                                                    <b-col align-self="end" class="p-0 text-right">
-                                                        <b-avatar class="" size="25px" :src="target.image">
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
-                                                        </b-avatar>
-                                                    </b-col>
-                                                </b-row>
-                                            </b-col>
-                                        </b-row>
-                                    </b-card-text>
-                                </b-card>
-                                </b-row>
-                            </b-col>
+                            <!-- <b-col cols="12" class="p-0"> -->
+                            <b-row v-if="newTargets.length > 0" class="bold my-2 mx-0 px-0">
+                                <b-col class="p-0 text-left">
+                                    รายชื่อบัญชีใหม่ {{ newTargets.length }} รายการ
+                                </b-col>
+                                <b-col class="d-flex justify-content-end">
+                                    <b-button class="mr-2" variant="success" @click="confirmAddTargets(data)">
+                                        <i class="fa fa-save"></i>
+                                    </b-button>
+                                    <b-button variant="danger" @click="newTargets = []">
+                                        <i class="fa fa-times"></i>
+                                    </b-button>
+                                </b-col>
+                            </b-row>
+                            <b-row cols="1" class="m-0 pr-3  body-scrollable">
+                                <b-card v-for="(target,index) in newTargets" :key="target.id" 
+                                    bg-variant="white" text-variant=""
+                                    class="mb-2" body-class="px-2 pt-0 pb-2"
+                                    
+                                >
+                                <b-card-text class="h-100">
+                                    
+                                    <b-row class="m-0 flex-nowrap h-100">
+                                        <b-col cols="auto" class="p-0">
+                                            <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
+                                            </b-avatar>
+                                            <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
+                                        </b-col>
+                                        <b-col class="text-left p-2 w-50">
+                                            <span>{{ target.name || target.uid }}</span>
+                                                
+                                            <div class="d-flex">
+                                                <a @click.prevent="openLink(target.link_original)" class="text-truncate d-block text-info">
+                                                    {{ target.link_original }}
+                                                </a>
+                                            </div>
+                                        </b-col>
+                                        <b-col cols="auto" class="p-0 text-right">
+                                            <b-row cols="1" class="m-0 h-100 justify-content-end">
+                                                <b-col class="px-1 py-0">
+                                                    <i class="fa fa-close text-danger" @click="deleteNewTarget(index)" style="font-size:14px;cursor: pointer;"></i>
+                                                </b-col>
+                                                <b-col align-self="end" class="p-0 text-right">
+                                                    <b-avatar class="" size="25px" :src="target.image">
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                    </b-avatar>
+                                                </b-col>
+                                            </b-row>
+                                        </b-col>
+                                    </b-row>
+                                </b-card-text>
+                            </b-card>
+                            </b-row>
+                            <!-- </b-col> -->
                         </b-col>
 
                         <b-col class="pr-0 mt-3 mt-md-0">
@@ -325,7 +327,7 @@
 <script>
 // import ImportPlatform from "./ImportPlatform.vue";
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
-import CreateGroup from "./CreateGroup.vue";
+import CreateGroupModal from "./CreateGroupModal.vue";
 // import MissingTargets from "./MissingTargets.vue";
 // import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
@@ -334,7 +336,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 export default {
     components: {
         CreateMonitor,
-        CreateGroup,
+        CreateGroupModal,
         // ImportPlatform,
         // MissingTargets,
     },
