@@ -5,6 +5,7 @@
       <!-- โหมดรายวัน -->
       <!-- {{ isDaily }} {{ mode }} -->
       <template v-if="isDaily">
+        
         <div v-for="(day, idx) in items" :key="day.date || idx" class="timeline-item d-flex">
           <div class="timeline-dot">
             <!-- {{ day.date }} -->

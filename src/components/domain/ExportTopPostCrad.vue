@@ -213,7 +213,7 @@
                 </b-col>
               </b-row>
                  <div class="text-left ai-box mt-2"
-          v-if="postDomain && postDomain.photos_text && postDomain.photos_text.length && username == 'adminatapy'"
+          v-if="postDomain && postDomain.photos_text && postDomain.photos_text.length"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in postDomain.photos_text" >
            
