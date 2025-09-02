@@ -34,7 +34,8 @@ export default {
   components: { Highlighter },
   props: {
     item: { type: Object, required: true },
-    maxHeight: { type: String, default: "55px" }
+    maxHeight: { type: String, default: "55px" },
+    page:{type: String, default: ""}
   },
   computed: {
     ...mapGetters(["getSearchWords"]),

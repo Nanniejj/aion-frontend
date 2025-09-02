@@ -6,7 +6,7 @@
       color="#b6ac9a" />
     <div class="position-relative">
 
-      <b-img      :src="(post.source === 'tiktok' ? require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')" v-if="post.photos && post.photos.length"
+      <b-img   @error="setAltImg"    :src="(post.source === 'tiktok' ?  post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')" v-if="post.photos && post.photos.length"
         style="height:150px; width:100%; object-fit:cover; object-position:center;"></b-img>
 
       <!-- <b-img cover :src="post.photos[0]" v-if="post.photos && post.photos.length" style="height:150px;" /> -->
@@ -15,7 +15,45 @@
         <i class="fa fa-newspaper-o fa-2x"></i>
         {{ domain || post.source || "ไม่ทราบแหล่งที่มา" }}
       </div> -->
-      <div class=" text-left d-block small mt-1 text-muted" style="font-size: 11px;">
+     
+    </div>
+
+    <div class="position-absolute pl-1  pb-1"
+      style="top:0;right:0;background-color:azure;border-top-left-radius:50%;border-bottom-left-radius:50%;">
+      <b-avatar variant="success" icon="emoji-smile" v-if="sentimentString === 'positive'" size="34" />
+      <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" size="34" />
+      <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" size="34" />
+    </div>
+    <div class="my-2 py-2" style="height:100%;overflow-y:auto;"  v-if="post.full_text">
+      <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'100'" class="small" :page="'slider'"/>
+    </div>
+
+    <!-- <div class="text-left small d-flex align-items-center mt-2">
+      <b-avatar size="32" :src="post.profile_image" class="mr-2" />
+      <span>{{ post.account_name }}</span>
+    </div> -->
+
+    <div class="position-absolute text-left"
+      style="bottom:-6px;left:0px;background-color:white;width: 100%;height: 52px;"></div>
+    <div class="position-absolute text-left" style="bottom:5px;left:10px;background-color:white;width: 100%;">
+
+      <b-avatar size="34" :src="post.profile_image" class="mr-2" />
+      <img v-if="post.source === 'twitter'" :src="imgtw" class="social-img" />
+      <img v-if="post.source === 'facebook'" :src="imgfb" class="social-img" />
+      <img v-if="post.source === 'pantip'" :src="imgpt" class="social-img" />
+      <img v-if="post.source === 'youtube'" :src="imgyt" class="social-img" />
+      <img v-if="post.source === 'news'" :src="imgnw" class="social-img" />
+      <img v-if="post.source === 'instagram'" :src="imgig" class="social-img" />
+      <img v-if="post.source === 'blockdit'" :src="imgbd" class="social-img" />
+      <img v-if="post.source === 'tiktok'" :src="imgtt" class="social-img" />
+      <img v-if="post.source === 'threads'" :src="imgtd" class="social-img" />
+      <span class="small account-name ml-2 ">{{ post.account_name }}</span> <span class="d-inline-block box-link small">
+        <a :href="post.url_post" class="fa fa-external-link text-muted" target="_blank"></a>
+      </span>
+      <span class="small text-muted text-left " style="font-size: 12px;">
+        {{ formatTime(post.date) }}
+      </span>
+ <div class=" text-left d-block small mt-1 text-muted" style="font-size: 11px;">
         <span class="d-inline-block box-link ml-2" @click="$emit('goPost', { post, type: 'engages' })">
           <i class="fas fa-chart-line"></i>
           <span>
@@ -67,44 +105,6 @@
       </div>
     </div>
 
-    <div class="position-absolute pl-1  pb-1"
-      style="top:0;right:0;background-color:azure;border-top-left-radius:50%;border-bottom-left-radius:50%;">
-      <b-avatar variant="success" icon="emoji-smile" v-if="sentimentString === 'positive'" size="34" />
-      <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" size="34" />
-      <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" size="34" />
-    </div>
-    <div class="my-2 py-2" style="height:100%;overflow-y:auto;"  v-if="post.full_text">
-      <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'auto'" class="small" />
-    </div>
-
-    <!-- <div class="text-left small d-flex align-items-center mt-2">
-      <b-avatar size="32" :src="post.profile_image" class="mr-2" />
-      <span>{{ post.account_name }}</span>
-    </div> -->
-
-    <div class="position-absolute text-left"
-      style="bottom:-6px;left:0px;background-color:white;width: 100%;height: 52px;"></div>
-    <div class="position-absolute text-left" style="bottom:15px;left:10px;background-color:white;width: 100%;">
-
-      <b-avatar size="34" :src="post.profile_image" class="mr-2" />
-      <img v-if="post.source === 'twitter'" :src="imgtw" class="social-img" />
-      <img v-if="post.source === 'facebook'" :src="imgfb" class="social-img" />
-      <img v-if="post.source === 'pantip'" :src="imgpt" class="social-img" />
-      <img v-if="post.source === 'youtube'" :src="imgyt" class="social-img" />
-      <img v-if="post.source === 'news'" :src="imgnw" class="social-img" />
-      <img v-if="post.source === 'instagram'" :src="imgig" class="social-img" />
-      <img v-if="post.source === 'blockdit'" :src="imgbd" class="social-img" />
-      <img v-if="post.source === 'tiktok'" :src="imgtt" class="social-img" />
-      <img v-if="post.source === 'threads'" :src="imgtd" class="social-img" />
-      <span class="small account-name ml-2 ">{{ post.account_name }}</span> <span class="d-inline-block box-link small">
-        <a :href="post.url_post" class="fa fa-external-link text-muted" target="_blank"></a>
-      </span>
-      <span class="small text-muted text-left " style="font-size: 12px;">
-        {{ formatTime(post.date) }}
-      </span>
-
-    </div>
-
   </b-card>
 </template>
 
@@ -137,6 +137,7 @@ export default {
   },
   data() {
     return {
+       default_avatar: require("@/assets/no-image.jpg"),
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
       imgpt: require("@/assets/board.png"),
@@ -171,6 +172,9 @@ export default {
     },
   },
   methods: {
+    setAltImg(event) {
+      event.target.src = this.default_avatar;
+    },
     onSelect() { this.$emit('select', this.post) },
     onReadMore() { this.$emit('readMore', this.post) },
     formatTime(date) {
@@ -214,7 +218,7 @@ background: linear-gradient(90deg,rgba(42, 123, 155, 0.38) 0%, rgba(87, 199, 133
 
 .account-name {
   display: inline-block;
-  max-width: 120px;
+  max-width: 105px;
   /* ปรับขนาดตามที่ต้องการ */
   white-space: nowrap;
   overflow: hidden;

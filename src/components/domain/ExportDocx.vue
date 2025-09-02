@@ -269,13 +269,29 @@ export default {
 
       // #statcap > span > div > div.text-left.col-lg-7 > div
       this.imgData1 = await this.captureScreenshot("#statbar > span > div");
-      this.imgData2 = await this.captureScreenshot("#statcap > span > div > div.text-left.col-lg-7 > div");
-      // this.imgData3 = await this.captureScreenshot("#statcap > span > div > div:nth-child(2) > div");
+      this.imgData2 = await this.captureScreenshot("#statcap > span > div > div.text-left.col-lg-7");
+      this.imgData3 = await this.captureScreenshot("#statcap > span > div > div:nth-child(2) > div");
       this.imgData4 = await this.captureScreenshot("#post-pos");
       this.imgData5 = await this.captureScreenshot("#post-neg");
 
       try {
         const pptx = new pptxgen();
+
+
+ const slide1 = pptx.addSlide();
+
+        slide1.addText(`ด้าน${this.getClickDomain}`, {
+          x: 0.5, y: 0, w: "80%", h: 1, fontSize: 25, color: "363636", bold: true, fontFace: "TH Sarabun New",
+        });
+        slide1.addText(`ข้อมูลระหว่าง ${this.startd} - ${this.endd}`, {
+          x: 0.5, y: 0.4, w: "80%", h: 1, fontSize: 20, color: "363636", bold: true, fontFace: "TH Sarabun New",
+        });
+        slide1.addShape(pptx.shapes.LINE, { x: 0.5, y: 0.7, w: 9, h: 0, line: "000000" });
+
+        if (this.imgData2) slide1.addImage({ data: this.imgData2, x: 0.7, y: 2, w: 4.5, h: 1.6 });
+        if (this.imgData3) slide1.addImage({ data: this.imgData3, x: 5.4, y: 2, w: 3.4, h: 1.4 });
+
+      
         const slide = pptx.addSlide();
 
         slide.addText(`ด้าน${this.getClickDomain}`, {
@@ -286,14 +302,14 @@ export default {
         });
         slide.addShape(pptx.shapes.LINE, { x: 0.5, y: 0.7, w: 9, h: 0, line: "000000" });
 
-        if (this.imgData1) slide.addImage({ data: this.imgData1, x: 0.5, y: 1.5, w: 3, h: 3 });
-        if (this.imgData2) slide.addImage({ data: this.imgData2, x: 3.5, y: 1.4, w: 3.5, h: 1.4 });
-        if (this.imgData3) slide.addImage({ data: this.imgData3, x: 3.5, y: 3.4, w: 3.5, h: 1.2 });
+        if (this.imgData1) slide.addImage({ data: this.imgData1, x: 0.5, y: 1.3, w:4, h: 4 });
+        // if (this.imgData2) slide.addImage({ data: this.imgData2, x: 3.5, y: 1.4, w: 3.5, h: 1.4 });
+        // if (this.imgData3) slide.addImage({ data: this.imgData3, x: 3.5, y: 3.4, w: 3.5, h: 1.2 });
 
-        slide.addText(`Top 10 Hashtag`, { x: 7, y: 0.6, w: "60%", h: 1, fontSize: 22, color: "363636", bold: true, fontFace: "TH Sarabun New" });
+        slide.addText(`Top 10 Hashtag`, { x: 6, y: 0.6, w: "60%", h: 1, fontSize: 22, color: "363636", bold: true, fontFace: "TH Sarabun New" });
         let y1 = 1.2;
         this.getHashtag.forEach((t, idx) => {
-          slide.addText(`${idx + 1}. ${t.name}`, { x: 7, y: y1, w: "50%", h: 0.5, fontSize: 18, color: "363636", fontFace: "TH Sarabun New" });
+          slide.addText(`${idx + 1}. ${t.name}`, { x: 6, y: y1, w: "50%", h: 0.5, fontSize: 18, color: "363636", fontFace: "TH Sarabun New" });
           y1 += 0.35;
         });
 

@@ -1,6 +1,6 @@
 <template>
   <div class="timeline-wrapper" >
-<SnapshotButton
+<!-- <SnapshotButton
       :getTargetEl="() => $refs['timeline-wrapper']"
       filenamePrefix="timeline"
       format="png"             
@@ -11,7 +11,7 @@
       @error="onError"
     >
       แคป & ดาวน์โหลด
-    </SnapshotButton>
+    </SnapshotButton> -->
     <div class="timeline" ref="timeline-wrapper">
       <!-- {{ items }} -->
       <!-- โหมดรายวัน -->
