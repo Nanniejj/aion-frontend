@@ -161,10 +161,10 @@
                   </div>
                 </b-col>
                 <b-col>
-                  <div v-if="postDomain.source == 'tiktok' && postDomain.uid">
+                  <div v-if="postDomain.source == 'tiktok' && postDomain.uid" class="">
                     <a v-bind:href="postDomain.url_post" target="_blank">
                       <img :src="postDomain.photos && postDomain.photos[0]" onerror="this.style.display='none'"
-                        style="height:450px;border-radius: 10px;" class="my-3" />
+                        style="height:450px;border-radius: 10px;" class="my-3 w-100" />
                       <!-- <lite-tiktok :videoid="postDomain.uid" style=" pointer-events: none; "></lite-tiktok> -->
                     </a>
 

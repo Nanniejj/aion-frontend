@@ -1,6 +1,18 @@
 <template>
-  <div class="timeline-wrapper">
-    <div class="timeline">
+  <div class="timeline-wrapper" >
+<SnapshotButton
+      :getTargetEl="() => $refs['timeline-wrapper']"
+      filenamePrefix="timeline"
+      format="png"             
+      :scale="2"                
+      :useCORS="true"
+      @start="onStart"
+      @done="onDone"
+      @error="onError"
+    >
+      แคป & ดาวน์โหลด
+    </SnapshotButton>
+    <div class="timeline" ref="timeline-wrapper">
       <!-- {{ items }} -->
       <!-- โหมดรายวัน -->
       <!-- {{ isDaily }} {{ mode }} -->
@@ -124,7 +136,7 @@
           </div>
           <!-- การ์ดเดี่ยวตามโพสต์ -->
           <div class="flex-grow-1">
-            <CardTitle :post="it" :domain="currentDomain" class="mx-2" />
+            <CardTitle :post="it" class="mx-2" />
           </div>
         </div>
       </template>
@@ -139,12 +151,15 @@ import "moment/locale/th";
 import CardPostSlider from "./CardPostSlider";
 import CardPost from "./CardPost.vue";
 import CardTitle from "./CardTitle.vue";
+import SnapshotButton  from './SnapshotButton.vue'
+
 // import 'moment-timezone'   // ต้องมีถ้าจะใช้ .tz()
 export default {
   name: "TimelinePosts",
   components: {
     CardPostSlider,
     CardTitle,
+    SnapshotButton
   },
   props: {
     dayLoading: { type: Boolean, default: false },

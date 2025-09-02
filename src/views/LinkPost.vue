@@ -116,7 +116,11 @@
           <span> <i class="fa fa-plus" aria-hidden="true"></i> More</span>
         </b-button>
       </div>
-
+      <back-to-top bottom="50px" right="50px">
+        <button type="button" class="btn btn-to-top">
+          <i class="fa fa-chevron-up"></i>
+        </button>
+      </back-to-top>
     </div>
   </div>
 </template>
@@ -291,6 +295,9 @@ export default {
     },
 
     async apiTimeline() {
+
+
+
       if (this.filters.view_mode === 'daily') return this.apiTimelineDaily();
       this.loading = true;
       try {
@@ -492,6 +499,12 @@ export default {
         this.dayLimitMap = {};
         this.daySortMap = {};
       }
+      let inputkeyword = (this.filters.keywordInput || "")
+        .split(",")
+        .map(group => group.trim().split(/\s+|\+/).filter(Boolean))
+        .flat()
+      this.$store.commit("setSearchWords", inputkeyword)
+
 
       this.postsFromApi = [];
       this.apiTimeline();
@@ -529,6 +542,25 @@ export default {
   min-width: 220px;
 }
 
+.btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+  background-color: #fed16e;
+  border-color: #fed16e;
+  color: #fff;
+  box-shadow: 2px 1px 4px #888888;
+}
+
+.btn-to-top:hover {
+  background-color: #f7c24e;
+  border-color: #f7c24e;
+  color: #fff;
+}
+
 .mx-input {
   display: inline-block;
   -webkit-box-sizing: border-box;
@@ -556,6 +588,17 @@ export default {
 
 /* จอมือถือ */
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  .vue-back-to-top {
+    right: 14px !important;
+  }
+
+  .btn-to-top {
+    width: 50px;
+    height: 50px;
+    padding: 10px 13px;
+
+  }
+
   #overflow-page>div.container.my-3>div.card.mb-3.shadow-sm>div>form>div.row.mt-2.justify-content-end {
     zoom: 87% !important;
     width: 100% !important;

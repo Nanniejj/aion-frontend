@@ -3,15 +3,22 @@
     <HomeNav id="navHome" />
     <div id="content">
       <Transition name="slide-fade">
-        <TitleLogo v-show="elementVisible"
-      /></Transition>
+        <TitleLogo v-show="elementVisible" />
+      </Transition>
       <!-- <Map/> -->
       <b-row v-if="!getPushDomainStat">
-        <b-col> <h1 class="title">Domain</h1></b-col>
+        <b-col>
+          <h1 class="title">Domain</h1>
+        </b-col>
         <b-col><i class="fas fa-print fa-2x" @click="printWindow()"></i></b-col>
       </b-row>
       <DomainList v-if="!getPushDomainStat" />
       <DomainMain v-if="getPushDomainStat" />
+      <back-to-top bottom="50px" right="50px">
+        <button type="button" class="btn btn-to-top">
+          <i class="fa fa-chevron-up"></i>
+        </button>
+      </back-to-top>
       <!-- <FooterHome/> -->
     </div>
 
@@ -54,7 +61,7 @@ export default {
     ]),
   },
   methods: {
-    printWindow: function() {
+    printWindow: function () {
       try {
         window.print();
       } catch (err) {
@@ -66,18 +73,18 @@ export default {
       this.$store.commit("setShowIntro", false);
     },
     simplifyFacebookURL(originalURL) {
-    // Match the numeric ID in the URL
-    const regex = /(\d{15,})/; // Adjust the number 15 if you expect different lengths of numeric IDs
-    const match = originalURL.match(regex);
+      // Match the numeric ID in the URL
+      const regex = /(\d{15,})/; // Adjust the number 15 if you expect different lengths of numeric IDs
+      const match = originalURL.match(regex);
 
-    if (match) {
+      if (match) {
         const userID = match[1];
         const newURL = `https://www.facebook.com/${userID}`;
         return newURL;
-    } else {
+      } else {
         return "Invalid URL";
+      }
     }
-}
   },
   mounted() {
     if (this.getShowIntro) {
@@ -121,15 +128,34 @@ export default {
     //   console.log('youtube',yt);
     // console.log("ar_cleaned", ar_cleaned);
 
-//     const originalURL = "https://facebook.com/profile.php/?id=100002416358810";
-// const simplifiedURL = this.simplifyFacebookURL(originalURL);
- // Output: https://www.facebook.com/100028303330304
+    //     const originalURL = "https://facebook.com/profile.php/?id=100002416358810";
+    // const simplifiedURL = this.simplifyFacebookURL(originalURL);
+    // Output: https://www.facebook.com/100028303330304
 
   },
 };
 </script>
 
 <style scoped>
+.btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+  background-color: #fed16e;
+  border-color: #fed16e;
+  color: #fff;
+  box-shadow: 2px 1px 4px #888888;
+}
+
+.btn-to-top:hover {
+  background-color: #f7c24e;
+  border-color: #f7c24e;
+  color: #fff;
+}
+
 .slide-fade-enter-active {
   transition: all 0.3s ease-out;
 }
@@ -150,6 +176,7 @@ export default {
   padding: 20px;
   cursor: pointer;
 }
+
 * {
   font-family: "Prompt", "FontAwesome", sans-serif;
 }
@@ -161,6 +188,7 @@ export default {
   min-height: 100vh;
   padding: 0;
 }
+
 #navHome {
   z-index: 1;
 }
@@ -170,6 +198,7 @@ export default {
     overflow: hidden;
   }
 }
+
 @media only screen and (min-width: 950px) and (max-width: 1150px) {
   .date {
     margin-top: 20pt;
@@ -177,7 +206,22 @@ export default {
     margin-bottom: 10pt;
   }
 }
+
+@media only screen and (min-width: 0px) and (max-width:800px) {
+  .vue-back-to-top {
+    right: 14px !important;
+  }
+
+  .btn-to-top {
+    width: 50px;
+    height: 50px;
+    padding: 10px 13px;
+
+  }
+}
+
 @media only screen and (min-width: 0px) and (max-width: 600px) {
+
   .fa-print {
     font-size: 25px;
   }

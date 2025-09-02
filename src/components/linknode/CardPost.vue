@@ -16,51 +16,51 @@
         {{ domain || post.source || "ไม่ทราบแหล่งที่มา" }}
       </div> -->
       <div class=" text-left d-block small mt-1 text-muted" style="font-size: 11px;">
-        <span class="d-inline-block box-link" @click="$emit('goPost', { post, type: 'engages' })">
+        <span class="d-inline-block box-link ml-2" @click="$emit('goPost', { post, type: 'engages' })">
           <i class="fas fa-chart-line"></i>
           <span>
             {{ post.engagement | numFormat }} </span>
         </span>
-        <span class="d-inline-block box-link">
-          <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
+        <span class="d-inline-block box-link ml-2">
+          <i class="fa fa-thumbs-up " aria-hidden="true"></i>
           {{ post.likes_count | numFormat }} </span>
 
         <!-- {{post}} -->
-        <span class="d-inline-block box-link">
-          <i class="fa fa-comment ml-2" aria-hidden="true"></i>
+        <span class="d-inline-block box-link ml-2">
+          <i class="fa fa-comment" aria-hidden="true"></i>
           <span>
             {{ post.comments_count | numFormat }} </span>
         </span>
-        <span v-if="post.retweets_count" class="d-inline-block box-link">
+        <span v-if="post.retweets_count" class="d-inline-block box-link ml-2">
           <i class="fal fa-retweet"></i>
           {{ post.retweets_count | numFormat }}
         </span>
-        <span v-if="post.shares_count" class="d-inline-block box-link">
+        <span v-if="post.shares_count" class="d-inline-block box-link ml-2">
           <i class="fa fa-share"></i>
           {{ post.shares_count | numFormat }}
         </span>
-        <span v-if="post.views_count" class="d-inline-block box-link">
+        <span v-if="post.views_count" class="d-inline-block box-link ml-2">
           <i class="fas fa-eye"></i>
           {{ post.views_count | numFormat }}
         </span>
         <!-- Reactions -->
         <span v-if="post.reaction">
-          <span v-if="post.reaction.Love" class="d-inline-block box-link">
+          <span v-if="post.reaction.Love" class="d-inline-block box-link ml-2">
             ❤️ {{ post.reaction.Love | numFormat }}
           </span>
-          <span v-if="post.reaction.Wow" class="d-inline-block box-link">
+          <span v-if="post.reaction.Wow" class="d-inline-block box-link ml-2">
             😮 {{ post.reaction.Wow | numFormat }}
           </span>
-          <span v-if="post.reaction.Haha" class="d-inline-block box-link">
+          <span v-if="post.reaction.Haha" class="d-inline-block box-link ml-2">
             😂 {{ post.reaction.Haha | numFormat }}
           </span>
-          <span v-if="post.reaction.Sad" class="d-inline-block box-link">
+          <span v-if="post.reaction.Sad" class="d-inline-block box-link ml-2">
             😢 {{ post.reaction.Sad | numFormat }}
           </span>
-          <span v-if="post.reaction.Angry" class="d-inline-block box-link">
+          <span v-if="post.reaction.Angry" class="d-inline-block box-link ml-2">
             😡 {{ post.reaction.Angry | numFormat }}
           </span>
-          <span v-if="post.reaction.Hug" class="d-inline-block box-link">
+          <span v-if="post.reaction.Hug" class="d-inline-block box-link ml-2">
             🤗 {{ post.reaction.Hug | numFormat }}
           </span>
         </span>
@@ -73,7 +73,7 @@
       <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" size="34" />
       <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" size="34" />
     </div>
-    <div class="my-2 " style="height:100%;overflow-y:auto;"  v-if="post.full_text">
+    <div class="my-2 py-2" style="height:100%;overflow-y:auto;"  v-if="post.full_text">
       <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'auto'" class="small" />
     </div>
 

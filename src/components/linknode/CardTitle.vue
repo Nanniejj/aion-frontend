@@ -26,7 +26,7 @@
           <b-modal v-model="showImage" size="xl" centered hide-footer>
             <img
               :src="(post.source === 'tiktok' ? require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
-              class="w-100" style="max-height: 80vh; object-fit: contain" />
+              class="w-100" style="max-height: 80vh; object-fit: contain" crossorigin="anonymous"/>
           </b-modal>
         </b-col>
 
@@ -43,11 +43,11 @@
             </span>
           </div>
 
-          <div class=" read-m mt-md-2" v-if="post.full_text">
+          <div class=" read-m mt-md-2 pb-1" v-if="post.full_text">
             <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'90px'" />
           </div>
-          <div class="bold small text-muted position-absolute mt-1 text-right"
-            style="bottom: -6px; left: 1px; background-color: white">
+          <div class="bold small text-muted position-absolute mt-1 text-left w-100"
+            style="bottom: -8px; left: 1px; background-color: white">
             <span class="d-inline-block box-link" @click="$emit('goPost', { post, type: 'engages' })">
               <i class="fas fa-chart-line"></i>
               <span class="bold"> {{ post.engagement | numFormat }} </span>

@@ -1,5 +1,6 @@
 export default {
   state: {
+    searchWords: [],
     loadCardPost: false,
     showIntro: false,
     loadTotalReport: false,
@@ -29,6 +30,9 @@ export default {
     loadTopUserF: false,
   },
   getters: {
+    getSearchWords: (state) => {
+      return state.searchWords;
+    },
     getLoadCardPost: (state) => {
       return state.loadCardPost;
     },
@@ -113,6 +117,9 @@ export default {
   },
 
   mutations: {
+    setSearchWords: (state, payload) => {
+      state.searchWords = payload;
+    },
     setLoadCardPost: (state, payload) => {
       state.loadCardPost = payload;
     },
