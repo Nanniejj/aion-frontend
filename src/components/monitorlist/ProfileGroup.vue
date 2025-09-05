@@ -19,7 +19,7 @@
                 </div>
             </b-col>
             <b-col lg="8" class="text-left px-0">
-                <h5 class="font-weight-bold text-info p-0 mb-3">Platform</h5>
+                <h5 class="font-weight-bold text-info p-0 mb-3">รายการสมาชิก</h5>
                 <b-row v-if="groupDetails.targetlist" cols="2" cols-sm="3" cols-lg="4" cols-xl="6" class="h-75 align-items-center">
                     <b-col v-for="target in groupDetails.targetlist.slice(0, 5)" :key="target.id" class="px-0 mb-3">
                         <b-row class="m-0 text-center align-items-center">
@@ -68,11 +68,11 @@
         <!-- time line -->
         <b-row class="m-0">
             <b-col cols="12" class="px-0">
-                <b-row id="timeline-container" class="justify-content-between align-items-center mb-3 mx-0">
-                    <b-col cols="auto" class="px-0">
+                <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
+                    <b-col cols="12" xl="auto" class="px-0 text-md-left">
                         <h4 class="mb-0">Posts Timeline</h4>
                     </b-col>
-                    <b-col class="">
+                    <b-col cols="12" lg="6" xl="auto" class="px-1">
                         <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
                             <b-input-group-append>
                                 <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
@@ -81,9 +81,9 @@
                             </b-input-group-append>
                         </b-form-group>
                     </b-col>
-                    <b-col cols="auto" class="px-0">
-                        <b-row class="m-0">
-                            <b-col cols="auto" class="px-0 pt-2">
+                    <b-col cols="12" lg="6" xl="auto" class="px-0 ml-xl-auto">
+                        <b-row class="m-0 flex-lg-nowrap mt-3 mt-xl-0">
+                            <b-col cols="auto" class="px-0 mb-3 mb-sm-0">
                                 <date-picker
                                     v-model="valueDate"
                                     type="date"
@@ -99,11 +99,11 @@
                                     {{ valueDate }}
                                 </date-picker>
                             </b-col>
-                            <b-col cols="auto" class="pr-0 pt-2">
+                            <b-col cols="auto" class="px-0 pl-2">
                                 <div class="text-center">
                                     เรียงจาก :
                                     <b-button class="sort-btn" @click="toggleSort" pill size="sm">
-                                        {{ selectedSort === 'desc' ? 'ใหม่ → เก่า' : 'เก่า → ใหม่' }}
+                                         {{ selectedSort === 'desc' ? 'ใหม่ → เก่า' : 'เก่า → ใหม่' }}
                                     </b-button>
                                 </div>
                             </b-col>
@@ -200,6 +200,7 @@ export default {
             clearTimeout(this.debounceTimeout);
             this.debounceTimeout = setTimeout(() => {
                 this.page = 1; // รีเซ็ตกลับหน้าแรก
+                this.posts = []
                 this.apiGetPost();
             }, 500);
         },
