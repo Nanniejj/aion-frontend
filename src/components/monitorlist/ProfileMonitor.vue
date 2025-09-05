@@ -2,12 +2,12 @@
     <div>
         <!-- avatar  -->
         <b-row class="m-0">
-            <b-col lg="4" class="px-0 pr-lg-3">
-                <div class="gradient-bg h-100" style="">
+            <b-col xl="4" class="px-0 pr-lg-3">
+                <div class="gradient-bg h-100">
                     <b-row v-if="profile" class="m-0">
                         <b-col class="py-3">
                             <span>
-                                <b-avatar v-if="type == 'hashtaglist'" text="#" class="shadow-sm rounded badge-light rounded-circle"
+                                <b-avatar v-if="type == 'hashtaglist'" style="color: #776167;" text="#" class="shadow-sm rounded badge-light rounded-circle"
                                     size="140px">
                                 </b-avatar>
                                 <b-avatar v-else size="140px" class="p-1 bg-white border border-light shadow">
@@ -57,18 +57,17 @@
                                     <b-avatar class="" size="45" text="All" style="background-color: #fed16e;left: -30px;"></b-avatar>
                                 </span>
                             </span>
-                            <div class="h6 py-2 ">
+                            <div class="h6 py-2">
                                 <a v-if="type == 'hashtaglist'" class="" v-bind:href="profile.link_original" target="_blank"
-                                    style="color: #2c3e50"> 
+                                    style="color: #776167;"> 
                                     <h4 class="py-2 text-truncate" v-if="type === 'hashtaglist'">{{ profile.uid}}</h4>
                                     ({{ totalPost | numFormat }} posts)
                                 </a> 
                                 <a v-else class="d-flex align-items-center justify-content-center" v-bind:href="profile.link_original" target="_blank"
-                                    style="color: #2c3e50"> 
-                                    <h4 class="py-2 text-truncate">{{ profile.name || data.account_name || profile.uid }}</h4>
-                                    <i class="fa fa-external-link text-info" v-if="type == 'targetlist'" />
+                                    style="color: #776167;"> 
+                                    <h4 class="py-2 mb-0 text-truncate">{{ profile.name || data.account_name || profile.uid }}</h4>
+                                    <i class="fa fa-external-link text-info mx-1" v-if="type == 'targetlist'" />
                                 </a> 
-                                
                             </div>
 
                             <b-col v-if="type == 'hashtaglist'">
@@ -87,15 +86,15 @@
                                 >
                                     {{ valueDate }}
                                 </date-picker>
-                                <b-button v-if="selectedSource !== 'all'" variant="info" pill :pressed="false" @click="selectedSource = 'all'" class="shadow-r px-4 my-4">All Platform</b-button>
+                                <b-button v-if="selectedSource !== 'all'" variant="info" pill :pressed="false" @click="resetSource" class="shadow-r px-4 my-4">All Platform</b-button>
                             </b-col>
                         </b-col>
                         <b-col v-if="type == 'targetlist'" cols="12" class="my-2 px-4">
-                            <b-row v-if="province_id && district_id && subDistrict_id" class="m-0 justify-content-center">
+                            <b-row style="color: #776167;" v-if="province_id || district_id || subDistrict_id" class="m-0 justify-content-center">
                                 <b-col cols="auto" class="px-0">
                                     <i class="fa fa-map-marker d-inline"/>
                                 </b-col>
-                                <b-col class="text-truncate text-left">
+                                <b-col cols="auto" class="text-truncate text-left">
                                     <span v-if="province_id" class="text-icon text-center text-truncate d-inline-block">
                                         <b>{{ selectedProvince }}</b>
                                     </span>
@@ -114,13 +113,14 @@
                     </b-row>
                 </div>
             </b-col>
-            <b-col lg="8" class="text-left px-0 pl-lg-3">
+            <b-col xl="8" class="text-left px-0 pl-lg-3">
                 
                 <b-card-text v-if="type === 'hashtaglist'" class="my-2">
                     <HashtagBarChar 
                         :start="valueDate[0]"
                         :end="valueDate[1]"
                         @update-source="(data) => setHashtagSource(data)"
+                        @totalPost="(data) => totalPost = data"
                     />
                 </b-card-text>
                 <b-card-text v-if="type !== 'hashtaglist'" class="my-2">
@@ -241,7 +241,7 @@
                                         <b-col v-if="profile.influencer_type && profile.influencer_type.length > 4">
                                             <b-row class="text-center">
                                                 <b-col cols="12">
-                                                    <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="6rem"></b-avatar>
+                                                    <b-avatar :text="`+${profile.influencer_type.length - 3}`" size="4rem"></b-avatar>
                                                 </b-col>
                                                 <b-col cols="" class="px-0">
                                                     More
@@ -655,7 +655,7 @@
             @totalPost="data =>totalPost = data"
             @update:start="data => valueDate = [data, valueDate[1]]"
             @update:end="data => valueDate = [valueDate[0], data]"
-            @update-source="data => selectedSource = data"
+            @update-source="data => setHashtagSource(data)"
         />
     </div>
 </template>
@@ -797,7 +797,7 @@ export default {
             this.location = this.location; // trigger setter → อัปเดต filterRules.location
         },
         async checkLocation() {
-            if (!this.selectedData.location || this.selectedData.location.length === 0) {
+            if (!this.selectedData.location || this.selectedData.location.length === 0 || typeof this.selectedData.location === "string") {
                 // console.log("ไม่มีข้อมูล location");
                 this.province_id = null;
                 this.district_id = null;
@@ -866,12 +866,27 @@ export default {
                 this.offset = 0;
                 this.timelinePosts = [];
                 this.apiTimelineUserPosts();
+                this.getWordCloudImage();
+                
                 // this.selectDate(); // Call your existing method
             }
         },
         setHashtagSource(source) {
             this.selectedSource = source
-            this.apiMonitorProfile();
+            // this.apiMonitorProfile();
+            this.offset = 0;
+            this.timelinePosts = [];
+            this.apiTimelineUserPosts();
+            this.getWordCloudImage();
+        },
+        resetSource() {
+            this.selectedSource = 'all'
+            
+            // this.apiMonitorProfile();
+            this.offset = 0;
+            this.timelinePosts = [];
+            this.apiTimelineUserPosts();
+            this.getWordCloudImage();
         },
         setKeyWord(word) {
             this.keyWord = word;
@@ -1086,19 +1101,45 @@ export default {
         },
         async getWordCloudImage() {
             this.loadWordCloud = true;
-            const config = {
-                method: "get",
-                url: "https://api.cognizata.com/api/v1/getMonitor/",
-                params: {
+            const isHashtagList = this.$route.query.type === 'hashtaglist';
+            let params = {}
+            if (isHashtagList) {
+                params= {
+                    // start_date:"2025-09-05T00:00:00",
+                    // end_date: "2025-09-05T23:59:59",
+                    start_date: this.valueDate[0]+ "T00:00:00",
+                    end_date: this.valueDate[1] + "T23:59:59",
+                    ...(this.selectedSource !== 'all' && { source: this.selectedSource }),
+                    ...(isHashtagList ? { hashtag: this.$route.query.uid } : { domain: this.$route.query.uid }),
+                    // hashtag:this.$route.query.uid.replace(/^#/, ''),
+                }
+            } else {
+                params = {
                     query: this.$route.query.uid.replace(/^#/, ''),
                     api_type: this.$route.query.type?.toLowerCase() === 'targetlist' ? 'account' : 'hashtag',
                     top_type: "domain",
-
-                    // type: this.$route.query.type,
                     source: this.selectedSource,
+                    // type: this.$route.query.type,
+                    // start_date: this.valueDate[0]+ "T00:00:00",
+                    // end_date: this.valueDate[1] + "T23:59:59",
                     // source: this.$route.query.source,
                     // id: this.$route.query.id,
-                },
+                }
+            }
+            const config = {
+                method: "get",
+                url: "https://api.cognizata.com/api/v1/getwordcloud/",
+                params: params,
+                // params: {
+                //     query: this.$route.query.uid.replace(/^#/, ''),
+                //     api_type: this.$route.query.type?.toLowerCase() === 'targetlist' ? 'account' : 'hashtag',
+                //     top_type: this.$route.query.type?.toLowerCase() === 'targetlist' ? 'domain' : 'hashtag',
+                //     // type: this.$route.query.type,
+                //     source: this.selectedSource,
+                //     // source: this.$route.query.source,
+                //     // id: this.$route.query.id,
+                // },
+                
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
                     "Content-Type": "application/json",
@@ -1108,7 +1149,7 @@ export default {
             
             this.axios(config)
             .then((response) => {
-                this.wordcloud_images = response.data.wordcloud_images || [];
+                this.wordcloud_images = response.data.img || [];
                 // console.log('this.wordcloud_images ', this.wordcloud_images);
                 this.loadWordCloud = false;
             })
@@ -1351,10 +1392,12 @@ export default {
                     title: 'บันทึกแล้ว!',
                     text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อย',
                     icon: 'success',
-                    confirmButtonText: 'ตกลง',
-                    customClass: {
-                        confirmButton: 'btn btn-success'
-                    },
+                    // confirmButtonText: 'ตกลง',
+                    // customClass: {
+                    //     confirmButton: 'btn btn-success'
+                    // },
+                    showConfirmButton: false,
+                    timer: 3000,
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     buttonsStyling: false
@@ -1379,6 +1422,7 @@ export default {
             });
         },
         async apiTimelineUserPosts() {
+
             console.log('apiTimelineUserPosts called');
             const isHashtagList = this.$route.query.type === 'hashtaglist';
             this.loading = true;
@@ -1446,8 +1490,10 @@ export default {
     },
     async mounted() {
         if (this.$route.query.type === 'targetlist') {
+            this.profile.uid = this.$route.query.uid
             this.selectedSource = this.$route.query.source;
             await this.apiTimelineUserPosts();
+            await this.getWordCloudImage();
         }else if (this.$route.query.type === 'hashtaglist') {
             this.selectedSource = 'all'
             // await this.apiTimelineUserPosts();
@@ -1455,7 +1501,6 @@ export default {
         await this.apiMonitorProfile();
         this.apiGetProvinces();
         this.apiGetInfluencerType();
-        await this.getWordCloudImage();
         
         // console.log('this.selectedSource ==== ',this.selectedSource);
     },

@@ -9,7 +9,7 @@
                 :class="index % 2 === 0 ? 'left' : 'right'">
 
                 <!-- จุด -->
-                <div class="timeline-dot" :class="'bg-info'" v-b-tooltip.hover="'engagement: ' + (item.engagement ? item.engagement.toLocaleString() : '0')"
+                <div v-if="item.engagement !== 0" class="timeline-dot" :class="'bg-info'" v-b-tooltip.hover="'engagement: ' + (item.engagement ? item.engagement.toLocaleString() : '0')"
                 :style="{
                     width: dotSize(item.engagement) + 'px',
                     height: dotSize(item.engagement) + 'px',

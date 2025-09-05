@@ -1,6 +1,6 @@
 <template>
     <div id="chart" class="mt-3">
-        <span class="mt-3 mb-3 box-domain">
+        <span class="box-domain">
             <div class="text-left px-3" v-if="$route.name == 'Report'">
                 Total Posts
             </div>
@@ -21,8 +21,8 @@
                 <b-col cols="10">
                     <apexchart 
                     ref="myBarChart" id="chart-domain" type="bar" 
-                    height="535" :options="chartOptions"
-                        :series="series" style="width: 95%;"></apexchart>
+                    height="435" :options="chartOptions"
+                        :series="series" style="width: 90%;"></apexchart>
                     <!-- {{ series }} -->
                 </b-col>
             </b-row>
@@ -509,7 +509,7 @@ export default {
 .imgs {
     width: 38px;
     display: block;
-   margin-bottom: 13.3px;
+    margin-bottom: 13.3px;
 }
 @media only screen and (min-width: 0px) and (max-width: 1220px) {
     .col-10 {

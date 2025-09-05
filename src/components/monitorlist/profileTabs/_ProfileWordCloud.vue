@@ -8,8 +8,8 @@
             :active="loading"
             size="80"
             class="mt-0 h-100"
-            background-color="rgba(0,0,0, 0.05)"
-            color="#fff"
+            background-color="rgba(0,0,0, 0.2)"
+            color="#17a2b8"
             spinner="bar-fade-scale"
         />
         <img

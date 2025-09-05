@@ -40,6 +40,21 @@
         </b-col>
       </b-row>
 
+      <!-- suggestionKeywords -->
+      <b-row v-if="suggestionKeywrords.length !== 0" class="m-0 py-2 mt-2">
+        <b-col cols="12" class="text-left px-0">
+            <h5>keyword ที่แนะนำ</h5>
+        </b-col>
+        <b-col cols="12" class="px-0">
+            <b-row class="m-0">
+                <b-col cols="auto" class="pl-0 px-1 mb-2" v-for="(keyword,index) in suggestionKeywrords" :key="index + keyword">
+                    <div @click="copyToClipboard(keyword)" class="bage-keyword" v-b-tooltip.hover title="คลิกเพื่อ 'คัดลอก' ">
+                        {{ keyword }}
+                    </div>
+                </b-col>
+            </b-row>
+        </b-col>
+      </b-row>
       <br />
       <div>
         <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
@@ -49,7 +64,7 @@
       <div v-for="(subdomain, subIndex) in filteredSubdomains" :key="subdomain.subdomain_id" class="mb-4">
         <!-- ชื่อ Subdomain -->
         <b-col sm="12" md="4" lg="4" class="d-flex justify-content-between align-items-center"
-          style="background-color: #7cd1dc; color: #000; border-radius: 10px; padding: 10px; margin-bottom: 0px;">
+          style="background-color: #7cd1dc; color: #000; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 10px; margin-bottom: 0px;">
           <span class="text-center subdomain-name" style="flex: 1;">
             {{ subdomain.subdomain_name }}
             <!-- {{ subdomain.subdomain_id }} -->
@@ -79,14 +94,14 @@
         <b-card class="custom-card">
           <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
             color="#b6ac9a" />
-          <b-row class="mb-3">
+          <b-row class="mb-3 mx-0">
             <b-col cols="12" sm="4" style="margin-bottom: 10px; padding-left: 10px; text-align: left;">
               <div class="text-h5"><strong>Objects </strong>
                 <!-- <span class="small">( Object )</span> -->
               </div>
             </b-col>
             <div class="card-actions"
-              style="border: 1px solid #ffff; border-radius: 10px; padding: 2px; margin-top: 15px; cursor: pointer;">
+              style="border: unset; border-radius: 10px; padding: 2px; margin-top: 15px; cursor: pointer;">
               <!-- ก้อนเพิ่ม object -->
               <CreateObject :objectData="subdomain" />
               <!-- <b-button size="md" class="w-md-auto" pill style="background-color: #fdd071;color: #2c3e50;"
@@ -118,7 +133,7 @@
 
           <!--ก้อนคำว่า object -->
           <b-row v-if="subdomain && subdomain.objects && subdomain.objects.length">
-            <b-col>
+            <b-col class="">
               <div class="scroll-obj">
                 <div v-for="(object, objIndex) in subdomain.objects" :key="objIndex"
                   class="object-item d-flex align-items-center justify-content-between py-2 px-3 " :class="{
@@ -153,7 +168,7 @@
             </b-col>
 
             <!-- Keywords -->
-            <b-col cols="12" md="8" style="text-align: left;">
+            <b-col cols="12" md="7" lg="8" style="text-align: left;">
               <div v-if="
                 subdomain && subdomain.datakeyword && subdomain.datakeyword.keywords &&
                 subdomain.datakeyword.keywords.length
@@ -359,11 +374,9 @@
 
 <script>
 import Highlighter from "vue-highlight-words";
-import _ from "lodash";
 import CreateObject from "./CreateObject.vue";
 import EditObjectKeyword from "./EditObjectKeyword.vue";
 import AddSubDomain from "./AddSubDomain.vue";
-// import _ from "lodash";
 export default {
   name: "SubdomainCard",
   components: {
@@ -414,6 +427,8 @@ export default {
       deleteSubdomainIndex: null, // index ของ Subdomain ที่มี Object นี้
       deleteObjectId: null, // ID ของ Object ที่ต้องลบ
       deleteObjectName: "", // ชื่อ Object ที่จะแสดงใน Modal
+        suggestionKeywrords: [],
+      subdomainKeywords:[]
     };
   },
   computed: {
@@ -436,7 +451,41 @@ export default {
     //   );
     // }},
   },
-  methods: {
+    methods: {
+    copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        // วิธีใหม่ (modern browsers)
+        navigator.clipboard.writeText(text).then(() => {
+          this.$bvToast.toast("คัดลอกแล้ว: " + text, {
+            title: "สำเร็จ",
+            variant: "success",
+            solid: true,
+            autoHideDelay: 1000 
+          });
+        });
+      } else {
+        // วิธี fallback
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = 0;
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+          document.execCommand("copy");
+          this.$bvToast.toast("คัดลอกแล้ว: " + text, {
+            title: "สำเร็จ",
+            variant: "success",
+            solid: true,
+            autoHideDelay: 1000 
+          });
+        } catch (err) {
+          console.error("ไม่สามารถคัดลอก", err);
+        }
+        document.body.removeChild(textarea);
+      }
+    },
     filterSubdomains() {
       const query = (this.searchQuery || '').trim().toLowerCase();
 
@@ -544,7 +593,7 @@ export default {
         // localStorage.getItem("active_objectId");
         // const storedSubdomainId = localStorage.getItem("activeSubdomainId");
         // const storedObjectId = localStorage.getItem("activeObjectId");
-
+        this.subdomainKeywords = this.collectKeywords(this.subdomains)
         this.loadWord = false
         console.log("ดึงข้อมูลสำเร็จ2:", this.subdomains);
       } catch (error) {
@@ -552,8 +601,36 @@ export default {
         console.error("Error fetching API:", error);
       }
     },
-
-
+    async apiGetSuggestionKeywrords() {
+        this.loadWord = true
+        try {
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/aiservice/getSuggestionKewrords",
+                params: { domain_id: this.$route.query.id },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+            const response = await this.axios(config);
+            this.loadWord = false;
+            if (response && response.data && response.data.length > 0) {
+                console.log("res === ", response);
+                let data = response.data[0];
+                this.suggestionKeywrords = data.keywords;
+                console.log(data);
+            } else {
+                console.log("No data found");
+                this.suggestionKeywrords = []
+            }
+            
+        } catch (error) {
+            this.loadWord = false
+            this.suggestionKeywrords = []
+            console.error("Error fetching API:", error);
+        }
+    },
 
     async handleEditSubdomain() {
       if (this.editSubdomainIndex === null || !this.editSubdomainName.trim())
@@ -1076,9 +1153,17 @@ export default {
       }
       this.closeModal();
     },
+    collectKeywords(data) {
+        return [
+            ...new Set(
+            data.flatMap(subdomain => subdomain.datakeyword.keywords)
+            )
+        ];
+    }
   },
   async mounted() {
     await this.apiList();
+    await this.apiGetSuggestionKeywrords();
     await this.$emitter.on("callApiListSubdomain", async () => {
       await this.apiList()
       this.$nextTick(() => {
@@ -1089,7 +1174,7 @@ export default {
     // this.filteredSubdomains = [...this.subdomains];
     // this.filterSubdomains(this.searchQuery)
 
-  },
+    },
 };
 </script>
 <style>
@@ -1099,6 +1184,71 @@ export default {
 }
 </style>
 <style scoped>
+.bage-keyword{
+    background-color: rgb(213, 246, 250);
+    /* padding: 10px;
+    padding-right: 20px;
+    padding-left: 20px;
+    border-radius: 10px;
+    cursor: pointer; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 12px;
+    /* background: #2c3e50;
+    color: #bef7fe; */
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+/* เอฟเฟกต์ข้อความ */
+.bage-keyword span {
+  position: relative;
+  z-index: 2;
+}
+
+/* เลเยอร์ไฟ holographic */
+.bage-keyword::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    0deg,
+    transparent,
+    transparent 30%,
+    rgba(0, 255, 255, 0.3)
+  );
+  transform: rotate(-45deg);
+  transition: all 0.5s ease;
+  opacity: 0;
+}
+
+/* hover effect */
+.bage-keyword:hover {
+  transform: scale(1.05);
+  background: #2c3e50;
+  color: #bef7fe;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.bage-keyword:hover::before {
+  opacity: 1;
+  transform: rotate(-45deg) translateY(100%);
+}
+
+/* กดคัดลอกแล้ว */
+.bage-keyword.copied {
+  background: #0ff !important;
+  color: #000 !important;
+  box-shadow: 0 0 20px #0ff;
+}
+
 .highlight-search {
   background-color: #fdd071ab;
   padding: 0 2px;
@@ -1140,18 +1290,23 @@ export default {
 }
 
 .scroll-obj {
-  padding: 10px;
-  max-height: 300px;
-  overflow: auto;
+    /* flex: 1; */
+    padding: 10px;
+    /* max-height: calc(50vh - 200px);*/
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .custom-card {
-  border-radius: 15px;
-  padding: 15px;
-  margin-bottom: 20px;
-  position: relative;
-  border: 0px solid rgba(0, 0, 0, .125);
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background: linear-gradient(90deg,rgb(190, 247, 254) 0%, rgba(255, 255, 255, 1) 35%);
+    border-radius: 15px;
+    border-top-left-radius: unset;
+    padding: 15px;
+    margin-bottom: 20px;
+    position: relative;
+    border: 0px solid rgba(0, 0, 0, .125);
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .card-actions {
@@ -1310,5 +1465,12 @@ export default {
 .icon-hover:active {
   transform: none;
   /* ไม่เปลี่ยนขนาด */
+}
+
+@media only screen and (min-width: 0px) and (max-width: 991px) {
+    .custom-card {
+        background: linear-gradient(180deg,#bef7fe 0%, #ffffff 24%);
+        border-top-right-radius: unset;
+    }
 }
 </style>

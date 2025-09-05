@@ -85,23 +85,22 @@ td{
     vertical-align: middle;
 }
 .btn-add:hover{
-  
   background-color: #504b3c;
   color: white;
 }
 .btn-add:hover .fa-plus{
   
-  background-color: #504b3c ;
+  background-color: #776167;
   
 }
 .btn-add{
- background-color: #ede7dd;
- color:#504b3c;
-  padding: 8px;
-  padding-top: 5px;
-   padding-bottom: 5px;
-  border-radius: 25px;
-  box-shadow: 1px 1px 3px #666666;
+    background-color: #ffe6e6;
+    color:#776167;
+    padding: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 25px;
+    box-shadow: 1px 1px 3px #666666;
 }
 
 @media only screen and (min-width: 0px) and (max-width: 600px){

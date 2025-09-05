@@ -1,10 +1,10 @@
 <template>
     <div>
-      <HomeNav />
-      <!-- <SettingMain/> -->
-      <SettingHead /> 
-      <!-- ส่ง Subdomains ให้ SubdomainCard -->
-    <SubdomainCard :subdomains="domains[0].subdomains" /> 
+        <HomeNav />
+        <!-- <SettingMain/> -->
+        <SettingHead /> 
+        <!-- ส่ง Subdomains ให้ SubdomainCard -->
+        <SubdomainCard :subdomains="domains[0].subdomains" /> 
     </div>
   </template>
   

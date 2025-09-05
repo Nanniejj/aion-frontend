@@ -20,8 +20,8 @@
                                 class="shadow-r px-4">ค้นหา</b-button>
                         </b-input-group-append>
                     </b-form-group>
-                    <b-col cols="12" sm="" class="pt-3 pt-md-0 px-0 ml-sm-2">
-                        <CreateGroupModal @close="reload"/>
+                    <b-col cols="12" sm="" class="px-0 ml-sm-2">
+                        <CreateGroupModal @close="reload" />
                     </b-col>
                 </div>
             </b-col>
@@ -46,15 +46,10 @@
         <div class="boxlist-card py-3">
             <br>
             <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
-            <b-table 
-                ref="table"
-                v-if="data.length !== 0" show-details 
-                :items="data || []" :fields="fields" hover responsive :busy="load"
-                :head-variant="headVariant" :table-variant="tableVariant" :striped="striped" :bordered="bordered"
-                :borderless="borderless" :outlined="outlined" 
-                empty-filtered-text="ไม่พบข้อมูล" :small="small"
-                thead-class="d-none" stacked="md"
-            >
+            <b-table ref="table" v-if="data.length !== 0" show-details :items="data || []" :fields="fields" hover
+                responsive :busy="load" :head-variant="headVariant" :table-variant="tableVariant" :striped="striped"
+                :bordered="bordered" :borderless="borderless" :outlined="outlined" empty-filtered-text="ไม่พบข้อมูล"
+                :small="small" thead-class="d-none" stacked="md">
                 <template #cell(id)="data">
                     {{ data.index + 1 + (currentPage - 1) * perPage }}
                 </template>
@@ -67,23 +62,30 @@
                 <template #cell(source)="data">
                     <!-- {{ data.item.targetlist }} -->
                     <b-avatar-group size="40px">
-                        <b-avatar v-for="(target, index) in data.item.targetlist.slice(0, 4)" :key="index" :src="target.image">
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                        <b-avatar v-for="(target, index) in data.item.targetlist.slice(0, 4)" :key="index"
+                            :src="target.image">
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'"
+                                src="@/assets/Facebook.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'"
+                                src="@/assets/Twitter.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'"
+                                src="@/assets/board.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'"
+                                src="@/assets/Blockdit.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'"
+                                src="@/assets/Instagram.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'"
+                                src="@/assets/Youtube.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'news'"
+                                src="@/assets/News.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'"
+                                src="@/assets/Tiktok.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'threads'"
+                                src="@/assets/Threads.png" class="social-img" />
                         </b-avatar>
                         <!-- ถ้าเกิน 5 ตัว ให้แสดง Avatar +เพิ่มอีก n -->
-                        <b-avatar 
-                            v-if="data.item.targetlist.length > 4" 
-                            :text="'+' + (data.item.targetlist.length - 4)"
-                            variant="secondary"
-                        ></b-avatar>
+                        <b-avatar v-if="data.item.targetlist.length > 4" :text="'+' + (data.item.targetlist.length - 4)"
+                            variant="secondary"></b-avatar>
                     </b-avatar-group>
                 </template>
                 <template #cell(type)="data">
@@ -93,47 +95,49 @@
                 </template>
 
                 <template #cell(action)="data">
-                    
-                    <span class="fas fa-user-edit text-custom px-2" v-b-tooltip.hover
-                        title="แก้ไขกลุ่ม"  size="sm"></span>
-                    <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover
-                        title="เพิ่มสมาชิกกลุ่ม" @click="toggleDetails(data)" size="sm"></span>
+
+                    <span class="fas fa-user-edit text-custom px-2" v-b-tooltip.hover title="แก้ไขกลุ่ม"
+                        @click="openEditGroup(data.item)" size="sm"></span>
+                    <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="เพิ่มสมาชิกกลุ่ม"
+                        @click="toggleDetails(data)" size="sm"></span>
                     <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
-                    @click="linkToProfile(data.item)"></span>
-                    <span class="fas fa-trash text-danger" v-b-tooltip.hover
-                        title="ลบกลุ่ม" @click="deleteGroup(data.item.group_id)" size="sm"></span>
+                        @click="linkToProfile(data.item)"></span>
+                    <span class="fas fa-trash text-danger" v-b-tooltip.hover title="ลบกลุ่ม"
+                        @click="deleteGroup(data.item.group_id)" size="sm"></span>
                 </template>
                 <template #row-details="data">
                     <!-- {{ data.toggleDetails }} -->
                     <!-- <b-card class="text-left" style="max-height:300px;overflow-y:auto;"> -->
-                    <b-row v-show="expandedRow === data.index"  cols="1" cols-md="2" class="mx-0">
+                    <b-row v-show="expandedRow === data.index" cols="1" cols-md="2" class="mx-0">
                         <b-col class="p-0 border-right">
-                            <b-row v-if="data.item.targetlist && data.item.targetlist.length !== 0" class="bold my-2 mx-0 px-0">
+                            <b-row v-if="data.item.targetlist && data.item.targetlist.length !== 0"
+                                class="bold my-2 mx-0 px-0">
                                 รายชื่อบัญชีในกลุ่ม {{ data.item.targetlist.length }} รายการ
                             </b-row>
                             <b-row cols="1" cols-lg="1" cols-xl="2" class="m-0  body-scrollable">
-                                <b-col class="h-auto pl-0 pr-2 mb-2" v-for="target in data.item.targetlist" :key="target.id" >
-                                    <b-card bg-variant="white" text-variant=""
-                                        class="h-100" body-class="px-2 pt-0 pb-2"
-                                    >
+                                <b-col class="h-auto pl-0 pr-2 mb-2" v-for="target in data.item.targetlist"
+                                    :key="target.id">
+                                    <b-card bg-variant="white" text-variant="" class="h-100"
+                                        body-class="px-2 pt-0 pb-2">
                                         <b-card-text class="h-100">
                                             <!-- <b-row class="m-0 justify-content-end">
                                                 <i class="fa fa-close text-danger" @click="deleteTarget(target)" style="font-size:14px;cursor: pointer;"></i>
                                             </b-row> -->
                                             <b-row class="m-0 flex-nowrap h-100">
                                                 <b-col cols="auto" class="p-0">
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
+                                                    <b-avatar rounded="bottom" :src="target.profile_image"
+                                                        v-if="target && target.profile_image">
                                                     </b-avatar>
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
+                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-else>
+                                                    </b-avatar>
                                                 </b-col>
                                                 <b-col class="text-left p-2 w-50">
                                                     <!-- <b-row class="m-0"> -->
-                                                        <span>{{ target.name || target.uid }}</span>
-                                                        <!-- {{ target.source }} -->
-                                                        
+                                                    <span>{{ target.name || target.uid }}</span>
+                                                    <!-- {{ target.source }} -->
+
                                                     <!-- </b-row> -->
-                                                    <a class="text-truncate d-block" 
-                                                        href="#" 
+                                                    <a class="text-truncate d-block" href="#"
                                                         @click.prevent="openLink(target.link_original)">
                                                         {{ target.link_original }}
                                                     </a>
@@ -141,19 +145,40 @@
                                                 <b-col cols="auto" class="p-0 text-right">
                                                     <b-row cols="1" class="m-0 h-100 justify-content-end">
                                                         <b-col class="px-1 py-0">
-                                                            <i class="fa fa-close text-danger" @click="confirmDeleteTarget(data,target._id)" style="font-size:14px;cursor: pointer;"></i>
+                                                            <i class="fa fa-close text-danger"
+                                                                @click="confirmDeleteTarget(data, target._id)"
+                                                                style="font-size:14px;cursor: pointer;"></i>
                                                         </b-col>
                                                         <b-col align-self="end" class="p-0 text-right">
                                                             <b-avatar class="" size="25px" :src="target.image">
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'facebook'"
+                                                                    src="@/assets/Facebook.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'twitter'"
+                                                                    src="@/assets/Twitter.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'pantip'"
+                                                                    src="@/assets/board.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'blockdit'"
+                                                                    src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'instagram'"
+                                                                    src="@/assets/Instagram.png"
+                                                                    class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'youtube'"
+                                                                    src="@/assets/Youtube.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'news'"
+                                                                    src="@/assets/News.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'tiktok'"
+                                                                    src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'threads'"
+                                                                    src="@/assets/Threads.png" class="platform-imgs" />
                                                             </b-avatar>
                                                         </b-col>
                                                     </b-row>
@@ -179,100 +204,160 @@
                                 </b-col>
                             </b-row>
                             <b-row cols="1" class="m-0 pr-3  body-scrollable">
-                                <b-card v-for="(target,index) in newTargets" :key="target.id" 
-                                    bg-variant="white" text-variant=""
-                                    class="mb-2" body-class="px-2 pt-0 pb-2"
-                                    
-                                >
-                                <b-card-text class="h-100">
-                                    
-                                    <b-row class="m-0 flex-nowrap h-100">
-                                        <b-col cols="auto" class="p-0">
-                                            <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
-                                            </b-avatar>
-                                            <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
-                                        </b-col>
-                                        <b-col class="text-left p-2 w-50">
-                                            <span>{{ target.name || target.uid }}</span>
-                                                
-                                            <div class="d-flex">
-                                                <a @click.prevent="openLink(target.link_original)" class="text-truncate d-block text-info">
-                                                    {{ target.link_original }}
-                                                </a>
-                                            </div>
-                                        </b-col>
-                                        <b-col cols="auto" class="p-0 text-right">
-                                            <b-row cols="1" class="m-0 h-100 justify-content-end">
-                                                <b-col class="px-1 py-0">
-                                                    <i class="fa fa-close text-danger" @click="deleteNewTarget(index)" style="font-size:14px;cursor: pointer;"></i>
-                                                </b-col>
-                                                <b-col align-self="end" class="p-0 text-right">
-                                                    <b-avatar class="" size="25px" :src="target.image">
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
-                                                    </b-avatar>
-                                                </b-col>
-                                            </b-row>
-                                        </b-col>
-                                    </b-row>
-                                </b-card-text>
-                            </b-card>
+                                <b-card v-for="(target, index) in newTargets" :key="target.id" bg-variant="white"
+                                    text-variant="" class="mb-2" body-class="px-2 pt-0 pb-2">
+                                    <b-card-text class="h-100">
+
+                                        <b-row class="m-0 flex-nowrap h-100">
+                                            <b-col cols="auto" class="p-0">
+                                                <b-avatar rounded="bottom" :src="target.profile_image"
+                                                    v-if="target && target.profile_image">
+                                                </b-avatar>
+                                                <b-avatar rounded="bottom" :src="target.profile_image" v-else>
+                                                </b-avatar>
+                                            </b-col>
+                                            <b-col class="text-left p-2 w-50">
+                                                <span>{{ target.name || target.uid }}</span>
+
+                                                <div class="d-flex">
+                                                    <a @click.prevent="openLink(target.link_original)"
+                                                        class="text-truncate d-block text-info">
+                                                        {{ target.link_original }}
+                                                    </a>
+                                                </div>
+                                            </b-col>
+                                            <b-col cols="auto" class="p-0 text-right">
+                                                <b-row cols="1" class="m-0 h-100 justify-content-end">
+                                                    <b-col class="px-1 py-0">
+                                                        <i class="fa fa-close text-danger"
+                                                            @click="deleteNewTarget(index)"
+                                                            style="font-size:14px;cursor: pointer;"></i>
+                                                    </b-col>
+                                                    <b-col align-self="end" class="p-0 text-right">
+                                                        <b-avatar class="" size="25px" :src="target.image">
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'facebook'"
+                                                                src="@/assets/Facebook.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'twitter'"
+                                                                src="@/assets/Twitter.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'pantip'"
+                                                                src="@/assets/board.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'blockdit'"
+                                                                src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'instagram'"
+                                                                src="@/assets/Instagram.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'youtube'"
+                                                                src="@/assets/Youtube.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'news'" src="@/assets/News.png"
+                                                                class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'tiktok'"
+                                                                src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_original)"
+                                                                v-if="target.source == 'threads'"
+                                                                src="@/assets/Threads.png" class="platform-imgs" />
+                                                        </b-avatar>
+                                                    </b-col>
+                                                </b-row>
+                                            </b-col>
+                                        </b-row>
+                                    </b-card-text>
+                                </b-card>
                             </b-row>
                             <!-- </b-col> -->
                         </b-col>
 
                         <b-col class="pr-0 mt-3 mt-md-0">
+                            <b-row class="m-0 mb-2 justify-content-between align-items-center">
+                                <b-col cols="auto" class="px-0 text-info">
+                                    <span>เพิ่มบัญชีที่ไม่อยู่ใน monitor</span>
+                                </b-col>
+                                <b-col cols="auto">
+                                    <b-button size="sm" pill :pressed="false" @click="handleNewUrl"
+                                        class="shadow-r ml-2 ">
+                                        <div class="d-flex align-items-center">
+                                            เพิ่มบัญชี
+                                        </div>
+                                    </b-button>
+                                </b-col>
+                            </b-row>
+                            <b-row class="m-0 mb-2">
+                                <b-col class="px-0">
+                                    <b-form-group label="URL" class="text-left">
+                                        <b-form-input 
+                                            v-model="newTarget.link_original"
+                                            type="url"
+                                            placeholder="Enter URL"
+                                            required
+                                            pattern="https?://.+"
+                                        ></b-form-input>
+                                    </b-form-group>
+                                </b-col>
+                                <b-col class="pr-0">
+                                    <b-form-group label="platform" class="text-left" label-for="type-select">
+                                        <b-form-select aria-atomic="false" v-model="newTarget.source"
+                                            :options="sourceOptions" class="" value-field="value"
+                                            text-field="text" disabled-field="notEnabled"
+                                        ></b-form-select>
+                                    </b-form-group>
+                                </b-col>
+                            </b-row>
+                            <hr>
                             <b-col cols="12" class="p-0">
                                 <b-row class="m-0 mb-2">
-                                    <b-col cols="auto" class="d-flex pl-0 text-info justify-content-between align-items-center">
+                                    <b-col cols="auto"
+                                        class="d-flex pl-0 text-info justify-content-between align-items-center">
                                         <span>รายชื่อบัญชีที่แนะนำ</span>
                                     </b-col>
                                     <b-col cols="" class="p-0 d-flex justify-content-end">
                                         <b-form-input v-model="searchTarget" placeholder="ค้นหา"
-                                            class="" ></b-form-input>
-                                            <b-button size="sm" variant="info" pill :pressed="false" @click="apiMonitorList"
+                                            class=""></b-form-input>
+                                        <b-button size="sm" variant="info" pill :pressed="false" @click="apiMonitorList"
                                             class="shadow-r ml-2">
                                             <div class="d-flex align-items-center">
                                                 <i class="fa fa-search mr-2"></i> ค้นหา
                                             </div>
-                                            </b-button>
+                                        </b-button>
                                     </b-col>
                                 </b-row>
                             </b-col>
-                            <vue-element-loading :active="loadTargets" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
+                            <vue-element-loading :active="loadTargets" size="80"
+                                background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
                             <b-row cols="1" cols-lg="1" cols-xl="2" class="m-0 body-scrollable">
-                                <b-col v-for="target in targetLists.filter(t => !data.item.targetlist.some(x => x._id === t._id))" :key="target.id" class="h-auto pl-0 pr-2 mb-2">
-                                    <b-card
-                                        bg-variant="white" text-variant=""
-                                        class="card-target mb-2 h-100" body-class="px-2 pt-0 pb-2"
+                                <b-col
+                                    v-for="target in targetLists.filter(t => !data.item.targetlist.some(x => x._id === t._id))"
+                                    :key="target.id" class="h-auto pl-0 pr-2 mb-2">
+                                    <b-card bg-variant="white" text-variant="" class="card-target mb-2 h-100"
+                                        body-class="px-2 pt-0 pb-2"
                                         :class="['card-target mb-2 h-100', { 'is-selected': newTargets.includes(target) }]"
-                                        @click="handleNewTarget(target)"
-                                    >
+                                        @click="handleNewTarget(target)">
                                         <b-card-text class="h-100">
                                             <!-- <b-row class="m-0 justify-content-end">
                                                 <i class="fa fa-close text-danger" @click="deleteTarget(target)" style="font-size:14px;cursor: pointer;"></i>
                                             </b-row> -->
                                             <b-row class="m-0 flex-nowrap h-100">
                                                 <b-col cols="auto" class="p-0">
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
+                                                    <b-avatar rounded="bottom" :src="target.profile_image"
+                                                        v-if="target && target.profile_image">
                                                     </b-avatar>
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
+                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-else>
+                                                    </b-avatar>
                                                 </b-col>
                                                 <b-col class="text-left p-2 w-50">
                                                     <!-- <b-row class="m-0"> -->
                                                     <span>{{ target.name || target.uid }}</span>
-                                                        <!-- {{ target.source }} -->
-                                                        
+                                                    <!-- {{ target.source }} -->
+
                                                     <!-- </b-row> -->
                                                     <div class="d-flex">
-                                                        <a @click.prevent="openLink(target.link_original)" class="text-truncate d-block text-info">
+                                                        <a @click.prevent="openLink(target.link_original)"
+                                                            class="text-truncate d-block text-info">
                                                             {{ target.link_original }}
                                                         </a>
                                                     </div>
@@ -284,15 +369,34 @@
                                                         </b-col> -->
                                                         <b-col align-self="end" class="p-0 text-right">
                                                             <b-avatar class="" size="25px" :src="target.image">
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'facebook'"
+                                                                    src="@/assets/Facebook.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'twitter'"
+                                                                    src="@/assets/Twitter.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'pantip'"
+                                                                    src="@/assets/board.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'blockdit'"
+                                                                    src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'instagram'"
+                                                                    src="@/assets/Instagram.png"
+                                                                    class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'youtube'"
+                                                                    src="@/assets/Youtube.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'news'"
+                                                                    src="@/assets/News.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'tiktok'"
+                                                                    src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_original)"
+                                                                    v-if="target.source == 'threads'"
+                                                                    src="@/assets/Threads.png" class="platform-imgs" />
                                                             </b-avatar>
                                                         </b-col>
                                                     </b-row>
@@ -302,9 +406,10 @@
                                     </b-card>
                                 </b-col>
                             </b-row>
-                            <b-col cols="12" align-self="end">
-                                <b-pagination v-model="currentPageTarget" :total-rows="totalRowsTarget" :per-page="perPageTarget" align="center" class="my-2"
-                                @input="onPageChangeTargets"/>
+                            <b-col cols="12" class="mt-4" align-self="end">
+                                <b-pagination v-model="currentPageTarget" :total-rows="totalRowsTarget"
+                                    :per-page="perPageTarget" align="center" class="my-2"
+                                    @input="onPageChangeTargets" />
                             </b-col>
                         </b-col>
                     </b-row>
@@ -315,10 +420,12 @@
             </div>
         </div>
 
-        <!-- {{ currentPage }} -->
-        
+
         <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" align="center" class="my-2"
             @input="onPageChange" />
+
+        <EditGroupModal :groupData="selectedGroup" :openModal="openEditGroupModal" @close="closeEditGroup"
+            @update-group="apiMonitorGroupList" />
     </div>
 </template>
 
@@ -328,6 +435,7 @@
 // import ImportPlatform from "./ImportPlatform.vue";
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
 import CreateGroupModal from "./CreateGroupModal.vue";
+import EditGroupModal from "./EditGroupModal.vue";
 // import MissingTargets from "./MissingTargets.vue";
 // import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
@@ -337,6 +445,7 @@ export default {
     components: {
         CreateMonitor,
         CreateGroupModal,
+        EditGroupModal,
         // ImportPlatform,
         // MissingTargets,
     },
@@ -345,7 +454,9 @@ export default {
     },
     data() {
         return {
+            newTarget: {link_original: "", source: null},
             // openRowId: null, // เก็บ ID ของแถวที่เปิดอยู่
+            openEditGroupModal: false,
             expandedRow: null,
             expandedRowData: null, // เก็บ data object ของแถวที่เปิด
             load: false,
@@ -407,7 +518,7 @@ export default {
             ],
             targetLists: [],
             newTargets: [],
-            selectedGroup:{}
+            selectedGroup: {}
         };
     },
     computed: {
@@ -440,6 +551,15 @@ export default {
         }
     },
     methods: {
+        openEditGroup(item) {
+            this.selectedGroup = item;
+            this.openEditGroupModal = true;
+        },
+        closeEditGroup() {
+            this.openEditGroupModal = false;
+            this.selectedGroup = {};
+            // this.apiMonitorGroupList();
+        },
         deleteNewTarget(index) {
             this.newTargets.splice(index, 1);
         },
@@ -447,7 +567,7 @@ export default {
             let newItem = item
 
             // เช็คว่ามีอยู่แล้วหรือยัง
-            const exists = this.newTargets.some(t => 
+            const exists = this.newTargets.some(t =>
                 t.link_original === newItem.link_original && t.source === newItem.source
             );
 
@@ -456,6 +576,54 @@ export default {
             } else {
                 // จะ alert หรือ return อย่างเดียวก็ได้
                 console.warn("ข้อมูลนี้มีอยู่แล้ว:", newItem);
+                Swal.fire({
+                title: 'ข้อมูลสมาชิกนี้ถูกเพิ่มแล้ว',
+                text: 'กรุณากรอกรายละเอียดสมาชิกบัญชีอื่น',
+                icon: 'error',
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                buttonsStyling: false
+                });
+            }
+        },
+        handleNewUrl() {
+            // regex ตรวจสอบ url (เริ่มต้นด้วย http:// หรือ https://)
+            const urlPattern = /^(https?:\/\/)([\w.-]+)(:\d+)?(\/.*)?$/i;
+
+            if (
+                !this.newTarget.link_original ||
+                this.newTarget.link_original.trim() === "" ||
+                !this.newTarget.source
+            ) {
+                Swal.fire({
+                title: 'กรุณากรอกรายละเอียดสมาชิก',
+                text: 'กรุณากรอกรายละเอียดสมาชิกก่อนกดปุ่มเพิ่ม',
+                icon: 'error',
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                buttonsStyling: false
+                });
+            } else if (!urlPattern.test(this.newTarget.link_original.trim())) {
+                Swal.fire({
+                title: 'URL ไม่ถูกต้อง',
+                text: 'กรุณากรอก URL ที่ขึ้นต้นด้วย http:// หรือ https://',
+                icon: 'error',
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                buttonsStyling: false
+                });
+            } else {
+                this.handleNewTarget(this.newTarget);
+                this.newTarget = { link_original: "", source: null };
             }
         },
         toggleDetails(data) {
@@ -564,7 +732,7 @@ export default {
         },
         confirmDeleteTarget(data, target_id) {
             console.log(data, target_id);
-            
+
             Swal.fire({
                 title: 'ยืนยันการลบเป้าหมาย',
                 text: "คุณต้องการลบเป้าหมายนี้หรือไม่?",
@@ -624,35 +792,35 @@ export default {
             const config = {
                 method: "delete",
                 url: `https://api2.cognizata.com/api/v2/monitor/deleteTargetlist`,
-                    data: {
-                        group_id: group_id,
-                        targetlist_id: target_id
-                    },
-                    headers: {
-                        Authorization: "Bearer " + localStorage.getItem("token"),
-                        "Content-Type": "application/json",
-                    },
-                };
+                data: {
+                    group_id: group_id,
+                    targetlist_id: target_id
+                },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
 
-                this.axios(config)
-                    .then((response) => {
-                        this.load = false;
-                        Swal.fire({
-                            title: 'สำเร็จ',
-                            text: 'ลบเป้าหมายเรียบร้อยแล้ว',
-                            icon: 'success',
-                            showConfirmButton: false,
-                            timer: 2000
-                        });
-                        this.newTargets = [];
-                        this.apiMonitorGroupList();
-                    })
-                    .catch((error) => {
-                        this.load = false;
-                        console.error(error);
-                        Swal.fire('ผิดพลาด', 'ไม่สามารถลบเป้าหมายได้', 'error');
+            this.axios(config)
+                .then((response) => {
+                    this.load = false;
+                    Swal.fire({
+                        title: 'สำเร็จ',
+                        text: 'ลบเป้าหมายเรียบร้อยแล้ว',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 2000
                     });
-            
+                    this.newTargets = [];
+                    this.apiMonitorGroupList();
+                })
+                .catch((error) => {
+                    this.load = false;
+                    console.error(error);
+                    Swal.fire('ผิดพลาด', 'ไม่สามารถลบเป้าหมายได้', 'error');
+                });
+
         },
         async deleteGroup(group_id) {
             const result = await Swal.fire({
@@ -697,7 +865,7 @@ export default {
                         this.load = false;
                         console.error(error);
                         Swal.fire('ผิดพลาด', 'ไม่สามารถลบกลุ่มได้', 'error');
-                });
+                    });
             }
         },
         async apiMonitorGroupList() {
@@ -811,18 +979,22 @@ export default {
 
 <style scoped>
 .card-target {
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .card-target:hover {
     border-color: #17a2b8;
-    box-shadow: 10px 10px 15px rgba(23, 162, 184, 0.6); /* กรอบเรืองแสงสีน้ำเงิน */
+    box-shadow: 10px 10px 15px rgba(23, 162, 184, 0.6);
+    /* กรอบเรืองแสงสีน้ำเงิน */
     cursor: pointer;
 }
+
 .card-target.is-selected {
-  border: 2px solid #17a2b8; /* ขอบสีฟ้าเมื่ออยู่ใน newTargets */
-  box-shadow: 0 0 12px rgba(23, 162, 184, 0.6);
+    border: 2px solid #17a2b8;
+    /* ขอบสีฟ้าเมื่ออยู่ใน newTargets */
+    box-shadow: 0 0 12px rgba(23, 162, 184, 0.6);
 }
+
 .body-scrollable {
     /* min-height: 70vh; */
     max-height: 50vh;
@@ -836,13 +1008,19 @@ export default {
     box-sizing: border-box;
     /* เผื่อขนาด scrollbar */
 }
+
 .text-custom {
-  background: linear-gradient(90deg, #e8acac  0%,  #e9c068 50%);
-  -webkit-background-clip: text; /* สำหรับ Chrome, Safari */
-  -webkit-text-fill-color: transparent; /* ทำให้สีตัวอักษรโปร่งใสเพื่อให้ gradient แสดง */
-  background-clip: text; /* สำหรับ Firefox */
-  color: transparent; /* fallback */
+    background: linear-gradient(90deg, #e8acac 0%, #e9c068 50%);
+    -webkit-background-clip: text;
+    /* สำหรับ Chrome, Safari */
+    -webkit-text-fill-color: transparent;
+    /* ทำให้สีตัวอักษรโปร่งใสเพื่อให้ gradient แสดง */
+    background-clip: text;
+    /* สำหรับ Firefox */
+    color: transparent;
+    /* fallback */
 }
+
 .swal2-icon.swal2-warning::before {
     content: "" !important;
 }
@@ -850,8 +1028,9 @@ export default {
 .social-imgs {
     width: 35px;
 }
+
 .platform-imgs {
-    width:25px;
+    width: 25px;
 }
 
 .shadow-r {
@@ -897,7 +1076,6 @@ export default {
 }
 
 .boxlist-card {
-
     border: 0px;
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
     border-radius: 15px;

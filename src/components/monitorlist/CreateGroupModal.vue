@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- {{getListMonitorProfile.targetlist.length}} -->
-        <button class="btn btn-add mt-0 w-100" @click="open = true">
+        <button class="btn btn-add mt-3 mt-xl-0 w-100" @click="open = true">
             <i class="fa fa-plus" />
             <span style="font-size: 16px">
                 เพิ่มกลุ่ม
@@ -9,42 +9,56 @@
         </button>
 
         <vue-modaltor :visible="open" @hide="hideModal" :animation-panel="'modal-slide-top'"
-            :resize-width="{ 3000: '50%', 1350: '80%', 768: '90%' }"
+        :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }"
         >
-            <!-- :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }" -->
+        <!-- :resize-width="{ 3000: '50%', 1350: '80%', 768: '90%' }" -->
             <!-- :resize-width="{ 3000: '99%', 1350: '90%', 768: '90%' }" -->
             <div>
                 <h5><b>เพิ่มกลุ่มบัญชี</b></h5>
                 <hr />
             </div>
 
-
             <!-- body -->
-            <b-row class="my-1 ">
+            <b-row cols="1" cols-xl="2" class="my-1 mx-0">
                 <!-- create new Groups dashed-border-->
-                <b-col class="modal-body-scrollable ">
+                <b-col class="px-0">
+                    <b-row class="m-0 mb-2 text-right">
+                        <b-col>
+                            <b-button variant="info" @click="addGroup" class="">
+                                <i class="fa fa-plus mr-1" />
+                                <span>เพิ่มกลุ่ม</span>
+                            </b-button>
+                        </b-col>
+                    </b-row>
                     <!-- {{ targetLists }} -->
-                    <b-row v-if="groups.length > 0" cols="1" class="m-0">
-                        <b-col v-for="(group, index) in groups" :key="index" class="mb-2">
-                            <b-card bg-variant="white" text-variant="" class="mb-2">
+                    <b-row v-if="groups.length > 0" cols="1" class="m-0 modal-body-scrollable" style="max-height: 65vh;">
+                        <b-col v-for="(group, index) in groups" :key="index" class="mb-2 px-0">
+                            <b-card 
+                                bg-variant="white" text-variant="" 
+                                class="card-target mb-2"
+                                :class="[{
+                                    'is-selected': group === selectedGroup
+                                }]"
+                                
+                            >
                                 <b-card-text>
                                     <b-row class="m-0 justify-content-end">
-                                        <i class="fa fa-close text-danger" @click="deleteGroup(index)" style="font-size:24px;cursor: pointer;"></i>
+                                        <i class="fa fa-close text-danger" @click="deleteGroup(group, index)" style="font-size:24px;cursor: pointer;"></i>
                                     </b-row>
                                     <b-row class="align-items-center m-0">
-                                        <b-col cols="auto" class="p-0">
+                                        <b-col cols="12" sm="auto" class="text-center mb-2 px-0">
                                             <b-avatar icon="people-fill" size="4rem" style="background-color: #fed16e;"></b-avatar>
                                         </b-col>
-                                        <b-col >
-                                            <b-row>
-                                                <b-col>
+                                        <b-col cols="12" sm="" class="px-0 px-md-2">
+                                            <b-row cols="1" cols-sm="2" class="m-0">
+                                                <b-col class="px-0  px-sm-2">
                                                     <b-form-group id="fieldset-1" label="ชื่อกลุ่ม" label-for="input-1"
                                                         valid-feedback="Thank you!" :invalid-feedback="invalidFeedback(group.name)"
                                                         :state="state(group.name)">
-                                                        <b-form-input id="input-1" v-model="group.name" trim></b-form-input>
+                                                        <b-form-input id="input-1"  @click.stop v-model="group.name" trim></b-form-input>
                                                     </b-form-group>
                                                 </b-col>
-                                                <b-col>
+                                                <b-col @click.stop class="px-0">
                                                     <b-form-group label="ประเภท" label-for="type-select">
                                                         <b-form-select v-model="group.group_type"
                                                             :options="options" class="mb-3" value-field="value"
@@ -55,58 +69,211 @@
                                             </b-row>
                                         </b-col>
                                     </b-row>
+                                    <b-row v-if="selectedGroup !== group" class="m-0 justify-content-end">
+                                        <b-button size="sm" pill :pressed="false" @click="setSelectedGroup(group)"
+                                            class="shadow-r ml-2 add-btn">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa fa-user-plus mr-2"></i> เพิ่มสมาชิกกลุ่ม
+                                            </div>
+                                        </b-button>
+                                    </b-row>
+                                    <b-row v-else class="m-0 justify-content-end">
+                                        <b-button size="sm" v-b-tooltip.hover title="บันทึกร่าง" variant="success" :pressed="false" @click="saveDraft(group)"
+                                            class="shadow-r mr-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa fa-save"></i>
+                                            </div>
+                                        </b-button>
+                                        <b-button size="sm" v-b-tooltip.hover title="ยกเลิก" variant="danger" :pressed="false" @click="deleteDraft(group)"
+                                            class="shadow-r ">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa fa-close"></i>
+                                            </div>
+                                        </b-button>
+                                    </b-row>
                                 </b-card-text>
-                                <!-- <b-button href="#" variant="primary">สร้างกลุ่ม</b-button> -->
+                                <template #footer>
+                                    <div>
+                                        <b-col cols="12" class="d-flex p-0">
+                                            <span>สมาชิกในกลุ่ม ({{ (group.targets.length || 0) | numFormat }})</span>
+                                            <span>
+                                                <!-- <i class="material-icons">keyboard_arrow_down</i> -->
+                                            </span>
+                                            <!-- {{ group }} -->
+                                        </b-col>
+                                        <b-row cols="1" class="m-0">
+                                            <b-col class="mb-2 px-2" v-for="target in group.targets" :key="target.id" >
+                                                <b-card
+                                                    bg-variant="white" text-variant=""
+                                                    class="card-target mb-2 h-100" body-class="px-2 pt-0 pb-2"
+                                                >
+                                                    <b-card-text class="h-100">
+                                                        <b-row class="m-0 flex-nowrap h-100">
+                                                            <b-col cols="auto" class="p-0">
+                                                                <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
+                                                                </b-avatar>
+                                                                <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
+                                                            </b-col>
+                                                            <b-col class="text-left p-2 w-50">
+                                                                <span>{{ target.name || target.uid }}</span>
+                                                                <div class="d-flex">
+                                                                    <a @click.prevent="openLink(target.url)" class="text-truncate d-block text-info">
+                                                                        {{ target.url }}
+                                                                    </a>
+                                                                </div>
+                                                            </b-col>
+                                                            <b-col cols="auto" class="p-0 text-right">
+                                                                <b-row cols="1" class="m-0 h-100 justify-content-end">
+                                                                    <b-col align-self="end" class="p-0 text-right">
+                                                                        <b-avatar class="" size="25px" :src="target.image">
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                                            <img @click="openLink(target.url)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                                        </b-avatar>
+                                                                    </b-col>
+                                                                </b-row>
+                                                            </b-col>
+                                                        </b-row>
+                                                    </b-card-text>
+                                                </b-card>
+                                            </b-col>
+                                        </b-row>
+                                    </div>
+                                </template>
                             </b-card>
                         </b-col>
                     </b-row>
-                    <b-row class="m-0 text-center">
-                        <b-col>
-                            <b-button variant="info" @click="addGroup" class="">
-                                <i class="fa fa-plus mr-1" />
-                                <span>เพิ่มกลุ่ม</span>
-                            </b-button>
+                    <b-row v-else class="m-0 justify-content-center align-items-center dashed-border" style="height: 64vh;">
+                        <b-col class="text-center">
+                            <span class="text-muted">- กรุณากดปุ่ม <span class="text-info">"เพิ่มกลุ่ม"</span> เพื่อสร้างกลุ่ม -</span>
                         </b-col>
                     </b-row>
                 </b-col>
+
+
+
                 <!-- show targetlist -->
-                <!-- <b-col class="">
-                    <b-row class="m-0 mb-2">
-                        <b-col cols="12" class="d-flex text-info justify-content-between align-items-center">
-                            <span>รายชื่อบัญชีที่แนะนำ</span>
+                <b-col v-if="selectedGroup && Object.keys(selectedGroup).length > 0" class="">
+                    <b-row class="m-0 mb-2 justify-content-between align-items-center">
+                        <b-col cols="auto" class="px-0 text-info">
+                            <span>เพิ่มบัญชีที่ไม่อยู่ใน monitor</span>
+                        </b-col>
+                        <b-col cols="auto">
+                            <b-button size="sm" pill :pressed="false" @click="handleNewTarge"
+                                class="shadow-r ml-2 ">
+                                <div class="d-flex align-items-center">
+                                    เพิ่มบัญชี
+                                </div>
+                            </b-button>
                         </b-col>
                     </b-row>
-                    <b-row class="m-0">
-                        <b-col class="modal-body-scrollable">
-                            <b-card v-for="target in targetLists" :key="target.id" bg-variant="white" text-variant=""
-                                class="mb-2">
-                                <b-card-text>
-                                    <b-row class="align-items-center m-0">
+                    <b-row class="m-0 mb-2">
+                        <b-col class="px-0">
+                            <b-form-group label="URL">
+                                <b-form-input 
+                                    v-model="newTarget.link_original"
+                                    type="url"
+                                    placeholder="Enter URL"
+                                    required
+                                    pattern="https?://.+"
+                                ></b-form-input>
+                            </b-form-group>
+                        </b-col>
+                        <b-col class="pr-0">
+                            <b-form-group label="platform" label-for="type-select">
+                                <b-form-select aria-atomic="false" v-model="newTarget.source"
+                                    :options="sourceOptions" class="" value-field="value"
+                                    text-field="text" disabled-field="notEnabled"
+                                ></b-form-select>
+                            </b-form-group>
+                        </b-col>
+                    </b-row>
+                    <hr>
+                    <b-row class="m-0 mb-2">
+                        <b-col cols="auto" class="d-flex pl-0 text-info justify-content-between align-items-center">
+                            <span>รายชื่อบัญชีใน monitor ที่แนะนำ</span>
+                        </b-col>
+                        <b-col class="p-0 d-flex justify-content-end">
+                            <b-form-input v-model="search" placeholder="ค้นหา" class="" ></b-form-input>
+                            <b-button size="sm" variant="info" pill :pressed="false" @click="apiMonitorList"
+                                class="shadow-r ml-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-search mr-2"></i> ค้นหา
+                                </div>
+                            </b-button>
+                        </b-col>
+                    </b-row>
+                    <b-row cols="1" class="m-0 modal-body-scrollable" style="max-height: 40vh;">
+                        <b-col class="mb-2 px-2" v-for="target in targetLists" :key="target.id" >
+                            <b-card
+                                bg-variant="white" text-variant=""
+                                class="card-target mb-2 h-100" body-class="px-2 pt-0 pb-2"
+                                @click="handleTargetList(target)"
+                            >
+                                <b-card-text class="h-100">
+                                    <b-row class="m-0 flex-nowrap h-100">
                                         <b-col cols="auto" class="p-0">
-                                            <b-avatar :src="target.profile_image" v-if="target && target.profile_image">
+                                            <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
                                             </b-avatar>
-                                            <b-avatar :src="target.profile_image" v-else> </b-avatar>
+                                            <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
                                         </b-col>
-                                        <b-col>
+                                        <b-col class="text-left p-2 w-50">
                                             <span>{{ target.name || target.uid }}</span>
+                                            <div class="d-flex">
+                                                <a @click.prevent="openLink(target.link_original)" class="text-truncate d-block text-info">
+                                                    {{ target.link_original }}
+                                                </a>
+                                            </div>
+                                        </b-col>
+                                        <b-col cols="auto" class="p-0 text-right">
+                                            <b-row cols="1" class="m-0 h-100 justify-content-end">
+                                                <b-col align-self="end" class="p-0 text-right">
+                                                    <b-avatar class="" size="25px" :src="target.image">
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                        <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                    </b-avatar>
+                                                </b-col>
+                                            </b-row>
                                         </b-col>
                                     </b-row>
                                 </b-card-text>
                             </b-card>
                         </b-col>
                     </b-row>
-                </b-col> -->
+                    <b-col cols="12" align-self="end">
+                        <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" align="center" class="my-2"
+                        @input="onPageChange"/>
+                    </b-col>
+                </b-col>
+                <b-col v-else >
+                    <b-row  class="m-0 justify-content-center align-items-center" style="min-height: 70vh;">
+                        <b-col class="text-center mt-5">
+                            <span class="text-muted">- กรุณาเลือกกลุ่มก่อนเพิ่มสมาชิก -</span>
+                        </b-col>
+                    </b-row>
+                </b-col>
             </b-row>
 
             <!-- footer -->
-            <b-row class="m-0 justify-content-end">
+            <b-row class="m-0  justify-content-end mt-3">
                 <b-col cols="auto">
-                    <!-- <br /> -->
                     <b-button @click="clear" size="sm" variant="outline-danger">
                         <i class="fa fa-eraser" aria-hidden="true"></i>
                         clear
                     </b-button>
-
                 </b-col>
                 <b-col cols="auto">
                     <b-button :disabled="!readyToSave" @click="addNewGroup" class="btn btn-save" size="sm">
@@ -119,9 +286,7 @@
 </template>
 
 <script>
-
 // import CardInput from "./_CardInput.vue";
-
 import Swal from 'sweetalert2'
 export default {
     components: {
@@ -137,12 +302,13 @@ export default {
     computed: {
         readyToSave() {
             return this.groups.every(item => item.name && item.group_type) && this.groups.length > 0;
-        }
+        },
     },
     data() {
         return {
-            selectedGroups: {},
-            newGroups: { name: "", group_type: null },
+            selectedGroup: {},
+            newGroups: { name: "", group_type: null, targets: [] },
+            newTarget: {link_original: "", source: null},
             groups: [],
             targetLists: [],
             open: false,
@@ -155,10 +321,125 @@ export default {
                 { value: "group", text: 'กลุ่ม' },
                 { value: "person", text: 'บุคคล' },
                 { value: "organization", text: 'องค์กร' },
-            ]
+            ],
+            sourceOptions: [
+                { value: null, text: 'All Platform' },
+                { value: 'facebook', text: 'Facebook' },
+                { value: 'twitter', text: 'X' },
+                { value: 'pantip', text: 'Board' },
+                { value: 'news', text: 'News' },
+                { value: 'youtube', text: 'YouTube' },
+                { value: 'instagram', text: 'Instagram' },
+                { value: 'blockdit', text: 'Blockdit' },
+                { value: 'tiktok', text: 'Tiktok' },
+                { value: 'threads', text: 'Threads' }
+            ],
         };
     },
     methods: {
+        handleTargetList(target) {
+            let newTarget = {
+                profile_image: target.profile_image || null,
+                name: target.name || null,
+                uid : target.uid || null,
+                url: target.link_original,
+                source : target.source
+            }
+           
+            let isExist = this.selectedGroup.targets.some(
+                t => t.url === newTarget.url && t.source === newTarget.source
+            );
+
+            if (!isExist) {
+                this.selectedGroup.targets.push(newTarget);
+                console.log("เพิ่มใหม่", this.selectedGroup.targets);
+            } else {
+                console.log("มีอยู่แล้ว ไม่เพิ่ม", newTarget);
+                Swal.fire({
+                    title: 'เพิ่มสมาชิกบัญชีนี้แล้ว',
+                    text:  'กรุณากรอกรายละเอียดสมาชิกอื่น',
+                    icon: 'error',
+                    customClass: {
+                        confirmButton: 'btn btn-danger'
+                    },
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    buttonsStyling: false
+                })
+            }
+        },
+        handleNewTarge() {
+            // regex ตรวจสอบ url (เริ่มต้นด้วย http:// หรือ https://)
+            const urlPattern = /^(https?:\/\/)([\w.-]+)(:\d+)?(\/.*)?$/i;
+
+            if (
+                !this.newTarget.link_original ||
+                this.newTarget.link_original.trim() === "" ||
+                !this.newTarget.source
+            ) {
+                Swal.fire({
+                title: 'กรุณากรอกรายละเอียดสมาชิก',
+                text: 'กรุณากรอกรายละเอียดสมาชิกก่อนกดปุ่มเพิ่ม',
+                icon: 'error',
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                buttonsStyling: false
+                });
+            } else if (!urlPattern.test(this.newTarget.link_original.trim())) {
+                Swal.fire({
+                title: 'URL ไม่ถูกต้อง',
+                text: 'กรุณากรอก URL ที่ขึ้นต้นด้วย http:// หรือ https://',
+                icon: 'error',
+                customClass: {
+                    confirmButton: 'btn btn-danger'
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                buttonsStyling: false
+                });
+            } else {
+                this.handleTargetList(this.newTarget);
+                this.newTarget = { link_original: "", source: null };
+            }
+        },
+        setSelectedGroup(group) {
+            if (!group.name || group.name.trim() === "" || !group.group_type) {
+                Swal.fire({
+                    title: 'กรุณากรอกรายละเอียดกลุ่ม',
+                    text:  'กรุณากรอกรายละเอียดกลุ่มก่อนเพิ่มสมาชิก',
+                    icon: 'error',
+                    customClass: {
+                        confirmButton: 'btn btn-danger'
+                    },
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    buttonsStyling: false
+                })
+                // return;
+            } else {
+                if (this.selectedGroup === group) {
+                    this.selectedGroup = {};
+                } else {
+                    this.selectedGroup = group;
+                }
+            }
+        },
+        saveDraft(group) {
+            group = this.selectedGroup
+            this.selectedGroup = {};
+        },
+        deleteDraft(group) {
+            console.log(group);
+            group.targets = []
+            this.selectedGroup = {};
+        },
+        onPageChange(page) {
+            this.currentPage = page;
+            this.apiMonitorList();
+        },
         state(name) {
             const trimmedName = name.trim()
             // ยังไม่ได้กรอกอะไร → ยังไม่ validate
@@ -179,16 +460,22 @@ export default {
             }
             return ""
         },
-        deleteGroup(index) {
+        deleteGroup(group, index) {
+            console.log(group, index);
+            if (this.selectedGroup === group) {
+                this.selectedGroup = {};
+            }
+            
             this.groups.splice(index, 1);
         },
         addGroup() {
             this.groups.push(
             {
                 name: this.newGroups.name,
-                group_type: this.newGroups.group_type
+                group_type: this.newGroups.group_type,
+                targets: this.newGroups.targets
             });
-            this.newGroups = { name: "", group_type: null };
+            this.newGroups = { name: "", group_type: null, targets: [] };
         },
         clear() {
             this.groups = [];
@@ -198,10 +485,55 @@ export default {
             this.open = false;
             // this.$emit("close");
         },
-        
+        cleanGroups(groups) {
+            return groups.map(group => {
+                return {
+                ...group,
+                targets: group.targets.map(target => {
+                    const { profile_image, name, uid, url, ...rest } = target; // ตัด key ที่ไม่ต้องการออก
+                    return {
+                        ...rest,
+                        URL: url // เปลี่ยนชื่อ key
+                    };
+                })
+                };
+            });
+        },
+        async apiMonitorList() {
+            this.load = true;
+            // console.log('apiMonitorList ===',this.currentPage);
+            
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getMonitor",
+                params: {
+                    type: 'targetlist',
+                    page: this.currentPage,
+                    limit: this.perPage,
+                    search: this.search,
+                },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                const resData = response.data;
+                this.targetLists = resData.data || [];
+                this.totalRows = resData.pagination?.totalCount || this.targetLists.length;
+                this.load = false;
+            })
+            .catch((error) => {
+                this.load = false;
+                this.targetLists = [];
+                console.error(error);
+            });
+        },
         async addNewGroup() {
             let rawData = {
-                "data": this.groups
+                "data": this.cleanGroups(this.groups)
             }
             // console.log(list);
             console.log("raw === ", rawData);
@@ -255,12 +587,24 @@ export default {
         }
     },
     async mounted() {
-        // await this.apiMonitorList();
+        await this.apiMonitorList();
     },
 };
 </script>
 
 <style scoped>
+.card-target:hover {
+    border: 2px solid #17a2b8;
+    box-shadow: 10px 10px 15px rgba(23, 162, 184, 0.6); /* กรอบเรืองแสงสีน้ำเงิน */
+    cursor: pointer;
+}
+.card-target.is-selected {
+  border: 2px solid #17a2b8; /* ขอบสีฟ้าเมื่ออยู่ใน newTargets */
+  box-shadow: 0 0 12px rgba(23, 162, 184, 0.6);
+}
+.platform-imgs {
+    width:25px;
+}
 .dashed-border {
     border: 1px dashed #ccc;
     /* เส้นประสีเทา */
@@ -269,10 +613,15 @@ export default {
     padding: 8px;
     /* เพิ่มระยะห่างด้านใน */
 }
-
+.add-btn{
+    background: linear-gradient(90deg,#FDD071 0%, #ffbcbc 100%);
+    border: none;
+    color: #776167; /* ให้ตัวอักษรอ่านง่าย */
+    font-weight: bold;
+}
 .modal-body-scrollable {
-    min-height: 70vh;
-    max-height: 70vh;
+    /* min-height: 45vh;
+    max-height: 45vh; */
     max-width: 95vw;
     overflow-y: auto;
     /* ให้ scroll เฉพาะแนวตั้ง */
@@ -332,14 +681,5 @@ td {
     }
 }
 
-/* ::v-deep(.vue-modaltor__panel) {
-  width: 100% !important;
-  height: 100vh !important; 
-  max-width: 100% !important;
-  max-height: 100vh !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  display: flex;
-  flex-direction: column;
-} */
+
 </style>

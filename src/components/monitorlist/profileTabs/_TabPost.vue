@@ -103,7 +103,7 @@
                                     <span class="left">
                                         <img v-if="post.source == 'twitter'" src="@/assets/Twitter.png"
                                             class="social-img" />
-                                        <img v-else-if="post.source == 'facebook'" src="@/assets/Facebook.png"
+                                        <img v-if="post.source == 'facebook'" src="@/assets/Facebook.png"
                                             class="social-img" />
                                         <img v-if="post.source == 'news'" src="@/assets/News.png" class="social-img" />
                                         <img v-if="post.source == 'pantip'" src="@/assets/Pantip.png"
@@ -517,13 +517,13 @@ import SentimentButton from "./_SentimentButton.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 // import "@justinribeiro/lite-tiktok";
 import { debounce } from 'lodash';
-import Timeline from "../_Timeline.vue";
+// import Timeline from "../_Timeline.vue";
 export default {
     components: {
         SentimentButton,
         VueGallerySlideshow,
         // Highlighter,
-        Timeline
+        // Timeline
     },
     props: {
         source: {
@@ -575,8 +575,8 @@ export default {
             selectedSort: "",
             valueDate: this.startAndEnd,
             // valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
-            start_date: "",
-            end_date: "",
+            // start_date: "",
+            // end_date: "",
             dataPost: [],
             total: null,
             posts: [],
@@ -610,6 +610,7 @@ export default {
     },
     computed: {
         startAndEnd() {
+            if (!this.start || !this.end) return [null, null]; // ป้องกัน undefined
             return [this.start, this.end];
         }
     },
@@ -782,9 +783,9 @@ export default {
         },
         startAndEnd: {
             handler([newStart, newEnd], [oldStart, oldEnd]) {
-                console.log("watch startAndEnd old : ", oldStart, oldEnd);
-                console.log("watch startAndEnd new : ", newStart, newEnd);
                 if (newStart !== oldStart && newEnd !== oldEnd) {
+                    console.log("watch startAndEnd old : ", oldStart, oldEnd);
+                    console.log("watch startAndEnd new : ", newStart, newEnd);
                     this.valueDate = [newStart, newEnd];
                     this.apiUserPosts();
                     // this.checkDateRange();

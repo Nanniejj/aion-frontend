@@ -1,23 +1,39 @@
 <template>
-  <div id="overflow-page">
-    <HomeNav id="navHome" />
-    <!-- <vue-element-loading :active="getLoadStatus" :is-full-screen="true" size='80' 
-    background-color='rgba(0, 0, 0, 0.3)' color='#fff' spinner="bar-fade-scale" /> -->
-    <div id="content">
-  <b-container fluid id="tp-size" >
-      <h1 class="title">Setting</h1>
-  
-       <h4 class="title-domain"><router-link :to="{name:'TemplateSetting'}">จัดการ Domain </router-link > <i class="fas fa-angle-right"/>
-       <router-link :to="{name:'TemplateSettingSubDomain'}"> SubDomain </router-link > 
-       <i class="fas fa-angle-right"/> <span id="active">Word</span> </h4> 
-      <div class="mb-3 text-right">
-        <i class="fa fa-print" @click="printWindow()" style="font-size:25px;cursor: pointer;"/>
-
-      </div>
-      <TemplateWord />
-  </b-container>
+    <div id="overflow-page">
+        <HomeNav id="navHome" />
+        <!-- <vue-element-loading :active="getLoadStatus" :is-full-screen="true" size='80' 
+        background-color='rgba(0, 0, 0, 0.3)' color='#fff' spinner="bar-fade-scale" /> -->
+        <div id="content">
+            <b-container fluid id="tp-size">
+                <h1 class="text-left title m-0">Setting</h1>
+                <b-row class="m-0 py-0 justify-content-between">
+                    <b-col cols="" class="px-0">
+                        <h4 class="title-domain ml-0 d-flex flex-nowarp align-items-center" style="margin-left: 0px !important;"><router-link :to="{name:'TemplateSetting'}">จัดการ Domain </router-link > <i class="fas fa-angle-right"/>
+                        <router-link :to="{name:'TemplateSettingSubDomain'}"> SubDomain </router-link > 
+                        <i class="fas fa-angle-right"/> <span id="active">Word</span> </h4> 
+                    </b-col>
+                    <b-col cols="auto" sm="auto" class="mb-3 text-right px-0">
+                        <i class="fa fa-print" @click="printWindow()" style="font-size:25px;cursor: pointer;"/>
+                    </b-col>
+                </b-row>
+                <b-row v-if="suggestionKeywrords.length !== 0" class="m-0 py-2 mb-3">
+                    <b-col cols="12" class="text-left px-0">
+                        <h5 class="title-domain ml-0" style="margin-left: 0px !important;">keyword ที่แนะนำ</h5>
+                    </b-col>
+                    <b-col cols="12" class="px-0">
+                        <b-row class="m-0">
+                            <b-col cols="auto" class="pl-0 px-1 mb-2" v-for="(keyword,index) in suggestionKeywrords" :key="index + keyword">
+                                <div @click="copyToClipboard(keyword)" class="bage-keyword" v-b-tooltip.hover title="คลิกเพื่อ 'คัดลอก' ">
+                                    {{ keyword }}
+                                </div>
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                </b-row>
+            </b-container>
+            <TemplateWord />
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -31,10 +47,12 @@ export default {
     
   },
   data: function() {
-    return {};
+      return {
+        suggestionKeywrords:[]
+    };
   },
   computed: {
-    ...mapGetters(['getSelected','getListSubDomain','getListWord','getSubDomainName','getLoadStatus']),
+    ...mapGetters(['getSelected','getListSubDomain','getListWord','getSubDomainName','getLoadStatus','getDomainId']),
   },
   methods: {
     printWindow: function() {
@@ -43,12 +61,82 @@ export default {
       } catch (err) {
         console.log(err);
       }
+      },
+    copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        // วิธีใหม่ (modern browsers)
+        navigator.clipboard.writeText(text).then(() => {
+          this.$bvToast.toast("คัดลอกแล้ว: " + text, {
+            title: "สำเร็จ",
+            variant: "success",
+            solid: true,
+            autoHideDelay: 1000 
+          });
+        });
+      } else {
+        // วิธี fallback
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = 0;
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+          document.execCommand("copy");
+          this.$bvToast.toast("คัดลอกแล้ว: " + text, {
+            title: "สำเร็จ",
+            variant: "success",
+            solid: true,
+            autoHideDelay: 1000 
+          });
+        } catch (err) {
+          console.error("ไม่สามารถคัดลอก", err);
+        }
+        document.body.removeChild(textarea);
+      }
     },
-  },
+    async apiGetSuggestionKeywrords() {
+        this.loadWord = true
+        try {
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/aiservice/getSuggestionKewrords",
+                params: { domain_id: this.getDomainId },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+            const response = await this.axios(config);
+            this.loadWord = false;
+            if (response && response.data && response.data.length > 0) {
+                console.log("res === ", response);
+                let data = response.data[0];
+                this.suggestionKeywrords = data.keywords;
+                console.log(data);
+            } else {
+                console.log("No data found");
+                this.suggestionKeywrords = []
+            }
+            
+        } catch (error) {
+            this.loadWord = false
+            this.suggestionKeywrords = []
+            console.error("Error fetching API:", error);
+        }
+    },
+    },
+    async mounted() {
+        this.apiGetSuggestionKeywrords();
+  }
 };
 </script>
 
 <style scoped>
+#tp-size {
+  width: 85%;
+}
 #export-btn{
   margin: 0px 20px;
   color: #495057;
@@ -152,6 +240,71 @@ button {
   border-color: #fed16e !important;
   border-radius: 9px;
   font-weight: bold;
+}
+.bage-keyword{
+    background-color: rgb(213, 246, 250);
+    /* padding: 10px;
+    padding-right: 20px;
+    padding-left: 20px;
+    border-radius: 10px;
+    cursor: pointer; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 12px;
+    /* background: #2c3e50;
+    color: #bef7fe; */
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease;
+    font-weight:normal ;
+}
+/* เอฟเฟกต์ข้อความ */
+.bage-keyword span {
+  position: relative;
+  z-index: 2;
+}
+
+/* เลเยอร์ไฟ holographic */
+.bage-keyword::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    0deg,
+    transparent,
+    transparent 30%,
+    rgba(0, 255, 255, 0.3)
+  );
+  transform: rotate(-45deg);
+  transition: all 0.5s ease;
+  opacity: 0;
+}
+
+/* hover effect */
+.bage-keyword:hover {
+  transform: scale(1.05);
+  background: #2c3e50;
+  color: #bef7fe;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.bage-keyword:hover::before {
+  opacity: 1;
+  transform: rotate(-45deg) translateY(100%);
+}
+
+/* กดคัดลอกแล้ว */
+.bage-keyword.copied {
+  background: #0ff !important;
+  color: #000 !important;
+  box-shadow: 0 0 20px #0ff;
 }
 @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
   #overflow-page {

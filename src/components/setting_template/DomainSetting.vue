@@ -5,16 +5,20 @@
         color="#b6ac9a" />
       <!-- https://bootstrap-vue.org/docs/components/table#custom-data-rendering   \ Complete example -->
       <!-- User Interface controls -->
-      <b-row id="input-btn">
-        <b-col lg="6" class="my-1">
-
-          <b-form-group label-for="filter-input" label-cols-sm="0" label-align-sm="right" label-size="md" class="mb-0">
-            <b-input-group size="md">
-              <b-form-input id="filter-input" v-model="filter" type="search" placeholder="ค้นหา"></b-form-input>
-            </b-input-group>
-          </b-form-group>
+      <b-row id="input-btn" class="m-0 align-items-center justify-content-lg-between flex-md-nowrap">
+        <b-col md="auto" class="mt-lg-0 pl-0 mb-2 mb-md-0">
+            <h5 class="m-0 text-left">จัดการ Domain 
+                <span class="text-info">
+                    ({{ getItemsDomain.length }})
+                </span>
+            </h5>
         </b-col>
-        <b-col lg="6" class="my-1">
+        <b-col sm="" lg="auto" class="px-0 ml-0 ml-lg-auto">
+            <b-input-group size="md">
+                <b-form-input id="filter-input" v-model="filter" type="search" placeholder="ค้นหา"></b-form-input>
+            </b-input-group>
+        </b-col>
+        <b-col sm="auto" class="pr-0">
           <TemplateAddDomain />
           <!-- <button class="btn btn-add" ><i class="fa fa-plus"/><span  style="font-size:16px;"> เพิ่ม Domain </span></button> -->
         </b-col>
@@ -25,7 +29,7 @@
       <b-table hover :items="getItemsDomain" :fields="fields" :current-page="currentPage" :per-page="perPage"
         :filter="filter" :filter-included-fields="['name']" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
         :sort-direction="sortDirection" :empty-filtered-text="empData" stacked="md" show-empty small
-        @filtered="onFiltered" head-variant="light">
+        @filtered="onFiltered"  thead-class="">
         <!-- @row-clicked="linkToSubDomain"   -->
         <template #cell(id)="row">
           {{ row.index + 1 + (currentPage - 1) * 10 }}
@@ -268,7 +272,9 @@ table>thead>tr>th:nth-child(3) {
   color: #4c412b;
   box-shadow: 1px 1px 3px #666666;
 }
-
+.bg-warning{
+    background-color: #fed16e !important;
+}
 .btn-save:hover {
   background: #fed16e;
   border-color: #fed16e;
@@ -304,15 +310,30 @@ table>thead>tr>th:nth-child(3) {
   border-radius: 50%;
 }
 
-.fa-pencil,
-.fa-list-ul,
-.fa-trash-alt {
+.fa-pencil{
   background: #fed16ebf;
   padding: 10px;
   border-radius: 50%;
   box-shadow: 1px 1px 3px #666666;
   margin: 7px 5px;
   color: #4c412b;
+}
+
+.fa-list-ul{
+  background: #17a2b8;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 1px 1px 3px #666666;
+  margin: 7px 5px;
+  color: #ffffff;
+}
+.fa-trash-alt {
+  background: #ffc8c8;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 1px 1px 3px #666666;
+  margin: 7px 5px;
+  color: #776167;
 }
 
 .fa-pencil:hover {

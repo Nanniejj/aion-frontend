@@ -10,9 +10,18 @@
 
                 </b-col>
             </b-row>
-            <b-row cols="12">
-                <b-col cols="2" md="1" class="pr-0">
+            <b-row cols="12" class="m-0">
+                <b-col cols="1" lg="auto">
                     <div class="g-social">
+                         <!-- <img src="@/assets/cfb.png" class="imgs" />
+                        <img src="@/assets/ctw.png" class="imgs" />
+                        <img src="@/assets/cboard.png" class="imgs" />
+                        <img src="@/assets/cn.png" class="imgs" />
+                        <img src="@/assets/cyt.png" class="imgs" />
+                        <img src="@/assets/cig.png" class="imgs" />
+                        <img src="@/assets/Block.png" class="imgs" />
+                        <img src="@/assets/tt.png" class="imgs" />
+                        <img src="@/assets/ctd.png" class="imgs" /> -->
                         <img src="@/assets/cfb.png" class="imgs" @click="exportSource('facebook')" />
                         <img src="@/assets/ctw.png" class="imgs" @click="exportSource('twitter')"/>
                         <img src="@/assets/cboard.png" class="imgs" @click="exportSource('pantip')"/>
@@ -277,6 +286,8 @@ export default {
                 };
 
                 this.total = orderedCounts.reduce((sum, val) => sum + val, 0);
+                console.log('total : ', this.total);
+                this.$emit('totalPost',this.total )
             } catch (error) {
                 console.error(error);
             }
@@ -298,7 +309,7 @@ export default {
 }
 
 .col-10 {
-    right: 43px;
+    right: 30px;
 }
 
 .g-social {
@@ -306,23 +317,31 @@ export default {
 }
 
 .imgs {
-    width: 28px;
+    width: 30px;
     display: block;
-    margin-bottom: 13px;
+    margin-bottom: 10px;
     cursor: pointer;
 }
 
-@media only screen and (min-width: 0px) and (max-width: 1220px) {
+@media only screen and (min-width: 992px) and (max-width: 1000px) {
     .col-10 {
-        right: 23px !important;
+        right: 13px !important;
     }
 }
-
+@media only screen and (min-width: 730px) and (max-width: 991px) {
+    .col-10 {
+        right: 19px !important;
+    }
+}
+@media only screen and (min-width: 0px) and (max-width: 729px) {
+    .col-10 {
+        right: 5px !important;
+    }
+}
 @media only screen and (min-width: 0px) and (max-width: 991px) {
     .col-2 {
         text-align: -webkit-right;
     }
 }
-
 @media only screen and (min-width: 0px) and (max-width: 750px) {}
 </style>

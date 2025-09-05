@@ -1,7 +1,7 @@
 <template>
  <div >    
-  <h1 class="title">Setting</h1>
-    <b-container>
+     <b-container>
+        <h1 class="text-left bold py-4">Setting</h1>
       <b-row>
         <b-col class="text-left">
           <span class="h4"
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { data } from "jquery";
+// import { data } from "jquery";
 
 export default {
   name: "SettingHead",

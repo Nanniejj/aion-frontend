@@ -4,62 +4,61 @@
     <!-- <vue-element-loading :active="getLoadStatus" :is-full-screen="true" size='80' 
     background-color='rgba(0, 0, 0, 0.3)' color='#fff' spinner="bar-fade-scale" /> -->
     <div id="content">
-      <b-container fluid id="tp-size">
-        <div class="d-flex">
-          <h1 class="title ">Setting</h1>
-
-          <div class="h4 mb-3 float-right d-flex mt-3 box-menu-monitor"
-            style="position:relative;margin-left: auto; margin-right: 0;">
-            <div class=" icon-monitor1" @click="$router.push({
-              name: 'UserLineList', query: {
-                from: $route.name  
-              }
-            })" v-b-tooltip.hover title="Alert" v-if="username == 'adminatapy' || username == 'adminpeach'">
-              <b-iconstack font-scale="2">
-                <b-icon stacked icon="circle"></b-icon>
-                <b-icon stacked icon="bell" scale="0.5"></b-icon>
-              </b-iconstack>
-              <div class="d-blocktext-center h6  my-2 d-none">
-                Alert
-              </div>
-            </div>
-            <div class="icon-monitor1" @click="$router.push({ name: 'FaceRecognition' })" v-b-tooltip.hover
-              title="Face Recognition">
-              <b-iconstack font-scale="2">
-                <b-icon stacked icon="circle"></b-icon>
-                <b-icon stacked icon="person-bounding-box" scale="0.5"></b-icon>
-              </b-iconstack>
-              <div class="d-blocktext-center h6  my-2 d-none">
-                Face Recognition
-              </div>
-            </div>
-            <div class="icon-monitor1" @click="$router.push({ name: 'SearchKeywordSetting' })" v-b-tooltip.hover
-              title="Search Keyword">
-              <b-iconstack font-scale="2">
-                <b-icon stacked icon="circle"></b-icon>
-                <b-icon stacked icon="search" scale="0.5"></b-icon>
-              </b-iconstack>
-              <div class="h6 text-center my-2 d-none">
-                Search Keyword
-              </div>
-            </div>
-          </div>
-        </div>
-        <b-container>
-          <b-row>
-            <b-col class="text-left">
-              <h4 class=""><a>จัดการ Domain</a></h4>
-            </b-col>
-            <b-col class="text-right">
-              <i class="fa fa-print" @click="printWindow()" style="font-size:25px;cursor: pointer;" />
-            </b-col>
-          </b-row>
+        <b-container fluid id="tp-size">
+            <b-row class="m-0">
+                <b-col class="text-left title ml-0 px-0 pb-0">
+                    <h1 class="bold">Setting</h1>
+                </b-col>
+                <h4 class="mb-3 float-right d-flex mt-3 box-menu-monitor"
+                    style="position:relative;margin-left: auto; margin-right: 0;">
+                    <div class=" icon-monitor1" @click="$router.push({
+                    name: 'UserLineList', query: {
+                        from: $route.name  
+                    }
+                    })" v-b-tooltip.hover title="Alert" v-if="username == 'adminatapy' || username == 'adminpeach'">
+                    <b-iconstack font-scale="2">
+                        <b-icon stacked icon="circle"></b-icon>
+                        <b-icon stacked icon="bell" scale="0.5"></b-icon>
+                    </b-iconstack>
+                    <div class="d-blocktext-center h6  my-2 d-none">
+                        Alert
+                    </div>
+                    </div>
+                    <div class="icon-monitor1" @click="$router.push({ name: 'FaceRecognition' })" v-b-tooltip.hover
+                    title="Face Recognition">
+                    <b-iconstack font-scale="2">
+                        <b-icon stacked icon="circle"></b-icon>
+                        <b-icon stacked icon="person-bounding-box" scale="0.5"></b-icon>
+                    </b-iconstack>
+                    <div class="d-blocktext-center h6  my-2 d-none">
+                        Face Recognition
+                    </div>
+                    </div>
+                    <div class="icon-monitor1" @click="$router.push({ name: 'SearchKeywordSetting' })" v-b-tooltip.hover
+                    title="Search Keyword">
+                    <b-iconstack font-scale="2">
+                        <b-icon stacked icon="circle"></b-icon>
+                        <b-icon stacked icon="search" scale="0.5"></b-icon>
+                    </b-iconstack>
+                    <div class="h6 text-center my-2 d-none">
+                        Search Keyword
+                    </div>
+                    </div>
+                    <div class="icon-monitor1" @click="printWindow()" v-b-tooltip.hover
+                    title="Print">
+                    <b-iconstack font-scale="2">
+                        <b-icon stacked icon="circle"></b-icon>
+                        <!-- <i class="fa fa-print" style="font-size:25px;cursor: pointer;" /> -->
+                        <b-icon stacked icon="printer-fill" scale="0.5"></b-icon>
+                    </b-iconstack>
+                    <div class="h6 text-center my-2 d-none">
+                        Print
+                    </div>
+                    </div>
+                </h4>
+            </b-row>
         </b-container>
-        <div>
-
-        </div>
         <TemplateDomain />
-      </b-container>
     </div>
   </div>
 </template>
@@ -189,7 +188,9 @@ button {
 * {
   font-family: "Prompt", "FontAwesome", sans-serif;
 }
-
+#tp-size {
+  width: 85%;
+}
 #content {
   max-width: 93%;
   margin: auto;
