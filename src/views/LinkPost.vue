@@ -95,15 +95,13 @@
 
         </b-form>
       </b-card>
-
+      <!-- <ChartTime :filters="paramTo" /> -->
       <!-- Loading -->
 
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />
       </div>
-
-
       <!-- Timeline -->
       <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
         @changeDaySort="changeDaySort" :count="count" v-else />
@@ -116,6 +114,8 @@
           <span> <i class="fa fa-plus" aria-hidden="true"></i> More</span>
         </b-button>
       </div>
+
+
       <back-to-top bottom="50px" right="50px">
         <button type="button" class="btn btn-to-top">
           <i class="fa fa-chevron-up"></i>
@@ -130,10 +130,11 @@ import HomeNav from "@/components/HomeNav.vue";
 import LinkMain2 from "@/components/linknode/LinkMain2.vue";
 import TimelinePosts from "@/components/linknode/TimelinePosts2.vue";
 import { mapGetters } from "vuex";
+import ChartTime from "@/components/linknode/ChartTime.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
 export default {
-  components: { HomeNav, LinkMain2, TimelinePosts },
+  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime },
   watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
@@ -163,6 +164,7 @@ export default {
   ,
   data() {
     return {
+      paramTo: {},
       dayLoadingMap: {},
       dayPageMap: {},      // { '2025-08-26': 1, ... }
       dayLimitMap: {},     // { '2025-08-26': 10, ... } (ถ้าต้องการปรับต่อวัน)
@@ -291,6 +293,7 @@ export default {
         end: `${ymd}T23:59:59`,
       };
       Object.keys(p).forEach((k) => (p[k] == null || p[k] === "") && delete p[k]);
+      this.paramTo = p
       return p;
     },
 

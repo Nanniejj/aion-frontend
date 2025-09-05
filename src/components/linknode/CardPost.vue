@@ -24,9 +24,15 @@
       <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" size="34" />
       <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" size="34" />
     </div>
-    <div class="my-2 py-2" style="height:100%;overflow-y:auto;"  v-if="post.full_text">
-      <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'100'" class="small" :page="'slider'"/>
-    </div>
+    <!-- แนะนำให้กันพื้นที่ไม่ให้ footer ทับ ด้วย padding-bottom -->
+<div class="my-2 py-2" style="padding-bottom:70px;" v-if="post.full_text" >
+  <ScrollText
+    :text="post.full_text.replace('...___...','')"
+   :maxHeight="post.photos && post.photos.length ? '100px' : '250px'"
+    :searchWords="getSearchWords"
+  />
+</div>
+
 
     <!-- <div class="text-left small d-flex align-items-center mt-2">
       <b-avatar size="32" :src="post.profile_image" class="mr-2" />
@@ -109,13 +115,14 @@
 </template>
 
 <script>
+import ScrollText from "./ScrollText.vue";
 import ReadMoreBox from "./ReadMore.vue";
 import moment from "moment";
 import "moment/locale/th";
 import { mapGetters } from "vuex";
 export default {
   name: "CardPost",
-  components: { ReadMoreBox },
+  components: { ReadMoreBox,ScrollText },
   props: {
     loadingCard: { type: Boolean, default: false },
     post: {
@@ -152,7 +159,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      "getLoadCardPost",
+      "getLoadCardPost","getSearchWords"
     ]),
     sentimentString() {
       if (this.post.sentiment === -1) return "negative";
@@ -235,71 +242,7 @@ background: linear-gradient(90deg,rgba(42, 123, 155, 0.38) 0%, rgba(87, 199, 133
   z-index: 9999;
 }
 
-/* wrapper ให้มี padding ข้าง ๆ */
-.timeline-wrapper {
-  padding: 8px 8px 16px;
-}
 
-/* คอลัมน์เส้นไทม์ไลน์ */
-.timeline {
-  position: relative;
-  margin-left: 10px;
-  /* เผื่อระยะให้ dot */
-}
-
-/* แต่ละรายการ */
-.timeline-item {
-  position: relative;
-}
-
-/* วงจุด + เส้นแนวตั้ง */
-.timeline-dot {
-  width: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 8px;
-}
-
-.timeline-dot .dot {
-  width: 12px;
-  height: 12px;
-  background: #0d6efd;
-  border-radius: 50%;
-  display: inline-block;
-  z-index: 2;
-  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
-}
-
-.timeline-dot .line {
-  flex: 1;
-  width: 2px;
-  background: #e9ecef;
-  margin-top: 6px;
-}
-
-/* การ์ดของโพสต์ */
-.timeline-card {
-  width: 60%;
-  border: 0;
-  border-left: 4px solid #0d6efd;
-  border-radius: 12px;
-  padding: 12px 14px;
-  height: 200px;
-}
-
-/* โปรไฟล์เป็นวงกลมขนาดพอดี */
-.profile-img {
-  width: 44px;
-  height: 44px;
-
-}
-
-/* รูปคอนเทนท์ใหญ่ */
-.timeline-photo {
-  max-height: 260px;
-  object-fit: cover;
-}
 
 /* ปรับระยะเล็กน้อย */
 h5 {
