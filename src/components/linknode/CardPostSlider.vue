@@ -64,7 +64,7 @@
                 "
               /> -->
               <CardPost v-for="(post, index) in currentPosts" :key="post._id || `${post.source}:${post.url_post}`"
-                :post="post" :index="index" :domain="currentDomain" @click.native="$emit('selectPost', post)"
+                :post="post" :index="index"  @click.native="$emit('selectPost', post)"
                 class="mx-2" :loading-card="dayLoading || selectingId === (post._id || post.url_post)" />
 
 

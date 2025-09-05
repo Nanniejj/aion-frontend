@@ -585,7 +585,7 @@
             </b-col>
           </b-row>
                   <div class="text-left ai-box mt-2"
-          v-if="datas && datas.photos_text && datas.photos_text.length && username == 'adminatapy'"
+          v-if="datas && datas.photos_text && datas.photos_text.length"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.photos_text" >
            

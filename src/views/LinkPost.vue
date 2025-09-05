@@ -95,15 +95,13 @@
 
         </b-form>
       </b-card>
-
+      <!-- <ChartTime :filters="paramTo" /> -->
       <!-- Loading -->
 
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />
       </div>
-
-
       <!-- Timeline -->
       <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
         @changeDaySort="changeDaySort" :count="count" v-else />
@@ -117,6 +115,12 @@
         </b-button>
       </div>
 
+
+      <back-to-top bottom="50px" right="50px">
+        <button type="button" class="btn btn-to-top">
+          <i class="fa fa-chevron-up"></i>
+        </button>
+      </back-to-top>
     </div>
   </div>
 </template>
@@ -126,10 +130,11 @@ import HomeNav from "@/components/HomeNav.vue";
 import LinkMain2 from "@/components/linknode/LinkMain2.vue";
 import TimelinePosts from "@/components/linknode/TimelinePosts2.vue";
 import { mapGetters } from "vuex";
+import ChartTime from "@/components/linknode/ChartTime.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
 export default {
-  components: { HomeNav, LinkMain2, TimelinePosts },
+  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime },
   watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
@@ -159,6 +164,7 @@ export default {
   ,
   data() {
     return {
+      paramTo: {},
       dayLoadingMap: {},
       dayPageMap: {},      // { '2025-08-26': 1, ... }
       dayLimitMap: {},     // { '2025-08-26': 10, ... } (ถ้าต้องการปรับต่อวัน)
@@ -287,10 +293,14 @@ export default {
         end: `${ymd}T23:59:59`,
       };
       Object.keys(p).forEach((k) => (p[k] == null || p[k] === "") && delete p[k]);
+      this.paramTo = p
       return p;
     },
 
     async apiTimeline() {
+
+
+
       if (this.filters.view_mode === 'daily') return this.apiTimelineDaily();
       this.loading = true;
       try {
@@ -492,6 +502,12 @@ export default {
         this.dayLimitMap = {};
         this.daySortMap = {};
       }
+      let inputkeyword = (this.filters.keywordInput || "")
+        .split(",")
+        .map(group => group.trim().split(/\s+|\+/).filter(Boolean))
+        .flat()
+      this.$store.commit("setSearchWords", inputkeyword)
+
 
       this.postsFromApi = [];
       this.apiTimeline();
@@ -529,6 +545,25 @@ export default {
   min-width: 220px;
 }
 
+.btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+  background-color: #fed16e;
+  border-color: #fed16e;
+  color: #fff;
+  box-shadow: 2px 1px 4px #888888;
+}
+
+.btn-to-top:hover {
+  background-color: #f7c24e;
+  border-color: #f7c24e;
+  color: #fff;
+}
+
 .mx-input {
   display: inline-block;
   -webkit-box-sizing: border-box;
@@ -556,6 +591,17 @@ export default {
 
 /* จอมือถือ */
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  .vue-back-to-top {
+    right: 14px !important;
+  }
+
+  .btn-to-top {
+    width: 50px;
+    height: 50px;
+    padding: 10px 13px;
+
+  }
+
   #overflow-page>div.container.my-3>div.card.mb-3.shadow-sm>div>form>div.row.mt-2.justify-content-end {
     zoom: 87% !important;
     width: 100% !important;

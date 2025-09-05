@@ -518,7 +518,7 @@
           </b-col>
         </b-row>
             <div class="text-left ai-box mt-2"
-          v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length && username == 'adminatapy'"
+          v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in profilePost.photos_text" >
            

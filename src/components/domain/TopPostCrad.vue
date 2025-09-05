@@ -161,7 +161,7 @@
                   </div>
                 </b-col>
                 <b-col>
-                  <div v-if="postDomain.source == 'tiktok' && postDomain.uid">
+                  <div v-if="postDomain.source == 'tiktok' && postDomain.uid" class="">
                     <a v-bind:href="postDomain.url_post" target="_blank">
                       <img :src="postDomain.photos && postDomain.photos[0]" onerror="this.style.display='none'"
                         style="height:450px;border-radius: 10px;" class="my-3" />
@@ -211,17 +211,22 @@
                 </b-col>
               </b-row>
               <div class="text-left ai-box mt-2"
-                v-if="postDomain && postDomain.photos_text && postDomain.photos_text.length && username == 'adminatapy'"
+                v-if="postDomain && postDomain.photos_text && postDomain.photos_text.length"
                 style="font-size: 15px;font-weight: 500;">
                 <div v-for="(text, idx) in postDomain.photos_text">
 
-                  <div v-if="text && text.length">
-                    <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
-                    </b-avatar>
-                    <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
-                    </span>
-                    <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
-                    {{ text }}
+                  <div v-if="text && text.text && text.text.length" class="d-none">
+
+                    <!-- ปุ่ม toggle -->
+                    <b-button size="sm" variant="outline-primary" @click="toggleShow(idx)">
+                      <img width="25" height="25" src="https://img.icons8.com/ios/50/printed-ocr.png"
+                        alt="printed-ocr" />OCR
+                    </b-button>
+
+                    <!-- เนื้อหา OCR แสดง/ซ่อน -->
+                    <div v-show="visibleIndex === idx" class="mt-2 p-2" style="background:#f7f7f7; border-radius:6px;">
+                      {{ text.text }}
+                    </div>
                   </div>
                   <div v-if="text.face">
                     <span v-for="(face, idx) in text.face">
@@ -234,7 +239,7 @@
                           {{ face.person_name }}
                           <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
                             parseFloat((face.confidence * 100).toFixed(2))
-                            }}%)</span></span></span>
+                          }}%)</span></span></span>
                     </span>
                   </div>
                 </div>
@@ -305,12 +310,12 @@
                 <div v-if="postDomain.face_detect && postDomain.person_name && postDomain.person_name.length">
                   <span v-for="(face, idx) in postDomain.person_name" :key="idx">
                     <span class="mr-2 mt-1" v-if="face">
-                        <span style="background: #e5e5e5;
+                      <span style="background: #e5e5e5;
                             padding: 0px 6px;
                             border-radius: 13px;">
-                            <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                            {{ face }}
-                        </span>
+                        <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                        {{ face }}
+                      </span>
                     </span>
                   </span>
                 </div>
@@ -544,30 +549,61 @@
                       <!-- end yt -->
                     </span>
                   </span>
-
-                  <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
-                    title="comments analysis" class="float-right" v-if="postDomain.summarize">
-                    <!-- <b-icon icon="sparkles" scale="1"></b-icon>
+                  <div class="float-right">
+                    <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR"
+                      class=" btn-ocr d-none"
+                      v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text">
+                      <!-- <b-icon icon="sparkles" scale="1"></b-icon>
                   <i class="fas fa-sparkles"></i>
                   <i class="fa-solid fa-sparkles"></i> -->
-                    <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
-                      alt="sparkling" style="filter: brightness(0) invert(1);" />
-                    <span class="md-font">
-                      Analysis
+                      <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png"
+                        alt="printed-ocr" style="filter: brightness(0) invert(1);" />
+                      <!-- <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                      alt="sparkling" style="filter: brightness(0) invert(1);" /> -->
+                      <span class="md-font">
+                        OCR
+                      </span>
                     </span>
-                  </span>
+                    <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
+                      title="comments analysis" v-if="postDomain.summarize">
+                      <!-- <b-icon icon="sparkles" scale="1"></b-icon>
+                  <i class="fas fa-sparkles"></i>
+                  <i class="fa-solid fa-sparkles"></i> -->
+                      <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                        alt="sparkling" style="filter: brightness(0) invert(1);" />
+                      <span class="md-font">
+                        Analysis
+                      </span>
+                    </span>
+                  </div>
                 </div>
 
+                <b-collapse :id="'ocr-text' + page + k" class="mt-2" v-if="postDomain && postDomain.photos_text">
+                  <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
+                    <div v-for="(text, idx) in postDomain.photos_text">
+
+                      <div v-if="text && text.text && text.text.length">
+                        <div class="bold my-2">
+                          <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" />
+                          OCR
+                        </div>
+                        <div class="mt-2 p-2">
+                          <div v-html="formatOCR(text.text)" class="rich"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </b-card>
+                </b-collapse>
                 <b-collapse :id="'summarize' + page + k" class="mt-2"
                   v-if="postDomain.summarize && postDomain.summarize.length">
                   <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
                     <div>
-                        <div class="bold my-2">
-                            <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
-                            Comments Analysis
-                        </div>
-                        <div v-html="formatSummarize(postDomain.summarize)"></div>
-                        <!-- <SummarizeCommentChart :series="handleSeries()"/> -->
+                      <div class="bold my-2">
+                        <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
+                        Comments Analysis
+                      </div>
+                      <div v-html="formatSummarize(postDomain.summarize)"></div>
+                      <!-- <SummarizeCommentChart :series="handleSeries()"/> -->
                     </div>
                   </b-card>
                 </b-collapse>
@@ -676,6 +712,7 @@ export default {
   },
   data() {
     return {
+      visibleIndex: null,
       textToHighlight: "",
       accName: "",
       objId: "",
@@ -729,177 +766,198 @@ export default {
       "getClickDomainId"
     ]),
   },
-    methods: {
-        handleSeries() {
-            const keys = ["agree", "disagree", "neutral"];
-            
-            // สุ่มค่าเริ่มต้น
-            let arr = Array.from({ length: keys.length }, () => Math.random());
-            
-            
-            // ผลรวมทั้งหมด
-            const sum = arr.reduce((a, b) => a + b, 0);
-            
-            // แปลงเป็นเปอร์เซนต์รวม 100
-            arr = arr.map(x => +(x / sum * 100).toFixed(1));
-            
-            // ปรับตัวสุดท้ายให้รวมเท่ากับ 100
-            const total = arr.reduce((a, b) => a + b, 0);
-            arr[arr.length - 1] += +(100 - total).toFixed(1);
-            
-            // สร้าง object ()
-            const obj = {
-                agree: arr[0],
-                disagree: arr[1],
-                neutral: arr[2]
-            };
-            console.log(obj);
-            // return array ตามลำดับ [agree, disagree, neutral]
-            return [obj.agree, obj.disagree, obj.neutral];
-        },
-
-        formatSummarize(text) {
-            if (!text) return '';
-            // this.getChartLable(text);
-            const paragraphs = text.split(/\n\n+/).map(p =>
-            `<p style="margin: 0 0 6px; line-height: 1.4;">${p.replace(/\n/g, '<br>')}</p>`
-        );
-        return paragraphs.join('');
-        },
-        filterNumbers(numbers) {
-        // Create a copy of the numbers array and sort by length
-        const filtered = [...numbers].sort(
-            (a, b) => a.toString().length - b.toString().length
-        );
-
-        for (let i = 0; i < filtered.length; i++) {
-            for (let j = i + 1; j < filtered.length; j++) {
-            const num1 = filtered[i].toString();
-            const num2 = filtered[j].toString();
-
-            // If num1 matches the start of num2, remove num1
-            if (num2.startsWith(num1)) {
-                filtered.splice(i, 1); // Remove num1
-                i--; // Adjust index after removal
-                break; // Restart the inner loop
-            }
-            }
-        }
-
-        return filtered; // Return filtered array
-        },
-        matchGeocode(geocode) {
-        const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
-        let found = null;
-
-        // กรองข้อมูลตามความยาว geocode
-        if (geocodeStr.length === 2) {
-            found = provinces[geocodeStr];
-        } else if (geocodeStr.length === 4) {
-            found = districts[geocodeStr];
-        } else if (geocodeStr.length === 6) {
-            found = subdistricts[geocodeStr];
-        }
-
-        // Return the found location or a fallback message
-        return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
-        },
-        getTheSelected(k, v, uid) {
-        var err;
-        if (v == 1) {
-            err = "Positive";
-        } else if (v == 0) {
-            err = "Neutral";
-        } else {
-            err = "Negative";
-        }
-        this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?").then(
-            () => {
-            const encoded = encodeURI(uid);
-            var _this = this;
-            var config = {
-                method: "get",
-                url:
-                "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
-                encoded +
-                "&sentiment=" +
-                v,
-                headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
-                },
-            };
-            this.axios(config)
-                .then(function (response) {
-                console.log(response);
-
-                if (v == 1) {
-                    _this.getTopPostDomain[k].sentiment = 1;
-                    _this.getTopPostDomain[k].user_sentiment[_this.objId] = 1;
-                } else if (v == 0) {
-                    _this.getTopPostDomain[k].sentiment = 0;
-                    _this.getTopPostDomain[k].user_sentiment[_this.objId] = 0;
-                } else {
-                    _this.getTopPostDomain[k].sentiment = -1;
-                    _this.getTopPostDomain[k].user_sentiment[_this.objId] = -1;
-                }
-                })
-                .catch(function (response) {
-                console.log("errrrrrr", response.message);
-                });
-            }
-        );
-        },
-        highlightText(full_text) {
-        var word = [];
-        if (this.checked) {
-            word.push(...this.heightword);
-            if (this.andkey.length) {
-            this.andkey.forEach(function (key) {
-
-                if (
-                key.length == 2 &&
-                full_text.includes(key[0]) &&
-                full_text.includes(key[1])
-                ) {
-
-
-                word.push(...key);
-                }
-
-                if (
-                key.length == 3 &&
-                full_text.includes(key[0]) &&
-                full_text.includes(key[1]) &&
-                full_text.includes(key[2])
-                ) {
-                word.push(...key);
-                }
-                if (
-                key.length == 4 &&
-                full_text.includes(key[0]) &&
-                full_text.includes(key[1]) &&
-                full_text.includes(key[2]) &&
-                full_text.includes(key[3])
-                ) {
-                word.push(...key);
-                }
-            });
-
-
-            }
-        }
-        return word;
-        },
-        setAltImg(event) {
-        event.target.src = this.default_avatar;
-        },
-        onClick(i, data) {
-            console.log(data);
-            this.index = i;
-            this.dataPhoto = data;
-        },
+  methods: {
+    toggleShow(i) {
+      this.visibleIndex = this.visibleIndex === i ? null : i;
     },
+    handleSeries() {
+      const keys = ["agree", "disagree", "neutral"];
+
+      // สุ่มค่าเริ่มต้น
+      let arr = Array.from({ length: keys.length }, () => Math.random());
+
+
+      // ผลรวมทั้งหมด
+      const sum = arr.reduce((a, b) => a + b, 0);
+
+      // แปลงเป็นเปอร์เซนต์รวม 100
+      arr = arr.map(x => +(x / sum * 100).toFixed(1));
+
+      // ปรับตัวสุดท้ายให้รวมเท่ากับ 100
+      const total = arr.reduce((a, b) => a + b, 0);
+      arr[arr.length - 1] += +(100 - total).toFixed(1);
+
+      // สร้าง object ()
+      const obj = {
+        agree: arr[0],
+        disagree: arr[1],
+        neutral: arr[2]
+      };
+      console.log(obj);
+      // return array ตามลำดับ [agree, disagree, neutral]
+      return [obj.agree, obj.disagree, obj.neutral];
+    },
+    formatOCR(text) {
+      if (text == null) return ''
+      const s = String(text).trim()
+      // escape HTML เบื้องต้น (กันสคริปต์แปลก ๆ)
+      const esc = s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
+      // แยกย่อหน้าเว้นบรรทัด, แล้วแปลง \n เป็น <br>
+      return esc
+        .split(/\r?\n\r?\n+/)
+        .map(p => `<p class="p">${p.replace(/\r?\n/g, '<br>')}</p>`)
+        .join('')
+    },
+    formatSummarize(text) {
+      // console.log('text', text);
+
+      if (!text) return '';
+      // this.getChartLable(text);
+      const paragraphs = text.split(/\n\n+/).map(p =>
+        `<p style="margin: 0 0 6px; line-height: 1.4;">${p.replace(/\n/g, '<br>')}</p>`
+      );
+      return paragraphs.join('');
+    },
+    filterNumbers(numbers) {
+      // Create a copy of the numbers array and sort by length
+      const filtered = [...numbers].sort(
+        (a, b) => a.toString().length - b.toString().length
+      );
+
+      for (let i = 0; i < filtered.length; i++) {
+        for (let j = i + 1; j < filtered.length; j++) {
+          const num1 = filtered[i].toString();
+          const num2 = filtered[j].toString();
+
+          // If num1 matches the start of num2, remove num1
+          if (num2.startsWith(num1)) {
+            filtered.splice(i, 1); // Remove num1
+            i--; // Adjust index after removal
+            break; // Restart the inner loop
+          }
+        }
+      }
+
+      return filtered; // Return filtered array
+    },
+    matchGeocode(geocode) {
+      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+      let found = null;
+
+      // กรองข้อมูลตามความยาว geocode
+      if (geocodeStr.length === 2) {
+        found = provinces[geocodeStr];
+      } else if (geocodeStr.length === 4) {
+        found = districts[geocodeStr];
+      } else if (geocodeStr.length === 6) {
+        found = subdistricts[geocodeStr];
+      }
+
+      // Return the found location or a fallback message
+      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
+    getTheSelected(k, v, uid) {
+      var err;
+      if (v == 1) {
+        err = "Positive";
+      } else if (v == 0) {
+        err = "Neutral";
+      } else {
+        err = "Negative";
+      }
+      this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?").then(
+        () => {
+          const encoded = encodeURI(uid);
+          var _this = this;
+          var config = {
+            method: "get",
+            url:
+              "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
+              encoded +
+              "&sentiment=" +
+              v,
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+              "Content-Type": "application/json",
+            },
+          };
+          this.axios(config)
+            .then(function (response) {
+              console.log(response);
+
+              if (v == 1) {
+                _this.getTopPostDomain[k].sentiment = 1;
+                _this.getTopPostDomain[k].user_sentiment[_this.objId] = 1;
+              } else if (v == 0) {
+                _this.getTopPostDomain[k].sentiment = 0;
+                _this.getTopPostDomain[k].user_sentiment[_this.objId] = 0;
+              } else {
+                _this.getTopPostDomain[k].sentiment = -1;
+                _this.getTopPostDomain[k].user_sentiment[_this.objId] = -1;
+              }
+            })
+            .catch(function (response) {
+              console.log("errrrrrr", response.message);
+            });
+        }
+      );
+    },
+    highlightText(full_text) {
+      var word = [];
+      if (this.checked) {
+        word.push(...this.heightword);
+        if (this.andkey.length) {
+          this.andkey.forEach(function (key) {
+
+            if (
+              key.length == 2 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1])
+            ) {
+
+
+              word.push(...key);
+            }
+
+            if (
+              key.length == 3 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2])
+            ) {
+              word.push(...key);
+            }
+            if (
+              key.length == 4 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2]) &&
+              full_text.includes(key[3])
+            ) {
+              word.push(...key);
+            }
+          });
+
+
+        }
+      }
+      return word;
+    },
+    setAltImg(event) {
+      event.target.src = this.default_avatar;
+    },
+    onClick(i, data) {
+      console.log(data);
+      this.index = i;
+      this.dataPhoto = data;
+    },
+  },
   destroyed() {
     this.$store.commit("setTopPostDomain", "");
   },
@@ -933,7 +991,7 @@ export default {
         // sentiment: this.status,
         sort_by: "engagement",
         offset: 0,
-       // domain: "All",
+        // domain: "All",
         // dashboard: true,
       });
     }
@@ -959,6 +1017,11 @@ export default {
 </script>
 
 <style scoped>
+.rich .p {
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
 .summary-text {
   line-height: 1.4;
   /* ลดจากปกติ (1.6–1.8) */
@@ -1358,6 +1421,11 @@ a {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
+  .btn-ocr {
+    right: 100px !important;
+    top: -52px !important;
+  }
+
   #box-summarize {
     /* display: grid;
    width: 50px;

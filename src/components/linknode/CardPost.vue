@@ -6,7 +6,7 @@
       color="#b6ac9a" />
     <div class="position-relative">
 
-      <b-img      :src="(post.source === 'tiktok' ? require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')" v-if="post.photos && post.photos.length"
+      <b-img   @error="setAltImg"    :src="(post.source === 'tiktok' ?  post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')" v-if="post.photos && post.photos.length"
         style="height:150px; width:100%; object-fit:cover; object-position:center;"></b-img>
 
       <!-- <b-img cover :src="post.photos[0]" v-if="post.photos && post.photos.length" style="height:150px;" /> -->
@@ -15,56 +15,7 @@
         <i class="fa fa-newspaper-o fa-2x"></i>
         {{ domain || post.source || "ไม่ทราบแหล่งที่มา" }}
       </div> -->
-      <div class=" text-left d-block small mt-1 text-muted" style="font-size: 11px;">
-        <span class="d-inline-block box-link" @click="$emit('goPost', { post, type: 'engages' })">
-          <i class="fas fa-chart-line"></i>
-          <span>
-            {{ post.engagement | numFormat }} </span>
-        </span>
-        <span class="d-inline-block box-link">
-          <i class="fa fa-thumbs-up ml-2" aria-hidden="true"></i>
-          {{ post.likes_count | numFormat }} </span>
-
-        <!-- {{post}} -->
-        <span class="d-inline-block box-link">
-          <i class="fa fa-comment ml-2" aria-hidden="true"></i>
-          <span>
-            {{ post.comments_count | numFormat }} </span>
-        </span>
-        <span v-if="post.retweets_count" class="d-inline-block box-link">
-          <i class="fal fa-retweet"></i>
-          {{ post.retweets_count | numFormat }}
-        </span>
-        <span v-if="post.shares_count" class="d-inline-block box-link">
-          <i class="fa fa-share"></i>
-          {{ post.shares_count | numFormat }}
-        </span>
-        <span v-if="post.views_count" class="d-inline-block box-link">
-          <i class="fas fa-eye"></i>
-          {{ post.views_count | numFormat }}
-        </span>
-        <!-- Reactions -->
-        <span v-if="post.reaction">
-          <span v-if="post.reaction.Love" class="d-inline-block box-link">
-            ❤️ {{ post.reaction.Love | numFormat }}
-          </span>
-          <span v-if="post.reaction.Wow" class="d-inline-block box-link">
-            😮 {{ post.reaction.Wow | numFormat }}
-          </span>
-          <span v-if="post.reaction.Haha" class="d-inline-block box-link">
-            😂 {{ post.reaction.Haha | numFormat }}
-          </span>
-          <span v-if="post.reaction.Sad" class="d-inline-block box-link">
-            😢 {{ post.reaction.Sad | numFormat }}
-          </span>
-          <span v-if="post.reaction.Angry" class="d-inline-block box-link">
-            😡 {{ post.reaction.Angry | numFormat }}
-          </span>
-          <span v-if="post.reaction.Hug" class="d-inline-block box-link">
-            🤗 {{ post.reaction.Hug | numFormat }}
-          </span>
-        </span>
-      </div>
+     
     </div>
 
     <div class="position-absolute pl-1  pb-1"
@@ -73,9 +24,15 @@
       <b-avatar variant="primary" icon="emoji-neutral" v-if="sentimentString === 'neutral'" size="34" />
       <b-avatar variant="danger" icon="emoji-frown" v-if="sentimentString === 'negative'" size="34" />
     </div>
-    <div class="my-2 " style="height:100%;overflow-y:auto;"  v-if="post.full_text">
-      <ReadMoreBox :item="{ title: post.full_text.replace('...___...','') }" :maxHeight="'auto'" class="small" />
-    </div>
+    <!-- แนะนำให้กันพื้นที่ไม่ให้ footer ทับ ด้วย padding-bottom -->
+<div class="my-2 py-2" style="padding-bottom:70px;" v-if="post.full_text" >
+  <ScrollText
+    :text="post.full_text.replace('...___...','')"
+   :maxHeight="post.photos && post.photos.length ? '100px' : '250px'"
+    :searchWords="getSearchWords"
+  />
+</div>
+
 
     <!-- <div class="text-left small d-flex align-items-center mt-2">
       <b-avatar size="32" :src="post.profile_image" class="mr-2" />
@@ -84,7 +41,7 @@
 
     <div class="position-absolute text-left"
       style="bottom:-6px;left:0px;background-color:white;width: 100%;height: 52px;"></div>
-    <div class="position-absolute text-left" style="bottom:15px;left:10px;background-color:white;width: 100%;">
+    <div class="position-absolute text-left" style="bottom:5px;left:10px;background-color:white;width: 100%;">
 
       <b-avatar size="34" :src="post.profile_image" class="mr-2" />
       <img v-if="post.source === 'twitter'" :src="imgtw" class="social-img" />
@@ -102,20 +59,70 @@
       <span class="small text-muted text-left " style="font-size: 12px;">
         {{ formatTime(post.date) }}
       </span>
+ <div class=" text-left d-block small mt-1 text-muted" style="font-size: 11px;">
+        <span class="d-inline-block box-link ml-2" @click="$emit('goPost', { post, type: 'engages' })">
+          <i class="fas fa-chart-line"></i>
+          <span>
+            {{ post.engagement | numFormat }} </span>
+        </span>
+        <span class="d-inline-block box-link ml-2">
+          <i class="fa fa-thumbs-up " aria-hidden="true"></i>
+          {{ post.likes_count | numFormat }} </span>
 
+        <!-- {{post}} -->
+        <span class="d-inline-block box-link ml-2">
+          <i class="fa fa-comment" aria-hidden="true"></i>
+          <span>
+            {{ post.comments_count | numFormat }} </span>
+        </span>
+        <span v-if="post.retweets_count" class="d-inline-block box-link ml-2">
+          <i class="fal fa-retweet"></i>
+          {{ post.retweets_count | numFormat }}
+        </span>
+        <span v-if="post.shares_count" class="d-inline-block box-link ml-2">
+          <i class="fa fa-share"></i>
+          {{ post.shares_count | numFormat }}
+        </span>
+        <span v-if="post.views_count" class="d-inline-block box-link ml-2">
+          <i class="fas fa-eye"></i>
+          {{ post.views_count | numFormat }}
+        </span>
+        <!-- Reactions -->
+        <span v-if="post.reaction">
+          <span v-if="post.reaction.Love" class="d-inline-block box-link ml-2">
+            ❤️ {{ post.reaction.Love | numFormat }}
+          </span>
+          <span v-if="post.reaction.Wow" class="d-inline-block box-link ml-2">
+            😮 {{ post.reaction.Wow | numFormat }}
+          </span>
+          <span v-if="post.reaction.Haha" class="d-inline-block box-link ml-2">
+            😂 {{ post.reaction.Haha | numFormat }}
+          </span>
+          <span v-if="post.reaction.Sad" class="d-inline-block box-link ml-2">
+            😢 {{ post.reaction.Sad | numFormat }}
+          </span>
+          <span v-if="post.reaction.Angry" class="d-inline-block box-link ml-2">
+            😡 {{ post.reaction.Angry | numFormat }}
+          </span>
+          <span v-if="post.reaction.Hug" class="d-inline-block box-link ml-2">
+            🤗 {{ post.reaction.Hug | numFormat }}
+          </span>
+        </span>
+      </div>
     </div>
 
   </b-card>
 </template>
 
 <script>
+import ScrollText from "./ScrollText.vue";
 import ReadMoreBox from "./ReadMore.vue";
 import moment from "moment";
 import "moment/locale/th";
 import { mapGetters } from "vuex";
 export default {
   name: "CardPost",
-  components: { ReadMoreBox },
+  components: { ReadMoreBox,ScrollText },
   props: {
     loadingCard: { type: Boolean, default: false },
     post: {
@@ -137,6 +144,7 @@ export default {
   },
   data() {
     return {
+       default_avatar: require("@/assets/no-image.jpg"),
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
       imgpt: require("@/assets/board.png"),
@@ -151,7 +159,7 @@ export default {
   },
   computed: {
     ...mapGetters([
-      "getLoadCardPost",
+      "getLoadCardPost","getSearchWords"
     ]),
     sentimentString() {
       if (this.post.sentiment === -1) return "negative";
@@ -171,6 +179,9 @@ export default {
     },
   },
   methods: {
+    setAltImg(event) {
+      event.target.src = this.default_avatar;
+    },
     onSelect() { this.$emit('select', this.post) },
     onReadMore() { this.$emit('readMore', this.post) },
     formatTime(date) {
@@ -214,7 +225,7 @@ background: linear-gradient(90deg,rgba(42, 123, 155, 0.38) 0%, rgba(87, 199, 133
 
 .account-name {
   display: inline-block;
-  max-width: 120px;
+  max-width: 105px;
   /* ปรับขนาดตามที่ต้องการ */
   white-space: nowrap;
   overflow: hidden;
@@ -231,71 +242,7 @@ background: linear-gradient(90deg,rgba(42, 123, 155, 0.38) 0%, rgba(87, 199, 133
   z-index: 9999;
 }
 
-/* wrapper ให้มี padding ข้าง ๆ */
-.timeline-wrapper {
-  padding: 8px 8px 16px;
-}
 
-/* คอลัมน์เส้นไทม์ไลน์ */
-.timeline {
-  position: relative;
-  margin-left: 10px;
-  /* เผื่อระยะให้ dot */
-}
-
-/* แต่ละรายการ */
-.timeline-item {
-  position: relative;
-}
-
-/* วงจุด + เส้นแนวตั้ง */
-.timeline-dot {
-  width: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 8px;
-}
-
-.timeline-dot .dot {
-  width: 12px;
-  height: 12px;
-  background: #0d6efd;
-  border-radius: 50%;
-  display: inline-block;
-  z-index: 2;
-  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
-}
-
-.timeline-dot .line {
-  flex: 1;
-  width: 2px;
-  background: #e9ecef;
-  margin-top: 6px;
-}
-
-/* การ์ดของโพสต์ */
-.timeline-card {
-  width: 60%;
-  border: 0;
-  border-left: 4px solid #0d6efd;
-  border-radius: 12px;
-  padding: 12px 14px;
-  height: 200px;
-}
-
-/* โปรไฟล์เป็นวงกลมขนาดพอดี */
-.profile-img {
-  width: 44px;
-  height: 44px;
-
-}
-
-/* รูปคอนเทนท์ใหญ่ */
-.timeline-photo {
-  max-height: 260px;
-  object-fit: cover;
-}
 
 /* ปรับระยะเล็กน้อย */
 h5 {
