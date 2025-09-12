@@ -5,7 +5,7 @@
                 <b-button-group class="" size="lg">
                     <b-button style="border-bottom-left-radius: 0;"  :variant="activeButton === 'profile' ? 'custom' : 'outline-custom'"
                         @click="selectButton('profile')">
-                        <b-icon icon="people" font-scale="1.5"></b-icon> Profile
+                        <b-icon icon="person-fill" font-scale="1.5"></b-icon> Profile
                     </b-button>
 
                     <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'hashtag' ? 'custom' : 'outline-custom'"
@@ -16,6 +16,10 @@
                         @click="selectButton('group')">
                         <b-icon icon="diagram2-fill" font-scale="1.5"></b-icon> Groups
                     </b-button>
+                    <!-- <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'community' ? 'custom' : 'outline-custom'"
+                        @click="selectButton('community')">
+                        <b-icon icon="people-fill" font-scale="1.5"></b-icon> Community
+                    </b-button> -->
                 </b-button-group>
             </b-button-toolbar>
         </div>

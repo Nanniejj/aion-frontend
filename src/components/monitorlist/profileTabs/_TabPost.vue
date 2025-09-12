@@ -610,7 +610,9 @@ export default {
     },
     computed: {
         startAndEnd() {
-            if (!this.start || !this.end) return [null, null]; // ป้องกัน undefined
+            // if (!this.start || !this.end) return [null, null]; // ป้องกัน undefined
+            // console.log("startAndEnd in tab post");
+            
             return [this.start, this.end];
         }
     },
@@ -783,13 +785,13 @@ export default {
         },
         startAndEnd: {
             handler([newStart, newEnd], [oldStart, oldEnd]) {
-                if (newStart !== oldStart && newEnd !== oldEnd) {
-                    console.log("watch startAndEnd old : ", oldStart, oldEnd);
-                    console.log("watch startAndEnd new : ", newStart, newEnd);
-                    this.valueDate = [newStart, newEnd];
-                    this.apiUserPosts();
-                    // this.checkDateRange();
-                }
+                // if (newStart !== oldStart && newEnd !== oldEnd) {
+                //     console.log("watch startAndEnd old tab post : ", oldStart, oldEnd);
+                //     console.log("watch startAndEnd new tab post : ", newStart, newEnd);
+                //     // this.checkDateRange();
+                // }
+                this.valueDate = [newStart, newEnd];
+                this.apiUserPosts();
             },
             immediate: true
         },

@@ -37,8 +37,6 @@
       </b-container>
     </vue-modaltor>
   </div>
-
-
 </template>
 
 <script>
@@ -60,7 +58,7 @@ export default {
  async apiAddSubdomain() {
       const newSubdomainData = {
         name: this.addSubDomain.trim(),
-        domain_id: this.domainId,
+        domain_id: this.$route.query.id,
       };
 
       try {

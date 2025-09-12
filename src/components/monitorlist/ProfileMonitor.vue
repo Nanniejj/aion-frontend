@@ -2,7 +2,7 @@
     <div>
         <!-- avatar  -->
         <b-row class="m-0">
-            <b-col xl="4" class="px-0 pr-lg-3">
+            <b-col xl="4" class="px-0 pr-xl-3">
                 <div class="gradient-bg h-100">
                     <b-row v-if="profile" class="m-0">
                         <b-col class="py-3">
@@ -580,7 +580,7 @@
 
         <!-- time line -->
         <b-row id="timeline-container" class="m-0">
-            <b-col cols="12" class="px-0">
+            <!-- <b-col cols="12" class="px-0">
                 <b-row class="justify-content-between align-items-center mb-3 mx-0">
                     <b-col cols="12" sm="auto" class="text-left px-0">
                         <h4 class="mb-0">Posts Timeline</h4>
@@ -600,19 +600,63 @@
                                     id="date-domain"
                                     class="w-100"
                                 >
-                                    <!-- @change="checkDateRange()" -->
+                                    
                                     {{ valueDate }}
                                 </date-picker>
                             </b-col>
                             <b-col cols="auto" class="px-0 pt-2 text-center">
-                                <!-- <div class="text-center w-auto"> -->
+                               
                                     <span class="d-none d-md-inline">
                                         เรียงจาก :
                                     </span>
                                     <b-button class="sort-btn" @click="toggleSort" pill size="sm">
                                         {{ selectedSort === 'descend' ? 'เก่า → ใหม่' : 'ใหม่ → เก่า' }}
                                     </b-button>
-                                <!-- </div> -->
+                                
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                </b-row>
+            </b-col> -->
+            <b-col cols="12" class="px-0">
+                <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
+                    <b-col cols="12" xl="auto" class="px-0 text-md-left">
+                        <h4 class="mb-0">Posts Timeline</h4>
+                    </b-col>
+                    <b-col cols="12" lg="6" xl="auto" class="px-1">
+                        <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
+                            <b-input-group-append>
+                                <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
+                                    class="w-100 mr-2"></b-form-input>
+                                <b-button size="sm" variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
+                            </b-input-group-append>
+                        </b-form-group>
+                    </b-col>
+                    <b-col cols="12" lg="6" xl="auto" class="px-0 ml-xl-auto">
+                        <b-row class="m-0 flex-lg-nowrap mt-3 mt-xl-0">
+                            <b-col cols="auto" class="px-0 mb-3 mb-sm-0">
+                                <date-picker
+                                    v-model="valueDate"
+                                    type="date"
+                                    range
+                                    placeholder="เลือกช่วงเวลา"
+                                    size="sm"
+                                    :disabled-date="(date) => date >= new Date()"
+                                    value-type="format"
+                                    format="YYYY-MM-DD"
+                                    id="date-domain"
+                                    class="">
+                                    {{ valueDate }}
+                                </date-picker>
+                                <!-- @change="checkDateRange()" -->
+                            </b-col>
+                            <b-col cols="auto" class="px-0 pl-2">
+                                <div class="text-center">
+                                    เรียงจาก :
+                                    <b-button class="sort-btn" @click="toggleSort" pill size="sm">
+                                         {{ selectedSort === 'desc' ? 'ใหม่ → เก่า' : 'เก่า → ใหม่' }}
+                                    </b-button>
+                                </div>
                             </b-col>
                         </b-row>
                     </b-col>
@@ -671,6 +715,7 @@ import moment from "moment";
 import ProfileWordCloud from './profileTabs/_ProfileWordCloud.vue'
 import HashtagBarChar from "../chart/HashtagBarChar.vue"
 import Timeline from "./_Timeline.vue"
+
 export default {
     components: {
         TabDomain,
@@ -785,9 +830,25 @@ export default {
             offset: 0,
             next_offset: null,
             totalTimelinePost: 0,
+            search: null,
         }
     },
     methods: {
+        // checkSearch() {
+        //     if (!this.search) {
+        //         this.timelinePosts = [];
+        //         this.offset = 0;
+        //         this.apiTimelineUserPosts();
+        //     }
+        // },
+        onSearch() {
+            clearTimeout(this.debounceTimeout);
+            this.debounceTimeout = setTimeout(() => {
+                this.timelinePosts = [];
+                this.offset = 0;
+                this.apiTimelineUserPosts();
+            }, 500);
+        },
         viewMore() {
             // this.offset += this.limit;
             this.offset = this.next_offset;
@@ -1422,8 +1483,7 @@ export default {
             });
         },
         async apiTimelineUserPosts() {
-
-            console.log('apiTimelineUserPosts called');
+            // console.log('apiTimelineUserPosts called');
             const isHashtagList = this.$route.query.type === 'hashtaglist';
             this.loading = true;
             const config = {
@@ -1432,6 +1492,7 @@ export default {
                 //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
+                    querySearch: this.search,
                     ...(isHashtagList ? { hashtags: this.$route.query.uid } : { account: this.$route.query.uid }),
                     ...(this.selectedSource !== 'all' ? { source: this.selectedSource } : {}), // ✅ ลบ key ถ้า source = 'all'
                     ...(this.keyWord ? { query: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
@@ -1531,7 +1592,24 @@ export default {
             handler(newVal, oldVal) {
                 console.log("valueDate timeline changed:", newVal);
                 if (newVal !== oldVal) {
-                    this.checkDateRange();
+                    // this.timelinePosts = [];
+                    // this.offset = 0;
+                    const startDate = moment(this.valueDate[0]);
+                    const endDate = moment(this.valueDate[1]);
+
+                    const diffDays = endDate.diff(startDate, 'days');
+
+                    if (diffDays > 31) {
+                        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
+                        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+                    } else {
+                        this.offset = 0;
+                        this.timelinePosts = [];
+                        this.apiTimelineUserPosts();
+                        this.getWordCloudImage();
+                        
+                        // this.selectDate(); // Call your existing method
+                    }
                 }
                 // this.checkDateRange()
             }

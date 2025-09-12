@@ -178,9 +178,14 @@ export default {
       await axios
         .post(
           "https://api2.cognizata.com/api/v2/userposts/resetDomainLastUpdate",
-          {
-            id: payload
-          }
+            {
+                id: payload
+            }, {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+                  
+            }
         )
         .then((res) => {
           // handle success

@@ -434,8 +434,8 @@
 <script>
 // import ImportPlatform from "./ImportPlatform.vue";
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
-import CreateGroupModal from "./CreateGroupModal.vue";
-import EditGroupModal from "./EditGroupModal.vue";
+import CreateGroupModal from "./_CreateGroupModal.vue";
+import EditGroupModal from "./_EditGroupModal.vue";
 // import MissingTargets from "./MissingTargets.vue";
 // import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
@@ -685,6 +685,7 @@ export default {
                 query: {
                     id: item.group_id,
                     name: item.group_name,
+                    groupType: item.group_type
                     // uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
                     // source: item.source,
                     // type: this.type

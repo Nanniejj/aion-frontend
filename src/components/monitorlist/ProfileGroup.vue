@@ -148,7 +148,7 @@ import Swal from 'sweetalert2'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 import moment from "moment";
 import Timeline from "./_Timeline.vue"
-import GroupMembers from './GroupMembersModal.vue';
+import GroupMembers from './_GroupMembersModal.vue';
 export default {
     components: {
         Timeline,
@@ -193,6 +193,8 @@ export default {
         },
         checkSearch() {
             if (!this.search) {
+                this.page = 1; // รีเซ็ตกลับหน้าแรก
+                this.posts = []
                 this.apiGetPost();
             }
         },
@@ -324,7 +326,7 @@ export default {
                         ...params,
                         page: this.page,
                         limit: this.limit,
-                        search: this.search || undefined, // ส่ง search ถ้ามีค่า
+                        querySearch: this.search || undefined, // ส่ง search ถ้ามีค่า
                     },
                     headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
