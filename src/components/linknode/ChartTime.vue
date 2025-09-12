@@ -1,8 +1,14 @@
 <template>
   <div id="chart">
-    <!-- debug -->
-    <!-- {{ series }} -->
-    <apexchart type="line" height="350" :options="chartOptions" :series="series" />
+    <!-- {{ filters }} -->
+    <div class="text-left">สถิติรายชั่วโมง </div>
+    <apexchart
+      ref="chart"
+      type="line"
+      height="350"
+      :options="chartOptions"
+      :series="series"
+    />
   </div>
 </template>
 
@@ -12,28 +18,31 @@ import axios from 'axios'
 
 export default {
   components: { apexchart: VueApexCharts },
-  props: {
-    filters: { type: Object, default: () => ({}) }
-  },
+  props: { filters: { type: Object, default: () => ({}) } },
   data() {
     return {
       loading: false,
       error: null,
       series: [],
+      activeRange: null,   // มีช่วงที่เลือกอยู่หรือไม่
+      lastPayload: null,   // เก็บ payload ล่าสุดไว้ดู timezone
       chartOptions: {
-        colors: ['#438afe', '#17a2b8', '#e75aa1'],
+        colors: ['#7965C1', '#17a2b8', '#e75aa1'],
         chart: {
           type: 'line',
           fontFamily: 'Prompt, FontAwesome, sans-serif',
-          toolbar: { show: true, tools: { download: true, selection: true, zoom: true, pan: true, reset: true } }
+          toolbar: {
+            show: true,
+            tools: { download: true, selection: true, zoom: true, pan: true, reset: true }
+          }
+          // events จะผูกใน mounted() ผ่าน updateOptions
         },
         stroke: { curve: 'smooth', width: 3 },
-        markers: { size: 3 },
+        markers: { size: 5 }, // คลิกสะดวกขึ้น
         legend: { position: 'top' },
         xaxis: {
           type: 'datetime',
           labels: {
-            // ให้ Apex ใช้ค่า UTC ภายใน แล้ว formatter จะแสดงเวลาไทย (จะไม่ +7 ซ้ำ)
             datetimeUTC: true,
             formatter: (v) => {
               const ts = Number(v)
@@ -68,19 +77,88 @@ export default {
           }
         },
         yaxis: [
-          { seriesName: 'Posts', title: { text: 'Posts' }, min: 0 },
-          { seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true },
-          { seriesName: 'Messages', title: { text: 'Messages' }, min: 0 }
+          { seriesName: 'Posts', title: { text: 'Posts' }, min: 0 ,labels: {
+        formatter: (val) => Math.round(val).toLocaleString() || 0
+      }},
+          { seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true ,labels: {
+        formatter: (val) => Math.round(val).toLocaleString()||0
+      }},
+          { seriesName: 'Messages', title: { text: 'Messages' }, min: 0 ,labels: {
+        formatter: (val) =>Math.round(val).toLocaleString()||0
+      }}
         ],
         noData: { text: 'กำลังโหลดข้อมูล...' }
       }
     }
   },
   mounted() {
+    // ผูก events + เปิด selection/zoom ด้วย API ของ wrapper
+    this.$nextTick(() => {
+      const events = {
+        // ลากเลือกช่วง
+        selection: (chartCtx, { xaxis }) => {
+          this.onRangeSelected(xaxis)
+        },
+        // บางท่าทางจะยิงอันนี้แทน
+        zoomed: (chartCtx, { xaxis }) => {
+          this.onRangeSelected(xaxis)
+        },
+        // คลิกพื้นกราฟเพื่อเคลียร์ช่วง
+        click: (event, chartCtx, opts) => {
+          if (this.activeRange) this.clearRange()
+        },
+        // คลิกที่จุด
+        dataPointSelection: (event, chartCtx, opts) => {
+          const { seriesIndex, dataPointIndex, w } = opts
+          const seriesName = w.config.series[seriesIndex]?.name || ''
+          const x = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[0]
+          const y = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[1]
+          this.onPointClick({ seriesIndex, dataPointIndex, seriesName, x, y })
+        },
+        markerClick: (event, chartCtx, opts) => {
+          const { seriesIndex, dataPointIndex, w } = opts
+          const seriesName = w.config.series[seriesIndex]?.name || ''
+          const x = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[0]
+          const y = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[1]
+          this.onPointClick({ seriesIndex, dataPointIndex, seriesName, x, y })
+        }
+      }
+
+      const selectionAndZoom = {
+        chart: {
+          selection: {
+            enabled: true,
+            type: 'x',
+            fill: { opacity: 0.2 },
+            stroke: { width: 1 }
+          },
+          zoom: {
+            enabled: true,
+            type: 'x',
+            autoScaleYaxis: true
+          },
+          toolbar: {
+            show: true,
+            tools: { selection: true, zoom: true, pan: true, reset: true, download: true },
+            // เริ่มโหมด pan เพื่อไม่ให้เผลอทิ้งกรอบทึบค้าง
+            autoSelected: 'pan'
+          },
+          events
+        }
+      }
+
+      if (this.$refs.chart?.updateOptions) {
+        this.$refs.chart.updateOptions(selectionAndZoom, false, true)
+      } else if (this.$refs.chart?.chart?.updateOptions) {
+        this.$refs.chart.chart.updateOptions(selectionAndZoom, false, true)
+      } else {
+        this.chartOptions = { ...this.chartOptions, ...selectionAndZoom }
+      }
+    })
+
     this.fetchData()
   },
   watch: {
-    // ถ้า filter เปลี่ยน ให้ยิงใหม่
     filters: { handler() { this.fetchData() }, deep: true }
   },
   methods: {
@@ -89,7 +167,6 @@ export default {
       this.error = null
       const API_URL = 'http://localhost:3000/api/v2/userposts/getPostCharts'
       const params = this.filters
-
       try {
         const { data } = await axios.get(API_URL, { params })
         this.applyData(data)
@@ -102,22 +179,103 @@ export default {
       }
     },
 
-    /**
-     * แปลง payload -> series 3 เส้น และเติม 0 ให้ชั่วโมงที่ขาด
-     * หลักการเวลา:
-     * - แปลง local time (+07:00) เป็น epoch (UTC) ครั้งเดียวตอน parse
-     * - ใช้ datetimeUTC:true + formatter(timeZone='Asia/Bangkok') แสดงผลเป็นเวลาไทย
-     */
+    /** เมื่อคลิกที่จุดข้อมูล */
+    onPointClick({ seriesIndex, dataPointIndex, seriesName, x, y }) {
+      if (!Number.isFinite(x)) return
+      const tzStr = (this.lastPayload?.range?.timezone) || '+07:00'
+      const offsetMs = this.parseOffsetToMs(tzStr)
+
+      const localText = new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        hourCycle: 'h23',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(x)
+
+      const isoUtc = new Date(x).toISOString()
+      const isoLocal = new Date(x + offsetMs).toISOString().replace('Z', tzStr)
+      const xLocalEpoch = x + offsetMs
+
+      this.$emit('point-click', {
+        seriesIndex, dataPointIndex, seriesName,
+        x, y,
+        isoUtc,
+        isoLocal,       // เช่น "2025-09-10T01:00:00+07:00"
+        localText,      // เช่น "10 ก.ย. 2568 01:00"
+        xLocalEpoch
+      })
+    },
+
+    /** เมื่อมีการเลือกช่วง/ซูม */
+    onRangeSelected(xaxis) {
+      const start = xaxis.min
+      const end = xaxis.max
+      if (!Number.isFinite(start) || !Number.isFinite(end)) return
+
+      this.activeRange = { start, end }
+
+      const tzStr = (this.lastPayload?.range?.timezone) || '+07:00'
+      const offsetMs = this.parseOffsetToMs(tzStr)
+
+      const fmtLocal = (ms) => new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        hourCycle: 'h23',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(ms)
+
+      const startUtcIso = new Date(start).toISOString()
+      const endUtcIso = new Date(end).toISOString()
+      const startIsoLocal = new Date(start + offsetMs).toISOString().replace('Z', tzStr)
+      const endIsoLocal   = new Date(end + offsetMs).toISOString().replace('Z', tzStr)
+
+      this.$emit('range-selected', {
+        start, end,                       // epoch ms (UTC)
+        startUtcIso, endUtcIso,           // ISO UTC
+        startIsoLocal, endIsoLocal,       // ISO local (+07:00)
+        startLocalText: fmtLocal(start),  // human-readable local
+        endLocalText: fmtLocal(end)
+      })
+    },
+
+    /** คลิกพื้นกราฟเพื่อล้างช่วง */
+    clearRange() {
+      this.activeRange = null
+      // reset zoom + ล้าง min/max xaxis
+      const patch = {
+        xaxis: { min: undefined, max: undefined },
+        chart: { selection: { xaxis: { min: undefined, max: undefined } } }
+      }
+      if (this.$refs.chart?.resetZoom) {
+        this.$refs.chart.resetZoom()
+      }
+      if (this.$refs.chart?.updateOptions) {
+        this.$refs.chart.updateOptions(patch, false, true)
+      } else if (this.$refs.chart?.chart?.updateOptions) {
+        this.$refs.chart.chart.updateOptions(patch, false, true)
+      } else {
+        this.chartOptions = { ...this.chartOptions, ...patch }
+      }
+      this.$emit('range-cleared')
+    },
+
+    /** === ของเดิม: แปลง payload -> series 3 เส้น และเติม 0 === */
     applyData(payload) {
+      this.lastPayload = payload
+
       const tz = (payload && payload.range && payload.range.timezone) || '+07:00'
       const rows = Array.isArray(payload?.seriesHourly) ? payload.seriesHourly : []
       const offsetMs = this.parseOffsetToMs(tz)
 
-      // key 'YYYY-MM-DD HH:mm' (เวลาท้องถิ่น)
       const keyOf = (d, t) => `${d} ${t.padStart(5, '0')}`
       const dataMap = new Map()
 
-      // สร้างแผนที่ข้อมูลแบบ key=เวลาท้องถิ่น
       rows.forEach(r => {
         const key = keyOf(r.date, r.time)
         dataMap.set(key, {
@@ -132,10 +290,8 @@ export default {
         return
       }
 
-      // 1) หา "กรอบเวลาท้องถิ่น" จากข้อมูลจริง
-      //    - แปลง local -> UTC ms ด้วย offset (ครั้งเดียว)
-      const toUtcMs = (d, t) => Date.parse(`${d}T${t}:00${tz}`) // ex: '2025-09-01T00:00:00+07:00' -> epoch
-      const localMsFromUtc = (utc) => utc + offsetMs            // timeline แบบท้องถิ่น (utc+offset trick)
+      const toUtcMs = (d, t) => Date.parse(`${d}T${t}:00${tz}`)
+      const localMsFromUtc = (utc) => utc + offsetMs
 
       let minLocal = Infinity
       let maxLocal = -Infinity
@@ -146,25 +302,20 @@ export default {
         if (local > maxLocal) maxLocal = local
       })
 
-      // ปัดให้ตรงชั่วโมง
       let gridStartLocal = Math.floor(minLocal / 3600000) * 3600000
       let gridEndLocal = Math.floor(maxLocal / 3600000) * 3600000
 
-      // 2) วนทุกชั่วโมงใน "ไทม์ไลน์ท้องถิ่น" แล้วเติม 0 ถ้าไม่มี
       const posts = []
       const engagements = []
       const messages = []
 
       for (let lt = gridStartLocal; lt <= gridEndLocal; lt += 3600000) {
-        // แปลง lt (local timeline) -> key 'YYYY-MM-DD HH:mm'
-        const iso = new Date(lt).toISOString()     // iso นี้จะเทียบเท่าเวลาท้องถิ่นเพราะเราเลื่อน offset มาแล้ว
-        const d = iso.slice(0, 10)                  // YYYY-MM-DD
-        const t = iso.slice(11, 16)                 // HH:mm
+        const iso = new Date(lt).toISOString()
+        const d = iso.slice(0, 10)
+        const t = iso.slice(11, 16)
         const key = keyOf(d, t)
 
         const val = dataMap.get(key) || { post: 0, engagement: 0, msg: 0 }
-
-        // แปลงกลับเป็น UTC ms สำหรับ Apex (เพราะเราใช้ datetimeUTC:true)
         const tsUTC = lt - offsetMs
 
         posts.push([tsUTC, val.post])

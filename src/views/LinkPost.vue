@@ -33,9 +33,23 @@
                 <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
               </b-form-group>
             </b-col>
+            <b-col cols="12" md="6" class="d-none">
+              <b-form-group label="" label-for="accounts" class="pr-md-3">
+                <b-form-tags id="accounts" v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
+                  separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete />
+              </b-form-group>
+            </b-col>
+            <b-col cols="12" md="6"  class="d-none">
+              <!-- Hashtags -->
+              <b-form-group label="" label-for="accounts" class="pr-md-3">
+                <b-form-tags id="accounts" v-model="formFilters.accountsInput" tag-variant="light" tag-pills size="md"
+                  separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
+                  add-on-change remove-on-delete />
+              </b-form-group>
+
+            </b-col>
 
             <b-col cols="12" md="4">
-              <!-- {{filters.source}} -->
               <v-select :options="sourceOptions" v-model="formFilters.source" id="search-input" label="text"
                 :reduce="source => source.value" class="mb-2 select-sort" placeholder="Select Platform"
                 multiple></v-select>
@@ -95,7 +109,8 @@
 
         </b-form>
       </b-card>
-      <!-- <ChartTime :filters="paramTo" /> -->
+      <!-- <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" /> -->
+
       <!-- Loading -->
 
       <div class="text-center my-4 py-4" v-if="loading">
@@ -164,6 +179,7 @@ export default {
   ,
   data() {
     return {
+
       paramTo: {},
       dayLoadingMap: {},
       dayPageMap: {},      // { '2025-08-26': 1, ... }
@@ -185,8 +201,9 @@ export default {
         view_mode: "posts",
         source: [null],
         sort_by: "recent",
-        limit: 10,
-        page: 1
+        limit: 50,
+        page: 1,
+        hashtags: []
       },
       formFilters: {
         sentiment: ["1", "0", "-1"],
@@ -194,8 +211,10 @@ export default {
         view_mode: "posts",
         source: [null],
         sort_by: "recent",
-        limit: 10,
-        page: 1
+        limit: 50,
+        page: 1,
+        accountsInput: [],
+        HashtagsInput: []
       },
       sentimentOptions: [
         { text: "Positive", value: "1" },
@@ -236,6 +255,73 @@ export default {
     if (this.observer) this.observer.disconnect();
   },
   methods: {
+    applyRangeAndReload(startIso, endIso) {
+      // คงฟิลเตอร์เดิมทุกอย่าง เปลี่ยนเฉพาะช่วงเวลา + รีเซ็ตหน้า
+      this.filters = {
+        ...this.filters,
+        page: 1,
+        startLocal: startIso,
+        endLocal: endIso,
+      };
+
+      // ถ้าเป็นโหมดรายวัน เคลียร์แคชรายวันและตั้งค่า valueDate ให้ตรงวัน
+      if (this.filters.view_mode === 'daily') {
+        this.dayPageMap = {};
+        this.dayLimitMap = {};
+        this.daySortMap = {};
+        this.valueDate = [startIso.slice(0, 10), endIso.slice(0, 10)];
+      }
+
+      this.postsFromApi = [];
+      this.apiTimeline();
+    },
+    handlePointClick({ seriesName, x, y, localText, isoUtc, isoLocal }) {
+      console.log('Clicked:', seriesName, y, localText, isoLocal.slice(0, 14))
+      let date = isoLocal.slice(0, 14)
+      const hourStart = date + "00:00";
+      const hourEnd = date + "59:59";
+
+      // อัปเดตช่วงใน filters (ไม่ยุ่งกับ valueDate และ paramTo)
+      this.filters = {
+        ...this.filters,
+        page: 1,
+        startLocal: hourStart,
+        endLocal: hourEnd,
+      };
+
+      // ถ้าโหมดรายวัน เคลียร์แคชเฉพาะโพสต์
+      if (this.filters.view_mode === 'daily') {
+        this.dayPageMap = {};
+        this.dayLimitMap = {};
+        this.daySortMap = {};
+      }
+
+      this.postsFromApi = [];
+      this.apiTimelineSilent(); // ✅ โหลดเฉพาะโพสต์ กราฟ “ไม่” รีโหลด
+
+      // this.applyRangeAndReload(hourStart, hourEnd);
+    },
+    handleRange({ start, end, startIsoLocal, endIsoLocal }) {
+      console.log('Selected range:', startIsoLocal.slice(0, 16), endIsoLocal.slice(0, 16))
+      const startIso = startIsoLocal.slice(0, 16)
+      const endIso = endIsoLocal.slice(0, 16)
+      this.filters = {
+        ...this.filters,
+        page: 1,
+        startLocal: startIso,
+        endLocal: endIso,
+      };
+
+      if (this.filters.view_mode === 'daily') {
+        this.dayPageMap = {};
+        this.dayLimitMap = {};
+        this.daySortMap = {};
+      }
+
+      this.postsFromApi = [];
+      this.apiTimelineSilent(); // ✅ โหลดเฉพาะโพสต์
+
+    },
     diffDays(startYMD, endYMD) {
       const s = moment(startYMD, "YYYY-MM-DD");
       const e = moment(endYMD, "YYYY-MM-DD");
@@ -292,15 +378,36 @@ export default {
         start: `${ymd}T00:00:00`,
         end: `${ymd}T23:59:59`,
       };
+      // ✅ เพิ่ม filters รายวันด้วย
+      if (this.filters?.accounts?.length) p.account = this.filters.accounts;
+      if (this.filters?.hashtags?.length) p.hashtags = this.filters.hashtags;
       Object.keys(p).forEach((k) => (p[k] == null || p[k] === "") && delete p[k]);
+
+      return p;
+    },
+    buildParamsForDay2(strat, end, overrides = {}) {
+      const sortRaw = this.filters.sort_by;
+      // const page = overrides.page ?? this.dayPageMap[ymd] ?? 1;
+      // const limit = overrides.limit ?? this.dayLimitMap[ymd] ?? 10;
+
+      const p = {
+        sentiment: this.filters.sentiment.join(","),
+        keyword: this.buildKeywordParam(),
+        source: this.sourceParam(this.filters.source),
+        // ถ้า 'recent' ให้ไม่ส่ง (ตามโค้ดเดิมของคุณ)
+        sort_by: sortRaw === "recent" ? undefined : sortRaw,
+        start: `${strat}T00:00:00`,
+        end: `${end}T23:59:59`,
+      };
+      // ✅ ให้ ChartTime เห็น hashtags/accounts ด้วย
+      if (this.filters?.accounts?.length) p.account = this.filters.accounts;
+      if (this.filters?.hashtags?.length) p.hashtags = this.filters.hashtags;
       this.paramTo = p
+
       return p;
     },
 
     async apiTimeline() {
-
-
-
       if (this.filters.view_mode === 'daily') return this.apiTimelineDaily();
       this.loading = true;
       try {
@@ -321,36 +428,38 @@ export default {
     async apiTimelineDaily() {
       this.loading = true;
       try {
-        const startYMD = this.valueDate?.[0];
-        const endYMD = this.valueDate?.[1];
+        // ใช้ startLocal/endLocal ถ้ามี ไม่งั้น fallback เป็น valueDate
+        const startIso = this.filters.startLocal || (this.valueDate?.[0] + "T00:00:00");
+        const endIso = this.filters.endLocal || (this.valueDate?.[1] + "T23:59:59");
+
+        const startYMD = startIso.slice(0, 10);
+        const endYMD = endIso.slice(0, 10);
+
         const days = this.getDaysInclusive(startYMD, endYMD);
         const grouped = [];
+        this.buildParamsForDay2(startYMD, endYMD);
 
         for (const ymd of days) {
           if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
-          // if (!this.daySortMap[ymd]) this.$set(this.daySortMap, ymd, this.filters.sort_by);
-          // if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
           this.$set(this.daySortMap, ymd, this.filters.sort_by);
           if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
 
           const params = this.buildParamsForDay(ymd);
+
           try {
             const { data } = await this.axios.get(
               "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
               { params }
             );
             const items = data?.data || [];
-            const countTotal = (typeof data?.count === 'number')
-              ? data.count
-              : items.length; // เผื่อ API ไม่ส่ง count มา
+            const countTotal = (typeof data?.count === 'number') ? data.count : items.length;
 
             grouped.push({
               date: ymd,
               items,
               _hasMore: items.length >= (params.limit || 10),
-              // ✅ new fields (ไม่ทับ key เก่า)
-              countTotal,                 // จำนวนทั้งหมดของวันนั้น
-              countShown: items.length,   // จำนวนที่แสดงอยู่ตอนนี้
+              countTotal,
+              countShown: items.length,
             });
           } catch (err) {
             console.warn("daily error", ymd, err);
@@ -365,12 +474,13 @@ export default {
         }
 
         this.postsFromApi = grouped;
-        this.count = grouped.reduce((sum, d) => sum + (d.countTotal || 0), 0); // รวมทั้งช่วง
+        this.count = grouped.reduce((sum, d) => sum + (d.countTotal || 0), 0);
         this.totalPages = 0;
       } finally {
         this.loading = false;
       }
     },
+
     async loadMoreDay({ date }) {
       this.$store.commit("setLoadCardPost", true)
       this.$set(this.dayLoadingMap, date, true);
@@ -446,39 +556,132 @@ export default {
       }
       return days;
     },
-    buildParams() {
+    buildParams(opts = {}) {
+      const { silent = false } = opts;
+      const start = this.filters.startLocal || (this.valueDate[0] + "T00:00:00");
+      const end = this.filters.endLocal || (this.valueDate[1] + "T23:59:59");
+
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
-        start: this.valueDate[0] + "T00:00:00",
-        end: this.valueDate[1] + "T23:59:59",
+        start,
+        end,
         source: this.sourceParam(this.filters.source),
         sort_by: this.filters.sort_by === "recent" ? undefined : this.filters.sort_by,
         limit: this.filters.limit,
         page: this.filters.page
       };
+      if (this.filters?.accounts?.length) {
+        p.account = this.filters.accounts; // หรือ 'accounts[]' ตามรูปแบบที่ backend รับ
+      }
+      if (this.filters?.hashtags?.length) p.hashtags = this.filters.hashtags;
+
       Object.keys(p).forEach((k) => (p[k] == null || p[k] === "") && delete p[k]);
+
+      if (!silent) this.paramTo = p; // ✅ ปล่อยให้ ChartTime อัปเดตเฉพาะตอน “ไม่เงียบ”
       return p;
     },
+    async apiTimelineSilent() {
+      if (this.filters.view_mode === 'daily') return this.apiTimelineDailySilent();
+      this.loading = true;
+      try {
+        const params = this.buildParams({ silent: true }); // ✅ ไม่เซ็ต paramTo
+        const { data } = await this.axios.get(
+          "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+          { params }
+        );
+        this.postsFromApi = data.data || [];
+        this.count = data.count || 0;
+        this.totalPages = data.totalPages || Math.ceil(this.count / this.filters.limit);
+      } catch (e) {
+        console.error(e);
+        this.postsFromApi = [];
+        this.count = 0;
+        this.totalPages = 0;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async apiTimelineDailySilent() {
+      this.loading = true;
+      try {
+        // ใช้ช่วงเวลาจริงจาก filters.startLocal/endLocal ถ้ามี (ไม่แตะ paramTo)
+        const startIso = this.filters.startLocal || (this.valueDate?.[0] + "T00:00:00");
+        const endIso = this.filters.endLocal || (this.valueDate?.[1] + "T23:59:59");
+
+        const startYMD = startIso.slice(0, 10);
+        const endYMD = endIso.slice(0, 10);
+
+        const days = this.getDaysInclusive(startYMD, endYMD);
+        const grouped = [];
+
+        // ❌ ไม่เรียก buildParamsForDay2() (ตัวนั้นไปตั้ง this.paramTo)
+        for (const ymd of days) {
+          if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
+          this.$set(this.daySortMap, ymd, this.filters.sort_by);
+          if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
+
+          const params = this.buildParamsForDay(ymd); // อันนี้ปลอดภัย ไม่แตะ paramTo
+          try {
+            const { data } = await this.axios.get(
+              "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+              { params }
+            );
+            const items = data?.data || [];
+            const countTotal = (typeof data?.count === 'number') ? data.count : items.length;
+
+            grouped.push({
+              date: ymd,
+              items,
+              _hasMore: items.length >= (params.limit || 10),
+              countTotal,
+              countShown: items.length,
+            });
+          } catch (err) {
+            console.warn("daily silent error", ymd, err);
+            grouped.push({
+              date: ymd,
+              items: [],
+              _hasMore: false,
+              countTotal: 0,
+              countShown: 0,
+            });
+          }
+        }
+
+        this.postsFromApi = grouped;
+        this.count = grouped.reduce((sum, d) => sum + (d.countTotal || 0), 0);
+        this.totalPages = 0;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+
     async loadMorePosts() {
       if (this.filters.page >= this.totalPages) return;
       this.loadingMore = true;
       this.filters.page += 1;
-      try {
 
-        const params = this.buildParams();
-        const { data } = await this.axios.get("https://api2.cognizata.com/api/v2/userposts/getFulltextPost", { params });
+      try {
+        // ใช้ silent เพื่อไม่แตะ paramTo → ChartTime ไม่รีเฟรช
+        const params = this.buildParams({ silent: true });
+        const { data } = await this.axios.get(
+          "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+          { params }
+        );
         const newItems = data.data || [];
         this.postsFromApi = [...this.postsFromApi, ...newItems];
-        this.totalPages = data.totalPages || this.totalPages;
-        this.count = data.count || this.count;
-
+        this.totalPages = data.totalPages ?? this.totalPages;
+        this.count = data.count ?? this.count;
       } catch (e) {
         console.error(e);
       } finally {
         this.loadingMore = false;
       }
-    },
+    }
+    ,
     createObserver() {
       const options = { root: null, rootMargin: "0px", threshold: 1.0 };
       this.observer = new IntersectionObserver(this.handleIntersect, options);
@@ -494,31 +697,81 @@ export default {
     },
     handleSearch() {
       const next = { ...this.filters, ...this.formFilters, page: 1 };
+
+      // อิง inputdate ด้านบนเสมอ
+      const startYMD = this.valueDate?.[0] || moment().format("YYYY-MM-DD");
+      const endYMD = this.valueDate?.[1] || startYMD;
+      next.startLocal = `${startYMD}T00:00:00`;
+      next.endLocal = `${endYMD}T23:59:59`;
+
+      // ✅ แปลง accountsInput -> accounts (อาเรย์) รองรับทั้ง array และ string
+      const rawAcc = next.accountsInput;
+      const accounts = Array.isArray(rawAcc)
+        ? rawAcc
+        : String(rawAcc || "")
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean);
+
+      next.accounts = [...new Set(accounts.map(s => s.replace(/^@/, "")))]
+      console.log(' next.accounts', next.accounts);
+
+      // ✅ hashtags (ใหม่): รองรับ array / string, ตัด '#', lower-case, dedupe
+      const rawTags = next.HashtagsInput;
+      const tags = Array.isArray(rawTags)
+        ? rawTags
+        : String(rawTags || "")
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean);
+      next.hashtags = [...new Set(tags.map(t => t.replace(/^#/, "").toLowerCase()))];
+
       this.filters = next;
 
-      // ✅ ถ้าเป็นโหมดรายวัน เคลียร์แคชรายวันกันค่าเก่าค้าง
+      // โหมดรายวัน เคลียร์แคชรายวัน
       if (this.filters.view_mode === 'daily') {
         this.dayPageMap = {};
         this.dayLimitMap = {};
         this.daySortMap = {};
       }
-      let inputkeyword = (this.filters.keywordInput || "")
+
+      // อัปเดตคีย์เวิร์ด (ของเดิม)
+      // const inputkeyword = (this.filters.keywordInput || "")
+      //   .split(",")
+      //   .map(group => group.trim().split(/\s+|\+/).filter(Boolean))
+      //   .flat();
+      // this.$store.commit("setSearchWords", inputkeyword);
+
+      // อัปเดตรวม keyword + hashtags + accounts
+      const inputkeyword = (this.filters.keywordInput || "")
         .split(",")
         .map(group => group.trim().split(/\s+|\+/).filter(Boolean))
-        .flat()
-      this.$store.commit("setSearchWords", inputkeyword)
+        .flat();
+
+      // ใช้ค่าที่ normalize แล้วจาก next (ตัด #/@ และ dedupe แล้ว)
+      const hashtagList = next.hashtags || [];   // เดิมใช้ชื่อ tags → ชนกับตัวแปรก่อนหน้า
+      const accountList = next.accounts || [];
+
+      // รวมทุกอย่าง พร้อมเวอร์ชันมี prefix
+      const searchWords = Array.from(new Set([
+        ...inputkeyword,
+
+        ...hashtagList.map(t => `#${t}`),
+       
+        ...accountList.map(a => `${a}`)
+      ].filter(Boolean)));
+
+      this.$store.commit("setSearchWords", searchWords);
 
 
+
+      // โหลดใหม่ปกติ
       this.postsFromApi = [];
       this.apiTimeline();
     }
 
-    // handleSearch() {
-    //   //this.filters.page = 1;
-    //   this.filters = { ...this.filters, ...this.formFilters, page: 1 }
-    //   this.postsFromApi = [];
-    //   this.apiTimeline();
-    // }
+
+
   }
 };
 </script>

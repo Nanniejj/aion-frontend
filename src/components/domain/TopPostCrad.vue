@@ -215,19 +215,6 @@
                 style="font-size: 15px;font-weight: 500;">
                 <div v-for="(text, idx) in postDomain.photos_text">
 
-                  <div v-if="text && text.text && text.text.length" class="d-none">
-
-                    <!-- ปุ่ม toggle -->
-                    <b-button size="sm" variant="outline-primary" @click="toggleShow(idx)">
-                      <img width="25" height="25" src="https://img.icons8.com/ios/50/printed-ocr.png"
-                        alt="printed-ocr" />OCR
-                    </b-button>
-
-                    <!-- เนื้อหา OCR แสดง/ซ่อน -->
-                    <div v-show="visibleIndex === idx" class="mt-2 p-2" style="background:#f7f7f7; border-radius:6px;">
-                      {{ text.text }}
-                    </div>
-                  </div>
                   <div v-if="text.face">
                     <span v-for="(face, idx) in text.face">
                       <!-- v-if="face.person_name"  -->
@@ -551,24 +538,16 @@
                   </span>
                   <div class="float-right">
                     <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR"
-                      class=" btn-ocr d-none"
-                      v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text">
-                      <!-- <b-icon icon="sparkles" scale="1"></b-icon>
-                  <i class="fas fa-sparkles"></i>
-                  <i class="fa-solid fa-sparkles"></i> -->
+                      class=" btn-ocr"
+                      v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text&& username == 'adminatapy'">
                       <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png"
                         alt="printed-ocr" style="filter: brightness(0) invert(1);" />
-                      <!-- <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
-                      alt="sparkling" style="filter: brightness(0) invert(1);" /> -->
                       <span class="md-font">
                         OCR
                       </span>
                     </span>
                     <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
                       title="comments analysis" v-if="postDomain.summarize">
-                      <!-- <b-icon icon="sparkles" scale="1"></b-icon>
-                  <i class="fas fa-sparkles"></i>
-                  <i class="fa-solid fa-sparkles"></i> -->
                       <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
                         alt="sparkling" style="filter: brightness(0) invert(1);" />
                       <span class="md-font">
@@ -587,8 +566,10 @@
                           <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" />
                           OCR
                         </div>
-                        <div class="mt-2 p-2">
+                        <div class="mt-1 px-2 pb-3">
+
                           <div v-html="formatOCR(text.text)" class="rich"></div>
+                          <!-- <div v-html="formatSummarize(postDomain.summarize)"></div> -->
                         </div>
                       </div>
                     </div>
@@ -694,6 +675,8 @@
 </template>
 
 <script>
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import { mapGetters } from "vuex";
 import Highlighter from "vue-highlight-words";
@@ -798,22 +781,34 @@ export default {
       return [obj.agree, obj.disagree, obj.neutral];
     },
     formatOCR(text) {
-      if (text == null) return ''
-      const s = String(text).trim()
-      // escape HTML เบื้องต้น (กันสคริปต์แปลก ๆ)
-      const esc = s
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
+      if (!text) return ''
+      let s = String(text).trim()
 
-      // แยกย่อหน้าเว้นบรรทัด, แล้วแปลง \n เป็น <br>
-      return esc
-        .split(/\r?\n\r?\n+/)
-        .map(p => `<p class="p">${p.replace(/\r?\n/g, '<br>')}</p>`)
-        .join('')
-    },
+      // 1) แปลง backslash-newline ให้เป็น newline จริง
+      //    ครอบคลุมทั้ง \\r\\n, \\n, \\r
+      s = s.replace(/\\r\\n|\\n|\\r/g, '\n')
+  
+      // 2) เคลียร์อักขระแปลกจาก OCR ที่ทำให้หัวข้อพัง
+      s = s.replace(/\u200B|\uFEFF|\u00A0/g, ' ')
+
+      // 3) ปรับ bullet จาก OCR ให้เป็น Markdown มาตรฐาน
+      s = s.replace(/^\s*[•▪●–—-]\s+/gm, '- ')
+
+      // 4) แปลง Markdown → HTML
+      const rawHtml = marked.parse(s, { gfm: true, breaks: true })
+
+      // 5) sanitize
+      return DOMPurify.sanitize(rawHtml, {
+        ALLOWED_TAGS: [
+          // 'h1','h2','h3','h4','h5','h6',
+          'p', 'br', 'ul', 'ol', 'li',
+          'strong', 'em', 'a', 'blockquote',
+          'code', 'pre', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td'
+        ],
+        ALLOWED_ATTR: { a: ['href', 'title', 'target', 'rel'] }
+      })
+    }
+    ,
     formatSummarize(text) {
       // console.log('text', text);
 
