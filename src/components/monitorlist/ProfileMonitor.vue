@@ -654,7 +654,7 @@
                                 <div class="text-center">
                                     เรียงจาก :
                                     <b-button class="sort-btn" @click="toggleSort" pill size="sm">
-                                         {{ selectedSort === 'desc' ? 'ใหม่ → เก่า' : 'เก่า → ใหม่' }}
+                                         {{ selectedSort === 'descend' ? 'เก่า → ใหม่' : 'ใหม่ → เก่า' }}
                                     </b-button>
                                 </div>
                             </b-col>
@@ -782,7 +782,7 @@ export default {
             posts: [],
             timelinePosts: [],
             selected: null,
-            selectedSort: null,
+            selectedSort: '',
             loading: false,
             influencerTypes:[],
             speciesTypes:[

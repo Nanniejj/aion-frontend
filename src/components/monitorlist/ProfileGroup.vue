@@ -235,12 +235,11 @@ export default {
             const diffTime = Math.abs(end - start);
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-            if (diffDays > 7) {
-                alert("เลือกช่วงเวลาได้ไม่เกิน 7 วัน");
+            if (diffDays > 31) {
+                alert("เลือกช่วงเวลาได้ไม่เกิน 31 วัน");
                 this.valueDate = []; // reset ค่า
             }else {
-                console.log('check');
-                
+                // console.log('check');
                 this.page = 1; // reset page
                 this.apiGetPost();
             }
