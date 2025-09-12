@@ -281,9 +281,9 @@
         <div class="text-left ai-box mt-2"
           v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length"
           style="font-size: 15px;font-weight: 500;">
-          <div v-for="(text, idx) in profilePost.photos_text" >
-           
-            <div v-if="text&&text.length">
+          <div v-for="(text, idx) in profilePost.photos_text">
+
+            <div v-if="text && text.length">
               <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
               </b-avatar>
               <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
@@ -291,15 +291,15 @@
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text }}
             </div>
-            <div v-if="text.face" >
+            <div v-if="text.face">
               <span v-for="(face, idx) in text.face">
-               <!-- "face.confidence > 0.68" -->
+                <!-- "face.confidence > 0.68" -->
                 <span v-if="face.confidence" class="mr-2 mt-1">
                   <span style="background: #e5e5e5;
                     padding: 0px 6px;
                     border-radius: 13px;">
                     <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                    {{ face.person_name}}
+                    {{ face.person_name }}
                     <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
                       parseFloat((face.confidence * 100).toFixed(2))
                     }}%)</span></span></span>
@@ -324,8 +324,8 @@
         <div v-if="
           profilePost &&
           profilePost.location &&
-          profilePost.location.length 
-   
+          profilePost.location.length
+
         " class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
           <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
           <div v-for="(geo, k) in filterNumbers(profilePost.location)" :key="k" class="mr-1 my-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;display: inline-flex;text-align: center;
@@ -364,7 +364,7 @@
         <div class="text-left ai-box mt-2" v-if="
           profilePost && profilePost.face_detect && username == 'adminatapy'
         " style="font-size: 15px;font-weight: 500;">
-          <div v-if="profilePost.face_detect && profilePost.person_name&&profilePost.person_name.length">
+          <div v-if="profilePost.face_detect && profilePost.person_name && profilePost.person_name.length">
             <span v-for="(face, idx) in profilePost.person_name">
               <span class="mr-2 mt-1" v-if="face">
                 <span style="background: #e5e5e5;
@@ -377,7 +377,7 @@
           </div>
         </div>
         <template #footer>
-          <div class="text-left md-font">
+          <div class="text-left md-font" style="position: relative;">
             <span v-b-tooltip.hover title="Engagement" v-if="profilePost.source == 'pantip'">
               <span style="font-size:14px;">Engages </span>
               {{
@@ -625,9 +625,73 @@
                 <!-- end yt -->
               </span>
             </span>
+            <!-- === OCR / Analysis buttons === -->
+            <div class="float-right">
+              <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr"
+                v-if="profilePost && profilePost.photos_text && profilePost.photos_text[0] && profilePost.photos_text[0].text&& username == 'adminatapy'">
+                <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
+                  style="filter: brightness(0) invert(1);" />
+                <span class="md-font">OCR</span>
+              </span>
+              <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover title="comments analysis"
+                v-if="profilePost && profilePost.summarize && profilePost.summarize.length">
+                <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png" alt="sparkling"
+                  style="filter: brightness(0) invert(1);" />
+                <span class="md-font">Analysis</span>
+              </span>
+            </div>
+            <!-- === /OCR / Analysis buttons === -->
+
           </div>
           <!-- comment content -->
-          <!-- {{ profilePost.comments.length }} -->
+    <!-- === OCR Result Panel === -->
+<b-collapse
+  :id="'ocr-text' + page + k"
+  class="mt-2"
+  v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length"
+>
+  <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+    <div v-for="(text, idx) in profilePost.photos_text" :key="idx">
+      <div class="bold my-2">
+        <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" />
+        OCR
+      </div>
+      <div class="mt-1 px-2 pb-3">
+        <div
+          v-if="typeof text === 'string'"
+          v-html="formatOCR(text)"
+          class="rich"
+        />
+        <div
+          v-else-if="text && text.text"
+          v-html="formatOCR(text.text)"
+          class="rich"
+        />
+      </div>
+    </div>
+  </b-card>
+</b-collapse>
+
+<!-- === Comments Analysis Panel === -->
+<b-collapse
+  :id="'summarize' + page + k"
+  class="mt-2"
+  v-if="profilePost && profilePost.summarize && profilePost.summarize.length"
+>
+  <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+    <div>
+      <div class="bold my-2">
+        <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
+        Comments Analysis
+      </div>
+      <div v-html="formatSummarize(profilePost.summarize)"></div>
+    </div>
+  </b-card>
+</b-collapse>
+<!-- === /Panels === -->
+
+
+
           <b-collapse :id="'btn' + page + k" class="mt-2" v-if="profilePost.comments && profilePost.comments.length">
             <b-card id="cmt-card" class="text-left">
               <span v-if="profilePost.source == 'news' && profilePost.comments">
@@ -722,7 +786,8 @@ import locationData from "@/components/monitor/geocode.json"; // Import ไฟ�
 import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
-
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 export default {
   components: {
     VueGallerySlideshow,
@@ -963,6 +1028,29 @@ export default {
     },
   },
   methods: {
+    formatOCR(text) {
+    if (!text) return "";
+    let s = String(text).trim();
+    s = s.replace(/\\r\\n|\\n|\\r/g, "\n");
+    s = s.replace(/\u200B|\uFEFF|\u00A0/g, " ");
+    s = s.replace(/^\s*[•▪●–—-]\s+/gm, "- ");
+    const rawHtml = marked.parse(s, { gfm: true, breaks: true });
+    return DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS: [
+        "p","br","ul","ol","li",
+        "strong","em","a","blockquote",
+        "code","pre","hr","table","thead","tbody","tr","th","td"
+      ],
+      ALLOWED_ATTR: { a: ["href", "title", "target", "rel"] }
+    });
+  },
+  formatSummarize(text) {
+    if (!text) return "";
+    const paragraphs = String(text)
+      .split(/\n\n+/)
+      .map(p => `<p style="margin:0 0 6px; line-height:1.4;">${p.replace(/\n/g,"<br>")}</p>`);
+    return paragraphs.join("");
+  },
     filterNumbers(numbers) {
       // Create a copy of the numbers array and sort by length
       const filtered = [...numbers].sort(
@@ -1447,7 +1535,7 @@ export default {
 
     this.objId = localStorage.getItem("objId");
     this.domainArr = localStorage.getItem("domainArr");
-  
+
     if (this.$route.name === "Domain") {
       this.pageCheck = this.$route.name;
       await this.axios
@@ -1506,6 +1594,30 @@ iframe html {
 }
 </style>
 <style scoped>
+#box-summarize {
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  /* background-image: linear-gradient(to right, #7cccb8 0%, #1185c9  51%, #4b9ed4  100%); */
+  background-image: linear-gradient(to right, #56a7b6 0%, #6d5fa0 51%, #4b9ed4 100%);
+  border-radius: 12px;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: 4px;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;
+  position: relative;
+  top: -3px;
+}
+
+#box-summarize:hover {
+  background-image: linear-gradient(to right, #d8cb16 0%, #8474be 70%, #2b5876 100%);
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+
 .box-hl {
   border-radius: 10px;
 }
@@ -1808,6 +1920,25 @@ a {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
+  .btn-ocr {
+    right: 100px !important;
+    top: -52px !important;
+  }
+
+  #box-summarize {
+    /* display: grid;
+   width: 50px;
+   height: 50px; */
+    float: none !important;
+    text-align: right !important;
+    width: fit-content;
+    position: absolute;
+    right: -8px;
+    top: -50px;
+    /* border-radius: 50%; */
+    /* border: 2px solid #fff; */
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset;
+  }
   .box-hl {
     font-size: 16px;
     font-weight: 600;

@@ -1,12 +1,6 @@
 <template>
   <div id="chart" class="mt-3">
-    <apexchart
-      id="chart-domain"
-      type="line"
-      height="400"
-      :options="chartOptions"
-      :series="series"
-    ></apexchart>
+    <apexchart id="chart-domain" type="line" height="400" :options="chartOptions" :series="series"></apexchart>
   </div>
 </template>
 
@@ -14,17 +8,16 @@
 import VueApexCharts from "vue-apexcharts";
 import { mapGetters } from "vuex";
 import moment from "moment";
-// import axios from "axios";
+import 'moment/locale/th'; // ✅ ให้ moment ใช้ภาษาไทย
+
 export default {
   name: "App",
   components: {
     apexchart: VueApexCharts,
   },
   watch: {
-    getArrDate: function() {
-      var e = moment(new Date())
-        .format()
-        .slice(0, 10);
+    getArrDate: function () {
+      const e = moment(new Date()).format('YYYY-MM-DD'); // ✅ กันปัญหา timezone
       if (
         this.getSdateDm.slice(0, 10) == e &&
         this.getEdateDm.slice(0, 10) == e
@@ -33,7 +26,6 @@ export default {
       } else {
         this.updateChart();
       }
-
       this.val = 0;
     },
   },
@@ -70,7 +62,7 @@ export default {
       "getNamePlatform",
       "getDomainArr",
     ]),
-    getSeries: function() {
+    getSeries: function () {
       return [
         {
           name: "จำนวนโพสต์",
@@ -80,142 +72,136 @@ export default {
     },
   },
   methods: {
+    formatDateTH(dateStr) {
+      const m = moment(dateStr).locale('th');
+      const buddhistYear = m.year() + 543;       // ปี พ.ศ. เต็ม เช่น 2568
+      const buddhistYearShort = buddhistYear % 100; // 68
+
+      return m.format('D MMM ') + buddhistYearShort;
+    },
+
     async updateChart() {
       this.series = [];
-      let sdate, edate;
+      let sdate = "", edate = "";
       if (this.getSdateDm || this.getEdateDm) {
         sdate = "&start=" + this.getSdateDm;
         edate = "&end=" + this.getEdateDm;
-      } else {
-        sdate = "";
-        edate = "";
       }
-      var config = {
+
+      const config = {
         method: "get",
         url:
           "https://api2.cognizata.com/api/v2/userposts/getChartDataPlatform?source=" +
           this.getNamePlatform +
           sdate +
-          edate ,
-        
+          edate,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",
         },
       };
+
       await this.axios(config).then((response) => {
-        var _this = this;
-        var getDaysArray = function(s, e) {
-          for (
-            var a = [], d = new Date(s);
-            d <= e;
-            d.setDate(d.getDate() + 1)
-          ) {
+        const _this = this;
+
+        // ✅ สร้างช่วงวันด้วยคีย์แบบ YYYY-MM-DD เสถียรกว่า slice(0,10)
+        const getDaysArray = function (s, e) {
+          for (var a = [], d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
             a.push({
-              date: moment(d)
-                .format()
-                .slice(0, 10),
+              date: moment(d).format('YYYY-MM-DD'), // ✅
               count: _this.val,
             });
           }
           return a;
         };
-        var daylist = getDaysArray(
+
+        const daylist = getDaysArray(
           new Date(this.getSdateDm),
           new Date(this.getEdateDm)
         );
-        let data = response.data;
-        // let countlist = data.map((item) => item.count);
-        // let datelist = data.map((item) => item.date);
-        let results = daylist.map((key) => {
-          return key;
-        });
-        var array3 = [...results, ...data];
+
+        const data = response.data;
+        const array3 = [...daylist, ...data];
+
+        // รวมและ dedupe ตาม key = date
         const distinctItems = [
           ...new Map(array3.map((item) => [item["date"], item])).values(),
-        ];
-        let datelist = distinctItems.map((item) => item.date);
-        let countlist = distinctItems.map((item) => item.count);
+        ]
+          .sort((a, b) => a.date.localeCompare(b.date)); // ✅ เผื่อคิวเรียงวัน
 
-        this.range = datelist[0] + " - " + datelist[datelist.length - 1];
+        const datelist = distinctItems.map((item) => item.date);     // YYYY-MM-DD (ภายใน)
+        const datelistTH = datelist.map(d => this.formatDateTH(d));  // ✅ สำหรับแสดงผล
+        const countlist = distinctItems.map((item) => item.count);
+
+        // ✅ แสดงช่วงวันที่เป็นไทย
+        this.range = `${datelistTH[0]} - ${datelistTH[datelistTH.length - 1]}`;
+
         this.series = [
-          {
-            name: "จำนวนโพสต์",
-            data: countlist,
-          },
+          { name: "จำนวนโพสต์", data: countlist },
         ];
 
         this.chartOptions = {
           title: {
-            text: "จำนวนโพสต์ วันที่ " + this.range,
+            text: "จำนวนโพสต์ วันที่ " + this.range, // ✅ ไทยแล้ว
             align: "left",
             fontFamily: "Prompt",
           },
           xaxis: {
-            categories: datelist,
+            categories: datelistTH, // ✅ ใช้วันที่ไทยบนแกน X
           },
         };
       });
     },
 
     async startChart() {
-      var currentTime = new Date();
+      const currentTime = new Date();
       currentTime.setDate(currentTime.getDate() - 14);
       try {
-        var config = {
+        const config = {
           method: "get",
           url:
             "https://api2.cognizata.com/api/v2/userposts/getChartDataPlatform?source=" +
-            this.getNamePlatform ,
+            this.getNamePlatform,
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
             "Content-Type": "application/json",
           },
         };
+
         await this.axios(config).then((response) => {
-          var _this = this;
-          var getDaysArrays = function(s, e) {
-            for (
-              var a = [], d = new Date(s);
-              d <= e;
-              d.setDate(d.getDate() + 1)
-            ) {
+          const _this = this;
+
+          const getDaysArrays = function (s, e) {
+            for (var a = [], d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
               a.push({
-                date: moment(d)
-                  .format()
-                  .slice(0, 10),
+                date: moment(d).format('YYYY-MM-DD'), // ✅ ใช้ฟอร์แมตคงที่
                 count: _this.val,
               });
             }
             return a;
           };
-          let de = moment(new Date())
-            .format()
-            .slice(0, 10);
-          let ds = moment(currentTime)
-            .format()
-            .slice(0, 10);
-          var daylist = getDaysArrays(new Date(ds), new Date(de));
 
-          let data = response.data;
+          const de = moment(new Date()).format('YYYY-MM-DD');       // ✅
+          const ds = moment(currentTime).format('YYYY-MM-DD');      // ✅
+          const daylist = getDaysArrays(new Date(ds), new Date(de));
 
-          let results = daylist.map((key) => {
-            return key;
-          });
+          const data = response.data;
+          const array3 = [...daylist, ...data];
 
-          var array3 = [...results, ...data];
           const distinctItems = [
             ...new Map(array3.map((item) => [item["date"], item])).values(),
-          ];
-          let datelist = distinctItems.map((item) => item.date);
-          let countlist = distinctItems.map((item) => item.count);
+          ]
+            .sort((a, b) => a.date.localeCompare(b.date)); // ✅ เผื่อคิวเรียงวัน
 
-          this.range = datelist[0] + " - " + datelist[datelist.length - 1];
+          const datelist = distinctItems.map((item) => item.date);
+          const datelistTH = datelist.map(d => this.formatDateTH(d)); // ✅
+          const countlist = distinctItems.map((item) => item.count);
+
+          // ✅ แสดงช่วงวันที่เป็นไทย
+          this.range = `${datelistTH[0]} - ${datelistTH[datelistTH.length - 1]}`;
+
           this.series = [
-            {
-              name: "จำนวนโพสต์",
-              data: countlist,
-            },
+            { name: "จำนวนโพสต์", data: countlist },
           ];
 
           if (this.getNamePlatform == "twitter") {
@@ -249,9 +235,7 @@ export default {
             chart: {
               fontFamily: "Prompt, FontAwesome, sans-serif",
               type: "line",
-              zoom: {
-                enabled: true,
-              },
+              zoom: { enabled: true },
               dropShadow: {
                 enabled: true,
                 color: "#000",
@@ -264,36 +248,22 @@ export default {
             colors: this.colorp,
             dataLabels: {
               enabled: true,
-              style: {
-                colors: ["#4c412b"],
-              },
-              formatter: (value) => {
-                return value.toLocaleString();
-              },
+              style: { colors: ["#4c412b"] },
+              formatter: (value) => value.toLocaleString(),
             },
-            stroke: {
-              curve: "smooth",
-            },
+            stroke: { curve: "smooth" },
             title: {
-              text: "จำนวนโพสต์ วันที่ " + this.range,
+              text: "จำนวนโพสต์ วันที่ " + this.range, // ✅ ไทยแล้ว
               align: "left",
               fontFamily: "Prompt",
             },
-            markers: {
-              size: 1,
-            },
-
+            markers: { size: 1 },
             grid: {
-              row: {
-                colors: ["#ffffff", "transparent"], // takes an array which will be repeated on columns
-                opacity: 0.5,
-              },
-              padding: {
-                left: 30, // or whatever value that works
-              },
+              row: { colors: ["#ffffff", "transparent"], opacity: 0.5 },
+              padding: { left: 30 },
             },
             xaxis: {
-              categories: datelist,
+              categories: datelistTH, // ✅ ใช้วันที่ไทยบนแกน X
             },
           };
         });
@@ -303,7 +273,7 @@ export default {
       }
     },
   },
-  created: async function() {
+  created: async function () {
     this.startChart();
   },
 };
