@@ -720,99 +720,146 @@ export default {
         console.log(error.response);
       }
     },
-    async fetchSentiment2({ commit }, payload) {
-      commit("setLoadChartCloud", true);
-      let all = { negative: 0, neutral: 0, positive: 0 };
-      var axios = require("axios");
-      var dom = "",
-        key = "",
-        search = "",
-        mo = "";
-      if (payload.monitor) {
-        mo = `&monitor=${payload.monitor}`;
-      } else {
-        mo = "";
-      }
-      if (payload.domain.length > 0 && payload.keywords != "") {
-        dom = `&domain=${payload.domain}`;
-        key = `&keywords=${payload.keywords}`;
-        search = `&querySearch=${payload.querySearch}`;
-      } else if (payload.domain.length > 0) {
-        dom = `&domain=${payload.domain}`;
-        key = "";
-        search = `&querySearch=${payload.querySearch}`;
-      } else if (payload.keywords != "") {
-        dom = "";
-        key = `&keywords=${payload.keywords}`;
-        search = `&querySearch=${payload.querySearch}`;
-      } else {
-        dom = "";
-        key = "";
-        search = `&querySearch=${payload.querySearch}`;
-      }
-      var config = {
-        method: "get",
-        url:
-          `https://api2.cognizata.com/api/v2/userposts/getSentimentStat?source=${payload.social}&start=${payload.start_date}&end=${payload.end_date}` +
-          dom +
-          key +
-          search +
-          mo,
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      };
-      axios(config)
-        .then((response) => {
-          let res = response.data[0];
-        
-          all = {
-            negative: res.negativeSentiment,
-            neutral: res.neutralSentiment,
-            positive: res.positiveSentiment,
-          };
-          console.log("all", all);
-          if (payload.social == "facebook") {
-            commit("setSentimentFacebook", all);
-            commit("setSentimentFacebookPost", res);
-          } else if (payload.social == "twitter") {
-            commit("setSentimentTwitter", all);
-            commit("setSentimentTwitterPost", res);
-          } else if (payload.social == "pantip") {
-            commit("setSentimentPantip", all);
-            commit("setSentimentPantipPost", res);
-          } else if (payload.social == "youtube") {
-            commit("setSentimentYoutube", all);
-            commit("setSentimentYoutubePost", res);
-          } else if (payload.social == "tiktok") {
-            commit("setSentimentTiktok", all);
-            commit("setSentimentTiktokPost", res);
-          } else if (payload.social == "news") {
-            commit("setSentimentNews", all);
-            commit("setSentimentNewsPost", res);
-          } else if (payload.social == "instagram") {
-            commit("setSentimentInstagram", all);
-            commit("setSentimentInstagramPost", res);
-          } else if (payload.social == "blockdit") {
-            commit("setSentimentBlockditPost", res);
-            commit("setSentimentBlockdit", all);
-          } else if (payload.social == "threads") {
-            commit("setSentimentThreadsPost", res);
-            commit("setSentimentThreads", all);
-          } else {
-            commit("setSentimentAllPost", res);
-            commit("setSentimentAll", all);
-          }
+  async fetchSentiment2({ commit }, payload) {
+  commit("setLoadChartCloud", true);
 
-          commit("setSentimentStatVal", response);
-          commit("setLoadChartCloud", false);
-          console.log("getSentimentStat", response);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+  const axios = require("axios");
+
+  // Build params safely
+  const params = new URLSearchParams();
+  params.set("source", payload.social ?? "");
+  params.set("start", payload.start_date ?? "");
+  params.set("end", payload.end_date ?? "");
+
+  // domain can be array or string
+  if (payload?.domain && payload.domain.length > 0) {
+    const dom = Array.isArray(payload.domain) ? payload.domain.join(",") : payload.domain;
+    params.set("domain", dom);
+  }
+  if (payload?.keywords) params.set("keywords", payload.keywords);
+  if (payload?.querySearch !== undefined) params.set("querySearch", payload.querySearch);
+  if (payload?.monitor) params.set("monitor", payload.monitor);
+
+  const config = {
+    method: "get",
+    url: `https://api2.cognizata.com/api/v2/userposts/getSentimentStat?${params.toString()}`,
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+      "Content-Type": "application/json",
     },
+  };
+
+  try {
+    const response = await axios(config);
+
+    // Accept either array or object response shapes
+    const raw = Array.isArray(response.data) ? response.data[0] : response.data;
+
+    // Helper to resolve sentiment with fallback keys
+    const pick = (obj, paths, fallback = 0) => {
+      for (const p of paths) {
+        const val = p.split(".").reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
+        if (typeof val === "number") return val;
+      }
+      return fallback;
+    };
+
+    // When raw is undefined (empty response), this still returns zeros
+    const all = {
+      negative: pick(raw, ["negativeSentiment", "negative", "sentiment.negative"], 0),
+      neutral:  pick(raw, ["neutralSentiment",  "neutral",  "sentiment.neutral"],  0),
+      positive: pick(raw, ["positiveSentiment", "positive", "sentiment.positive"], 0),
+    };
+
+    // Keep a copy of the whole record for “*Post” mutations; fall back to {}
+    const res = raw ?? {};
+
+    switch (payload.social) {
+      case "facebook":
+        commit("setSentimentFacebook", all);
+        commit("setSentimentFacebookPost", res);
+        break;
+      case "twitter":
+        commit("setSentimentTwitter", all);
+        commit("setSentimentTwitterPost", res);
+        break;
+      case "pantip":
+        commit("setSentimentPantip", all);
+        commit("setSentimentPantipPost", res);
+        break;
+      case "youtube":
+        commit("setSentimentYoutube", all);
+        commit("setSentimentYoutubePost", res);
+        break;
+      case "tiktok":
+        commit("setSentimentTiktok", all);
+        commit("setSentimentTiktokPost", res);
+        break;
+      case "news":
+        commit("setSentimentNews", all);
+        commit("setSentimentNewsPost", res);
+        break;
+      case "instagram":
+        commit("setSentimentInstagram", all);
+        commit("setSentimentInstagramPost", res);
+        break;
+      case "blockdit":
+        commit("setSentimentBlockdit", all);
+        commit("setSentimentBlockditPost", res);
+        break;
+      case "threads":
+        commit("setSentimentThreads", all);
+        commit("setSentimentThreadsPost", res);
+        break;
+      default:
+        commit("setSentimentAll", all);
+        commit("setSentimentAllPost", res);
+        break;
+    }
+
+    commit("setSentimentStatVal", response);
+    // console.log("getSentimentStat", response);
+  } catch (err) {
+    console.error("getSentimentStat error:", err);
+    // Optional: reset to zeros on error so UI doesn't hang on old data
+    const zeros = { negative: 0, neutral: 0, positive: 0 };
+    switch (payload.social) {
+      case "facebook":
+        commit("setSentimentFacebook", zeros);
+        break;
+      case "twitter":
+        commit("setSentimentTwitter", zeros);
+        break;
+      case "pantip":
+        commit("setSentimentPantip", zeros);
+        break;
+      case "youtube":
+        commit("setSentimentYoutube", zeros);
+        break;
+      case "tiktok":
+        commit("setSentimentTiktok", zeros);
+        break;
+      case "news":
+        commit("setSentimentNews", zeros);
+        break;
+      case "instagram":
+        commit("setSentimentInstagram", zeros);
+        break;
+      case "blockdit":
+        commit("setSentimentBlockdit", zeros);
+        break;
+      case "threads":
+        commit("setSentimentThreads", zeros);
+        break;
+      default:
+        commit("setSentimentAll", zeros);
+        break;
+    }
+  } finally {
+    commit("setLoadChartCloud", false);
+  }
+}
+,
     async fetchSentimentHashtag2({ commit }, payload) {
       commit("setLoadChartCloud", true);
       let all = { negative: 0, neutral: 0, positive: 0 };
@@ -908,7 +955,7 @@ export default {
 
           commit("setSentimentStatVal", response);
           commit("setLoadChartCloud", false);
-          console.log("getSentimentStat", response);
+          // console.log("getSentimentStat", response);
         })
         .catch((error) => {
           console.log(error);

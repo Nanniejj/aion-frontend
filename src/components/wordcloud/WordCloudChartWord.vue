@@ -738,8 +738,10 @@ export default {
         moment(new Date())
           .format()
           .slice(0, 10) + "T23:59:59";
-
+  //  console.log('this.linkword1',this.linkword);
       if (this.linkword) {
+        // console.log('this.linkwordddddd',this.linkword);
+        
         this.$store.commit("setWordCloudStartDate", todays);
         this.$store.commit("setWordCloudEndDate", todaye);
       }
@@ -752,7 +754,7 @@ export default {
      
       let domainarr;
       if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
-        domainarr = this.getDomainArr;
+        domainarr = 'ALL';
       }else if(this.getWordCloudDomain) {
         domainarr = this.getWordCloudDomain;
       } else {

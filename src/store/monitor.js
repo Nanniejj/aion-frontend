@@ -998,6 +998,47 @@ export default {
         console.log(error.response);
       }
     },
+
+     async fetchAllPostDomainPost({ commit }, payload) {
+      commit("setLoadPostTab", true);
+      var axios = require("axios");
+      const config = {
+        method: "get",
+        url: "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain",
+        params: payload,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+
+      try {
+        const response = await axios(config);
+        const res = response.data;
+
+        commit("setLoadPostTab", false);
+
+        var post = res.data;
+        var pair = { read: true };
+        var posts = post.map((result) => {
+          return { ...result, ...pair };
+        });
+
+        // Check offset and commit appropriate mutations
+        if (payload.offset === 0) {
+          commit("setAllPostDomain", posts);
+        } else {
+          commit("addAllPost", posts);
+        }
+
+        commit("setCountAllPost", res.count);
+        return res.data;
+      } catch (error) {
+        alert("โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+        commit("setLoadPostTab", false);
+        console.log(error.response);
+      }
+    },
     // async fetchAllPostDomain({ commit }, payload) {
     //   commit("setLoadPostTab", true);
     //   var axios = require("axios");

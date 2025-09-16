@@ -157,7 +157,7 @@ export default {
       });
 
       //TopPost
-      this.$store.dispatch("fetchPostDomain", {
+      this.$store.dispatch("fetchTopPostDomain", {
         start_date: this.start_date,
         end_date: this.end_date,
         sort_by: "engagement",
@@ -166,7 +166,7 @@ export default {
       });
 
       //AllPost
-      this.$store.dispatch("fetchAllPostDomain", {
+      this.$store.dispatch("fetchAllPostDomainPost", {
         start_date: this.start_date,
         end_date: this.end_date,
         sort_by: "",

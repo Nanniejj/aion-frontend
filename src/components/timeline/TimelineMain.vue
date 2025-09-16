@@ -33,13 +33,13 @@
                 <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
               </b-form-group>
             </b-col>
-            <b-col cols="12" md="6" >
+            <b-col cols="12" md="6" class="d-none" >
               <b-form-group label="" label-for="accounts" class="pr-md-3">
                 <b-form-tags id="accounts" v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
                   separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete />
               </b-form-group>
             </b-col>
-            <b-col cols="12" md="6"  >
+            <b-col cols="12" md="6" class="d-none" >
               <!-- Hashtags -->
               <b-form-group label="" label-for="accounts" class="pr-md-3">
                 <b-form-tags id="accounts" v-model="formFilters.accountsInput" tag-variant="light" tag-pills size="md"
@@ -49,7 +49,7 @@
 
             </b-col>
 
-            <b-col cols="12" md="4">
+            <b-col cols="12" md="4"  >
               <v-select :options="sourceOptions" v-model="formFilters.source" id="search-input" label="text"
                 :reduce="source => source.value" class="mb-2 select-sort" placeholder="Select Platform"
                 multiple></v-select>
@@ -109,6 +109,7 @@
 
         </b-form>
       </b-card>
+  
       <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" />
 
       <!-- Loading -->
@@ -118,6 +119,7 @@
           color="#17a2b891" />
       </div>
       <!-- Timeline -->
+       <!-- <div v-if="postsFromApi.data&&postsFromApi.data.length==0"> ไม่พบข้อมูล</div> -->
       <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
         @changeDaySort="changeDaySort" :count="count" v-else />
       <div v-if="filters.view_mode === 'posts' && !loading && filters.page < totalPages" class="text-center my-2 pb-5">
@@ -146,10 +148,11 @@ import LinkMain2 from "@/components/timeline/LinkMain2.vue";
 import TimelinePosts from "@/components/timeline/TimelinePosts2.vue";
 import { mapGetters } from "vuex";
 import ChartTime from "@/components/timeline/ChartTime.vue";
+// import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
 export default {
-  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime },
+  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, },
   watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);

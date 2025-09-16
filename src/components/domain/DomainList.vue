@@ -20,8 +20,8 @@
 <script>
 import { mapGetters } from "vuex";
 import VueElementLoading from "vue-element-loading";
-import LinkMain from "@/components/linknode/LinkMain.vue";
-import LinkMain2 from "@/components/linknode/LinkMain2.vue";
+import LinkMain from "@/components/timeline/LinkMain.vue";
+import LinkMain2 from "@/components/timeline/LinkMain2.vue";
 export default {
   components: {
     VueElementLoading,

@@ -652,7 +652,8 @@ export default {
     getStat() {
       let domainarr;
       if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
-        domainarr = this.getDomainArr;
+       // domainarr = this.getDomainArr;
+              domainarr = 'ALL'
       }else if(this.getWordCloudDomain) {
         domainarr = this.getWordCloudDomain;
       } else {
@@ -699,7 +700,8 @@ export default {
       this.$store.commit("setHashtagSocial", this.socialname);
       let domainarr;
       if (this.getWordCloudDomain&& this.getWordCloudDomain.toLocaleString()=='All') {
-        domainarr = this.getDomainArr;
+        //domainarr = this.getDomainArr;
+             domainarr = 'ALL'
       }else if(this.getWordCloudDomain) {
         domainarr = this.getWordCloudDomain;
       } else {
