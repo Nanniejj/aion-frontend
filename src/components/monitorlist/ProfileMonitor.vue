@@ -623,7 +623,7 @@
                     <b-col cols="12" xl="auto" class="px-0 text-md-left">
                         <h4 class="mb-0">Posts Timeline</h4>
                     </b-col>
-                    <b-col cols="12" lg="6" xl="auto" class="px-1">
+                    <b-col cols="12" md="6" xl="auto" class="px-1">
                         <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
                             <b-input-group-append>
                                 <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
@@ -632,9 +632,9 @@
                             </b-input-group-append>
                         </b-form-group>
                     </b-col>
-                    <b-col cols="12" lg="6" xl="auto" class="px-0 ml-xl-auto">
-                        <b-row class="m-0 flex-lg-nowrap mt-3 mt-xl-0">
-                            <b-col cols="auto" class="px-0 mb-3 mb-sm-0">
+                    <b-col cols="12" md="6" xl="" class="px-0 ml-xl-auto">
+                        <b-row class="m-0 justify-content-end flex-md-nowrap mt-3 mt-xl-0">
+                            <b-col md="auto" class="col px-0 mb-3 mb-sm-0">
                                 <date-picker
                                     v-model="valueDate"
                                     type="date"
@@ -652,7 +652,7 @@
                             </b-col>
                             <b-col cols="auto" class="px-0 pl-2">
                                 <div class="text-center">
-                                    เรียงจาก :
+                                    
                                     <b-button class="sort-btn" @click="toggleSort" pill size="sm">
                                          {{ selectedSort === 'descend' ? 'เก่า → ใหม่' : 'ใหม่ → เก่า' }}
                                     </b-button>
@@ -1485,10 +1485,13 @@ export default {
         async apiTimelineUserPosts() {
             // console.log('apiTimelineUserPosts called');
             const isHashtagList = this.$route.query.type === 'hashtaglist';
+            const targetApi = 'https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/';
+            const hashtagApi = 'https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain/';
             this.loading = true;
             const config = {
                 method: "get",
-                url: "https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/",
+                url: isHashtagList ? hashtagApi : targetApi,
+                // url: "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain/",
                 //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
@@ -1688,8 +1691,26 @@ export default {
     max-height: 550px;
     overflow-y: auto;
 }
+.mx-datepicker-range {
+    width: 100%!important;
+}
 @media only screen and (min-width: 0px) and (max-width: 760px) {
     
+
+}
+
+@media only screen and (min-width: 0px) and (max-width: 800px){
+    .mx-datepicker-range {
+        width: 100%!important;
+    }
+
+}
+
+
+@media only screen and (min-width: 768px) and (max-width: 1200px){
+.mx-datepicker-range {
+    width: 185px !important;
+}
 
 }
 </style>

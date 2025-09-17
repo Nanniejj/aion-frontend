@@ -22,7 +22,7 @@
                                 v-if="filters.source == ''">
                             </b-avatar>
                             <div class="col-auto bold align-content-center" style="font-size: 20px;">
-                                {{ totalRows.toLocaleString() }} รายการ
+                                {{ totalRows.toLocaleString() }} Hashtags
                             </div>
                         </b-row>
                     </div>

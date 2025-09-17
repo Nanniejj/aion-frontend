@@ -5,7 +5,7 @@
                 <div class="d-flex flex-wrap justify-content-start align-items-center">
                     <b-avatar text="All" size="45" style="background-color: #fed16e;"></b-avatar>
                     <div class="col-auto bold align-content-center" style="font-size: 20px;">
-                        {{ totalRows.toLocaleString() }} รายการ
+                        {{ totalRows.toLocaleString() }} Groups
                     </div>
                 </div>
             </b-col>
@@ -96,7 +96,7 @@
 
                 <template #cell(action)="data">
 
-                    <span class="fas fa-user-edit text-custom px-2" v-b-tooltip.hover title="แก้ไขกลุ่ม"
+                    <span class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขกลุ่ม"
                         @click="openEditGroup(data.item)" size="sm"></span>
                     <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="เพิ่มสมาชิกกลุ่ม"
                         @click="toggleDetails(data)" size="sm"></span>

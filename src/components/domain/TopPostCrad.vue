@@ -584,7 +584,7 @@
                         Comments Analysis
                       </div>
                       <div v-html="formatSummarize(postDomain.summarize)"></div>
-                      <!-- <SummarizeCommentChart :series="handleSeries()"/> -->
+                      <SummarizeCommentChart :series="handleSeries()"/>
                     </div>
                   </b-card>
                 </b-collapse>

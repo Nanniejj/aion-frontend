@@ -1,5 +1,5 @@
 <template lang="">
-    <div>
+    <div v-if="!searchQuery || filteredObject.length !== 0">
         <!-- ชื่อ Subdomain -->
         <b-col sm="12" md="4" lg="4" class="d-flex justify-content-between align-items-center"
           style="background-color: #7cd1dc; color: #000; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 10px; margin-bottom: 0px;">

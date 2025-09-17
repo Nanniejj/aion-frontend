@@ -52,6 +52,9 @@ export default {
             maxLabel: '',
             maxValue: 0,
             chartOptions: {
+                chart: {
+                    fontFamily: 'Prompt, sans-serif'
+                },
                 labels: [
                     "เห็นด้วย",
                     "ไม่เห็นด้วย",
@@ -70,7 +73,8 @@ export default {
                     },
                     style: {
                         fontSize: '14px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        // fontFamily: 'Prompt'
                     }
                 },
                 tooltip: {

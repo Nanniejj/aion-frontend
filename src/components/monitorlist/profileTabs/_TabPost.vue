@@ -700,9 +700,11 @@ export default {
 
             const isHashtagList = this.$route.query.type === 'hashtaglist';
             this.getLoadPostTab = true;
+            const targetApi = 'https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/';
+            const hashtagApi = 'https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain/';
             const config = {
                 method: "get",
-                url: "https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/",
+                url: isHashtagList ? hashtagApi : targetApi,
                 //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,

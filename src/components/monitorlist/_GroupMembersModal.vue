@@ -175,7 +175,7 @@ export default {
 
 <style scoped>
     .modal-body-scrollable {
-        min-height: 70vh;
+        /* min-height: 70vh; */
         max-height: 70vh;
         max-width: 95vw;
         overflow-y: auto;

@@ -67,8 +67,8 @@
 
         <!-- time line -->
         <b-row class="m-0">
-            <b-col cols="12" class="px-0">
-                <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
+            <b-col id="timeline-container" cols="12" class="px-0">
+                <!-- <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
                     <b-col cols="12" xl="auto" class="px-0 text-md-left">
                         <h4 class="mb-0">Posts Timeline</h4>
                     </b-col>
@@ -81,8 +81,8 @@
                             </b-input-group-append>
                         </b-form-group>
                     </b-col>
-                    <b-col cols="12" lg="6" xl="auto" class="px-0 ml-xl-auto">
-                        <b-row class="m-0 flex-lg-nowrap mt-3 mt-xl-0">
+                    <b-col cols="12" lg="6" xl="" class="px-0 ml-xl-auto">
+                        <b-row class="m-0 justify-content-end flex-lg-nowrap mt-3 mt-xl-0">
                             <b-col cols="auto" class="px-0 mb-3 mb-sm-0">
                                 <date-picker
                                     v-model="valueDate"
@@ -109,9 +109,112 @@
                             </b-col>
                         </b-row>
                     </b-col>
-                </b-row>
+                </b-row> -->
+                <!-- Filters Card -->
+                <b-card class="mb-3 shadow-sm" style="border-radius: 20px;">
+                    <b-alert show variant="info">
+                    <!-- <b-icon icon="info-circle" id="info-date-note" variant="info" class="float-right"></b-icon>
+                    <b-tooltip target="info-date-note" placement="bottom">
+                        ถ้าเลือกมากกว่า 2 วัน ระบบจะตั้งค่าเริ่มต้นเป็น "รายวัน" และเรียงตาม "Engagement"
+                    </b-tooltip> -->
+                    <div class="text-left"> <b-icon icon="info-circle" class="" variant="info"></b-icon> <small>คำค้นหา (AND
+                        ใช้ช่องว่างหรือ +, OR
+                        ใช้ ,)
+                        <span class="text-muted"> ตัวอย่าง: <code>คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย</code> = (คาเฟ่
+                            AND บรรยากาศดี) OR (มัทฉะ AND อร่อย)</span>
+                        </small></div>
+                    </b-alert>
+                    <b-form @submit.prevent="handleSearch">
+                    <b-row>
+                        <b-col cols="12" md="8">
+                        <b-form-group label="" label-for="kw" class="pr-md-3 flex-grow-1">
+                            <b-form-input id="kw" v-model.trim="formFilters.keyword"
+                            placeholder="เช่น คาเฟ่ บรรยากาศดี,มัทฉะ อร่อย" />
+                        </b-form-group>
+                        </b-col>
+
+                        <b-col cols="12" md="4">
+                        <!-- Sentiment -->
+                        <b-form-group class="pr-md-3 checkbox-v">
+                            <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
+                        </b-form-group>
+                        </b-col>
+                        <b-col cols="12" md="6" class="d-none">
+                        <b-form-group label="" label-for="accounts" class="pr-md-3">
+                            <b-form-tags id="accounts" v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
+                            separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete />
+                        </b-form-group>
+                        </b-col>
+                        <b-col cols="12" md="6"  class="d-none">
+                        <!-- Hashtags -->
+                        <b-form-group label="" label-for="accounts" class="pr-md-3">
+                            <b-form-tags id="accounts" v-model="formFilters.accountsInput" tag-variant="light" tag-pills size="md"
+                            separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
+                            add-on-change remove-on-delete />
+                        </b-form-group>
+
+                        </b-col>
+
+                        <b-col cols="12" md="4">
+                            <b-form-select v-model="formFilters.source" class="mb-2" :options="sourceOptions" />
+                        </b-col>
+
+                        <b-col cols="12" md="4">
+
+                        <b-form-select v-model="formFilters.sort_by" class="mb-2" :options="[
+                            { value: 'asc', text: 'โพสต์เก่าสุด' },
+                            { value: 'desc', text: 'โพสต์ล่าสุด' },
+                            { value: 'engagement', text: 'Engagement' },
+                        ]" />
+
+                        </b-col>
+                        <b-col cols="12" md="4">
+                        <section id="date-picker">
+                            <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
+                            :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
+                            @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
+                        </section>
+                        </b-col>                                                                                                                      
+                    </b-row>
+
+                    <b-row align-h="end" class="mt-2" justify="center">
+                        <!-- <b-col cols="auto" md="auto" align="center" justify="center">
+
+                        <b-form-group class="pr-md-3">
+
+                            <b-form-radio-group v-model="formFilters.view_mode" :options="[
+                            { value: 'posts', text: 'ตามเวลา' },
+                            { value: 'daily', text: 'รายวัน' },
+                            ]" buttons button-variant="outline-info" size="md" />
+                            <b-icon icon="info-circle" id="info-date-note" variant="info" role="button" class="flaot-right ml-2"
+                            tabindex="0"></b-icon>
+
+                            <b-tooltip target="info-date-note" placement="right" triggers="hover focus click">
+                            ถ้าเลือกมากกว่า 2 วัน ระบบจะตั้งค่าเริ่มต้นเป็น "รายวัน" และ เรียง "Engagement"
+                            </b-tooltip>
+                        </b-form-group>
+                        </b-col> -->
+                        <b-col cols="auto" md="auto">
+                        <div>
+                            <div class="align-self-end mb-3">
+                            <b-button type="submit" variant="info" class=" px-4" :disabled="loading">
+                                ค้นหา
+                            </b-button>
+                            <!-- <b-button variant="outline-secondary" @click="resetFilters" :disabled="loading">
+                            ล้างค่า
+                        </b-button> -->
+                            </div>
+                        </div>
+                        </b-col>
+                    </b-row>
+
+                    </b-form>
+                </b-card>
             </b-col>
             <b-col cols="12" class="px-0">
+                <div data-v-633a0eda="" class="text-right allpost"> 
+                    ทั้งหมด <b data-v-633a0eda="">{{total_posts || 0 | numFormat}}</b> โพสต์
+                </div>
                 <vue-element-loading 
                     :active="loading" class="h-100" size="80" 
                     background-color="rgba(255, 255, 255, 0.3)"
@@ -137,8 +240,6 @@
                 </b-col>
             </b-col>
         </b-row>
-
-
         <GroupMembers :groupName="groupDetails.group_name" :openModal="openModal" :targetlist="groupDetails.targetlist" @close="openModal = false"/>
     </div>
     
@@ -172,6 +273,35 @@ export default {
             groupDetails: {},
             openModal: false,
             search: '',
+            sentimentOptions: [
+                { text: "Positive", value: "1" },
+                { text: "Neutral", value: "0" },
+                { text: "Negative", value: "-1" }
+            ],
+            sourceOptions: [
+                { value: null, text: "All Platform" },
+                { value: "facebook", text: "Facebook" },
+                { value: "twitter", text: "X" },
+                { value: "pantip", text: "Board" },
+                { value: "news", text: "News" },
+                { value: "youtube", text: "YouTube" },
+                { value: "instagram", text: "Instagram"},
+                { value: "blockdit", text: "Blockdit"},
+                { value: "tiktok", text: "Tiktok" },
+                { value: "threads", text: "Threads" }
+            ],
+            formFilters: {
+                sentiment: ["1", "0", "-1"],
+                keyword: "",
+                view_mode: "posts",
+                source: null,
+                sort_by: 'desc',
+                limit: 50,
+                page: 1,
+                hashtags: [],
+                // startLocal: "2025-09-16T00:00:00",
+                // endLocal: "2025-09-16T23:59:59"
+            }
         }
     },
     methods: {
@@ -198,7 +328,7 @@ export default {
                 this.apiGetPost();
             }
         },
-        onSearch() {
+        handleSearch() {
             clearTimeout(this.debounceTimeout);
             this.debounceTimeout = setTimeout(() => {
                 this.page = 1; // รีเซ็ตกลับหน้าแรก
@@ -299,9 +429,11 @@ export default {
                 // สร้าง params ใหม่
                 const params = {
                     group_id: this.$route.query.id,
-                    ...(this.selectedSource ? { source: this.selectedSource } : {}),
-                    sort_by: this.selectedSort,
-                    sentiment: this.selected,
+                    // ...(this.selectedSource ? { source: this.selectedSource } : {}),
+                    keyword:this.formFilters.keyword,
+                    source: this.formFilters.source,
+                    sort_by: this.formFilters.sort_by,
+                    sentiment: this.formFilters.sentiment,
                     from: this.valueDate[0],
                     to: this.valueDate[1],
                    

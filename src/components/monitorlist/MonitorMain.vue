@@ -5,21 +5,43 @@
                 <b-button-group class="" size="lg">
                     <b-button style="border-bottom-left-radius: 0;"  :variant="activeButton === 'profile' ? 'custom' : 'outline-custom'"
                         @click="selectButton('profile')">
-                        <b-icon icon="person-fill" font-scale="1.5"></b-icon> Profile
+                        <div class="d-flex">
+                            <b-icon icon="person-fill" font-scale="1.5"></b-icon>
+                            <span class="d-none d-lg-block pl-2">
+                                Profile
+                            </span>
+                        </div>
+                        <!-- <b-icon icon="person-fill" font-scale="1.5"></b-icon> Profile -->
                     </b-button>
 
                     <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'hashtag' ? 'custom' : 'outline-custom'"
                         @click="selectButton('hashtag')">
-                        <b-icon icon="hash" font-scale="1.5"></b-icon> Hashtag
+                        <!-- <b-icon icon="hash" font-scale="1.5"></b-icon> Hashtag -->
+                        <div class="d-flex">
+                            <b-icon icon="hash" font-scale="1.5"></b-icon> 
+                            <span class="d-none d-lg-block pl-2">
+                                Hashtag
+                            </span>
+                        </div>
                     </b-button>
                     <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'group' ? 'custom' : 'outline-custom'"
                         @click="selectButton('group')">
-                        <b-icon icon="diagram2-fill" font-scale="1.5"></b-icon> Groups
+                        <div class="d-flex">
+                            <b-icon icon="diagram2-fill" font-scale="1.5"></b-icon> 
+                            <span class="d-none d-lg-block pl-2">
+                                Groups
+                            </span>
+                        </div>
                     </b-button>
-                    <!-- <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'community' ? 'custom' : 'outline-custom'"
+                    <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'community' ? 'custom' : 'outline-custom'"
                         @click="selectButton('community')">
-                        <b-icon icon="people-fill" font-scale="1.5"></b-icon> Community
-                    </b-button> -->
+                        <div class="d-flex">
+                            <b-icon icon="people-fill" font-scale="1.5"></b-icon> 
+                            <span class="d-none d-lg-block pl-2">
+                                Community
+                            </span>
+                        </div>
+                    </b-button>
                 </b-button-group>
             </b-button-toolbar>
         </div>
@@ -29,6 +51,7 @@
         <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'"  @setReface="handleReface"/>
         <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'"  @setReface="handleReface" @total="(data) => total = data"/>
         <MonitorGroupTable v-if="activeButton == 'group'" :type="'grouplist'"  @setReface="handleReface" @total="(data) => total = data"/>
+        <MonitorCommunity v-if="activeButton == 'community'" :type="'communitylist'"/>
     </div>
 </template>
 
@@ -36,9 +59,10 @@
 import MonitorStat from "@/components/monitorlist/MonitorStat.vue";
 import MonitorTable from "@/components/monitorlist/MonitorTable.vue";
 import MonitorGroupTable from "@/components/monitorlist/MonitorGroupTable.vue";
+import MonitorCommunity from "./MonitorCommunity.vue";
 export default {
     components: {
-        MonitorStat,MonitorTable,MonitorGroupTable
+        MonitorStat,MonitorTable,MonitorGroupTable, MonitorCommunity
     },
     data() {
         return {

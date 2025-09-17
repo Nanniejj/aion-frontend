@@ -570,8 +570,9 @@ export default {
         border-top-left-radius: 0 !important;
     }
     .item-image{
-        max-width: 100%;
+        width: 100%;
         /* height: auto; */
     }
 }
+
 </style>
