@@ -116,8 +116,8 @@
 
 <script>
 import HomeNav from "@/components/HomeNav.vue";
-import LinkMain2 from "@/components/linknode/LinkMain2.vue";
-import TimelinePosts from "@/components/linknode/TimelinePosts2.vue";
+import LinkMain2 from "@/components/timeline/LinkMain2.vue";
+import TimelinePosts from "@/components/timeline/TimelinePosts2.vue";
 import { mapGetters } from "vuex";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";

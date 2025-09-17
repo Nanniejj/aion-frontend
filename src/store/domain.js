@@ -2,7 +2,7 @@ import { WordcloudService } from "@/common/api.services";
 import { DomainService } from "@/common/api.services";
 export default {
   state: {
-    clickDomainId:"",
+    clickDomainId: "",
     relAcc: "",
     chartDomain: [],
     listDomain: [],
@@ -52,7 +52,7 @@ export default {
       domain.sort(function(a, b) {
         return parseFloat(a.id) - parseFloat(b.id);
       });
-    
+
       return domain.map((result) => {
         return result;
       });
@@ -89,8 +89,8 @@ export default {
     },
   },
   mutations: {
-    setClickDomainId:(state, payload) =>  {
-     state.clickDomainId=payload
+    setClickDomainId: (state, payload) => {
+      state.clickDomainId = payload;
     },
     setShowReport: (state, payload) => {
       state.showReort = payload;
@@ -175,7 +175,7 @@ export default {
       commit("setLoadTopPost", true);
       try {
         const res = await DomainService.getPostDomain(payload);
-        
+
         if (res.data.data.length) {
           let temp = res.data.data;
           const ids = temp.map((o) => o.full_text);
@@ -187,9 +187,35 @@ export default {
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
-     
+
           commit("setTopPostDomain", posts.slice(0, 3));
-          
+        } else {
+          commit("setTopPostDomain", []);
+        }
+
+        commit("setLoadTopPost", false);
+      } catch (error) {
+        console.log(error.response);
+      }
+    },
+    async fetchTopPostDomain({ commit }, payload) {
+      commit("setLoadTopPost", true);
+      try {
+        const res = await DomainService.getTopPostDomain(payload);
+
+        if (res.data.data.length) {
+          let temp = res.data.data;
+          const ids = temp.map((o) => o.full_text);
+          const filtered = temp.filter(
+            ({ full_text }, index) => !ids.includes(full_text, index + 1)
+          );
+          var post = filtered;
+          var pair = { read: true };
+          var posts = post.map((result) => {
+            return { ...result, ...pair };
+          });
+
+          commit("setTopPostDomain", posts.slice(0, 3));
         } else {
           commit("setTopPostDomain", []);
         }
@@ -200,60 +226,59 @@ export default {
       }
     },
 
-// TopPostNews
-  // async fetchPostDomain({ commit }, payload) {
-  //   commit("setLoadTopPost", true);
-  //   var axios = require("axios");
-  //   const config = {
-  //     method: "get",
-  //     url: "http://localhost:3000/api/v2/userposts/getSentimentDetail",
-  //     params: payload,
-  //     headers: {
-  //       Authorization: "Bearer " + localStorage.getItem("token"),
-  //       "Content-Type": "application/json",
-  //     },
-  //   };
+    // TopPostNews
+    // async fetchPostDomain({ commit }, payload) {
+    //   commit("setLoadTopPost", true);
+    //   var axios = require("axios");
+    //   const config = {
+    //     method: "get",
+    //     url: "http://localhost:3000/api/v2/userposts/getSentimentDetail",
+    //     params: payload,
+    //     headers: {
+    //       Authorization: "Bearer " + localStorage.getItem("token"),
+    //       "Content-Type": "application/json",
+    //     },
+    //   };
 
-  //   try {
-  //     const response = await axios(config);
-  //     const res = response.data;
+    //   try {
+    //     const response = await axios(config);
+    //     const res = response.data;
 
-  //     if (res.data.length) {
-  //       let temp = res.data;
-  //       console.log("temp", temp);
+    //     if (res.data.length) {
+    //       let temp = res.data;
+    //       console.log("temp", temp);
 
-  //       const ids = temp.map((o) => o.full_text);
-  //       const filtered = temp.filter(
-  //         ({ full_text }, index) => !ids.includes(full_text, index + 1)
-  //       );
+    //       const ids = temp.map((o) => o.full_text);
+    //       const filtered = temp.filter(
+    //         ({ full_text }, index) => !ids.includes(full_text, index + 1)
+    //       );
 
-  //       var post = filtered;
-  //       var pair = { read: true };
-  //       var posts = post.map((result) => {
-  //         return { ...result, ...pair };
-  //       });
+    //       var post = filtered;
+    //       var pair = { read: true };
+    //       var posts = post.map((result) => {
+    //         return { ...result, ...pair };
+    //       });
 
-  //       commit("setTopPostDomain", posts.slice(0, 3));
-  //     } else {
-  //       commit("setTopPostDomain", []);
-  //     }
+    //       commit("setTopPostDomain", posts.slice(0, 3));
+    //     } else {
+    //       commit("setTopPostDomain", []);
+    //     }
 
-  //     commit("setLoadTopPost", false);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // },
-
+    //     commit("setLoadTopPost", false);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // },
 
     //Export
     async fetchExportPostDomain({ commit }, payload) {
       commit("setLoadTopPost", true);
       try {
-        const res = await DomainService.getPostDomain(payload);
-        
+        const res = await DomainService.getTopPostDomain(payload);
+
         if (res.data.data.length) {
           let temp = res.data.data;
-    
+
           const ids = temp.map((o) => o.full_text);
           const filtered = temp.filter(
             ({ full_text }, index) => !ids.includes(full_text, index + 1)
@@ -263,9 +288,8 @@ export default {
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
-         
+
           commit("setExportTopPostDomain", posts.slice(0, 2));
-          
         } else {
           commit("setExportTopPostDomain", []);
         }
@@ -278,8 +302,8 @@ export default {
     async fetchExportPostDomainNeg({ commit }, payload) {
       commit("setLoadTopPost", true);
       try {
-        const res = await DomainService.getPostDomain(payload);
-        
+        const res = await DomainService.getTopPostDomain(payload);
+
         if (res.data.data.length) {
           let temp = res.data.data;
           const ids = temp.map((o) => o.full_text);
@@ -291,9 +315,8 @@ export default {
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
-        
+
           commit("setExportTopPostDomainNeg", posts.slice(0, 2));
-          
         } else {
           commit("setExportTopPostDomainNeg", []);
         }

@@ -1,33 +1,39 @@
 <template>
   <div id="chart">
     <!-- {{ filters }} -->
-    <div class="text-left">สถิติรายชั่วโมง </div>
-    <apexchart
-      ref="chart"
-      type="line"
-      height="350"
-      :options="chartOptions"
-      :series="series"
-    />
+      <div class="text-center my-10 py-4" v-if="loading">
+        <vue-element-loading :active="loading" size="30" background-color="rgba(255, 255, 255, 0.5)"
+          color="#17a2b891"   spinner="bar-fade-scale" />
+      </div>
+      <b-row v-if="!loading">
+       
+        <!-- <b-col cols="12"> <StaticTimeline :datachart="datachart"/></b-col> -->
+        <b-col cols="12"><div class="text-left">สถิติรายชั่วโมง </div>
+    <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" /></b-col>
+      </b-row>
+         
+    
   </div>
 </template>
 
 <script>
 import VueApexCharts from 'vue-apexcharts'
 import axios from 'axios'
-
+import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 export default {
-  components: { apexchart: VueApexCharts },
+  components: { apexchart: VueApexCharts ,StaticTimeline},
   props: { filters: { type: Object, default: () => ({}) } },
   data() {
     return {
+      datachart:null,
       loading: false,
       error: null,
       series: [],
       activeRange: null,   // มีช่วงที่เลือกอยู่หรือไม่
       lastPayload: null,   // เก็บ payload ล่าสุดไว้ดู timezone
       chartOptions: {
-        colors: ['#7965C1', '#17a2b8', '#e75aa1'],
+           //  colors: ['#75cbdb', '#17a2b8', '#ff9800'],
+        colors: ['#17b89a', '#17a2b8', '#e75aa1'],
         chart: {
           type: 'line',
           fontFamily: 'Prompt, FontAwesome, sans-serif',
@@ -77,15 +83,22 @@ export default {
           }
         },
         yaxis: [
-          { seriesName: 'Posts', title: { text: 'Posts' }, min: 0 ,labels: {
-        formatter: (val) => Math.round(val).toLocaleString() || 0
-      }},
-          { seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true ,labels: {
-        formatter: (val) => Math.round(val).toLocaleString()||0
-      }},
-          { seriesName: 'Messages', title: { text: 'Messages' }, min: 0 ,labels: {
-        formatter: (val) =>Math.round(val).toLocaleString()||0
-      }}
+          {
+            seriesName: 'Posts', title: { text: 'Posts' }, min: 0, labels: {
+              formatter: (val) => Math.round(val).toLocaleString() || 0
+            }
+          },
+          {
+            seriesName: 'Messages', title: { text: 'Messages' }, min: 0, labels: {
+              formatter: (val) => Math.round(val).toLocaleString() || 0
+            }
+          }
+          ,
+          {
+            seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true, labels: {
+              formatter: (val) => Math.round(val).toLocaleString() || 0
+            }
+          }
         ],
         noData: { text: 'กำลังโหลดข้อมูล...' }
       }
@@ -165,10 +178,11 @@ export default {
     async fetchData() {
       this.loading = true
       this.error = null
-      const API_URL = 'http://localhost:3000/api/v2/userposts/getPostCharts'
+      const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostCharts'
       const params = this.filters
       try {
         const { data } = await axios.get(API_URL, { params })
+        this.datachart=data
         this.applyData(data)
       } catch (err) {
         console.error(err)
@@ -233,7 +247,7 @@ export default {
       const startUtcIso = new Date(start).toISOString()
       const endUtcIso = new Date(end).toISOString()
       const startIsoLocal = new Date(start + offsetMs).toISOString().replace('Z', tzStr)
-      const endIsoLocal   = new Date(end + offsetMs).toISOString().replace('Z', tzStr)
+      const endIsoLocal = new Date(end + offsetMs).toISOString().replace('Z', tzStr)
 
       this.$emit('range-selected', {
         start, end,                       // epoch ms (UTC)
@@ -319,14 +333,15 @@ export default {
         const tsUTC = lt - offsetMs
 
         posts.push([tsUTC, val.post])
-        engagements.push([tsUTC, val.engagement])
+
         messages.push([tsUTC, val.msg])
+        engagements.push([tsUTC, val.engagement])
       }
 
       this.series = [
         { name: 'Posts', data: posts, yAxisIndex: 0 },
+        { name: 'Messages', data: messages, yAxisIndex: 2 },
         { name: 'Engagement', data: engagements, yAxisIndex: 1 },
-        { name: 'Messages', data: messages, yAxisIndex: 2 }
       ]
     },
 

@@ -843,6 +843,53 @@ export const DomainService = {
         findkey+mor
     );
   },
+    getTopPostDomain(payload) {
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
+    ApiService.setHeader();
+    var dm = "",
+      stm = "",
+      source = "",
+      dash = "",
+      findkey = "",mor="";
+    if (payload.querySearch) {
+      findkey = `&querySearch=${payload.querySearch}`;
+    } else {
+      findkey = "";
+    }
+    if (payload.dashboard) {
+      dash = `&dashboard=${payload.dashboard}`;
+    } else {
+      dash = "";
+    }
+    if (payload.domain) {
+      dm = `&domain=${payload.domain}`;
+    } else {
+      dm = "";
+    }
+    if (payload.source) {
+      source = `&source=${payload.source}`;
+    } else {
+      source = "";
+    }
+    if (payload.sentiment) {
+      stm = `&sentiment=${payload.sentiment}`;
+    } else {
+      stm = "";
+    }
+     if (payload.mor) {
+      mor = `&monitor=${payload.mor}`;
+    } else {
+      mor = "";
+    }
+    return ApiService.get(
+      `/v2/userposts/getSentimentdetailDomain/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
+        stm +
+        dm +
+        source +
+        dash +
+        findkey+mor
+    );
+  },
   getPostDomain2(payload) {
     ApiService.setHeader();
     var dm = "",

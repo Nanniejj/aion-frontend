@@ -1480,7 +1480,7 @@ export default {
           if (this.menu == "platform") {
             checkApi = "fetchAllPostDomain";
           } else {
-            checkApi = "fetchAllPostDomain";
+            checkApi = "fetchAllPostDomainPost";
           }
         } else {
           checkApi = "fetchLocation";

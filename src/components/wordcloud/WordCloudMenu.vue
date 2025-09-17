@@ -74,9 +74,6 @@
       </b-row>
       <b-row align-h="center">
         <b-col>
-          <!-- <v-select class="mb-3" :options="formattedDomainOptions"  v-model="domain_name" label="name" :reduce="d => d.name"
-            placeholder="เลือก Domain"  @input="selectDomain" multiple />
-  -->
 
           <select
             name="list"
@@ -104,8 +101,8 @@
         </b-col>
       </b-row>
     </b-container>
-        <hr class="mt-5 mb-3 mr-5 ml-5" />
-    <DefaultCloud />
+        <!-- <hr class="mt-5 mb-3 mr-5 ml-5" />
+    <DefaultCloud /> -->
   </div>
 </template>
 
@@ -202,7 +199,7 @@ export default {
     summitform: function () {
       this.keyword = this.word;
       this.date = this.type_selected;
-console.log('domainjaa',this.domain_name);
+
       if (this.domain_name == "Alls"||this.domain_name.length==0) {
         this.domain_name = "";
       }
@@ -210,8 +207,7 @@ console.log('domainjaa',this.domain_name);
       this.$store.commit("setWordCloudDomain", this.domain_name);
       this.$store.commit("setKeywords", this.word);
       this.$store.commit("setSelectedMonitor", this.selected);
-      console.log("kw",   this.getSelectedMonitor);
-      console.log("domain_name", this.domain_name);
+
 
       if (this.valueDate == "") {
         var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
@@ -284,6 +280,7 @@ console.log('domainjaa',this.domain_name);
 .form-control {
   margin: auto;
   padding: 15px 20px;
+  height: 270px !important;
 }
 
 .date {

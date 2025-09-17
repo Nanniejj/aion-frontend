@@ -124,7 +124,7 @@ export default {
       if (this.$route.name!=='Domain') {
         this.$store.dispatch("fetchPostDomain", objtop);
       }else{
-        this.$store.dispatch("fetchPostDomain", objtop);
+        this.$store.dispatch("fetchTopPostDomain", objtop);
       }
 
       // this.$emitter.emit("clickSelect", this.selected);

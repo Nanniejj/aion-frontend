@@ -968,7 +968,7 @@ export default {
         .format()
         .slice(0, 10) + "T23:59:59";
     if (this.$route.name == "Domain") {
-      this.$store.dispatch("fetchPostDomain", {
+      this.$store.dispatch("fetchTopPostDomain", {
         start_date: this.sdate,
         end_date: this.edate,
         // source: "twitter",
