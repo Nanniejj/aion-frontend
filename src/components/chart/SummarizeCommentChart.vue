@@ -1,14 +1,13 @@
 <template lang="">
     <div>
-        <b-col cols="12" class="d-flex px-0 pt-3 align-items-center">
+        <!-- <b-col cols="12" class="d-flex px-0 pb-3 align-items-center">
             <div class="m-0 text-info col-auto pl-0 pr-1">
                 <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
                 สรุปข้อมูลสถิติ
             </div>
             <hr class="m-0 bg-info-to-warning col" />
-            
-        </b-col>
-        <b-row class="m-0 pt-3 pb-2 pb-md-0">
+        </b-col> -->
+        <b-row class="m-0 pb-3 justify-content-center">
             <b-col cols="12" md="auto" class="">
                 <apexchart
                     type="polarArea"
@@ -19,7 +18,7 @@
                 >
                 </apexchart>
             </b-col>
-            <b-col class="pt-3 pt-md-0">
+            <!-- <b-col class="pt-3 pt-md-0">
                 แนวโน้มของความคิดเห็นในโพสต์ไปในทิศทาง
                 <strong :class="{
                     'text-success': maxLabel === 'เห็นด้วย',
@@ -27,7 +26,7 @@
                     'text-info': maxLabel === 'เป็นกลาง'
                 }">{{ maxLabel }}</strong>
                 <span> (คิดเป็นร้อยละ {{ maxValue }} ของความคิดเห็นทั้งหมด)</span>
-            </b-col>
+            </b-col> -->
         </b-row>
     </div>
 </template>
@@ -113,6 +112,29 @@ export default {
         };
     },
     methods: {
+        handleSeries() {
+        // const keys = ["agree", "disagree", "neutral"];
+
+        // // สุ่มค่าเริ่มต้น
+        // let arr = Array.from({ length: keys.length }, () => Math.random());
+
+
+        // // ผลรวมทั้งหมด
+        // const sum = arr.reduce((a, b) => a + b, 0);
+
+        // // แปลงเป็นเปอร์เซนต์รวม 100
+        // arr = arr.map(x => +(x / sum * 100).toFixed(1));
+
+        // // ปรับตัวสุดท้ายให้รวมเท่ากับ 100
+        // const total = arr.reduce((a, b) => a + b, 0);
+        // arr[arr.length - 1] += +(100 - total).toFixed(1);
+
+        // // สร้าง object ()
+        const obj = this.series
+        // console.log(obj);
+        // return array ตามลำดับ [agree, disagree, neutral]
+        return [obj.agree, obj.disagree, obj.neutral];
+        },
         getMaxCommentLabel() {
             if(!this.series) return ''
             const maxValue = Math.max(...this.series);
@@ -130,7 +152,8 @@ export default {
         },
     },
     mounted() {
-        this.getMaxCommentLabel();
+        this.handleSeries()
+        // this.getMaxCommentLabel();
     },
 
 }

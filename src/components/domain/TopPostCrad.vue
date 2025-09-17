@@ -539,7 +539,7 @@
                   <div class="float-right">
                     <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR"
                       class=" btn-ocr"
-                      v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text&& username == 'adminatapy'">
+                      v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text">
                       <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png"
                         alt="printed-ocr" style="filter: brightness(0) invert(1);" />
                       <span class="md-font">
@@ -579,12 +579,14 @@
                   v-if="postDomain.summarize && postDomain.summarize.length">
                   <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
                     <div>
-                      <div class="bold my-2">
-                        <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
-                        Comments Analysis
-                      </div>
-                      <div v-html="formatSummarize(postDomain.summarize)"></div>
-                      <SummarizeCommentChart :series="handleSeries()"/>
+                        <div class="bold my-2">
+                            <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
+                            Comments Analysis
+                        </div>
+                        <div v-if="postDomain.summarize_chart">
+                            <SummarizeCommentChart :series="handleSeries(postDomain.summarize_chart)"/>
+                        </div>
+                        <div v-html="formatSummarize(postDomain.summarize)"></div>
                     </div>
                   </b-card>
                 </b-collapse>
@@ -596,14 +598,14 @@
                       <div v-for="(cmtn, inx) in postDomain.comments.comments" :key="inx">
                         <b-row>
                           <b-col lg="1">
-                            <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                            <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg"/>
                           </b-col>
                           <b-col lg="11">
                             <div>
                               <span class="bold">{{ cmtn.displayName }}</span>
-                              <span class="font-weight-light" id="cmt-time">{{
-                                cmtn.time
-                              }}</span>
+                              <span class="font-weight-light" id="cmt-time">
+                                {{cmtn.time}}
+                              </span>
                             </div>
 
                             <div v-for="(text, i) in cmtn.contents" :key="i">
@@ -660,8 +662,6 @@
                     </span>
                   </b-card>
                 </b-collapse>
-
-
               </template>
             </b-card>
           </b-col>
@@ -753,29 +753,33 @@ export default {
     toggleShow(i) {
       this.visibleIndex = this.visibleIndex === i ? null : i;
     },
-    handleSeries() {
+    handleSeries(objData) {
       const keys = ["agree", "disagree", "neutral"];
-
-      // สุ่มค่าเริ่มต้น
-      let arr = Array.from({ length: keys.length }, () => Math.random());
-
-
-      // ผลรวมทั้งหมด
-      const sum = arr.reduce((a, b) => a + b, 0);
-
-      // แปลงเป็นเปอร์เซนต์รวม 100
-      arr = arr.map(x => +(x / sum * 100).toFixed(1));
-
-      // ปรับตัวสุดท้ายให้รวมเท่ากับ 100
-      const total = arr.reduce((a, b) => a + b, 0);
-      arr[arr.length - 1] += +(100 - total).toFixed(1);
-
-      // สร้าง object ()
-      const obj = {
-        agree: arr[0],
-        disagree: arr[1],
-        neutral: arr[2]
-      };
+        let obj = {}
+      if (objData) {
+          obj = objData;
+      } else {
+          // สุ่มค่าเริ่มต้น
+          let arr = Array.from({ length: keys.length }, () => Math.random());
+    
+    
+          // ผลรวมทั้งหมด
+          const sum = arr.reduce((a, b) => a + b, 0);
+    
+          // แปลงเป็นเปอร์เซนต์รวม 100
+          arr = arr.map(x => +(x / sum * 100).toFixed(1));
+    
+          // ปรับตัวสุดท้ายให้รวมเท่ากับ 100
+          const total = arr.reduce((a, b) => a + b, 0);
+          arr[arr.length - 1] += +(100 - total).toFixed(1);
+    
+          // สร้าง object ()
+          obj = {
+            agree: arr[0],
+            disagree: arr[1],
+            neutral: arr[2]
+          };
+      }
       console.log(obj);
       // return array ตามลำดับ [agree, disagree, neutral]
       return [obj.agree, obj.disagree, obj.neutral];

@@ -628,7 +628,7 @@
             <!-- === OCR / Analysis buttons === -->
             <div class="float-right">
               <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr"
-                v-if="profilePost && profilePost.photos_text && profilePost.photos_text[0] && profilePost.photos_text[0].text&& username == 'adminatapy'">
+                v-if="profilePost && profilePost.photos_text && profilePost.photos_text[0] && profilePost.photos_text[0].text">
                 <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
                   style="filter: brightness(0) invert(1);" />
                 <span class="md-font">OCR</span>

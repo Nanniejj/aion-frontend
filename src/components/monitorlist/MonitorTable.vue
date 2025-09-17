@@ -452,26 +452,23 @@ export default {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    this.$store.dispatch("DeleteMonitor", {
-                        account: item.uid,
-                        source: item.source,
-                    }).then(() => {
-                        Swal.fire({
-                            title: "เลิกติดตามแล้ว!",
-                            text: "เลิกติดตามเรียบร้อย'",
-                            icon: "success",
-                            showConfirmButton: false,
-                            timer: 2000
-                        });
-                        // Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
-                        // this.data = this.data.filter(data => data.uid !== item.uid);
-                        this.apiMonitorList();
-                        this.$emit('setReface')
-                    });
-                    // Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success')
-                    // this.data = [];
-                    // this.data = this.data.filter( data => item.uid !== data.uid);
-                    // this.apiMonitorList();
+                    console.log("item === ", item);
+                    this.apiDeleteMonitor(item._id);
+                    // this.$store.dispatch("DeleteMonitor", {
+                    //     account: item.uid,
+                    //     source: item.source,
+                    // }).then(() => {
+                    //     Swal.fire({
+                    //         title: "เลิกติดตามแล้ว!",
+                    //         text: "เลิกติดตามเรียบร้อย'",
+                    //         icon: "success",
+                    //         showConfirmButton: false,
+                    //         timer: 2000
+                    //     });
+                        
+                    //     this.apiMonitorList();
+                    //     this.$emit('setReface')
+                    // });
                 } else {
                     // Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
                     Swal.fire({
@@ -507,25 +504,26 @@ export default {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    var hashtag = item.uid.replace("#", "");
-                    // console.log(hashtag,item.source,index);
+                    console.log("hashtag === ", item);
+                    this.apiDeleteMonitor(item._id);
+                    // var hashtag = item.uid.replace("#", "");
+                    // // console.log(hashtag,item.source,index);
                     
-                    this.$store.dispatch("DeleteMonitor", {
-                        hashtag: hashtag,
-                        source: item.source,
-                        index: index,
-                    }).then(() => {
-                        Swal.fire({
-                            title: "เลิกติดตามแล้ว!",
-                            text: "เลิกติดตามเรียบร้อย'",
-                            icon: "success",
-                            showConfirmButton: false,
-                            timer: 2000
-                        });
-                        // Swal.fire('เลิกติดตามแล้ว!', 'เลิกติดตามเรียบร้อย', 'success');
-                        this.apiMonitorList();
-                        this.$emit('setReface')
-                    });
+                    // this.$store.dispatch("DeleteMonitor", {
+                    //     hashtag: hashtag,
+                    //     source: item.source,
+                    //     index: index,
+                    // }).then(() => {
+                    //     Swal.fire({
+                    //         title: "เลิกติดตามแล้ว!",
+                    //         text: "เลิกติดตามเรียบร้อย'",
+                    //         icon: "success",
+                    //         showConfirmButton: false,
+                    //         timer: 2000
+                    //     });
+                    //     this.apiMonitorList();
+                    //     this.$emit('setReface')
+                    // });
                 } else {
                     // Swal.fire('ยกเลิก', 'ยกเลิกเรียบร้อย', 'error')
                     Swal.fire({
@@ -537,6 +535,37 @@ export default {
                     });
                 }
             })
+        },
+        async apiDeleteMonitor(id) {
+            console.log("item id === ", id);
+            const config = {
+                    method: "delete",
+                    url: `https://api2.cognizata.com/api/v2/monitor/deleteMonitor/${id}`,
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+
+                this.axios(config)
+                    .then((response) => {
+                        // this.load = false;
+                        this.apiMonitorList();
+                        this.$emit('setReface')
+                        Swal.fire({
+                            title: 'สำเร็จ',
+                            text: 'ลบกลุ่มเรียบร้อยแล้ว',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        
+                    })
+                    .catch((error) => {
+                        // this.load = false;
+                        console.error(error);
+                        Swal.fire('ผิดพลาด', 'ไม่สามารถลบกลุ่มได้', 'error');
+                    });
         },
         async apiMonitorList() {
             this.load = true;
