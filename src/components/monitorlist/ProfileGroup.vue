@@ -66,8 +66,8 @@
         </b-row>     
 
         <!-- time line -->
-        <b-row class="m-0">
-            <b-col id="timeline-container" cols="12" class="px-0">
+        <b-row id="timeline-container" class="m-0">
+            <b-col cols="12" class="px-0">
                 <!-- <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
                     <b-col cols="12" xl="auto" class="px-0 text-md-left">
                         <h4 class="mb-0">Posts Timeline</h4>
@@ -220,9 +220,8 @@
                     background-color="rgba(255, 255, 255, 0.3)"
                     color="#b6ac9a" 
                 />
-                <Timeline :timelineItems="posts" />
-                <!-- page: {{ page }}, totalPage: {{ totalPage }}, total Posts: {{ total_posts }}, posts length: {{ posts.length }} -->
-                <b-col v-if="totalPage > 1" class="p-0">
+                <Timeline :timelineItems="posts" :keyword="formFilters.keyword"/>
+                <b-col v-if="totalPage > 1" class="p-0 mb-5">
                     <b-row v-if="page !== totalPage && (total_posts > posts.length)" class="justify-content-md-center align-items-center my-3 mx-0">
                         <div class="text-center">
                             <b-button @click="onPageChange" class="sort-btn" pill size="sm">

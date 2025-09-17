@@ -580,6 +580,116 @@
 
         <!-- time line -->
         <b-row id="timeline-container" class="m-0">
+            <b-col cols="12" class="px-0">
+                <!-- <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
+                    <b-col cols="12" xl="auto" class="px-0 text-md-left">
+                        <h4 class="mb-0">Posts Timeline</h4>
+                    </b-col>
+                    <b-col cols="12" lg="6" xl="auto" class="px-1">
+                        <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
+                            <b-input-group-append>
+                                <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
+                                    class="w-100 mr-2"></b-form-input>
+                                <b-button size="sm" variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
+                            </b-input-group-append>
+                        </b-form-group>
+                    </b-col>
+                    <b-col cols="12" lg="6" xl="" class="px-0 ml-xl-auto">
+                        <b-row class="m-0 justify-content-end flex-lg-nowrap mt-3 mt-xl-0">
+                            <b-col cols="auto" class="px-0 mb-3 mb-sm-0">
+                                <date-picker
+                                    v-model="valueDate"
+                                    type="date"
+                                    range
+                                    placeholder="เลือกช่วงเวลา"
+                                    size="sm"
+                                    :disabled-date="(date) => date >= new Date()"
+                                    value-type="format"
+                                    format="YYYY-MM-DD"
+                                    @change="checkDateRange()"
+                                    id="date-domain"
+                                    class="">
+                                    {{ valueDate }}
+                                </date-picker>
+                            </b-col>
+                            <b-col cols="auto" class="px-0 pl-2">
+                                <div class="text-center">
+                                    เรียงจาก :
+                                    <b-button class="sort-btn" @click="toggleSort" pill size="sm">
+                                         {{ selectedSort === 'desc' ? 'ใหม่ → เก่า' : 'เก่า → ใหม่' }}
+                                    </b-button>
+                                </div>
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                </b-row> -->
+                <!-- Filters Card -->
+                <b-card class="mb-3 shadow-sm" style="border-radius: 20px;">
+                    <!-- <b-alert show variant="info">
+                    <div class="text-left"> <b-icon icon="info-circle" class="" variant="info"></b-icon> <small>คำค้นหา (AND
+                        ใช้ช่องว่างหรือ +, OR
+                        ใช้ ,)
+                        <span class="text-muted"> ตัวอย่าง: <code>คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย</code> = (คาเฟ่
+                            AND บรรยากาศดี) OR (มัทฉะ AND อร่อย)</span>
+                        </small></div>
+                    </b-alert> -->
+                    <h4 class="text-left">Timeline</h4>
+                    <b-form @submit.prevent="onSearch()">
+                    <b-row>
+                        <b-col cols="12" md="7">
+                        <b-form-group label="" label-for="kw" class="flex-grow-1">
+                            <b-form-input id="kw" v-model.trim="search"
+                            placeholder="Enter keyword"/>
+                        </b-form-group>
+                        </b-col>
+
+                        <b-col cols="12" md="5">
+                        <!-- Sentiment -->
+                        <b-form-group class="pr-md-3 checkbox-v">
+                            <b-form-radio-group v-model="selected" :options="sentimentOptions" />
+                        </b-form-group>
+                        </b-col>
+
+
+                        <b-col cols="12" md="4">
+                            <b-form-select v-model="selectedSource" class="mb-2" :options="sourceOptions" />
+                        </b-col>
+
+                        <b-col cols="12" md="4">
+
+                        <b-form-select v-model="selectedSort" class="mb-2" :options="[
+                            { value: 'descend', text:'โพสต์เก่าสุด' },
+                            { value: '', text: 'โพสต์ล่าสุด' },
+                            { value: 'engagement', text: 'Engagement' },
+                        ]" />
+
+                        </b-col>
+                        <b-col cols="12" md="4">
+                        <section id="date-picker">
+                            <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
+                            :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
+                            @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
+                        </section>
+                        </b-col>                                                                                                                      
+                    </b-row>
+                    <b-row align-h="end" class="mt-2" justify="center">
+                        <b-col cols="auto" md="auto">
+                        <div>
+                            <div class="align-self-end mb-3">
+                            <b-button type="submit" variant="info" class=" px-4" :disabled="loading">
+                                ค้นหา
+                            </b-button>
+                            <!-- <b-button variant="outline-secondary" @click="resetFilters" :disabled="loading">
+                            ล้างค่า
+                        </b-button> -->
+                            </div>
+                        </div>
+                        </b-col>
+                    </b-row>
+
+                    </b-form>
+                </b-card>
+            </b-col>
             <!-- <b-col cols="12" class="px-0">
                 <b-row class="justify-content-between align-items-center mb-3 mx-0">
                     <b-col cols="12" sm="auto" class="text-left px-0">
@@ -619,51 +729,13 @@
                 </b-row>
             </b-col> -->
             <b-col cols="12" class="px-0">
-                <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
-                    <b-col cols="12" xl="auto" class="px-0 text-md-left">
-                        <h4 class="mb-0">Posts Timeline</h4>
-                    </b-col>
-                    <b-col cols="12" md="6" xl="auto" class="px-1">
-                        <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
-                            <b-input-group-append>
-                                <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
-                                    class="w-100 mr-2"></b-form-input>
-                                <b-button size="sm" variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
-                            </b-input-group-append>
-                        </b-form-group>
-                    </b-col>
-                    <b-col cols="12" md="6" xl="" class="px-0 ml-xl-auto">
-                        <b-row class="m-0 justify-content-end flex-md-nowrap mt-3 mt-xl-0">
-                            <b-col md="auto" class="col px-0 mb-3 mb-sm-0">
-                                <date-picker
-                                    v-model="valueDate"
-                                    type="date"
-                                    range
-                                    placeholder="เลือกช่วงเวลา"
-                                    size="sm"
-                                    :disabled-date="(date) => date >= new Date()"
-                                    value-type="format"
-                                    format="YYYY-MM-DD"
-                                    id="date-domain"
-                                    class="">
-                                    {{ valueDate }}
-                                </date-picker>
-                                <!-- @change="checkDateRange()" -->
-                            </b-col>
-                            <b-col cols="auto" class="px-0 pl-2">
-                                <div class="text-center">
-                                    
-                                    <b-button class="sort-btn" @click="toggleSort" pill size="sm">
-                                         {{ selectedSort === 'descend' ? 'เก่า → ใหม่' : 'ใหม่ → เก่า' }}
-                                    </b-button>
-                                </div>
-                            </b-col>
-                        </b-row>
-                    </b-col>
-                </b-row>
+                <div data-v-633a0eda="" class="text-right allpost"> 
+                    ทั้งหมด <b data-v-633a0eda="">{{totalTimelinePost || 0 | numFormat}}</b> โพสต์
+                </div>
+                
             </b-col>
             <b-col cols="12" class="px-0">
-                <Timeline :timelineItems="timelinePosts"  :disableFabButton="true"/>
+                <Timeline :timelineItems="timelinePosts" :keyword="search"  :disableFabButton="true"/>
                 <vue-element-loading 
                     :active="loading" class="h-100" size="80" 
                     background-color="rgba(255, 255, 255, 0.3)"
@@ -827,10 +899,39 @@ export default {
                 { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" },
                 
             ],
+
             offset: 0,
             next_offset: null,
             totalTimelinePost: 0,
             search: null,
+            sentimentOptions: [
+                { text: "All", value: null },
+                { text: "Positive", value: "1" },
+                { text: "Neutral", value: "0" },
+                { text: "Negative", value: "-1" }
+            ],
+            sourceOptions: [
+                { value: 'all', text: "All Platform" },
+                { value: "facebook", text: "Facebook" },
+                { value: "twitter", text: "X" },
+                { value: "pantip", text: "Board" },
+                { value: "news", text: "News" },
+                { value: "youtube", text: "YouTube" },
+                { value: "instagram", text: "Instagram"},
+                { value: "blockdit", text: "Blockdit"},
+                { value: "tiktok", text: "Tiktok" },
+                { value: "threads", text: "Threads" }
+            ],
+            formFilters: {
+                sentiment: ["1", "0", "-1"],
+                keyword: "",
+                view_mode: "posts",
+                source: null,
+                sort_by: 'desc',
+                limit: 50,
+                page: 1,
+                hashtags: [],
+            }
         }
     },
     methods: {

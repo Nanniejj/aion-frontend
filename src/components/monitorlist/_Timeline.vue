@@ -97,8 +97,17 @@
                     </template>
                     <b-card-text class="p-1">
                         <p v-if="item.full_text" class="text-left" style="font-size: 16px;">
-                            <span>
+                            <!-- <span>
                                 {{ item.showAll ? item.full_text : item.full_text.substring(0, 200) }}
+                            </span> -->
+                            <span>
+                                <Highlighter
+                                class="my-highlight md-font"
+                                highlightClassName="highlight2"
+                                :searchWords="keywordArray"
+                                :autoEscape="true"
+                                :textToHighlight="item.showAll ? item.full_text : item.full_text.substring(0, 200)"
+                                />
                             </span>
                             <span 
                                 v-if="item.full_text.length > 200 && !item.showAll" 
@@ -194,11 +203,11 @@
                         }"
                         @click="openGallery(index, item.photos)"
                     />
-                    <VueGallerySlideshow v-if="dataPhoto.length !== 0" :images="dataPhoto" :index="photoIndex" @close="closeGallery()"/>
                 </div>
             </div>
         </div>
         
+        <VueGallerySlideshow  :images="dataPhoto" :index="photoIndex" @close="closeGallery()"/>
         <!-- <div v-else class="text-center text-muted mt-5">
             <p>ไม่พบข้อมูลโพสต์ในช่วงเวลาที่เลือก</p>
         </div> -->
@@ -217,11 +226,17 @@
 
 <script>
 import VueGallerySlideshow from "vue-gallery-slideshow";
+import Highlighter from "vue-highlight-words";
 export default {
     components: {
-        VueGallerySlideshow
+        VueGallerySlideshow,
+        Highlighter
     },
     props: {
+        keyword: {
+            type: String,
+            default: null
+        },
         disableFabButton: {
             type: Boolean,
             default: false
@@ -264,6 +279,13 @@ export default {
         startAndEnd() {
             return [this.start, this.end];
         },
+        keywordArray() {
+            if (!this.keyword) return []
+            // ตัดช่องว่างหลายอันและ , แล้วกรองคำว่างออก
+            return this.keyword
+                .split(/[ ,]+/)   // ✅ แยกด้วย space หรือ comma
+                .filter(k => k.trim() !== "")
+        }
     },
     mounted() {
         window.addEventListener("scroll", this.handleScroll);
@@ -276,7 +298,7 @@ export default {
         openGallery(i, data) {
             console.log("openGallery ==== ",data);
             console.log("index ==== ",i);
-            this.photoIndex = i;
+            this.photoIndex = 0;
             this.dataPhoto = data;
         },
         closeGallery() {
@@ -360,6 +382,10 @@ export default {
 </script>
 
 <style scoped>
+.highlight2 {
+  background-color: #FDD071;
+  padding: 0 2px;
+}
 .zigzag-btn {
     height: 40px;
     width: 40px;

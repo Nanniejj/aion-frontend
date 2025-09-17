@@ -155,7 +155,7 @@
               <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
             </div>
           </li>
-          <li class="nav-item " id="li-nav"  v-if="username =='adminatapy'|| username =='adminpeach'">
+          <!-- <li class="nav-item " id="li-nav"  v-if="username =='adminatapy'|| username =='adminpeach'">
           <a class="nav-link" href="https://link.cognizata.com" target="_blank"
                 ><img
                  src="@/assets/Infurncer.png"
@@ -164,7 +164,7 @@
                   style="margin-bottom: 8px"
                 /><strong>Link</strong></a
               >
-          </li>
+          </li> -->
 
           <li class="nav-item" id="li-nav" >
             <router-link to="/hotissue" tag="p"
@@ -462,16 +462,14 @@
           </b-nav-item>
          
 
-          <b-nav-item id="nav-con1" class=""  href="https://link.cognizata.com" target="_blank" v-if="username =='adminatapy'|| username =='adminpeach'">
-            <!-- <router-link to="" tag="p"> -->
+          <!-- <b-nav-item id="nav-con1" class=""  href="https://link.cognizata.com" target="_blank" v-if="username =='adminatapy'|| username =='adminpeach'">
               <a class="nav-link"  >
                 <img src="@/assets/Infurncer.png" alt="logo" class="img-nav" />
                 <div class="nav-link titlenav">
                   <strong> Link</strong>
                 </div>
               </a>
-            <!-- </router-link> -->
-          </b-nav-item>
+          </b-nav-item> -->
           <!-- <b-nav-item>
             <b-nav-item-dropdown no-caret menu-class="item-css" id="nav-con1">
               <template slot="button-content">
