@@ -1,14 +1,8 @@
 <template>
   <div id="chart">
-    <!-- {{ filters }} -->
     <div class="text-center my-10 py-4" v-if="loading">
-      <vue-element-loading
-        :active="loading"
-        size="30"
-        background-color="rgba(255, 255, 255, 0.5)"
-        color="#17a2b891"
-        spinner="bar-fade-scale"
-      />
+      <vue-element-loading :active="loading" size="30" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891"
+        spinner="bar-fade-scale" />
     </div>
 
     <b-row v-if="!loading">
@@ -17,14 +11,29 @@
       </b-col>
 
       <b-col cols="12">
-        <div class="text-left px-4">สถิติรายชั่วโมง</div>
-        <apexchart
-          ref="chart"
-          type="line"
-          height="350"
-          :options="chartOptions"
-          :series="series"
-        />
+        <div class="text-left px-4"> <span class="">สถิติรายชั่วโมง </span>
+          <!-- <b-button class="text-left" id="popover-button-variant" href="#" tabindex="0" >  -->
+          <b-icon icon="info-circle" variant="info" role="button" id="popover-button-variant" tabindex="0"
+            class="flaot-right ml-2">
+          </b-icon>
+          <!-- </b-button> -->
+        </div>
+
+        <b-popover target="popover-button-variant" variant="info" triggers="focus">
+          <template #title> <i class="fa fa-lightbulb-o" aria-hidden="true"></i> <b>Tip</b></template>
+          <div> <i class="fa fa-plus-circle" aria-hidden="true"></i> ขยายข้อมูลกราฟ</div>
+          <div> <i class="fa fa-minus-circle" aria-hidden="true"></i> ลดขนาดข้อมูลกราฟ</div>
+          <div> <img width="15" height="15" src="https://img.icons8.com/ios/50/select-none.png" alt="select-none" />
+            เลือกช่วงเวลาดูโพสต์ด้านล่าง</div>
+          <div><b>double click</b> เพื่อเลือกช่วงเวลาที่จะดู</div>
+          <div>
+            <i class="fa fa-hand" aria-hidden="true"></i> ใช้เลื่อนดูกราฟ
+          </div>
+          <div> <i class="fa fa-home" aria-hidden="true"></i> reset กราฟ</div>
+
+
+        </b-popover>
+        <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
       </b-col>
     </b-row>
   </div>
@@ -36,18 +45,8 @@ import axios from 'axios'
 import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
 
 export default {
-  components: {
-    apexchart: VueApexCharts,
-    StaticTimeline
-  },
-
-  props: {
-    filters: {
-      type: Object,
-      default: () => ({})
-    }
-  },
-
+  components: { apexchart: VueApexCharts, StaticTimeline },
+  props: { filters: { type: Object, default: () => ({}) } },
   data() {
     return {
       datachart: null,
@@ -56,6 +55,12 @@ export default {
       series: [],
       activeRange: null,
       lastPayload: null,
+
+      // ===== Double-click detector (fixed) =====
+      _dblDelay: 350,          // 300–450 ได้
+      _clickMap: {},           // ใช้ {} ให้ Vue ตามทัน
+      _flushTimer: null,
+      // ========================================
 
       chartOptions: {
         colors: ['#ff962e', '#17a2b8', '#e75aa1'],
@@ -71,7 +76,6 @@ export default {
         stroke: { curve: 'smooth', width: 3 },
         markers: { size: 5 },
         legend: { position: 'top' },
-
         xaxis: {
           type: 'datetime',
           labels: {
@@ -90,7 +94,6 @@ export default {
             }
           }
         },
-
         tooltip: {
           shared: true,
           x: {
@@ -109,73 +112,31 @@ export default {
             }
           }
         },
-
-        // จัดแกนให้ตรงกับซีรีส์: 0=Posts, 1=Messages, 2=Engagement(opposite)
         yaxis: [
-          {
-            seriesName: 'Posts',
-            title: { text: 'Posts' },
-            min: 0,
-            labels: { formatter: (val) => Math.round(val).toLocaleString() || 0 }
-          },
-          {
-            seriesName: 'Messages',
-            title: { text: 'Messages' },
-            min: 0,
-            labels: { formatter: (val) => Math.round(val).toLocaleString() || 0 }
-          },
-          {
-            seriesName: 'Engagement',
-            title: { text: 'Engagement' },
-            min: 0,
-            opposite: true,
-            labels: { formatter: (val) => Math.round(val).toLocaleString() || 0 }
-          }
+          { seriesName: 'Posts', title: { text: 'Posts' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
+          { seriesName: 'Messages', title: { text: 'Messages' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
+          { seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } }
         ],
-
-        // ข้อความเริ่มต้น จะถูกเปลี่ยนแบบไดนามิก
         noData: { text: 'กำลังโหลดข้อมูล...' }
       }
     }
   },
-
   mounted() {
     // ผูก events + เปิด selection/zoom
     this.$nextTick(() => {
       const events = {
         selection: (chartCtx, { xaxis }) => this.onRangeSelected(xaxis),
-        zoomed: (chartCtx, { xaxis }) => this.onRangeSelected(xaxis),
+        // zoomed: (chartCtx, { xaxis }) => this.onRangeSelected(xaxis),
+        click: () => { if (this.activeRange) this.clearRange() },
 
-        click: () => {
-          if (this.activeRange) this.clearRange()
-        },
-
-        dataPointSelection: (event, chartCtx, opts) => {
-          const { seriesIndex, dataPointIndex, w } = opts
-          const seriesName = w.config.series[seriesIndex]?.name || ''
-          const x = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[0]
-          const y = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[1]
-          this.onPointClick({ seriesIndex, dataPointIndex, seriesName, x, y })
-        },
-
-        markerClick: (event, chartCtx, opts) => {
-          const { seriesIndex, dataPointIndex, w } = opts
-          const seriesName = w.config.series[seriesIndex]?.name || ''
-          const x = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[0]
-          const y = w.config.series[seriesIndex]?.data?.[dataPointIndex]?.[1]
-          this.onPointClick({ seriesIndex, dataPointIndex, seriesName, x, y })
-        }
+        // รวม handler เดียว กันเคสยิงสลับกัน
+        dataPointSelection: (event, chartCtx, opts) => this._handlePointEvent(opts),
+        markerClick: (event, chartCtx, opts) => this._handlePointEvent(opts)
       }
 
       const selectionAndZoom = {
         chart: {
-           fontFamily: 'Prompt, FontAwesome, sans-serif',
-          selection: {
-            enabled: true,
-            type: 'x',
-            fill: { opacity: 0.2 },
-            stroke: { width: 1 }
-          },
+          selection: { enabled: true, type: 'x', fill: { opacity: 0.2 }, stroke: { width: 1 } },
           zoom: { enabled: true, type: 'x', autoScaleYaxis: true },
           toolbar: {
             show: true,
@@ -195,29 +156,83 @@ export default {
       }
     })
 
+    // ผูกเป็น arrow function เพื่อให้ this ไม่หลุด
+    this._flushTimer = setInterval(() => this._flushClickMap(), Math.max(this._dblDelay * 2, 1000))
+
     this.fetchData()
   },
-
-  watch: {
-    filters: {
-      handler() {
-        this.fetchData()
-      },
-      deep: true
-    }
+  beforeDestroy() {
+    if (this._flushTimer) { clearInterval(this._flushTimer); this._flushTimer = null }
+    this._clickMap = {}
   },
-
+  watch: {
+    filters: { handler() { this.fetchData() }, deep: true }
+  },
   methods: {
-    /** เปลี่ยนข้อความ noData แบบไดนามิก */
+    // ---------- Double-click core ----------
+    _pointKey(si, di) { return `${Number(si)}:${Number(di)}` },
+
+    _flushClickMap() {
+      // ถ้าโดนเรียกตอนคอมโพเนนต์กำลัง unmount
+      if (!this || !this._clickMap) return
+      const now = Date.now()
+      for (const k in this._clickMap) {
+        if (!Object.prototype.hasOwnProperty.call(this._clickMap, k)) continue
+        const rec = this._clickMap[k]
+        if (!rec || (now - rec.t) > this._dblDelay) {
+          delete this._clickMap[k]
+        }
+      }
+    },
+
+    _handlePointEvent(opts) {
+      try {
+        // เผื่อ opts แปลก
+        const seriesIndex = Number(opts?.seriesIndex)
+        const dataPointIndex = Number(opts?.dataPointIndex)
+        const w = opts?.w
+        if (!Number.isFinite(seriesIndex) || !Number.isFinite(dataPointIndex) || !w?.config?.series) return
+
+        const s = w.config.series[seriesIndex]
+        const d = s?.data?.[dataPointIndex]
+        const seriesName = s?.name ?? ''
+        const x = Array.isArray(d) ? d[0] : (typeof d === 'object' && d ? d.x : undefined)
+        const y = Array.isArray(d) ? d[1] : (typeof d === 'object' && d ? d.y : undefined)
+        if (!Number.isFinite(x)) return
+
+        // บูต _clickMap เผื่อโดน set เป็น null/undefined จากที่อื่น
+        if (!this._clickMap) this._clickMap = {}
+
+        const key = this._pointKey(seriesIndex, dataPointIndex)
+        const now = Date.now()
+        const prev = this._clickMap[key]
+
+        if (!prev || (now - prev.t) > this._dblDelay) {
+          this._clickMap[key] = { count: 1, t: now, payload: { seriesIndex, dataPointIndex, seriesName, x, y } }
+          return
+        }
+
+        prev.count += 1
+        prev.t = now
+        if (prev.count >= 2) {
+          const payload = prev.payload
+          delete this._clickMap[key]
+          this.onPointClick(payload)
+        }
+      } catch (e) {
+        // กัน UI พังถ้าเกิด edge case
+        console.warn('[ChartTime] _handlePointEvent error:', e)
+      }
+    },
+    // ---------------------------------------
+
     setNoDataText(text) {
       const patch = { noData: { text } }
-
       if (this.$refs.chart?.updateOptions) {
         this.$refs.chart.updateOptions(patch, false, true)
       } else if (this.$refs.chart?.chart?.updateOptions) {
         this.$refs.chart.chart.updateOptions(patch, false, true)
       } else {
-        // fallback ถ้า ref ยังไม่พร้อม
         this.chartOptions = { ...this.chartOptions, ...patch }
       }
     },
@@ -226,8 +241,6 @@ export default {
       this.loading = true
       this.error = null
       this.series = []
-
-      // ให้แสดง noData ทันทีถ้ามี
       this.setNoDataText('กำลังโหลดข้อมูล...')
 
       const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostCharts'
@@ -247,41 +260,32 @@ export default {
       }
     },
 
-    /** ถือว่า "ไม่มีข้อมูล" หากทุกรายการเป็นศูนย์ */
     isAllZero(rows) {
-      return (
-        rows.length > 0 &&
-        rows.every(
-          (r) =>
-            Number(r.post_count || 0) === 0 &&
-            Number(r.engagement_sum || 0) === 0 &&
-            Number(r.message_sum || 0) === 0
-        )
+      return rows.length > 0 && rows.every(r =>
+        Number(r.post_count || 0) === 0 &&
+        Number(r.engagement_sum || 0) === 0 &&
+        Number(r.message_sum || 0) === 0
       )
     },
 
     applyData(payload) {
       this.lastPayload = payload
-
-      const tz = payload?.range?.timezone || '+07:00'
+      const tz = (payload?.range?.timezone) || '+07:00'
       const rows = Array.isArray(payload?.seriesHourly) ? payload.seriesHourly : []
 
-      // กรณีไม่มีข้อมูลเลย
       if (!rows.length || this.isAllZero(rows)) {
         this.series = []
         this.setNoDataText('ไม่พบข้อมูล')
         return
       }
 
-      // มีข้อมูล → ซ่อนข้อความ noData
       this.setNoDataText('')
 
       const offsetMs = this.parseOffsetToMs(tz)
-
       const keyOf = (d, t) => `${d} ${t.padStart(5, '0')}`
-
       const dataMap = new Map()
-      rows.forEach((r) => {
+
+      rows.forEach(r => {
         const key = keyOf(r.date, r.time)
         dataMap.set(key, {
           post: Number(r.post_count || 0),
@@ -295,8 +299,7 @@ export default {
 
       let minLocal = Infinity
       let maxLocal = -Infinity
-
-      rows.forEach((r) => {
+      rows.forEach(r => {
         const utc = toUtcMs(r.date, r.time)
         const local = localMsFromUtc(utc)
         if (local < minLocal) minLocal = local
@@ -304,8 +307,8 @@ export default {
       })
 
       const HOUR = 3600000
-      let gridStartLocal = Math.floor(minLocal / HOUR) * HOUR
-      let gridEndLocal = Math.floor(maxLocal / HOUR) * HOUR
+      const gridStartLocal = Math.floor(minLocal / HOUR) * HOUR
+      const gridEndLocal = Math.floor(maxLocal / HOUR) * HOUR
 
       const posts = []
       const engagements = []
@@ -315,10 +318,8 @@ export default {
         const iso = new Date(lt).toISOString()
         const d = iso.slice(0, 10)
         const t = iso.slice(11, 16)
-
         const key = keyOf(d, t)
         const val = dataMap.get(key) || { post: 0, engagement: 0, msg: 0 }
-
         const tsUTC = lt - offsetMs
 
         posts.push([tsUTC, val.post])
@@ -333,11 +334,8 @@ export default {
       ]
     },
 
-    /** เมื่อคลิกที่จุดข้อมูล */
     onPointClick({ seriesIndex, dataPointIndex, seriesName, x, y }) {
-      if (!Number.isFinite(x)) return
-
-      const tzStr = this.lastPayload?.range?.timezone || '+07:00'
+      const tzStr = (this.lastPayload?.range?.timezone) || '+07:00'
       const offsetMs = this.parseOffsetToMs(tzStr)
 
       const localText = new Intl.DateTimeFormat('th-TH', {
@@ -355,19 +353,15 @@ export default {
       const xLocalEpoch = x + offsetMs
 
       this.$emit('point-click', {
-        seriesIndex,
-        dataPointIndex,
-        seriesName,
-        x,
-        y,
+        seriesIndex, dataPointIndex, seriesName,
+        x, y,
         isoUtc,
-        isoLocal, // เช่น "2025-09-10T01:00:00+07:00"
-        localText, // เช่น "10 ก.ย. 2568 01:00"
+        isoLocal,
+        localText,
         xLocalEpoch
       })
     },
 
-    /** เมื่อมีการเลือกช่วง/ซูม */
     onRangeSelected(xaxis) {
       const start = xaxis.min
       const end = xaxis.max
@@ -375,49 +369,40 @@ export default {
 
       this.activeRange = { start, end }
 
-      const tzStr = this.lastPayload?.range?.timezone || '+07:00'
+      const tzStr = (this.lastPayload?.range?.timezone) || '+07:00'
       const offsetMs = this.parseOffsetToMs(tzStr)
 
-      const fmtLocal = (ms) =>
-        new Intl.DateTimeFormat('th-TH', {
-          timeZone: 'Asia/Bangkok',
-          hourCycle: 'h23',
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }).format(ms)
+      const fmtLocal = (ms) => new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        hourCycle: 'h23',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(ms)
 
       const startUtcIso = new Date(start).toISOString()
       const endUtcIso = new Date(end).toISOString()
-
       const startIsoLocal = new Date(start + offsetMs).toISOString().replace('Z', tzStr)
       const endIsoLocal = new Date(end + offsetMs).toISOString().replace('Z', tzStr)
 
       this.$emit('range-selected', {
-        start,
-        end, // epoch ms (UTC)
-        startUtcIso,
-        endUtcIso, // ISO UTC
-        startIsoLocal,
-        endIsoLocal, // ISO local (+07:00)
-        startLocalText: fmtLocal(start), // human-readable local
+        start, end,
+        startUtcIso, endUtcIso,
+        startIsoLocal, endIsoLocal,
+        startLocalText: fmtLocal(start),
         endLocalText: fmtLocal(end)
       })
     },
 
-    /** คลิกพื้นกราฟเพื่อล้างช่วง */
     clearRange() {
       this.activeRange = null
-
       const patch = {
         xaxis: { min: undefined, max: undefined },
         chart: { selection: { xaxis: { min: undefined, max: undefined } } }
       }
-
       if (this.$refs.chart?.resetZoom) this.$refs.chart.resetZoom()
-
       if (this.$refs.chart?.updateOptions) {
         this.$refs.chart.updateOptions(patch, false, true)
       } else if (this.$refs.chart?.chart?.updateOptions) {
@@ -425,11 +410,9 @@ export default {
       } else {
         this.chartOptions = { ...this.chartOptions, ...patch }
       }
-
       this.$emit('range-cleared')
     },
 
-    // helper: "+07:00" -> milliseconds offset
     parseOffsetToMs(tzStr) {
       const m = /^([+-])(\d{2}):?(\d{2})$/.exec(String(tzStr).trim())
       if (!m) return 0
@@ -445,11 +428,11 @@ export default {
 <style scoped>
 #chart {
   max-width: 100%;
-  /* margin: 24px auto; */
+  margin: 24px auto;
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
-  #chart > div > div:nth-child(2) {
+  #chart>div>div:nth-child(2) {
     padding-left: 0px;
     padding-right: 0px;
   }
