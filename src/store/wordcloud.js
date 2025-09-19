@@ -860,107 +860,82 @@ export default {
   }
 }
 ,
-    async fetchSentimentHashtag2({ commit }, payload) {
-      commit("setLoadChartCloud", true);
-      let all = { negative: 0, neutral: 0, positive: 0 };
-      var axios = require("axios");
-      var dom = "",
-        key = "",
-        search = "",
-        hash = "",
-        mo = "";
-      if (payload.monitor) {
-        mo = `&monitor=${payload.monitor}`;
-      } else {
-        mo = "";
-      }
-      if (payload.domain.length > 0 && payload.keywords != "") {
-        dom = `&domain=${payload.domain}`;
-        key = `&keywords=${payload.keywords}`;
-        hash = `&hashtag=${payload.hashtag}`;
-      } else if (payload.domain.length > 0) {
-        dom = `&domain=${payload.domain}`;
-        key = "";
-        hash = `&hashtag=${payload.hashtag}`;
-      } else if (payload.keywords != "") {
-        dom = "";
-        key = `&keywords=${payload.keywords}`;
-        hash = `&hashtag=${payload.hashtag}`;
-      } else {
-        dom = "";
-        key = "";
-        hash = `&hashtag=${payload.hashtag}`;
-      }
-      var config = {
-        method: "get",
-        url:
-          `https://api2.cognizata.com/api/v2/userposts/getSentimentStat?source=${payload.social}&start=${payload.start_date}&end=${payload.end_date}` +
-          dom +
-          key +
-          hash +
-          mo,
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("token"),
-          "Content-Type": "application/json",
-        },
-      };
-      axios(config)
-        .then((response) => {
-          let res = response.data[0];
-          //   {
-          //     "likes_count": 96,
-          //     "comments_count": 18,
-          //     "retweets_count": 0,
-          //     "engagement": 116,
-          //     "totalPost": 21,
-          //     "positiveSentiment": 15,
-          //     "neutralSentiment": 1,
-          //     "negativeSentiment": 5,
-          //     "Accounts": 7
-          // }
-          all = {
-            negative: res.negativeSentiment,
-            neutral: res.neutralSentiment,
-            positive: res.positiveSentiment,
-          };
-          console.log("all", all);
-          if (payload.social == "facebook") {
-            commit("setSentimentHashtagFacebook", all);
-            commit("setSentimentHashtagFacebookPost", res);
-          } else if (payload.social == "twitter") {
-            commit("setSentimentHashtagTwitter", all);
-            commit("setSentimentHashtagTwitterPost", res);
-          } else if (payload.social == "pantip") {
-            commit("setSentimentHashtagPantip", all);
-            commit("setSentimentHashtagPantipPost", res);
-          } else if (payload.social == "youtube") {
-            commit("setSentimentHashtagYoutube", all);
-            commit("setSentimentHashtagYoutubePost", res);
-          } else if (payload.social == "tiktok") {
-            commit("setSentimentHashtagTiktok", all);
-            commit("setSentimentHashtagTiktokPost", res);
-          } else if (payload.social == "news") {
-            commit("setSentimentHashtagNews", all);
-            commit("setSentimentHashtagNewsPost", res);
-          } else if (payload.social == "instagram") {
-            commit("setSentimentHashtagInstagram", all);
-            commit("setSentimentHashtagInstagramPost", res);
-          } else if (payload.social == "blockdit") {
-            commit("setSentimentHashtagBlockditPost", res);
-            commit("setSentimentHashtagBlockdit", all);
-          } else {
-            commit("setSentimentHashtagAllPost", res);
-            commit("setSentimentHashtagAll", all);
-          }
+  async fetchSentimentHashtag2({ commit }, payload) {
+  commit("setLoadChartCloud", true);
+  let all = { negative: 0, neutral: 0, positive: 0 };
+  var axios = require("axios");
 
-          commit("setSentimentStatVal", response);
-          commit("setLoadChartCloud", false);
-          // console.log("getSentimentStat", response);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+  // helper รวม array เป็นสตริงเดียว
+  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(" ") : v;
+
+  // ใช้ URLSearchParams
+  const params = new URLSearchParams({
+    source: payload.social,
+    start: payload.start_date,
+    end: payload.end_date,
+  });
+
+  if (payload.monitor)   params.set("monitor", payload.monitor);
+  if (payload.domain)    params.set("domain", joinIfArray(payload.domain));  // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+  if (payload.keywords)  params.set("keywords", payload.keywords);
+  if (payload.hashtag)   params.set("hashtag", payload.hashtag);
+
+  var config = {
+    method: "get",
+    url: `https://api2.cognizata.com/api/v2/userposts/getSentimentStat?${params.toString()}`,
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+      "Content-Type": "application/json",
     },
+  };
+
+  axios(config)
+    .then((response) => {
+      let res = response.data[0];
+      all = {
+        negative: res.negativeSentiment,
+        neutral: res.neutralSentiment,
+        positive: res.positiveSentiment,
+      };
+      console.log("all", all);
+
+      if (payload.social == "facebook") {
+        commit("setSentimentHashtagFacebook", all);
+        commit("setSentimentHashtagFacebookPost", res);
+      } else if (payload.social == "twitter") {
+        commit("setSentimentHashtagTwitter", all);
+        commit("setSentimentHashtagTwitterPost", res);
+      } else if (payload.social == "pantip") {
+        commit("setSentimentHashtagPantip", all);
+        commit("setSentimentHashtagPantipPost", res);
+      } else if (payload.social == "youtube") {
+        commit("setSentimentHashtagYoutube", all);
+        commit("setSentimentHashtagYoutubePost", res);
+      } else if (payload.social == "tiktok") {
+        commit("setSentimentHashtagTiktok", all);
+        commit("setSentimentHashtagTiktokPost", res);
+      } else if (payload.social == "news") {
+        commit("setSentimentHashtagNews", all);
+        commit("setSentimentHashtagNewsPost", res);
+      } else if (payload.social == "instagram") {
+        commit("setSentimentHashtagInstagram", all);
+        commit("setSentimentHashtagInstagramPost", res);
+      } else if (payload.social == "blockdit") {
+        commit("setSentimentHashtagBlockdit", all);
+        commit("setSentimentHashtagBlockditPost", res);
+      } else {
+        commit("setSentimentHashtagAll", all);
+        commit("setSentimentHashtagAllPost", res);
+      }
+
+      commit("setSentimentStatVal", response);
+      commit("setLoadChartCloud", false);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+,
     async fetchSentiment({ commit }, payload) {
       commit("setLoadChartCloud", true);
       try {

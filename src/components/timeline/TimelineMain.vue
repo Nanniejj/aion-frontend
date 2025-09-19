@@ -1,15 +1,79 @@
 <template>
-  <div id="overflow-page">
-    <HomeNav id="navHome" />
+  <div>
+    <!-- <HomeNav id="navHome" /> -->
 
     <div class="container my-3">
+      <!-- <h1 class="title">Timeline</h1> -->
       <!-- Filters Card -->
-      <b-card class="mb-3 shadow-sm" style="border-radius: 20px;">
-        <b-alert show variant="info">
+      <div class="position-relative text-right filter-btn">
+        <b-button size="sm" :variant="showFilters ? 'info' : 'outline-info'" @click="showFilters = !showFilters" pill
+          class="d-inline-flex align-items-center ">
+          <i class="fas fa-sliders mr-2"></i>
+          <!-- <b-icon icon="sliders" class="mr-1 small"></b-icon> -->
+          <span v-if="showFilters" class="small">Hide</span>
+          <span v-else class="small">Show</span>
+          <b-badge v-if="activeFilterCount" variant="light" class="ml-2">{{ activeFilterCount }}</b-badge>
+        </b-button>
+      </div>
+      <!-- <b-card class="py-0 mb-2 shadow-sm" style="border-radius: 20px;" v-if="!showFilters">
+        <div class="text-left"> 
+          {{ filters }}
+          <span v-if="filters.keywordInput"> keywords : {{ filters.keywordInput }}</span>
+            <span v-if="filters.keywordInput"> keywords : {{ filters.keywordInput }}</span>
+        </div>
+      </b-card> -->
+      <div class="py-2 px-2  shadow-sm card-hide" style="border-radius: 20px;" v-if="!showFilters && hasAnyPretty">
+        <div class="d-flex flex-wrap align-items-center">
+          <!-- คีย์เวิร์ด -->
+          <div v-if="pretty.keyword" class="mr-2 my-1 bold">
+            <b-icon icon="search" class="mr-1"></b-icon> {{ pretty.keyword }}
+          </div>
+
+          <div v-if="pretty.keyword && pretty.hashtags && pretty.hashtags.length" class="mr-2 my-1"> / </div>
+
+          <!-- Hashtags -->
+          <div v-for="h in pretty.hashtags" :key="h" pill variant="info" class="mr-2 my-1">
+            #{{ h }}
+          </div>
+          <!-- เซนทิเมนต์ -->
+          <span v-if="pretty.sentiments.length !== 3" class="">
+            <b-badge pill variant="light" class="mr-2 py-2 my-1">
+              <span v-for="(s, i) in pretty.sentiments" :key="s.value">
+                <b-icon :icon="s.icon" class="mr-1"></b-icon>{{ s.text }} <span v-if="i > 1"> / </span>
+              </span>
+
+            </b-badge>
+          </span>
+          <!-- แพลตฟอร์ม -->
+          <b-badge v-if="pretty.sourceText" pill variant="light" class="mr-2  py-2 my-1">
+            <b-icon icon="collection" class="mr-1"></b-icon>{{ pretty.sourceText }}
+          </b-badge>
+
+          <!-- โหมดแสดงผล -->
+          <b-badge v-if="pretty.viewMode" pill variant="light" class="mr-2  py-2 my-1">
+            {{ pretty.viewMode }}
+          </b-badge>
+
+          <!-- จัดเรียง -->
+          <b-badge v-if="pretty.sortBy" pill variant="light" class="mr-2  py-2 my-1">
+            <b-icon icon="sort-down" class="mr-1"></b-icon>{{ pretty.sortBy }}
+          </b-badge>
+
+          <!-- ช่วงเวลา -->
+          <b-badge v-if="pretty.dateRange" pill variant="light" class="mr-2 py-2 my-1">
+            <b-icon icon="calendar-date" class="mr-1"></b-icon>{{ pretty.dateRange }}
+          </b-badge>
+        </div>
+      </div>
+
+      <b-card class="mb-3 shadow-sm" style="border-radius: 20px;" v-if="showFilters">
+
+        <b-alert show variant="info" class="">
           <!-- <b-icon icon="info-circle" id="info-date-note" variant="info" class="float-right"></b-icon>
           <b-tooltip target="info-date-note" placement="bottom">
             ถ้าเลือกมากกว่า 2 วัน ระบบจะตั้งค่าเริ่มต้นเป็น "รายวัน" และเรียงตาม "Engagement"
           </b-tooltip> -->
+
           <div class="text-left"> <b-icon icon="info-circle" class="" variant="info"></b-icon> <small>คำค้นหา (AND
               ใช้ช่องว่างหรือ +, OR
               ใช้ ,)
@@ -26,31 +90,32 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="12" md="4">
+            <b-col cols="12"  md="4">
               <!-- Sentiment -->
               <b-form-group class="pr-md-3 checkbox-v">
                 <!-- <span class="text-muted small">sentiment</span> -->
                 <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
               </b-form-group>
             </b-col>
-            <b-col cols="12" md="6" class="d-none" >
+            <b-col cols="12" md="6">
               <b-form-group label="" label-for="accounts" class="pr-md-3">
                 <b-form-tags id="accounts" v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
-                  separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete />
+                  separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete
+                  class="input-tag" />
               </b-form-group>
             </b-col>
-            <b-col cols="12" md="6" class="d-none" >
+            <b-col cols="12" md="6">
               <!-- Hashtags -->
               <b-form-group label="" label-for="accounts" class="pr-md-3">
                 <b-form-tags id="accounts" v-model="formFilters.accountsInput" tag-variant="light" tag-pills size="md"
                   separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
-                  add-on-change remove-on-delete />
+                  add-on-change remove-on-delete class="input-tag" />
               </b-form-group>
 
             </b-col>
 
-            <b-col cols="12" md="4"  >
-              <v-select :options="sourceOptions" v-model="formFilters.source" id="search-input" label="text"
+            <b-col cols="12" md="4">
+              <v-select :options="sourceOptions" v-model="formFilters.source" id="search-source" label="text"
                 :reduce="source => source.value" class="mb-2 select-sort" placeholder="Select Platform"
                 multiple></v-select>
             </b-col>
@@ -78,9 +143,7 @@
 
           <b-row align-h="end" class="mt-2" justify="center">
             <b-col cols="auto" md="auto" align="center" justify="center">
-
               <b-form-group class="pr-md-3">
-
                 <b-form-radio-group v-model="formFilters.view_mode" :options="[
                   { value: 'posts', text: 'ตามเวลา' },
                   { value: 'daily', text: 'รายวัน' },
@@ -102,14 +165,53 @@
                   <!-- <b-button variant="outline-secondary" @click="resetFilters" :disabled="loading">
                 ล้างค่า
               </b-button> -->
+
                 </div>
               </div>
             </b-col>
-          </b-row>
 
+          </b-row>
+          <div class="position-absolute d-none" style="bottom:5px;left: 5px;">
+            <b-button variant="outline-info" class="mr-2" @click="$bvModal.show('save-template-modal')">
+              <i class="fas fa-save"></i> บันทึก
+            </b-button>
+            <b-dropdown right variant="outline-secondary" class="mr-2">
+              <template #button-content>
+                <b-icon icon="collection"></b-icon>
+                <span class="ml-1">เทมเพลต</span>
+              </template>
+
+              <!-- ช่องค้นหาในดรอปดาวน์ (ถ้าไม่อยากได้ ลบทิ้งได้) -->
+              <b-dropdown-form class="px-3 py-2">
+                <b-form-input v-model.trim="templateQuery" size="sm" placeholder="ค้นหาเทมเพลต..." />
+              </b-dropdown-form>
+
+              <!-- รายการเทมเพลต พร้อมสกอลล์ -->
+              <div class="dropdown-scroll px-1">
+                <b-dropdown-item v-if="filteredTemplates.length === 0" disabled>
+                  (ยังไม่มีเทมเพลต)
+                </b-dropdown-item>
+
+                <b-dropdown-item v-for="t in filteredTemplates" :key="t.id" @click="applyTemplate(t.id)">
+                  {{ t.name }}
+                  <small class="text-muted" v-if="t.includeTimeRange">รวมช่วงเวลา</small>
+                </b-dropdown-item>
+              </div>
+
+              <b-dropdown-divider></b-dropdown-divider>
+              <b-dropdown-item @click="$bvModal.show('manage-templates-modal')">
+                จัดการเทมเพลต…
+              </b-dropdown-item>
+            </b-dropdown>
+            <SaveTemplateModal modal-id="save-template-modal" @save="onSaveTemplate" />
+
+            <FilterTemplates :templates="templates" modal-id="manage-templates-modal" @apply="applyTemplate"
+              @rename="renameTemplate" @duplicate="duplicateTemplate" @delete="deleteTemplate"
+              @clear-all="clearAllTemplates" />
+          </div>
         </b-form>
       </b-card>
-  
+
       <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" />
 
       <!-- Loading -->
@@ -119,7 +221,7 @@
           color="#17a2b891" />
       </div>
       <!-- Timeline -->
-       <!-- <div v-if="postsFromApi.data&&postsFromApi.data.length==0"> ไม่พบข้อมูล</div> -->
+      <!-- <div v-if="postsFromApi.data&&postsFromApi.data.length==0"> ไม่พบข้อมูล</div> -->
       <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
         @changeDaySort="changeDaySort" :count="count" v-else />
       <div v-if="filters.view_mode === 'posts' && !loading && filters.page < totalPages" class="text-center my-2 pb-5">
@@ -148,11 +250,17 @@ import LinkMain2 from "@/components/timeline/LinkMain2.vue";
 import TimelinePosts from "@/components/timeline/TimelinePosts2.vue";
 import { mapGetters } from "vuex";
 import ChartTime from "@/components/timeline/ChartTime.vue";
+import FilterTemplates from "@/components/timeline/FilterTemplates.vue";
+import SaveTemplateModal from "@/components/timeline/SaveTemplateModal.vue";
 // import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
+const LS_TPL_KEY = 'timelineFilterTemplatesV1';
+function uid() {
+  return 'tpl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+}
 export default {
-  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, },
+  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal },
   watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
@@ -182,7 +290,10 @@ export default {
   ,
   data() {
     return {
-
+      showFilters: true,
+      templateQuery: '',
+      templates: [],
+      lastAppliedTemplateId: null,
       paramTo: {},
       dayLoadingMap: {},
       dayPageMap: {},      // { '2025-08-26': 1, ... }
@@ -239,7 +350,65 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getSelected", "getSentimentChart", "getWordCloud", "getDomain", "getLoadStatus", "getToSection"])
+    // ...ของคุณ
+    filteredTemplates() {
+      const q = (this.templateQuery || '').toLowerCase().trim();
+      if (!q) return this.templates || [];
+      return (this.templates || []).filter(t => (t.name || '').toLowerCase().includes(q));
+    },
+    ...mapGetters(["getSelected", "getSentimentChart", "getWordCloud", "getDomain", "getLoadStatus", "getToSection"]),
+    pretty() {
+      const f = this.filters || this.formFilters || {};
+
+      // sentiment mapping
+      const sentimentsMap = {
+        '1': { text: 'บวก', variant: 'success', icon: 'emoji-smile' },
+        '0': { text: 'กลาง', variant: 'secondary', icon: 'emoji-neutral' },
+        '-1': { text: 'ลบ', variant: 'danger', icon: 'emoji-frown' }
+      };
+
+      const sentiments = Array.isArray(f.sentiment)
+        ? f.sentiment
+          .filter(v => v !== null && v !== '' && typeof v !== 'undefined')
+          .map(v => ({ ...sentimentsMap[String(v)] || { text: v, variant: 'secondary', icon: 'emoji-neutral' }, value: v }))
+        : [];
+
+      const keyword = f.keywordInput && String(f.keywordInput).trim()
+        ? String(f.keywordInput).trim()
+        : '';
+
+      // รองรับทั้ง hashtags และ HashtagsInput
+      const hashtags = (f.hashtags || f.HashtagsInput || []).filter(Boolean);
+
+      // source: กรอง null ออก แล้ว join
+      const sourceList = Array.isArray(f.source) ? f.source.filter(s => s) : [];
+      const sourceText = sourceList.join(', ');
+
+      const viewModeMap = { posts: 'ตามเวลา', daily: 'รายวัน' };
+      const viewMode = viewModeMap[f.view_mode] || '';
+
+      const sortMap = {
+        descend: 'โพสต์เก่าสุด',
+        recent: 'โพสต์ล่าสุด',
+        engagement: 'Engagement'
+      };
+      const sortBy = sortMap[f.sort_by] || '';
+
+      // วันที่: ใช้ startLocal/endLocal ถ้ามี ไม่งั้นลองดู valueDate
+      let dateRange = '';
+      if (f.startLocal && f.endLocal) {
+        dateRange = this.formatRange(f.startLocal, f.endLocal);
+      } else if (Array.isArray(this.valueDate) && this.valueDate.length === 2) {
+        dateRange = `${this.valueDate[0]} → ${this.valueDate[1]}`;
+      }
+
+      return { keyword, sentiments, hashtags, sourceText, viewMode, sortBy, dateRange };
+    },
+    hasAnyPretty() {
+      const p = this.pretty;
+      return !!(p.keyword || p.sentiments.length || p.hashtags.length || p.sourceText || p.viewMode || p.sortBy || p.dateRange);
+    }
+
   },
   mounted() {
     if (!this.valueDate[0]) {
@@ -258,6 +427,103 @@ export default {
     if (this.observer) this.observer.disconnect();
   },
   methods: {
+    formatRange(start, end) {
+  try {
+    const opts = { year: 'numeric', month: 'short', day: 'numeric' };
+    const sDate = new Date(start);
+    const eDate = new Date(end);
+
+    if (isNaN(sDate) || isNaN(eDate)) throw new Error('Invalid date');
+
+    const sameDay =
+      sDate.getFullYear() === eDate.getFullYear() &&
+      sDate.getMonth() === eDate.getMonth() &&
+      sDate.getDate() === eDate.getDate();
+
+    const s = sDate.toLocaleDateString('th-TH', opts);
+    const e = eDate.toLocaleDateString('th-TH', opts);
+
+    return sameDay ? s : `${s} – ${e}`;
+  } catch (err) {
+    return start === end ? String(start) : `${start} – ${end}`;
+  }
+},
+    loadTemplatesFromLS() {
+      try {
+        const raw = localStorage.getItem(LS_TPL_KEY);
+        const parsed = raw ? JSON.parse(raw) : { items: [], lastAppliedId: null };
+        this.templates = Array.isArray(parsed.items) ? parsed.items : [];
+        this.lastAppliedTemplateId = parsed.lastAppliedId || null;
+      } catch (e) {
+        console.warn('loadTemplatesFromLS error', e);
+        this.templates = [];
+      }
+    },
+    persistTemplatesToLS() {
+      localStorage.setItem(LS_TPL_KEY, JSON.stringify({
+        items: this.templates,
+        lastAppliedId: this.lastAppliedTemplateId || null
+      }));
+    },
+    onSaveTemplate({ name, includeTimeRange }) {
+      const tpl = {
+        id: uid(),
+        name: name || ('Template ' + new Date().toLocaleString()),
+        filters: JSON.parse(JSON.stringify(this.formFilters)),
+        includeTimeRange: !!includeTimeRange,
+        valueDate: includeTimeRange ? JSON.parse(JSON.stringify(this.valueDate)) : null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        version: 1,
+      };
+      this.templates.unshift(tpl);
+      this.persistTemplatesToLS();
+      this.$bvToast && this.$bvToast.toast('บันทึกเทมเพลตเรียบร้อย', { variant: 'success', autoHideDelay: 2000 });
+    },
+    applyTemplate(id) {
+      const t = this.templates.find(x => x.id === id);
+      if (!t) return;
+      this.formFilters = JSON.parse(JSON.stringify(t.filters));
+      if (t.includeTimeRange && t.valueDate && t.valueDate[0] && t.valueDate[1]) {
+        this.valueDate = JSON.parse(JSON.stringify(t.valueDate));
+      }
+      this.lastAppliedTemplateId = id;
+      this.persistTemplatesToLS();
+      this.handleSearch(); // ยิงค้นหาใหม่ทันที
+    },
+    renameTemplate(id) {
+      const t = this.templates.find(x => x.id === id);
+      if (!t) return;
+      const newName = window.prompt('ตั้งชื่อใหม่สำหรับเทมเพลต:', t.name);
+      if (newName && newName.trim()) {
+        t.name = newName.trim();
+        t.updatedAt = Date.now();
+        this.persistTemplatesToLS();
+      }
+    },
+    duplicateTemplate(id) {
+      const t = this.templates.find(x => x.id === id);
+      if (!t) return;
+      const copy = JSON.parse(JSON.stringify(t));
+      copy.id = uid();
+      copy.name = t.name + ' (สำเนา)';
+      copy.createdAt = Date.now();
+      copy.updatedAt = Date.now();
+      this.templates.unshift(copy);
+      this.persistTemplatesToLS();
+    },
+    deleteTemplate(id) {
+      this.templates = this.templates.filter(x => x.id !== id);
+      if (this.lastAppliedTemplateId === id) this.lastAppliedTemplateId = null;
+      this.persistTemplatesToLS();
+    },
+    clearAllTemplates() {
+      if (!confirm('ลบเทมเพลตทั้งหมด?')) return;
+      this.templates = [];
+      this.lastAppliedTemplateId = null;
+      this.persistTemplatesToLS();
+    },
+
     applyRangeAndReload(startIso, endIso) {
       // คงฟิลเตอร์เดิมทุกอย่าง เปลี่ยนเฉพาะช่วงเวลา + รีเซ็ตหน้า
       this.filters = {
@@ -698,6 +964,7 @@ export default {
         this.loadMorePosts();
       }
     },
+
     handleSearch() {
       const next = { ...this.filters, ...this.formFilters, page: 1 };
 
@@ -716,7 +983,7 @@ export default {
           .map(s => s.trim())
           .filter(Boolean);
 
-      next.accounts = [...new Set(accounts.map(s => s.replace(/^@/, "")))]
+      next.accounts = [...new Set(accounts.map(s => s.replace(/^@/, "").replace(/\/+$/, "")))]
       console.log(' next.accounts', next.accounts);
 
       // ✅ hashtags (ใหม่): รองรับ array / string, ตัด '#', lower-case, dedupe
@@ -760,7 +1027,7 @@ export default {
         ...inputkeyword,
 
         ...hashtagList.map(t => `#${t}`),
-       
+
         ...accountList.map(a => `${a}`)
       ].filter(Boolean)));
 
@@ -771,6 +1038,7 @@ export default {
       // โหลดใหม่ปกติ
       this.postsFromApi = [];
       this.apiTimeline();
+      this.showFilters = !this.showFilters
     }
 
 
@@ -778,7 +1046,35 @@ export default {
   }
 };
 </script>
+<style scoped>
+.card-hide{
+   background-image: linear-gradient(to right, #e2f2f5, #d1ecf1);
+    /* background-image: linear-gradient(to right, #fed06ea4, #f0cfda); */
+}
+.filter-btn {
+  top: 38px;
+  right: 15px;
+  z-index: 2;
+}
+.filter-btn .btn{
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+.badge-light {
+  color: #35393b;
+  background-color: #ffffffa9 !important;
+}
 
+.input-tag {
+  height: 100% !important;
+  max-height: 59px !important;
+  overflow-y: auto !important;
+}
+
+#search-source.vs--searchable .vs__dropdown-toggle {
+  max-height: 39px !important;
+  overflow-y: auto !important;
+}
+</style>
 <style scoped>
 .mx-datepicker-range {
   width: 100% !important;
@@ -847,6 +1143,12 @@ export default {
 
 /* จอมือถือ */
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  .filter-btn {
+    top: -6px;
+    right: -1px;
+    z-index: 2;
+  }
+
   .vue-back-to-top {
     right: 14px !important;
   }

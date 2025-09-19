@@ -9,10 +9,8 @@
     />
   </div>
 </template>
-
 <script>
 import VueApexCharts from "vue-apexcharts";
-
 export default {
   name: "PlatformBarChart",
   components: { apexchart: VueApexCharts },
@@ -35,7 +33,6 @@ export default {
       chartOptions: null, // จะเซ็ตใน created()
     };
   },
-
   computed: {
     platformLabels() {
       return ["facebook","twitter","instagram","pantip","youtube","news","tiktok","blockdit","threads"];
@@ -62,7 +59,6 @@ export default {
       }));
     },
   },
-
   methods: {
     buildOptions() {
       const vm = this;
@@ -92,7 +88,7 @@ export default {
               const sum = opts.w.globals.seriesTotals.reduce((a,b)=>a+b,0);
               const pct = sum > 0 ? ((val/sum)*100).toFixed(1) : 0;
               const name = opts.w.config.series[opts.seriesIndex].name;
-              return `${name}: ${val.toLocaleString()} โพสต์ (${pct}%)`;
+              return ` ${val.toLocaleString()} โพสต์ (${pct}%)`;
             }
           }
         },
@@ -148,7 +144,6 @@ export default {
         fill: { opacity: 1 },
       };
     },
-
     rerenderLegend() {
       if (this.$refs.apex && this.$refs.apex.updateOptions) {
         this.$refs.apex.updateOptions(
@@ -159,17 +154,14 @@ export default {
       }
     },
   },
-
   created() {
     // สร้าง options ด้วยค่าเริ่มต้น (ปิดค่าด้วย closure แล้ว)
     this.chartOptions = this.buildOptions();
   },
-
   mounted() {
     // บังคับให้ legend render อีกรอบ หลังทุกอย่างพร้อม
     this.$nextTick(() => this.rerenderLegend());
   },
-
   watch: {
     // ถ้าค่า platform เปลี่ยน ให้ rebuild options และ rerender
     platform: {

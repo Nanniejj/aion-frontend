@@ -49,6 +49,27 @@ export const WordcloudService = {
     return ApiService.get(`/v1/domain/?limit=${payload.limit}`);
   },
   getWordCloud(payload) {
+  Vue.axios.defaults.baseURL = API_URL;
+  ApiService.setHeader();
+
+  const params = new URLSearchParams({
+    start_date: payload.start_date,
+    end_date: payload.end_date,
+  });
+
+  if (payload.dashboard) params.set('dashboard', payload.dashboard);
+  if (payload.monitor)   params.set('monitor', payload.monitor);
+  if (payload.source)    params.set('source', payload.source);
+  if (payload.domain)    params.set('domain', payload.domain);       // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+  if (payload.domain_ids)params.set('domain_id', payload.domain_ids);
+  if (payload.keywords)  params.set('keywords', payload.keywords);
+
+  return ApiService.get(`/v1/getwordcloud/?${params.toString()}`);
+}
+,
+  getWordCloud2(payload) {
+    console.log(payload.domain);
+    
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
@@ -174,6 +195,42 @@ export const WordcloudService = {
     );
   },
   getSentimentDetail(payload) {
+  Vue.axios.defaults.baseURL = API_URL;
+  ApiService.setHeader();
+
+  const params = new URLSearchParams({
+    start_date: payload.start_date,
+    end_date: payload.end_date,
+    offset: String(payload.offset ?? 0),
+    sort_by: payload.sort_by ?? ''
+  });
+
+  // helper: เติมพารามิเตอร์เมื่อมีค่า (ไม่เป็น null/undefined/'')
+  const add = (k, v) => {
+    if (v === null || v === undefined) return;
+    if (typeof v === 'string' && v.trim() === '') return;
+    params.set(k, String(v));
+  };
+
+  // ถ้า domain เป็นอาเรย์ -> รวมด้วยช่องว่างเพื่อให้ได้ "สร้างรั้ว เปิดด่าน"
+  let domainVal = payload.domain;
+  if (Array.isArray(domainVal)) {
+    domainVal = domainVal.filter(Boolean).join(' ');
+  }
+  add('domain', domainVal);
+
+  add('keywords', payload.keywords);
+  add('querySearch', payload.querySearch);
+  add('monitor', payload.monitor);
+  add('sentiment', payload.sentiment);
+  add('hashtag', payload.hashtag);
+  add('source', payload.source);
+  // URLSearchParams จะเข้ารหัส space -> "+" อัตโนมัติ เช่น "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+
+  return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
+}
+,
+  getSentimentDetail2(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
@@ -231,57 +288,40 @@ export const WordcloudService = {
         src
     );
   },
-  getSentimentHashtagDetail(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
-    ApiService.setHeader();
-    var dom = "",
-      key = "",
-      hash = "",
-      mo = "",
-      src = "",
-      stm = "";
-    if (payload.sentiment) {
-      stm = `&sentiment=${payload.sentiment}`;
-    } else {
-      stm = "";
-    }
-    if (payload.source) {
-      src = `&source=${payload.source}`;
-    } else {
-      src = "";
-    }
-    if (payload.monitor) {
-      mo = `&monitor=${payload.monitor}`;
-    } else {
-      mo = "";
-    }
-    if (payload.domain.length > 0 && payload.keywords != "") {
-      dom = `&domain=${payload.domain}`;
-      key = `&keywords=${payload.keywords}`;
-      hash = `&hashtag=${payload.hashtag}`;
-    } else if (payload.domain.length > 0) {
-      dom = `&domain=${payload.domain}`;
-      key = "";
-      hash = `&hashtag=${payload.hashtag}`;
-    } else if (payload.keywords != "") {
-      dom = "";
-      key = `&keywords=${payload.keywords}`;
-      hash = `&hashtag=${payload.hashtag}`;
-    } else {
-      dom = "";
-      key = "";
-      hash = `&hashtag=${payload.hashtag}`;
-    }
-    return ApiService.get(
-      `/v1/getsentimentdetail/?start_date=${payload.start_date}&end_date=${payload.end_date}&offset=${payload.offset}&sort_by=${payload.sort_by}` +
-        dom +
-        key +
-        hash +
-        mo +
-        src +
-        stm
-    );
-  },
+getSentimentHashtagDetail(payload) {
+  Vue.axios.defaults.baseURL = API_URL;
+  ApiService.setHeader();
+
+  const params = new URLSearchParams({
+    start_date: payload.start_date,
+    end_date: payload.end_date,
+    offset: String(payload.offset ?? 0),
+    sort_by: payload.sort_by ?? ''
+  });
+
+  const add = (k, v) => {
+    if (v === null || v === undefined) return;
+    if (typeof v === 'string' && v.trim() === '') return;
+    params.set(k, String(v));
+  };
+
+  // domain อาจเป็นอาเรย์ -> รวมด้วยช่องว่างก่อน (space จะกลายเป็น + ตอน serialize)
+  let domainVal = payload.domain;
+  if (Array.isArray(domainVal)) {
+    domainVal = domainVal.filter(Boolean).join(' ');
+  }
+  add('domain', domainVal);
+
+  add('keywords', payload.keywords);
+  add('hashtag', payload.hashtag);
+  add('monitor', payload.monitor);
+  add('source', payload.source);
+  add('sentiment', payload.sentiment);
+
+  // NOTE: URLSearchParams.toString() จะให้ "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+  return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
+}
+,
 };
 export const RankingService = {
   getDomainRanking(payload) {
@@ -294,66 +334,80 @@ export const RankingService = {
     ApiService.setHeader();
     return ApiService.get(`/v1/subdomain-list/${payload.domain}/?limit=100000`);
   },
-  getRanking(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
-    ApiService.setHeader();
-    var subdom = "";
-    if (payload.subdomain && payload.subdomain.length) {
-      subdom = `&subdomain=${payload.subdomain}`;
-    } else {
-      subdom = "";
-    }
-    return ApiService.get(
-      `/v1/getranking/?start_date=${payload.start_date}&end_date=${payload.end_date}&domain=${payload.domain}&source=${payload.source}&rankingtype=${payload.rankingtype}` +
-        subdom
-    );
-  },
-  getSentimentStat(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
-    ApiService.setHeader();
-    var subdom;
-    if (payload.subdomain) {
-      subdom = `&subdomain=${payload.subdomain}`;
-    } else {
-      subdom = "";
-    }
-    return ApiService.get(
-      `/v1/getsentimentstat/?start_date=${payload.start_date}&end_date=${payload.end_date}&domain=${payload.domain}&source=${payload.source}&objects=${payload.objects}` +
-        subdom
-    );
-  },
-  getSentimentDetailRanking(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
-    ApiService.setHeader();
-    var subdom, stm, dm, obj;
-    if (payload.subdomain) {
-      subdom = `&subdomain=${payload.subdomain}`;
-    } else {
-      subdom = "";
-    }
-    if (payload.domain) {
-      dm = `&domain=${payload.domain}`;
-    } else {
-      dm = "";
-    }
-    if (payload.sentiment) {
-      stm = `&sentiment=${payload.sentiment}`;
-    } else {
-      stm = "";
-    }
-    if (payload.objects) {
-      obj = `&objects=${payload.objects}`;
-    } else {
-      obj = "";
-    }
-    return ApiService.get(
-      `/v1/getsentimentdetail/?start_date=${payload.start_date}&end_date=${payload.end_date}&offset=${payload.offset}&sort_by=${payload.sort_by}&source=${payload.source}` +
-        stm +
-        dm +
-        obj +
-        subdom
-    );
-  },
+getRanking(payload) {
+  Vue.axios.defaults.baseURL = API_URL;
+  ApiService.setHeader();
+
+  // รวมอาเรย์เป็นสตริงเดียวก่อน (คั่นด้วยช่องว่าง -> จะกลายเป็น + อัตโนมัติ)
+  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
+
+  const params = new URLSearchParams({
+    start_date: payload.start_date,
+    end_date: payload.end_date,
+    domain: joinIfArray(payload.domain),       // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+    source: payload.source ?? '',
+    rankingtype: payload.rankingtype ?? ''
+  });
+
+  const subdomainVal = joinIfArray(payload.subdomain);
+  if (subdomainVal !== undefined && subdomainVal !== null && String(subdomainVal).trim() !== '') {
+    params.set('subdomain', subdomainVal);
+  }
+
+  return ApiService.get(`/v1/getranking/?${params.toString()}`);
+}
+,
+ getSentimentStat(payload) {
+  Vue.axios.defaults.baseURL = API_URL;
+  ApiService.setHeader();
+
+  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
+  const add = (params, k, v) => {
+    if (v === null || v === undefined) return;
+    const s = String(v);
+    if (s.trim() === '') return;
+    params.set(k, s);
+  };
+
+  const params = new URLSearchParams({
+    start_date: payload.start_date,
+    end_date: payload.end_date,
+    source: payload.source ?? ''
+  });
+
+  add(params, 'domain',   joinIfArray(payload.domain));   // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+  add(params, 'objects',  joinIfArray(payload.objects));  // รองรับอาเรย์
+  add(params, 'subdomain',joinIfArray(payload.subdomain));
+
+  return ApiService.get(`/v1/getsentimentstat/?${params.toString()}`);
+},
+ getSentimentDetailRanking(payload) {
+  Vue.axios.defaults.baseURL = API_URL;
+  ApiService.setHeader();
+
+  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
+  const add = (params, k, v) => {
+    if (v === null || v === undefined) return;
+    const s = String(v);
+    if (s.trim() === '') return;
+    params.set(k, s);
+  };
+
+  const params = new URLSearchParams({
+    start_date: payload.start_date,
+    end_date: payload.end_date,
+    offset: String(payload.offset ?? 0),
+    sort_by: payload.sort_by ?? '',
+    source: payload.source ?? ''
+  });
+
+  add(params, 'sentiment', payload.sentiment);
+  add(params, 'domain',    joinIfArray(payload.domain));
+  add(params, 'objects',   joinIfArray(payload.objects));
+  add(params, 'subdomain', joinIfArray(payload.subdomain));
+
+  return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
+}
 };
 export const TopInfluencerService = {
   getTopInfluencer(payload) {
@@ -477,19 +531,20 @@ export const AvatarService = {
 };
 export const TemplateService = {
   getListSubDomain(payload) {
+    // payload เป็น path param → เข้ารหัสด้วย encodeURIComponent
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.get(`/v1/subdomain-list/${payload}/?limit=100000`);
+    const seg = encodeURIComponent(payload);
+    return ApiService.get(`/v1/subdomain-list/${seg}/?limit=100000`);
   },
+
   DeleteDomain(payload) {
     Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.put(`v2/domain/deleteDomain?id=${payload.id}`);
+    // id อยู่ใน query → ปลอดภัยแล้ว แต่เข้ารหัสเผื่อ
+    return ApiService.put(`v2/domain/deleteDomain?id=${encodeURIComponent(payload.id)}`);
   },
-  // DeleteDomain(payload) {
-  //   ApiService.setHeader()
-  //   return ApiService.post(`v2/delete-domain/`,{'id':payload.id});
-  // },
+
   AddDomain(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
@@ -498,23 +553,27 @@ export const TemplateService = {
       display: payload.display,
     });
   },
+
   EditDomain(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.put(`/v1/domain/${payload.id}/`, {
+    // id เป็น path → เข้ารหัส
+    return ApiService.put(`/v1/domain/${encodeURIComponent(payload.id)}/`, {
       name: payload.name,
       id: payload.id,
       display: payload.display,
     });
   },
+
   EditSubDomain(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.put(`/v1/subdomain/${payload.id}/`, {
+    return ApiService.put(`/v1/subdomain/${encodeURIComponent(payload.id)}/`, {
       name: payload.name,
       domain: payload.domain,
     });
   },
+
   AddSubDomain(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
@@ -524,13 +583,23 @@ export const TemplateService = {
       display: payload.display,
     });
   },
+
   getListWord(payload) {
+    // ใช้ URLSearchParams → space จะกลายเป็น "+"
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.get(
-      `/v1/object-list/?domain=${payload.domain}&subdomain=${payload.subdomain}&limit=100000`
-    );
+
+    const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
+
+    const params = new URLSearchParams({
+      domain: joinIfArray(payload.domain) ?? '',
+      subdomain: joinIfArray(payload.subdomain) ?? '',
+      limit: '100000'
+    });
+
+    return ApiService.get(`/v1/object-list/?${params.toString()}`);
   },
+
   AddWord(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
@@ -544,10 +613,11 @@ export const TemplateService = {
       not_keywords: payload.not_keywords,
     });
   },
+
   EditWord(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.put(`/v1/object/${payload.id}/`, {
+    return ApiService.put(`/v1/object/${encodeURIComponent(payload.id)}/`, {
       name: payload.name,
       domain: payload.domain,
       // display: payload.display,
@@ -558,18 +628,20 @@ export const TemplateService = {
       not_keywords: payload.not_keywords,
     });
   },
+
   DeleteSubdomain(payload) {
-    // Vue.axios.defaults.baseURL = API_URL;
     Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.put(`/v2/domain/deleteSubdomain?id=${payload.id}`);
+    return ApiService.put(`/v2/domain/deleteSubdomain?id=${encodeURIComponent(payload.id)}`);
   },
+
   DeleteWord(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.del(`/v1/object/${payload.id}/`, { id: payload.id });
+    return ApiService.del(`/v1/object/${encodeURIComponent(payload.id)}/`, { id: payload.id });
   },
 };
+
 export const MonitorService = {
   EditStatusHashtag(payload) {
     Vue.axios.defaults.baseURL = API_URL;
