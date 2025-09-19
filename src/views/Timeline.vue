@@ -1,7 +1,6 @@
 <template>
   <div id="overflow-page">
     <HomeNav id="navHome" />
-
   <TimelineMain/>
   </div>
 </template>
@@ -14,7 +13,7 @@ import "vue-select/dist/vue-select.css";
 import moment from "moment";
 export default {
 components:{
-TimelineMain
+TimelineMain,HomeNav
 }
 
 };
