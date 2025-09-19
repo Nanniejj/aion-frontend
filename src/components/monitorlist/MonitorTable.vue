@@ -18,7 +18,7 @@
                     </div>
                     <div v-if="type === 'hashtaglist'" class="col-auto"> 
                         <b-row class="d-flex align-content-center">
-                            <b-avatar text="All" size="55" style="background-color: #fed16e;"
+                            <b-avatar text="All" size="45" style="background-color: #fed16e;"
                                 v-if="filters.source == ''">
                             </b-avatar>
                             <div class="col-auto bold align-content-center" style="font-size: 20px;">
