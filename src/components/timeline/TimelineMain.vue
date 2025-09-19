@@ -90,7 +90,7 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="12" md="4">
+            <b-col cols="12"  md="4">
               <!-- Sentiment -->
               <b-form-group class="pr-md-3 checkbox-v">
                 <!-- <span class="text-muted small">sentiment</span> -->

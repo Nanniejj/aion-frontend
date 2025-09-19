@@ -303,7 +303,11 @@ export default {
   }
 
   .stm-sm {
-    zoom: 90%;
+    zoom: 75%;
+  }
+  #chart > div > div:nth-child(1) > div > div > div > div > div > div.col-sm-12.col-md-7.col-12{
+    padding-left: 8px;
+     padding-right: 8px;
   }
 }
 </style>

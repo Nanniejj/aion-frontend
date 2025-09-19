@@ -144,7 +144,7 @@ export default {
     this.$nextTick(() => {
       const events = {
         selection: (chartCtx, { xaxis }) => this.onRangeSelected(xaxis),
-        // zoomed: (chartCtx, { xaxis }) => this.onRangeSelected(xaxis),
+        zoomed: (chartCtx, { xaxis }) => this.onRangeSelected(xaxis),
 
         click: () => {
           if (this.activeRange) this.clearRange()
@@ -445,7 +445,7 @@ export default {
 <style scoped>
 #chart {
   max-width: 100%;
-  margin: 24px auto;
+  /* margin: 24px auto; */
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
