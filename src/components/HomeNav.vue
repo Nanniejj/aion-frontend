@@ -298,7 +298,7 @@
             </div>
           </li>
           <li class="nav-item" id="li-nav" >
-            <router-link to="/templatesetting" tag="p"
+            <router-link to="/setting" tag="p"
               ><a class="nav-link"
                 ><img
                   src="../assets/Setting.png"
@@ -666,7 +666,7 @@
             </b-nav-item-dropdown>
           </b-nav-item>
           <b-nav-item id="nav-con1" >
-            <router-link to="/templatesetting" tag="p">
+            <router-link to="/setting" tag="p">
               <a class="nav-link">
                 <img src="@/assets/Setting.png" alt="logo" class="img-nav" />
                 <a class="nav-link titlenav">

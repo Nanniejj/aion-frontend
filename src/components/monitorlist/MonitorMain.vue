@@ -51,7 +51,7 @@
         <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'"  @setReface="handleReface"/>
         <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'"  @setReface="handleReface" @total="(data) => total = data"/>
         <MonitorGroupTable v-if="activeButton == 'group'" :type="'grouplist'"  @setReface="handleReface" @total="(data) => total = data"/>
-        <!-- <MonitorCommunity v-if="activeButton == 'community'" :type="'communitylist'"/> -->
+        <MonitorCommunity v-if="activeButton == 'community'" :type="'communitylist'"/>
     </div>
 </template>
 
