@@ -17,8 +17,9 @@
       <!-- โหมดรายวัน -->
       <!-- {{ isDaily }} {{ mode }} -->
       <template v-if="isDaily">
-        
+      
         <div v-for="(day, idx) in items" :key="day.date || idx" class="timeline-item d-flex">
+            <!-- {{ day.date }} -->
           <div class="timeline-dot">
             <!-- {{ day.date }} -->
             <span class="h4 date-label bold" v-if="sort !== 'engagement'">
@@ -213,6 +214,13 @@ export default {
     // },
   },
   methods: {
+    baseMoment(date) {
+    // ถ้าในโหมด daily ไม่ต้องปรับเวลา (ใช้วันที่ล้วน)
+    // ถ้าโหมดโพสต์ ปรับตามเดิมที่คุณต้องการ (-7 ชั่วโมง) หรือเปลี่ยนเป็น .utc().local() ก็ได้
+    return this.isDaily ? moment(date) : moment(date).subtract(7, 'hours');
+    // ตัวเลือกที่แม่นกว่า ถ้าแหล่งข้อมูลเป็น UTC เสมอ:
+    // return this.isDaily ? moment.utc(date).local() : moment.utc(date).local();
+  },
     numFormat(n) {
       if (!n) return 0;
       if (n < 1e3) return n;
@@ -272,7 +280,7 @@ export default {
       return date2.split(" ")[0];
     },
     formatMoth(date) {
-      let dates = moment(date).subtract(7, "hours");
+      let dates = moment(date)
       let date2 = moment(dates).format("ll");
       return date2.split(" ")[1];
     },

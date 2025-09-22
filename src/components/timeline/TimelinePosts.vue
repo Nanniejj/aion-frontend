@@ -4,7 +4,7 @@
       <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
         <!-- จุดวงกลมบนเส้น -->
         <div class="timeline-dot">
-
+<!-- {{ it.date }} -->
           <span class="h4">
             {{ formatDay(it.date) }}    {{ formatMoth(it.date) }} 
             <!-- {{ formatTime(it.date) }} 
