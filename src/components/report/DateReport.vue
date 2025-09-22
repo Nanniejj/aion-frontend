@@ -187,7 +187,7 @@ export default {
         document.getElementById("text-chart").style.backgroundColor = "#fff0";
 
         // document.getElementById("scroll").style.display = "block";
-        console.log("log1");
+        // console.log("log1");
       } else {
         this.selectedTab = true;
         document.getElementById("text-chart").style.backgroundColor =

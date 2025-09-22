@@ -118,7 +118,7 @@ tab(){
           document.getElementById("text-table").style.backgroundColor = "rgba(254, 209, 110, 0.452)";
           document.getElementById("text-chart").style.backgroundColor = "#fff0";
           document.getElementById("scroll").style.display = "block";
-          console.log('log1');  
+          // console.log('log1');  
           }
       else{
           this.selectedTab = true

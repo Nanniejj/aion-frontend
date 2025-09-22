@@ -1597,7 +1597,7 @@ export default {
         length = count;
       }
       var xs = Math.ceil(length / itemsPerPage);
-      console.log("total page:", xs);
+      // console.log("total page:", xs);
       return xs;
     },
   },

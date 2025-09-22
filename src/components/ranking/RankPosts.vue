@@ -1522,7 +1522,7 @@ export default {
         length = count;
       }
       var xs = Math.ceil(length / itemsPerPage);
-      console.log("total page:", xs);
+      // console.log("total page:", xs);
       return xs;
     },
   },
@@ -1568,7 +1568,7 @@ export default {
     highlightText(full_text) {
       var word = [];
       if (this.checked) {
-        console.log("log1");
+        // console.log("log1");
         word.push(...this.heightword, ...this.getObName.split());
         if (this.andkey.length) {
           this.andkey.forEach(function(key) {
@@ -1822,24 +1822,23 @@ export default {
   async created(sort, offset) {
     this.username = localStorage.getItem("username");
     this.objId = localStorage.getItem("objId");
-    console.log("setObjectName", this.getObjectName);
+    // console.log("setObjectName", this.getObjectName);
     offset = this.offset;
     sort = this.sort;
-    console.log(offset, sort);
+    // console.log(offset, sort);
     let domain = this.getObjectName;
     let subdomain = this.getSubDomain;
     await this.axios
       .get(
-        "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-          domain +
-          "&subdomain=" +
-          subdomain
+        "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +encodeURIComponent(domain) +
+      "&subdomain=" +
+      encodeURIComponent(subdomain)
       )
       .then((response) => (this.arrword = response.data[0]));
     var k = this.arrword.Keywords;
     var ka = this.arrword.and_keywords;
     let result = ka.map((key) => {
-      console.log("log3");
+      // console.log("log3");
       return key.split("+");
     });
     this.andkey = result;
