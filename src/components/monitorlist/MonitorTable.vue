@@ -108,7 +108,8 @@
                 :borderless="borderless"
                 :outlined="outlined" 
                 empty-filtered-text="ไม่พบข้อมูล"
-                :small="small" thead-class="d-none" stacked="md"
+                :small="small" 
+                thead-class="d-none" stacked="md"
                 :tbody-tr-class="rowClass"
             >
                 <!-- <template #empty>
@@ -163,16 +164,11 @@
                 </template>
 
                 <template #cell(influencer_type)="data">
-                    <!-- <b-badge class="p-2" style="font-size: 14px;" v-if="data.item.influencer_condition" variant="info" > -->
-                        <!-- <div v-if="data.item.influencer_condition" class="d-flex align-items-center">
-                            <i class="fas fa-star mr-2" style="color: #fed16e;"></i>
-                            {{ getInfluConditions(data.item.influencer_condition) }}
-                        </div> -->
-                        <div v-if="data.item.influencer_condition" class="rounded-lg float-right badge-custom px-3 py-2">
-                            <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
-                                alt="sparkling" style="filter: brightness(0) invert(1);"/>
-                            <span class="md-font ml-2">{{ getInfluConditions(data.item.influencer_condition) }}</span>
-                        </div>
+                    <div v-if="data.item.influencer_condition" class="rounded-lg float-right badge-custom px-3 py-2">
+                        <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                            alt="sparkling" style="filter: brightness(0) invert(1);"/>
+                        <span class="md-font ml-2 text-truncate">{{ getInfluConditions(data.item.influencer_condition) }}</span>
+                    </div>
                 </template>
 
                 <template #cell(action)="data">

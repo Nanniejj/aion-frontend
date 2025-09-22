@@ -42,10 +42,11 @@
                     background-color="rgba(255, 255, 255, 0.3)" 
                     color="#ede7dd" />
 
-                    <b-table ref="table" v-if="communities.length !== 0" show-details :items="communities || []" :fields="fields" hover
-                    responsive :busy="loading" :striped="false"
-                    :bordered="false" :borderless="false" :outlined="false" empty-filtered-text="ไม่พบข้อมูล"
-                    :small="false" thead-class="d-none" stacked="md">
+                    <b-table 
+                        ref="table" v-if="communities.length !== 0" show-details :items="communities || []" :fields="fields" hover
+                        responsive :busy="loading" :striped="false"
+                        :bordered="false" :borderless="false" :outlined="false" empty-filtered-text="ไม่พบข้อมูล"
+                        :small="false" thead-class="d-none" stacked="md">
                         <template #cell(id)="data">
                             {{ data.index + 1 + (pagination.currentPage - 1) * pagination.limit }}
                         </template>
@@ -102,12 +103,24 @@
                         <template #cell(action)="data">
                             <!-- <b-row class="m-0 justify-content-end align-items-center"> -->
                                 <span class="fas fa-pen px-3 text-warning" v-b-tooltip.hover title="แก้ไขกลุ่ม"
-                                    @click="openEditGroup(data.item)" size="sm"></span>
+                                    @click="data.toggleDetails" size="sm"></span>
                                 <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                                     @click="linkToProfile(data.item)"></span>
                                 <span class="fas fa-trash text-danger px-3" v-b-tooltip.hover title="ลบกลุ่ม"
                                     @click="deleteGroup(data.item)" size="sm"></span>
                             <!-- </b-row> -->
+                        </template>
+                        <!-- แถวรายละเอียด -->
+                        <template #row-details="row">
+                            <b-card class="text-left" style="max-height:400px;overflow-y:auto;">
+                                
+                                <ProfileEdit 
+                                    :profile="row.item" 
+                                    :influencerTypes="influencerTypes"
+                                    @close="row.toggleDetails();
+                                    apiGetCommunities()"
+                                />
+                            </b-card>
                         </template>
                     </b-table>
                     <b-col v-else class="text-center text-secondary">
@@ -130,12 +143,14 @@
 
 <script>
 import CreateCommunityModal from './_CreateCommunityModal.vue';
+import ProfileEdit from './_ProfileEdit.vue';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 
 export default {
     components: {
-        CreateCommunityModal
+        CreateCommunityModal,
+        ProfileEdit
     },
     data() {
         return {
@@ -161,10 +176,23 @@ export default {
                 { key: 'group_type', label: '' },
                 { key: 'action', label: '' }
             ],
-            communities: []
+            communities: [],
+            influencerTypes: [],
         }
     },
     methods: {
+        linkToProfile(item) {
+            const routeData = this.$router.resolve({
+                name: "MonitorProfile",
+                query: {
+                    id: item._id,
+                    uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
+                    source: item.source,
+                    type: 'targetlist'
+                },
+            });
+            window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
+        },
         onPageChange(page) {
             this.pagination.currentPage = page;
             this.apiGetCommunities();
@@ -298,8 +326,35 @@ export default {
                     console.error(error);
                 });
         },
+        apiGetInfluencerType() {
+            this.load = true;
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getInfluencerType",
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                // console.log(response);
+                let result = response.data || [];
+                this.influencerTypes = result.map(type => ({
+                    value: type.id,
+                    text: type.name
+                }));
+                this.load = false;
+            })
+            .catch((error) => {
+                this.load = false;
+                // console.error(error);
+            });
+        },
     },
     async mounted() {
+        this.apiGetInfluencerType();
         await this.apiGetCommunities();
         await this.getPreview();
     },
