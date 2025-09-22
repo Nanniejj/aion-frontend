@@ -49,27 +49,26 @@ export const WordcloudService = {
     return ApiService.get(`/v1/domain/?limit=${payload.limit}`);
   },
   getWordCloud(payload) {
-  Vue.axios.defaults.baseURL = API_URL;
-  ApiService.setHeader();
+    Vue.axios.defaults.baseURL = API_URL;
+    ApiService.setHeader();
 
-  const params = new URLSearchParams({
-    start_date: payload.start_date,
-    end_date: payload.end_date,
-  });
+    const params = new URLSearchParams({
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+    });
 
-  if (payload.dashboard) params.set('dashboard', payload.dashboard);
-  if (payload.monitor)   params.set('monitor', payload.monitor);
-  if (payload.source)    params.set('source', payload.source);
-  if (payload.domain)    params.set('domain', payload.domain);       // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
-  if (payload.domain_ids)params.set('domain_id', payload.domain_ids);
-  if (payload.keywords)  params.set('keywords', payload.keywords);
+    if (payload.dashboard) params.set("dashboard", payload.dashboard);
+    if (payload.monitor) params.set("monitor", payload.monitor);
+    if (payload.source) params.set("source", payload.source);
+    if (payload.domain) params.set("domain", payload.domain); // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+    if (payload.domain_ids) params.set("domain_id", payload.domain_ids);
+    if (payload.keywords) params.set("keywords", payload.keywords);
 
-  return ApiService.get(`/v1/getwordcloud/?${params.toString()}`);
-}
-,
+    return ApiService.get(`/v1/getwordcloud/?${params.toString()}`);
+  },
   getWordCloud2(payload) {
     console.log(payload.domain);
-    
+
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
@@ -195,41 +194,40 @@ export const WordcloudService = {
     );
   },
   getSentimentDetail(payload) {
-  Vue.axios.defaults.baseURL = API_URL;
-  ApiService.setHeader();
+    Vue.axios.defaults.baseURL = API_URL;
+    ApiService.setHeader();
 
-  const params = new URLSearchParams({
-    start_date: payload.start_date,
-    end_date: payload.end_date,
-    offset: String(payload.offset ?? 0),
-    sort_by: payload.sort_by ?? ''
-  });
+    const params = new URLSearchParams({
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      offset: String(payload.offset ?? 0),
+      sort_by: payload.sort_by ?? "",
+    });
 
-  // helper: เติมพารามิเตอร์เมื่อมีค่า (ไม่เป็น null/undefined/'')
-  const add = (k, v) => {
-    if (v === null || v === undefined) return;
-    if (typeof v === 'string' && v.trim() === '') return;
-    params.set(k, String(v));
-  };
+    // helper: เติมพารามิเตอร์เมื่อมีค่า (ไม่เป็น null/undefined/'')
+    const add = (k, v) => {
+      if (v === null || v === undefined) return;
+      if (typeof v === "string" && v.trim() === "") return;
+      params.set(k, String(v));
+    };
 
-  // ถ้า domain เป็นอาเรย์ -> รวมด้วยช่องว่างเพื่อให้ได้ "สร้างรั้ว เปิดด่าน"
-  let domainVal = payload.domain;
-  if (Array.isArray(domainVal)) {
-    domainVal = domainVal.filter(Boolean).join(' ');
-  }
-  add('domain', domainVal);
+    // // ถ้า domain เป็นอาเรย์ -> รวมด้วยช่องว่างเพื่อให้ได้ "สร้างรั้ว เปิดด่าน"
+    // let domainVal = payload.domain;
+    // if (Array.isArray(domainVal)) {
+    //   domainVal = domainVal.filter(Boolean).join(' ');
+    // }
+    add("domain", payload.domain);
 
-  add('keywords', payload.keywords);
-  add('querySearch', payload.querySearch);
-  add('monitor', payload.monitor);
-  add('sentiment', payload.sentiment);
-  add('hashtag', payload.hashtag);
-  add('source', payload.source);
-  // URLSearchParams จะเข้ารหัส space -> "+" อัตโนมัติ เช่น "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+    add("keywords", payload.keywords);
+    add("querySearch", payload.querySearch);
+    add("monitor", payload.monitor);
+    add("sentiment", payload.sentiment);
+    add("hashtag", payload.hashtag);
+    add("source", payload.source);
+    // URLSearchParams จะเข้ารหัส space -> "+" อัตโนมัติ เช่น "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
 
-  return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
-}
-,
+    return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
+  },
   getSentimentDetail2(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
@@ -288,40 +286,36 @@ export const WordcloudService = {
         src
     );
   },
-getSentimentHashtagDetail(payload) {
-  Vue.axios.defaults.baseURL = API_URL;
-  ApiService.setHeader();
+  getSentimentHashtagDetail(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
+    ApiService.setHeader();
 
-  const params = new URLSearchParams({
-    start_date: payload.start_date,
-    end_date: payload.end_date,
-    offset: String(payload.offset ?? 0),
-    sort_by: payload.sort_by ?? ''
-  });
+    const params = new URLSearchParams({
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      offset: String(payload.offset ?? 0),
+      sort_by: payload.sort_by ?? "",
+    });
 
-  const add = (k, v) => {
-    if (v === null || v === undefined) return;
-    if (typeof v === 'string' && v.trim() === '') return;
-    params.set(k, String(v));
-  };
+    const add = (k, v) => {
+      if (v === null || v === undefined) return;
+      if (typeof v === "string" && v.trim() === "") return;
+      params.set(k, String(v));
+    };
 
-  // domain อาจเป็นอาเรย์ -> รวมด้วยช่องว่างก่อน (space จะกลายเป็น + ตอน serialize)
-  let domainVal = payload.domain;
-  if (Array.isArray(domainVal)) {
-    domainVal = domainVal.filter(Boolean).join(' ');
-  }
-  add('domain', domainVal);
+    // domain อาจเป็นอาเรย์ -> รวมด้วยช่องว่างก่อน (space จะกลายเป็น + ตอน serialize)
 
-  add('keywords', payload.keywords);
-  add('hashtag', payload.hashtag);
-  add('monitor', payload.monitor);
-  add('source', payload.source);
-  add('sentiment', payload.sentiment);
+    add("domain", payload.domain);
 
-  // NOTE: URLSearchParams.toString() จะให้ "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
-  return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
-}
-,
+    add("keywords", payload.keywords);
+    add("hashtag", payload.hashtag);
+    add("monitor", payload.monitor);
+    add("source", payload.source);
+    add("sentiment", payload.sentiment);
+
+    // NOTE: URLSearchParams.toString() จะให้ "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+    return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
+  },
 };
 export const RankingService = {
   getDomainRanking(payload) {
@@ -334,80 +328,84 @@ export const RankingService = {
     ApiService.setHeader();
     return ApiService.get(`/v1/subdomain-list/${payload.domain}/?limit=100000`);
   },
-getRanking(payload) {
-  Vue.axios.defaults.baseURL = API_URL;
-  ApiService.setHeader();
+  getRanking(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
+    ApiService.setHeader();
 
-  // รวมอาเรย์เป็นสตริงเดียวก่อน (คั่นด้วยช่องว่าง -> จะกลายเป็น + อัตโนมัติ)
-  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
+    const params = new URLSearchParams({
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      source: payload.source ?? "",
+      rankingtype: payload.rankingtype ?? "",
+    });
 
-  const params = new URLSearchParams({
-    start_date: payload.start_date,
-    end_date: payload.end_date,
-    domain: joinIfArray(payload.domain),       // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
-    source: payload.source ?? '',
-    rankingtype: payload.rankingtype ?? ''
-  });
+     if (payload.domain) {
+      params.set("domain", payload.domain);
+    }
+    if (payload.subdomain&&payload.subdomain.length) {
+      params.set("subdomain", payload.subdomain);
+    }
 
-  const subdomainVal = joinIfArray(payload.subdomain);
-  if (subdomainVal !== undefined && subdomainVal !== null && String(subdomainVal).trim() !== '') {
-    params.set('subdomain', subdomainVal);
-  }
+    return ApiService.get(`/v1/getranking/?${params.toString()}`);
+  },
+  getSentimentStat(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
+    ApiService.setHeader();
 
-  return ApiService.get(`/v1/getranking/?${params.toString()}`);
-}
-,
- getSentimentStat(payload) {
-  Vue.axios.defaults.baseURL = API_URL;
-  ApiService.setHeader();
+    const params = new URLSearchParams({
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      source: payload.source ?? "",
+    });
+    if (payload.domain) {
+      params.set("domain", payload.domain);
+    }
+    if (payload.subdomain&&payload.subdomain.length) {
+      params.set("subdomain", payload.subdomain);
+    }
 
-  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
-  const add = (params, k, v) => {
-    if (v === null || v === undefined) return;
-    const s = String(v);
-    if (s.trim() === '') return;
-    params.set(k, s);
-  };
+    if (payload.objects) {
+      params.set("objects", payload.objects);
+    }
+    // add(params, "domain", payload.domain); // "สร้างรั้ว เปิดด่าน" -> encode เป็น "สร้างรั้ว+เปิดด่าน"
+    // add(params, "objects", payload.objects); // รองรับอาเรย์
+    // add(params, "subdomain", payload.subdomain);
 
-  const params = new URLSearchParams({
-    start_date: payload.start_date,
-    end_date: payload.end_date,
-    source: payload.source ?? ''
-  });
+    return ApiService.get(`/v1/getsentimentstat/?${params.toString()}`);
+  },
+  getSentimentDetailRanking(payload) {
+    Vue.axios.defaults.baseURL = API_URL;
+    ApiService.setHeader();
 
-  add(params, 'domain',   joinIfArray(payload.domain));   // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
-  add(params, 'objects',  joinIfArray(payload.objects));  // รองรับอาเรย์
-  add(params, 'subdomain',joinIfArray(payload.subdomain));
+    const params = new URLSearchParams({
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      offset: String(payload.offset ?? 0),
+      sort_by: payload.sort_by ?? "",
+      source: payload.source ?? "",
+    });
 
-  return ApiService.get(`/v1/getsentimentstat/?${params.toString()}`);
-},
- getSentimentDetailRanking(payload) {
-  Vue.axios.defaults.baseURL = API_URL;
-  ApiService.setHeader();
+     if (payload.domain) {
+      params.set("domain", payload.domain);
+    }
+    if (payload.subdomain&&payload.subdomain.length) {
+      params.set("subdomain", payload.subdomain);
+    }
 
-  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
-  const add = (params, k, v) => {
-    if (v === null || v === undefined) return;
-    const s = String(v);
-    if (s.trim() === '') return;
-    params.set(k, s);
-  };
+    if (payload.objects) {
+      params.set("objects", payload.objects);
+    }
 
-  const params = new URLSearchParams({
-    start_date: payload.start_date,
-    end_date: payload.end_date,
-    offset: String(payload.offset ?? 0),
-    sort_by: payload.sort_by ?? '',
-    source: payload.source ?? ''
-  });
+     if (payload.sentiment) {
+      params.set("sentiment", payload.sentiment);
+    }
+    // add(params, "sentiment", payload.sentiment); // จะไม่แนบถ้าเป็น '' หรือ null/undefined
+    // add(params, "domain", payload.domain);
+    // add(params, "objects", payload.objects);
+    // add(params, "subdomain", payload.subdomain);
 
-  add(params, 'sentiment', payload.sentiment);
-  add(params, 'domain',    joinIfArray(payload.domain));
-  add(params, 'objects',   joinIfArray(payload.objects));
-  add(params, 'subdomain', joinIfArray(payload.subdomain));
-
-  return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
-}
+    return ApiService.get(`/v1/getsentimentdetail/?${params.toString()}`);
+  },
 };
 export const TopInfluencerService = {
   getTopInfluencer(payload) {
@@ -542,7 +540,9 @@ export const TemplateService = {
     Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
     // id อยู่ใน query → ปลอดภัยแล้ว แต่เข้ารหัสเผื่อ
-    return ApiService.put(`v2/domain/deleteDomain?id=${encodeURIComponent(payload.id)}`);
+    return ApiService.put(
+      `v2/domain/deleteDomain?id=${encodeURIComponent(payload.id)}`
+    );
   },
 
   AddDomain(payload) {
@@ -589,12 +589,12 @@ export const TemplateService = {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
 
-    const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
+    // const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(' ') : v;
 
     const params = new URLSearchParams({
-      domain: joinIfArray(payload.domain) ?? '',
-      subdomain: joinIfArray(payload.subdomain) ?? '',
-      limit: '100000'
+      domain: payload.domain ?? "",
+      subdomain: payload.subdomain ?? "",
+      limit: "100000",
     });
 
     return ApiService.get(`/v1/object-list/?${params.toString()}`);
@@ -632,13 +632,17 @@ export const TemplateService = {
   DeleteSubdomain(payload) {
     Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.put(`/v2/domain/deleteSubdomain?id=${encodeURIComponent(payload.id)}`);
+    return ApiService.put(
+      `/v2/domain/deleteSubdomain?id=${encodeURIComponent(payload.id)}`
+    );
   },
 
   DeleteWord(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
-    return ApiService.del(`/v1/object/${encodeURIComponent(payload.id)}/`, { id: payload.id });
+    return ApiService.del(`/v1/object/${encodeURIComponent(payload.id)}/`, {
+      id: payload.id,
+    });
   },
 };
 
@@ -875,7 +879,8 @@ export const DomainService = {
       stm = "",
       source = "",
       dash = "",
-      findkey = "",mor="";
+      findkey = "",
+      mor = "";
     if (payload.querySearch) {
       findkey = `&querySearch=${payload.querySearch}`;
     } else {
@@ -901,7 +906,7 @@ export const DomainService = {
     } else {
       stm = "";
     }
-     if (payload.mor) {
+    if (payload.mor) {
       mor = `&monitor=${payload.mor}`;
     } else {
       mor = "";
@@ -912,17 +917,19 @@ export const DomainService = {
         dm +
         source +
         dash +
-        findkey+mor
+        findkey +
+        mor
     );
   },
-    getTopPostDomain(payload) {
+  getTopPostDomain(payload) {
     Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
     var dm = "",
       stm = "",
       source = "",
       dash = "",
-      findkey = "",mor="";
+      findkey = "",
+      mor = "";
     if (payload.querySearch) {
       findkey = `&querySearch=${payload.querySearch}`;
     } else {
@@ -948,7 +955,7 @@ export const DomainService = {
     } else {
       stm = "";
     }
-     if (payload.mor) {
+    if (payload.mor) {
       mor = `&monitor=${payload.mor}`;
     } else {
       mor = "";
@@ -959,7 +966,8 @@ export const DomainService = {
         dm +
         source +
         dash +
-        findkey+mor
+        findkey +
+        mor
     );
   },
   getPostDomain2(payload) {

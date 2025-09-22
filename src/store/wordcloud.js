@@ -732,10 +732,9 @@ export default {
   params.set("end", payload.end_date ?? "");
 
   // domain can be array or string
-  if (payload?.domain && payload.domain.length > 0) {
-    const dom = Array.isArray(payload.domain) ? payload.domain.join(",") : payload.domain;
-    params.set("domain", dom);
-  }
+
+    params.set("domain", payload.domain);
+  
   if (payload?.keywords) params.set("keywords", payload.keywords);
   if (payload?.querySearch !== undefined) params.set("querySearch", payload.querySearch);
   if (payload?.monitor) params.set("monitor", payload.monitor);
@@ -866,7 +865,7 @@ export default {
   var axios = require("axios");
 
   // helper รวม array เป็นสตริงเดียว
-  const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(" ") : v;
+  // const joinIfArray = (v) => Array.isArray(v) ? v.filter(Boolean).join(" ") : v;
 
   // ใช้ URLSearchParams
   const params = new URLSearchParams({
@@ -876,7 +875,7 @@ export default {
   });
 
   if (payload.monitor)   params.set("monitor", payload.monitor);
-  if (payload.domain)    params.set("domain", joinIfArray(payload.domain));  // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
+  if (payload.domain)    params.set("domain", payload.domain);  // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
   if (payload.keywords)  params.set("keywords", payload.keywords);
   if (payload.hashtag)   params.set("hashtag", payload.hashtag);
 

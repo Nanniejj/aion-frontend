@@ -340,60 +340,71 @@ export default {
         console.log(error);
       }
     },
-    async fetchRanking({ commit }, payload) {
-      commit("setLoadStatus", true);
-      try {
-        const res = await RankingService.getRanking(payload);
-        commit("setRanking", res.data.data);
+   async fetchRanking({ commit }, payload) {
+  commit("setLoadStatus", true);
+  try {
+    const res = await RankingService.getRanking(payload);
 
-        // let result = ["Date", "Object", "y"];
-        console.log("arrrrr " + res.data.trend.slice(0, 10));
-        commit("setDataTrend", res.data.trend);
-        let trenddata = res.data.trend;
-        console.log(trenddata);
-        let labels = [];
-        let result = [];
-        let maxX = 0;
-        let indexMax = 0;
-        for (let i = 0; i < trenddata.length; i++) {
-          labels.push(trenddata[i].label);
-          if (trenddata[i].x.length > maxX) {
-            maxX = trenddata[i].x.length;
-            indexMax = i;
-          }
-        }
-        console.log("label", indexMax);
+    // Ranking list (as before)
+    commit("setRanking", res?.data?.data ?? []);
 
-        let xkey = {};
-        trenddata[indexMax].x.map((item) => {
-          xkey[item] = [];
-        });
+    const trend = Array.isArray(res?.data?.trend) ? res.data.trend : [];
+    if (!trend.length) {
+      // No trend data: clear and inform
+      commit("setDataTrend", []);
+      commit("setTrendRanking", [["Date"]]);
+      alert("ไม่มีข้อมูล");
+      return;
+    }
 
-        console.log(xkey);
+    // Normalize series & guard against missing fields
+    const normalized = trend.map((s, i) => ({
+      label: s?.label ?? `Series ${i + 1}`,
+      x: Array.isArray(s?.x) ? s.x : [],
+      y: Array.isArray(s?.y) ? s.y : [],
+    }));
 
-        for (let l = 0; l < trenddata[indexMax].x.length; l++) {
-          let temp = [];
-          for (let i = 0; i < labels.length; i++) {
-            if (trenddata[i].y[l]) {
-              temp.push(trenddata[i].y[l]);
-            } else {
-              temp.push(0);
-            }
-          }
-          result.push([trenddata[0].x[l], ...temp]);
-        }
+    commit("setDataTrend", normalized);
 
-        result = [["Date", ...labels], ...result];
-        console.log("###", result);
-        commit("setTrendRanking", result);
-        commit("setLoadStatus", false);
-        console.log(res.data);
-      } catch (error) {
-        console.log(error);
-        commit('setLoadStatus', false );
-        alert("ไม่มีข้อมูล");
+    // Build unified X-axis (all unique x values across series)
+    const xSet = new Set();
+    for (const s of normalized) for (const xi of s.x) xSet.add(String(xi));
+    const xAxis = Array.from(xSet).sort(); // sort if x are date strings
+
+    if (!xAxis.length) {
+      commit("setTrendRanking", [["Date", ...normalized.map(s => s.label)]]);
+      alert("ไม่มีข้อมูล");
+      return;
+    }
+
+    // Build per-series lookup maps: x -> y
+    const seriesMaps = normalized.map(s => {
+      const m = Object.create(null);
+      for (let i = 0; i < s.x.length; i++) {
+        const key = String(s.x[i]);
+        const val = Number.isFinite(Number(s.y?.[i])) ? Number(s.y[i]) : 0;
+        m[key] = val;
       }
-    },
+      return m;
+    });
+
+    const labels = normalized.map(s => s.label);
+
+    // Assemble result table: header + rows
+    const table = [
+      ["Date", ...labels],
+      ...xAxis.map(x => [x, ...seriesMaps.map(m => m[x] ?? 0)]),
+    ];
+
+    commit("setTrendRanking", table);
+  } catch (error) {
+    console.log(error);
+    alert("ไม่มีข้อมูล");
+  } finally {
+    commit("setLoadStatus", false);
+  }
+}
+,
     async fetchSentimentStat({ commit, state }, payload) {
       commit("setLoadRankTab", true);
       try {
