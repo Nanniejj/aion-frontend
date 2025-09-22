@@ -15,14 +15,14 @@
                     <b-button variant="success" @click="confirmUpdate()">
                         <i class="fa fa-save mr-1"></i>
                     </b-button>
-                    <b-button variant="danger" @click="editProfile()">
+                    <b-button variant="danger" @click="closeEdit()">
                         <i class="fa fa-times mr-1"></i>
                     </b-button>
                 </div>
             </b-col>
         </b-row>
         <div class="col-12 px-0 pb-3">
-            <b-row cols="1" cols-sm="1" cols-md="2" class="mx-0">
+            <b-row cols="1" cols-md="2" cols-lg="3" class="mx-0">
                 <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
@@ -63,8 +63,28 @@
                         </div>
                     </b-row>
                 </b-col>
-
                 <b-col class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fas fa-address-card mr-1" />
+                            ประเภท community :
+                        </b-col>
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                size="sm"
+                                class="input"
+                                :options="[
+                                    { value: null, text: 'เลือกประเภทของ community' },
+                                    { value: 'public', text: 'กลุ่มสาธารณะ' },
+                                    { value: 'private', text: 'กลุ่มปิด' },
+                                ]"
+                                v-model="profile.group_type"
+                                placeholder="เลือกประเภทของ community"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>
+                <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fas fa-address-card mr-1" />
@@ -80,9 +100,9 @@
                             />
                         </div>
                     </b-row>
-                </b-col>
+                </b-col> -->
 
-                <b-col class="px-0 px-md-1 mb-2">
+                <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fas fa-award mr-1" />
@@ -99,8 +119,8 @@
                             />
                         </div>
                     </b-row>
-                </b-col>
-                <b-col class="px-0 px-md-1 mb-2">
+                </b-col> -->
+                <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fa fa-tag mr-1" />
@@ -139,9 +159,9 @@
                             />
                         </div>
                     </b-row>
-                </b-col>
+                </b-col> -->
 
-                <b-col class="px-0 px-md-1 mb-2">
+                <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i v-if="profile.sex === 'female'" class="fa fa-venus" />
@@ -159,9 +179,9 @@
                             />
                         </div>
                     </b-row>
-                </b-col>
+                </b-col> -->
 
-                <b-col class="px-0 px-md-1 mb-2">
+                <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fa fa-birthday-cake mr-1"/>
@@ -170,7 +190,7 @@
                         
                         <b-form-spinbutton id="demo-sb" size="sm" v-model="profile.age" min="0" max="100"></b-form-spinbutton>
                     </b-row>
-                </b-col>
+                </b-col> -->
 
                 <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
@@ -233,7 +253,7 @@
                     </b-row>
                 </b-col> -->
                 
-                <b-col class="px-0 px-md-1 mb-2">
+                <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fa fas fa-users mr-1"/>
@@ -248,7 +268,7 @@
                             placeholder="กรอกจำนวนผู้ติดตาม (เฉพาะตัวเลข)"
                         />
                     </b-row>
-                </b-col>
+                </b-col> -->
 
                 <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
@@ -268,7 +288,7 @@
                 </b-col> -->
 
             </b-row>
-            <b-col cols="12" class="px-0 px-md-1 pb-3">
+            <!-- <b-col cols="12" class="px-0 px-md-1 pb-3">
                 <b-row class="w-100 m-0">
                     <b-col class="text-secondary text-left d-flex p-0 align-items-center">
                         <i class="fa fa-tag mr-1" />
@@ -286,7 +306,7 @@
                         />
                     </div>
                 </b-row>
-            </b-col>
+            </b-col> -->
         </div>
         <!-- </b-card-text> -->
     </b-col>
@@ -298,10 +318,10 @@ import Multiselect from 'vue-multiselect'
 export default {
     components: { Multiselect },
     props: {
-        // profile: {
-        //     type: Object,
-        //     required: true
-        // },
+        item: {
+            type: Object,
+            required: true
+        },
         influencerTypes: {
             type: Array,
             required: true
@@ -369,27 +389,46 @@ export default {
         }
     },
     methods: {
-        apiUpdateProflie() {
+        closeEdit() {
+            this.$emit('close');
+        },
+        confirmUpdate() {
+            Swal.fire({
+                title: 'ยืนยันการแก้ไขข้อมูล?',
+                text: "คุณต้องการบันทึกการแก้ไขข้อมูลใช่หรือไม่",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, บันทึกการแก้ไข',
+                cancelButtonText: 'ยกเลิก',
+                customClass: {
+                    confirmButton: 'btn btn-success mr-3',
+                    cancelButton: 'btn btn-danger'
+                },
+                didOpen: () => {
+                    const iconContent = document.querySelector('.swal2-icon-content');
+                    if (iconContent) iconContent.style.display = 'none';
+                },
+                buttonsStyling: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log("update profile === ", this.profile);
+                    this.apiUpdateProfile();
+                }
+            })
+        },
+        apiUpdateProfile() {
             // this.handleLocation();
-            this.load = true;
+            // this.load = true;
             let rawData = {
                 "data": [{
-                    _id: this.$route.query.id,
-                    key: this.$route.query.type === 'targetlist'? 'account': this.$route.query.type === 'hashtaglist'? 'hashtag': '',
-                    source:this.$route.query.source,
-                    species:this.selectedData.species, 
-                    sex: this.selectedData.sex,
-                    age: this.selectedData.age === 0 ? null : this.selectedData.age, 
-                    influencer_type: this.selectedData.influencer_type.map(item => item.value), 
-                    influencer_condition: this.selectedData.influencer_condition, 
-                    location: this.selectedData.location, 
-                    province: this.selectedData.province,
-                    bot_level: this.selectedData.bot_level,
-                    name: this.selectedData.name,
-                    followers : this.selectedData.followers,
-                    following: this.selectedData.following,
-                    profile_image: this.selectedData.profile_image,
-                    department: this.selectedData.department
+                    key: "account",
+                    _id: this.profile._id,
+                    source:this.profile.source,
+                    group_type: this.profile.group_type,
+                    name: this.profile.name,
+                    profile_image: this.profile.profile_image,
                 }]
             };
             // console.log("data ==== ", rawData);
@@ -407,9 +446,6 @@ export default {
             this.axios(config)
             .then((response) => {
                 let result = response.data || [];
-
-                this.load = false;
-                this.editProfile();
                 Swal.fire({
                     title: 'บันทึกแล้ว!',
                     text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อย',
@@ -420,10 +456,11 @@ export default {
                     allowEscapeKey: false,
                     buttonsStyling: false
                 });
-                this.apiMonitorProfile();
+                
+                this.$emit('updated');
             })
             .catch((error) => {
-                this.load = false;
+        
                 Swal.fire({
                     title: 'บันทึกไม่สำเสร็จ',
                     text:  error,
@@ -438,6 +475,10 @@ export default {
                 })
             });
         },
+    },
+    mounted() { 
+        this.profile = { ...this.item };
+        console.log("profile edit === ", this.profile);
     }
 }
 </script>

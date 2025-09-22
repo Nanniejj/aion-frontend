@@ -69,7 +69,6 @@
                         </template>
 
                         <template #cell(source)="data">
-                            
                             <div class="small d-flex align-items-center pr-0 w-auto">
                                 <img v-if="data.item.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
                                 <img v-if="data.item.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
@@ -92,17 +91,26 @@
                         </template>
 
                         <template #cell(group_type)="data">
-                            <b-badge variant="info" pill 
+                            <b-badge pill 
                                 :style="data.item.group_type === 'private' 
                                 ? { backgroundColor: '#fed06ea4', color: '#2c3e50' } 
-                                : {}"
+                                : { backgroundColor: '#C0ECF8', color: '#2c3e50' }"
                                 class="text-capitalize text-truncate">{{ data.item.group_type }}
                             </b-badge>
+                        </template>
+                        <template #cell(status)="data">
+                            <div class="d-flex align-items-center justify-content-center text-truncate "
+                                :class="data.item.status === 'done' ? 'text-success' : 'text-danger'"
+                            >
+                                <b-icon icon="dot" scale="3" :variant="data.item.status === 'done' ? 'success' : 'danger'"></b-icon>
+                                <span v-if="data.item.status === 'done'">เข้าร่วมกลุ่มแล้ว</span>
+                                <span v-else>รอการอนุมัติ</span>
+                            </div>
                         </template>
 
                         <template #cell(action)="data">
                             <!-- <b-row class="m-0 justify-content-end align-items-center"> -->
-                                <span class="fas fa-pen px-3 text-warning" v-b-tooltip.hover title="แก้ไขกลุ่ม"
+                                <span class="fas fa-pen px-3" v-b-tooltip.hover title="แก้ไขข้อมูล"
                                     @click="data.toggleDetails" size="sm"></span>
                                 <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                                     @click="linkToProfile(data.item)"></span>
@@ -115,10 +123,10 @@
                             <b-card class="text-left" style="max-height:400px;overflow-y:auto;">
                                 
                                 <ProfileEdit 
-                                    :profile="row.item" 
+                                    :item="row.item" 
                                     :influencerTypes="influencerTypes"
-                                    @close="row.toggleDetails();
-                                    apiGetCommunities()"
+                                    @close="row.toggleDetails()"
+                                    @updated="apiGetCommunities()"
                                 />
                             </b-card>
                         </template>
@@ -174,6 +182,7 @@ export default {
                 { key: 'source', label: 'source' },
                 { key: 'insert_timestamp', label: 'เวลาล่าสุด' },
                 { key: 'group_type', label: '' },
+                { key: 'status', label: '' },
                 { key: 'action', label: '' }
             ],
             communities: [],

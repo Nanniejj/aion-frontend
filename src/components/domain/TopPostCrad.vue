@@ -664,9 +664,13 @@
                 </b-collapse>
               </template>
             </b-card>
+
+           
           </b-col>
         </b-row>
       </span>
+       <!-- new post card -->
+        <!-- <PostCard :cards="getTopPostDomain"/> -->
     </div>
     <div v-else>
       <span> ไม่พบข้อมูล</span>
@@ -685,9 +689,10 @@ import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
 
+import PostCard from './PostCard.vue';
 import SummarizeCommentChart from "../chart/SummarizeCommentChart.vue";
 export default {
-  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart },
+  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart, PostCard },
   props: {
     tpyeCard: {
       type: String,
