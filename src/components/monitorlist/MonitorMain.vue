@@ -33,7 +33,7 @@
                             </span>
                         </div>
                     </b-button>
-                    <!-- <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'community' ? 'custom' : 'outline-custom'"
+                    <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'community' ? 'custom' : 'outline-custom'"
                         @click="selectButton('community')">
                         <div class="d-flex">
                             <b-icon icon="people-fill" font-scale="1.5"></b-icon> 
@@ -41,7 +41,7 @@
                                 Community
                             </span>
                         </div>
-                    </b-button> -->
+                    </b-button>
                 </b-button-group>
             </b-button-toolbar>
         </div>

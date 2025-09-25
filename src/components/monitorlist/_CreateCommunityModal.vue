@@ -21,17 +21,30 @@
                 <!-- body -->
                 <b-row class="my-1 mx-0 modal-body-scroll">
                     <b-col sm="12" class="px-0">
-                        <div>
-                            <b-alert show class="no-justify"
+                        <!-- <div> -->
+                            <b-alert show class="no-justify px-2 px-md-3"
                             >ตัวอย่างการใส่ข้อมูล <br/>
                             การเพิ่มกลุ่ม<b> ต้องเพิ่ม url ของ group เท่านั้น และไม่ต้องใส่ www.</b>
                             เช่น https://www.facebook.com/groups ให้ใส่ <b>https://facebook.com/groups/...</b></b-alert
                             >
-                        </div>
+                        <!-- </div> -->
                     </b-col>
                     <b-col sm="12" class="px-0" style="min-height: 400px;">
+                        <b-col cols="12" class="px-0">
+                            <b-form-group class="text-center align-items-md-right text-md-right mt-3 mt-sm-2 mt-xl-0 mb-0" v-slot="{ ariaDescribedby }">
+                                <b-form-radio-group
+                                    id="radio-group-2"
+                                    v-model="groupsType"
+                                    :aria-describedby="ariaDescribedby"
+                                    name="radio-sub-component"
+                                >
+                                    <b-form-radio :value="null">กำหนดเอง</b-form-radio>
+                                    <b-form-radio value="private">กลุ่มปิดทั้งหมด</b-form-radio>
+                                    <b-form-radio value="public">กลุ่มสาธารณะทั้งหมด</b-form-radio>
+                                </b-form-radio-group>
+                            </b-form-group>
+                        </b-col>
                         <label class="mt-3" for="textarea-default"><b>url บัญชี ({{ communities.length }})</b></label>
-                        <!-- :disabled="!selectSource" -->
                         <b-form-tags
                             input-id="tags-pills"
                             v-model="communities"
@@ -44,41 +57,41 @@
                             @tag-state="onTagState"
                             separator=" ,;"
                             remove-on-delete
-                    />
-                    <b-row v-if="targetLists.length > 0" class="m-0 mt-4">
-                        <b-col cols="12" class="px-0" v-for="(platform, platformName, i) in platforms" :key="'target- ' +i">
-                            <b class="mb-2 text-capitalize">{{ platformName }} ({{ platform.length }})</b>
-                            <hr class="my-2"/>   
-                            <b-row cols="1" cols-md="2" cols-xl="3" class="modal-body-scrollable mt-3 mx-0 px-0">
-                                <b-col v-for="(item, index) in platform" :key="index" class="mb-3 pl-0">
-                                    <b-card body-class="pt-2">
-                                        <b-row class="m-0 align-items-center">
-                                            <b-col cols="auto" class="px-0">
-                                                <b-avatar rounded="lg" variant="primary"  src="https://example.com/avatar.jpg"  class=""></b-avatar>
-                                            </b-col>
-                                            <b-col class="d-inline-block text-truncate pr-0" style="max-width: calc(100% - 50px);">
-                                                {{ item.URL }}
-                                                <b-row class="m-0 mt-2">
-                                                    <b-col cols="1" class="text-center px-0">
-                                                        <i class="fa fa-globe-asia" aria-hidden="true"></i>
-                                                    </b-col>
-                                                    <b-col class="pr-0">
-                                                        <b-form-select 
-                                                            v-model="item.group_type" 
-                                                            :options="[{text:'เลือกประเภทกลุ่ม', value:null},{text:'กลุ่มสาธารณะ', value:'public'}, {text:'กลุ่มปิด', value:'private'}]" 
-                                                            size="sm" class=""
-                                                            :state="item.group_type !== null"
-                                                        >
-                                                        </b-form-select>
-                                                    </b-col>
-                                                </b-row>
-                                            </b-col>
-                                        </b-row>
-                                    </b-card>
-                                </b-col>
-                            </b-row>
-                        </b-col>
-                    </b-row>
+                        />
+                        <b-row v-if="targetLists.length > 0" class="m-0 mt-4">
+                            <b-col cols="12" class="px-0" v-for="(platform, platformName, i) in platforms" :key="'target- ' +i">
+                                <b class="mb-2 text-capitalize">{{ platformName }} ({{ platform.length }})</b>
+                                <hr class="my-2"/>   
+                                <b-row cols="1" cols-md="2" cols-xl="3" class="modal-body-scrollable mt-3 mx-0 px-0">
+                                    <b-col v-for="(item, index) in platform" :key="index" class="mb-3 pl-0">
+                                        <b-card body-class="pt-2">
+                                            <b-row class="m-0 align-items-center">
+                                                <b-col cols="auto" class="px-0">
+                                                    <b-avatar rounded="lg" variant="primary"  src="https://example.com/avatar.jpg"  class=""></b-avatar>
+                                                </b-col>
+                                                <b-col class="d-inline-block text-truncate pr-0" style="max-width: calc(100% - 50px);">
+                                                    {{ item.URL }}
+                                                    <b-row class="m-0 mt-2">
+                                                        <b-col cols="1" class="text-center px-0">
+                                                            <i class="fa fa-globe-asia" aria-hidden="true"></i>
+                                                        </b-col>
+                                                        <b-col class="pr-0">
+                                                            <b-form-select 
+                                                                v-model="item.group_type" 
+                                                                :options="[{text:'เลือกประเภทกลุ่ม', value:null},{text:'กลุ่มสาธารณะ', value:'public'}, {text:'กลุ่มปิด', value:'private'}]" 
+                                                                size="sm" class=""
+                                                                :state="item.group_type !== null"
+                                                            >
+                                                            </b-form-select>
+                                                        </b-col>
+                                                    </b-row>
+                                                </b-col>
+                                            </b-row>
+                                        </b-card>
+                                    </b-col>
+                                </b-row>
+                            </b-col>
+                        </b-row>
                     </b-col>
                 </b-row>
     
@@ -101,7 +114,6 @@
                         </b-button>
                     </b-col>
                 </b-row>
-
              </b-col>
         </vue-modaltor>
     </div>
@@ -109,19 +121,12 @@
 
 <script>
 // import CardInput from "./_CardInput.vue";
-import { reset } from 'numeral';
 import Swal from 'sweetalert2'
 export default {
-    components: {
-
-    },
-    props: {
-
-    },
-
     data() {
         return {
             open: false,
+            groupsType: null,
             validTags: [],
             invalidTags: [],
             duplicateTags: [],
@@ -152,17 +157,16 @@ export default {
     },
     computed: {
         isReadyToSave() {
-            if (this.targetLists.length === 0) return false; // ❌ ถ้าไม่มี item เลย
-            // วนลูปเช็คทุก platform
+            if (this.targetLists.length === 0) return false; 
             for (const platformName in this.platforms) {
-            const platform = this.platforms[platformName];
-            for (const item of platform) {
-                if (!item.group_type) {
-                return false; // ❌ ถ้ามี item ที่ยังไม่เลือก
+                const platform = this.platforms[platformName];
+                for (const item of platform) {
+                    if (!item.group_type) {
+                    return false; 
+                    }
                 }
             }
-            }
-            return true; // ✅ ทุก item เลือกแล้ว
+            return true;
         }
     },
     methods: {
@@ -170,6 +174,7 @@ export default {
             this.open = false;
         },
         clear() {
+            this.groupsType = null;
             this.communities = [];
             this.targetLists = [];
             Object.keys(this.platforms).forEach(p => {
@@ -239,7 +244,7 @@ export default {
             if (invalidTags.length > 0) {
                 Swal.fire({
                     icon: "warning",
-                    title: "บาง URL ไม่ใช่ Facebook Group",
+                    title: "พบ URL ไม่ใช่ Facebook Group",
                     html: invalidTags.join("<br>"),
                     showConfirmButton: true,
                     didOpen: () => {
@@ -276,7 +281,7 @@ export default {
                     name: null,
                     key: "account",
                     target_type: "group",
-                    group_type: null,
+                    group_type: this.groupsType,
                 };
             });
             console.log("newEntries === ", newEntries);
@@ -331,19 +336,12 @@ export default {
                 }
             })
         },
-        // resetTargetList() {
-        //     this.communities = [];
-        //     this.targetLists = [];
-        //     Object.keys(this.platforms).forEach(p => {
-        //         this.platforms[p] = [];
-        //     });
-        // },
         async apiAddCommunity() {
             let rawData = {
                 "data": this.targetLists
             }
             // console.log(this.communities);
-            console.log("raw === ", rawData);
+            // console.log("raw === ", rawData);
             const config = {
                 method: "post",
                 url: "https://api2.cognizata.com/api/v2/monitor/targetandhashtag",
@@ -355,29 +353,29 @@ export default {
             };
             console.log(config);
             this.axios(config)
-                .then((response) => {
-                    console.log(response);
-                    let result = response.data || [];
+            .then((response) => {
+                console.log(response);
+                let result = response.data || [];
 
-                    this.clear();
-                    this.$emit("close");
-                    this.hideModal();
-                    Swal.fire({
-                        title: 'บันทึกแล้ว!',
-                        text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อย',
-                        icon: 'success',
-                        // confirmButtonText: 'ตกลง',
-                        // customClass: {
-                        //     confirmButton: 'btn btn-success'
-                        // },
-                        showConfirmButton: false,
-                        timer: 3000,
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        buttonsStyling: false
-                    });
-                })
-                .catch((error) => {
+                this.clear();
+                this.$emit("close");
+                this.hideModal();
+                Swal.fire({
+                    title: 'บันทึกแล้ว!',
+                    text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อย',
+                    icon: 'success',
+                    // confirmButtonText: 'ตกลง',
+                    // customClass: {
+                    //     confirmButton: 'btn btn-success'
+                    // },
+                    showConfirmButton: false,
+                    timer: 3000,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    buttonsStyling: false
+                });
+            })
+            .catch((error) => {
                     Swal.fire({
                         title: 'บันทึกไม่สำเสร็จ',
                         text: error,
@@ -395,6 +393,22 @@ export default {
     },
     async mounted() {
 
+    },
+    watch: {
+        groupsType() {
+            // if (this.groupsType !== null) {
+            for (const platformName in this.platforms) {
+                const platform = this.platforms[platformName];
+                for (const item of platform) {
+                    item.group_type = this.groupsType;
+                }
+            }
+
+            // this.targetLists.forEach(item => {
+            //     item.group_type = this.groupsType;
+            // });
+            // }
+        }
     },
 };
 </script>

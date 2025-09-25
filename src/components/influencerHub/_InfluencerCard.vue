@@ -115,22 +115,23 @@ export default {
                 { text: "กฎหมายและที่ปรึกษา", value: "legal_consulting" },
                 { text: "ความงาม / สุขภาพ / ไลฟ์สไตล์", value: "lifestyle" },
                 { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" },
-                
             ],
             speciesTypes:[
                 { text: 'บุคคลทั่วไป', value: 'people' },
+                { text: 'นักการเมือง', value: 'politician' },
                 { text: 'ดารา / นักแสดง / ศิลปิน', value: 'actor' },
                 { text: 'ผู้เชี่ยวชาญ', value: 'expert' },
                 { text: 'สัตว์เลี้ยง', value: 'pet' },
                 { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
                 { text: 'องค์กร / บริษัท', value: 'company' },
+                { text: 'หน่วยงานราชการ', value: 'government' },
                 { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
                 { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
                 { text: 'เด็ก / ทารก', value: 'kid' },
                 { text: 'คู่รัก / ครอบครัว', value: 'family' },
                 { text: 'สัตว์ธรรมชาติ / สัตว์ป่า', value: 'wild_animal' },
                 { text: 'ไม่ระบุ', value: 'nolabel' }
-            ]
+            ],
         }
     },
     methods: {

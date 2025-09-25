@@ -16,6 +16,7 @@
                             :aria-describedby="ariaDescribedby"
                             name="radio-sub-component"
                         >
+                            <b-form-radio :value="null">ทั้งหมด</b-form-radio>
                             <b-form-radio v-for="item in options" :key="'item - ' + item.text" :value="item.value">{{item.text}}</b-form-radio>
                         </b-form-radio-group>
                     </b-form-group>
@@ -99,13 +100,14 @@
                             </b-badge>
                         </template>
                         <template #cell(status)="data">
-                            <div class="d-flex align-items-center justify-content-center text-truncate "
-                                :class="data.item.status === 'done' ? 'text-success' : 'text-danger'"
+                            <b-row class="align-items-center justify-content-center text-truncate "
+                                :class="data.item.group_status === 'done' ? 'text-success' : 'text-danger'"
                             >
-                                <b-icon icon="dot" scale="3" :variant="data.item.status === 'done' ? 'success' : 'danger'"></b-icon>
-                                <span v-if="data.item.status === 'done'">เข้าร่วมกลุ่มแล้ว</span>
-                                <span v-else>รอการอนุมัติ</span>
-                            </div>
+                                <b-icon icon="dot" scale="3" :variant="data.item.group_status === 'done' ? 'success' : 'danger'"></b-icon>
+                                <span v-if="data.item.group_status === 'done'">เข้ากลุ่มแล้ว</span>
+                                <span v-else>รอเข้ากลุ่ม</span>
+                                <!-- {{data.item.group_status}} -->
+                            </b-row>
                         </template>
 
                         <template #cell(action)="data">
@@ -121,7 +123,6 @@
                         <!-- แถวรายละเอียด -->
                         <template #row-details="row">
                             <b-card class="text-left" style="max-height:400px;overflow-y:auto;">
-                                
                                 <ProfileEdit 
                                     :item="row.item" 
                                     :influencerTypes="influencerTypes"
@@ -164,7 +165,7 @@ export default {
         return {
             loading: false,
             search: '',
-            group_type: '',
+            group_type: null,
             pagination: {
                 totalCount: 0,
                 totalPages: 1,
@@ -172,7 +173,7 @@ export default {
                 limit: 10
             },
             options: [
-                { text: 'ทั้งหมด', value: '' },
+                // { text: 'ทั้งหมด', value: null },
                 { text: 'กลุ่มปิด', value: 'private' },
                 { text: 'กลุ่มสาธารณะ', value: 'public' }
             ],

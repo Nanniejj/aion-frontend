@@ -65,7 +65,8 @@
                                 </a> 
                                 <a v-else class="d-flex align-items-center justify-content-center" v-bind:href="profile.link_original" target="_blank"
                                     style="color: #776167;"> 
-                                    <h4 class="py-2 mb-0 text-truncate">{{ profile.name || data.account_name || profile.uid }}</h4>
+                                    <h4 v-if="profile.target_type === 'group'" class="py-2 mb-0 text-truncate">{{ profile.name || profile.uid }}</h4>
+                                    <h4 v-else class="py-2 mb-0 text-truncate">{{ profile.name || data.account_name || profile.uid }}</h4>
                                     <i class="fa fa-external-link text-info mx-1" v-if="type == 'targetlist'" />
                                 </a> 
                             </div>
@@ -859,6 +860,7 @@ export default {
             influencerTypes:[],
             speciesTypes:[
                 { text: 'บุคคลทั่วไป', value: 'people' },
+                { text: 'นักการเมือง', value: 'politician' },
                 { text: 'ดารา / นักแสดง / ศิลปิน', value: 'actor' },
                 { text: 'ผู้เชี่ยวชาญ', value: 'expert' },
                 { text: 'สัตว์เลี้ยง', value: 'pet' },
