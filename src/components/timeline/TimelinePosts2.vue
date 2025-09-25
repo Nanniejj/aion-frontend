@@ -1,6 +1,6 @@
 <template>
-  <div class="timeline-wrapper" >
-<!-- <SnapshotButton
+  <div class="timeline-wrapper">
+    <!-- <SnapshotButton
       :getTargetEl="() => $refs['timeline-wrapper']"
       filenamePrefix="timeline"
       format="png"             
@@ -17,9 +17,9 @@
       <!-- โหมดรายวัน -->
       <!-- {{ isDaily }} {{ mode }} -->
       <template v-if="isDaily">
-      
+
         <div v-for="(day, idx) in items" :key="day.date || idx" class="timeline-item d-flex">
-            <!-- {{ day.date }} -->
+          <!-- {{ day.date }} -->
           <div class="timeline-dot">
             <!-- {{ day.date }} -->
             <span class="h4 date-label bold" v-if="sort !== 'engagement'">
@@ -76,7 +76,7 @@
                   title="สลับโพสต์"></i>
                 <span class="ml-2 small ">
                   <!-- {{ day.countShown }} /  -->
-                 <b> {{ day.countTotal | numFormat }}</b> โพสต์
+                  <b> {{ day.countTotal | numFormat }}</b> โพสต์
                   <!-- <span v-if="day._hasMore">(+)</span> -->
                 </span>
                 <!-- <span class="ml-2 small text-muted">
@@ -102,7 +102,7 @@
 
       <!-- โหมดปกติ (ตามโพสต์) -->
       <template v-else>
-        <div class="text-right allpost"> ทั้งหมด <b>{{ count|| 0 | numFormat }} </b>  โพสต์</div>
+        <div class="text-right allpost"> ทั้งหมด <b>{{ count || 0 | numFormat }} </b> โพสต์</div>
         <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
           <!-- {{ items }} -->
           <div class="timeline-dot">
@@ -152,7 +152,7 @@ import "moment/locale/th";
 import CardPostSlider from "./CardPostSlider";
 import CardPost from "./CardPost.vue";
 import CardTitle from "./CardTitle.vue";
-import SnapshotButton  from './SnapshotButton.vue'
+import SnapshotButton from './SnapshotButton.vue'
 
 // import 'moment-timezone'   // ต้องมีถ้าจะใช้ .tz()
 export default {
@@ -215,12 +215,12 @@ export default {
   },
   methods: {
     baseMoment(date) {
-    // ถ้าในโหมด daily ไม่ต้องปรับเวลา (ใช้วันที่ล้วน)
-    // ถ้าโหมดโพสต์ ปรับตามเดิมที่คุณต้องการ (-7 ชั่วโมง) หรือเปลี่ยนเป็น .utc().local() ก็ได้
-    return this.isDaily ? moment(date) : moment(date).subtract(7, 'hours');
-    // ตัวเลือกที่แม่นกว่า ถ้าแหล่งข้อมูลเป็น UTC เสมอ:
-    // return this.isDaily ? moment.utc(date).local() : moment.utc(date).local();
-  },
+      // ถ้าในโหมด daily ไม่ต้องปรับเวลา (ใช้วันที่ล้วน)
+      // ถ้าโหมดโพสต์ ปรับตามเดิมที่คุณต้องการ (-7 ชั่วโมง) หรือเปลี่ยนเป็น .utc().local() ก็ได้
+      return this.isDaily ? moment(date) : moment(date).subtract(7, 'hours');
+      // ตัวเลือกที่แม่นกว่า ถ้าแหล่งข้อมูลเป็น UTC เสมอ:
+      // return this.isDaily ? moment.utc(date).local() : moment.utc(date).local();
+    },
     numFormat(n) {
       if (!n) return 0;
       if (n < 1e3) return n;
@@ -308,7 +308,6 @@ export default {
 </script>
 
 <style scoped>
-
 .story-ring {
   display: inline-flex;
   padding: 3px;
@@ -409,9 +408,10 @@ h5 {
 
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
- .allpost{
-  font-size: 13px;
- }
+  .allpost {
+    font-size: 13px;
+  }
+
   .timeline-dot {
     width: 30px;
     margin-right: 3px;

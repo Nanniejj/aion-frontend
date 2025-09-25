@@ -496,7 +496,7 @@ const routes = [
       )
   },
   {
-    path: "/searchphoto",
+    path: "/searchimage",
     name: "SearchImg",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -504,6 +504,17 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "targetprofile" */ "../views/SearchImg.vue"
+      )
+  },
+  {
+    path: "/searchimage/post",
+    name: "SearchImgPost",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/SearchImgPost.vue"
       )
   },
    // {
