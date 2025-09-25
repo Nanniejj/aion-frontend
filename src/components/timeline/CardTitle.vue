@@ -47,6 +47,8 @@
           <div class=" read-m mt-md-2 pb-1" v-if="post.full_text">
             <ReadMoreBox :item="{ title: post.full_text.replace('...___...', '') }" :maxHeight="'90px'" />
           </div>
+          <div v-else> <br> </div>
+          
           <div class="bold small text-muted position-absolute mt-1 text-left w-100"
             style="bottom: -8px; left: 1px; background-color: white">
             <span class="d-inline-block box-link" @click="$emit('goPost', { post, type: 'engages' })">
@@ -190,6 +192,7 @@ export default {
 }
 
 .read-m {
+    
   max-height: 200px;
   overflow-y: auto;
 }
@@ -202,6 +205,7 @@ export default {
 }
 
 .card-sd {
+  
   border: 0px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
     rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
