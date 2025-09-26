@@ -55,11 +55,11 @@ export default {
                     fontFamily: 'Prompt, sans-serif'
                 },
                 labels: [
+                    "เป็นกลาง",
                     "เห็นด้วย",
                     "ไม่เห็นด้วย",
-                    "เป็นกลาง",
                 ],
-                colors:  ['#54c69d', '#f7776a', '#3a86ad'],
+                colors:  ['#3a86ad','#54c69d', '#f7776a'],
                 stroke: { colors: ['#fff'] },
                 fill: { opacity: 1 },
                 dataLabels: {

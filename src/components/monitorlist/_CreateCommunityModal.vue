@@ -21,13 +21,11 @@
                 <!-- body -->
                 <b-row class="my-1 mx-0 modal-body-scroll">
                     <b-col sm="12" class="px-0">
-                        <!-- <div> -->
-                            <b-alert show class="no-justify px-2 px-md-3"
-                            >ตัวอย่างการใส่ข้อมูล <br/>
+                        <b-alert show class="no-justify px-2 px-md-3">
+                            ตัวอย่างการใส่ข้อมูล <br/>
                             การเพิ่มกลุ่ม<b> ต้องเพิ่ม url ของ group เท่านั้น และไม่ต้องใส่ www.</b>
-                            เช่น https://www.facebook.com/groups ให้ใส่ <b>https://facebook.com/groups/...</b></b-alert
-                            >
-                        <!-- </div> -->
+                            เช่น https://www.facebook.com/groups ให้ใส่ <b>https://facebook.com/groups/...</b>
+                        </b-alert>
                     </b-col>
                     <b-col sm="12" class="px-0" style="min-height: 400px;">
                         <b-col cols="12" class="px-0">
@@ -83,6 +81,20 @@
                                                                 :state="item.group_type !== null"
                                                             >
                                                             </b-form-select>
+                                                        </b-col>
+                                                    </b-row>
+                                                    <b-row class="m-0 mt-2">
+                                                        <b-col cols="1" class="text-center px-0">
+                                                            <i class="fas fa-robot" aria-hidden="true"></i>
+                                                        </b-col>
+                                                        <b-col class="pr-0">
+                                                            <b-form-select
+                                                                size="sm"
+                                                                class="input"
+                                                                :options="[{ value: null, text: 'เลือกระดับความถี่การเก็บข้อมูล' },1,2,3]"
+                                                                v-model="item.bot_level"
+                                                                placeholder="เลือกระดับความถี่การเก็บข้อมูล"
+                                                            />
                                                         </b-col>
                                                     </b-row>
                                                 </b-col>
@@ -277,7 +289,7 @@ export default {
                     URL: tag,
                     source: platform,
                     editable: false,
-                    bot_level: 1,
+                    bot_level: null,
                     name: null,
                     key: "account",
                     target_type: "group",

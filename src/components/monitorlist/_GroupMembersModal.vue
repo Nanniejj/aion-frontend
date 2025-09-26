@@ -19,24 +19,23 @@
                 <hr />
             </b-col>
 
-
             <!-- body -->
             <b-row cols="2" cols-sm="3" cols-md="4" class="m-0 modal-body-scrollable p-0">
                 <!-- create new Groups dashed-border-->
                 <b-col v-for="target in targetlist" :key="target.id" class="px-0 mb-3">
                     <b-row class="m-0 text-center align-items-center">
                         <b-col cols="12" class="px-1 mb-2">
-                            <b-avatar style="cursor: pointer;" :src="target.image">
-                                <img @click="linkToProfile(target)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'news'" src="@/assets/News.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
-                                <img @click="linkToProfile(target)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                            <b-avatar button @click="linkToProfile(target)" style="cursor: pointer;" :src="target.profile_image">
                             </b-avatar>
+                            <img v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
+                            <img v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
+                            <img v-if="target.source == 'pantip'" src="@/assets/board.png" class="social-img" />
+                            <img v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
+                            <img v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
+                            <img v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
+                            <img v-if="target.source == 'news'" src="@/assets/News.png" class="social-img" />
+                            <img v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
+                            <img v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
                             
                         </b-col>
                         <b-col class="text-truncate">
@@ -188,7 +187,7 @@ export default {
         /* เผื่อขนาด scrollbar */
     }
     .social-img {
-        width: 45px;
+        width: 25px;
     }
     .gradient-bg {
         background: linear-gradient(90deg, #fed06ea4, #ffe6e6);

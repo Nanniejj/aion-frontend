@@ -42,51 +42,57 @@
                     <vue-element-loading :active="loading" size="80" 
                     background-color="rgba(255, 255, 255, 0.3)" 
                     color="#ede7dd" />
-
+                    <!-- thead-class="d-none" -->
                     <b-table 
                         ref="table" v-if="communities.length !== 0" show-details :items="communities || []" :fields="fields" hover
                         responsive :busy="loading" :striped="false"
                         :bordered="false" :borderless="false" :outlined="false" empty-filtered-text="ไม่พบข้อมูล"
-                        :small="false" thead-class="d-none" stacked="md">
+                        :small="false" stacked="md">
                         <template #cell(id)="data">
                             {{ data.index + 1 + (pagination.currentPage - 1) * pagination.limit }}
                         </template>
 
                         <template #cell(name)="data">
                             <div class="d-flex justify-content-start align-items-center" >
-                                <span class="mr-2">
+                                <b-col cols="auto" class="mr-2">
                                     <b-avatar :src="data.item.profile_image"
                                         v-if="data && data.item && data.item.profile_image">
                                     </b-avatar>
                                     <b-avatar :src="data.item.profile_image" v-else> </b-avatar>
-                                </span>
-                                <span class="text-truncate d-sm-none d-lg-block w-auto">
+                                    <img v-if="data.item.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
+                                    <img v-if="data.item.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
+                                    <img v-if="data.item.source == 'pantip'" src="@/assets/board.png" class="social-img" />
+                                    <img v-if="data.item.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
+                                    <img v-if="data.item.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
+                                    <img v-if="data.item.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
+                                    <img v-if="data.item.source == 'news'" src="@/assets/News.png" class="social-img" />
+                                    <img v-if="data.item.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
+                                    <img v-if="data.item.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                                <!-- <a :href="data.item.link_original" target="_blank" class="mx-2 text-truncate d-inline-block"
+                                    style="color: #2c3e50 !important;">
+                                    {{ data.item.uid }}
+                                </a> -->
+                                </b-col>
+                                <!-- <span class="text-truncate d-sm-none d-lg-block w-auto">
                                     {{ data.item.name || data.item.uid }}
                                 </span>
                                 <span class="text-truncate d-none d-sm-inline-block d-lg-none" style="max-width: 100px;">
                                     {{ data.item.name || data.item.uid }}
-                                </span>
-                            </div>
-                        </template>
-
-                        <template #cell(source)="data">
-                            <div class="small d-flex align-items-center pr-0 w-auto">
-                                <img v-if="data.item.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
-                                <img v-if="data.item.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
-                                <img v-if="data.item.source == 'pantip'" src="@/assets/board.png" class="social-img" />
-                                <img v-if="data.item.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
-                                <img v-if="data.item.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
-                                <img v-if="data.item.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
-                                <img v-if="data.item.source == 'news'" src="@/assets/News.png" class="social-img" />
-                                <img v-if="data.item.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
-                                <img v-if="data.item.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
-                                <a :href="data.item.link_original" target="_blank" class="mx-2 text-truncate d-inline-block"
+                                </span> -->
+                                <a :href="data.item.link_original" target="_blank" class="text-truncate d-sm-none d-lg-block w-auto"
                                     style="color: #2c3e50 !important;">
-                                    {{ data.item.uid }}
+                                   {{ data.item.name || data.item.uid }}
+                                </a>
+                                <a :href="data.item.link_original" target="_blank" class="text-truncate d-none d-sm-inline-block d-lg-none"
+                                    style="color: #2c3e50 !important;">
+                                   {{ data.item.name || data.item.uid }}
                                 </a>
                             </div>
                         </template>
 
+                        <template #cell(followers)="data">
+                            <span class="small"> {{ formatNumber(data.item.followers) }}</span>
+                        </template>
                         <template #cell(insert_timestamp)="data">
                             <span class="small"> {{ formatDate(data.item.insert_timestamp) }}</span>
                         </template>
@@ -99,8 +105,8 @@
                                 class="text-capitalize text-truncate">{{ data.item.group_type }}
                             </b-badge>
                         </template>
-                        <template #cell(status)="data">
-                            <b-row class="align-items-center justify-content-center text-truncate "
+                        <template #cell(status)="data" v-if="username == 'adminatapy'">
+                            <b-row v-if="data.item.group_type === 'private'" class="align-items-center justify-content-center text-truncate "
                                 :class="data.item.group_status === 'done' ? 'text-success' : 'text-danger'"
                             >
                                 <b-icon icon="dot" scale="3" :variant="data.item.group_status === 'done' ? 'success' : 'danger'"></b-icon>
@@ -112,7 +118,7 @@
 
                         <template #cell(action)="data">
                             <!-- <b-row class="m-0 justify-content-end align-items-center"> -->
-                                <span class="fas fa-pen px-3" v-b-tooltip.hover title="แก้ไขข้อมูล"
+                                <span v-if="username == 'adminatapy'" class="fas fa-pen px-3" v-b-tooltip.hover title="แก้ไขข้อมูล"
                                     @click="data.toggleDetails" size="sm"></span>
                                 <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                                     @click="linkToProfile(data.item)"></span>
@@ -178,9 +184,10 @@ export default {
                 { text: 'กลุ่มสาธารณะ', value: 'public' }
             ],
             fields: [
-                { key: 'id', label: 'No.' },
-                { key: 'name', label: 'name' },
-                { key: 'source', label: 'source' },
+                { key: 'id', label: 'ลำดับ' },
+                { key: 'name', label: 'ชื่อกลุ่ม' },
+                // { key: 'source', label: 'แหล่งที่มา' },
+                { key: 'followers', label: 'สมาชิก' },
                 { key: 'insert_timestamp', label: 'เวลาล่าสุด' },
                 { key: 'group_type', label: '' },
                 { key: 'status', label: '' },
@@ -188,9 +195,22 @@ export default {
             ],
             communities: [],
             influencerTypes: [],
+            username: "",
         }
     },
     methods: {
+        formatNumber(num) {
+            if (num == null) {
+                return '0';
+            }
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            }
+            return num.toString();
+        },
         linkToProfile(item) {
             const routeData = this.$router.resolve({
                 name: "MonitorProfile",
@@ -216,19 +236,33 @@ export default {
             this.pagination.currentPage = 1;
             this.apiGetCommunities();
         },
+        // formatDate(dateStr) {
+        //     const date = new Date(dateStr);
+        //     const day = String(date.getDate()).padStart(2, '0');
+        //     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        //     const year = date.getFullYear();
+
+        //     let hours = date.getHours();
+        //     const minutes = String(date.getMinutes()).padStart(2, '0');
+        //     const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        //     const ampm = hours >= 12 ? 'PM' : 'AM';
+        //     hours = hours % 12 || 12; // Convert 0 -> 12
+        //     const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+        //     return `${day}/${month}/${year} , ${formattedTime}`;
+        // },
         formatDate(dateStr) {
             const date = new Date(dateStr);
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
             const year = date.getFullYear();
 
-            let hours = date.getHours();
+            const hours = String(date.getHours()).padStart(2, '0'); // 24-hour format
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const seconds = String(date.getSeconds()).padStart(2, '0');
 
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; // Convert 0 -> 12
-            const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+            const formattedTime = `${hours}:${minutes}:${seconds}`;
 
             return `${day}/${month}/${year} , ${formattedTime}`;
         },
@@ -364,6 +398,7 @@ export default {
         },
     },
     async mounted() {
+        this.username = localStorage.getItem("username");
         this.apiGetInfluencerType();
         await this.apiGetCommunities();
         await this.getPreview();
@@ -378,7 +413,12 @@ export default {
 </script>
 <style scoped>
 .social-img {
-    width: 35px;
+    position: absolute;
+    width: 25px;
+    bottom: 0%;
+    left: 20%;
+    /* margin-top: 15px; */
+    /* left: 9%; */
 }
 
 .boxlist-card {

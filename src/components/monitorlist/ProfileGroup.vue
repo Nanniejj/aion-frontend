@@ -24,17 +24,17 @@
                     <b-col v-for="target in groupDetails.targetlist.slice(0, 5)" :key="target.id" class="px-0 mb-3">
                         <b-row class="m-0 text-center align-items-center">
                             <b-col style="cursor: pointer;" @click="linkToProfile(target)"  cols="12" class="px-1 mb-2">
-                               <b-avatar :src="target.image">
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
-                                    <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
-                                </b-avatar>
+                               <b-avatar :src="target.profile_image">
+                            </b-avatar>
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
+                            <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
                                 <!-- <b-avatar
                                     v-if="groupDetails.targetlist.length > 5"
                                     :text="'+' + (groupDetails.targetlist.length - 5)"
@@ -528,7 +528,7 @@ export default {
 
 <style scoped>
     .social-img {
-        width: 45px;
+        width: 25px;
     }
     .gradient-bg {
         background: linear-gradient(90deg, #fed06ea4, #ffe6e6);

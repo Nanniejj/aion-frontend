@@ -60,32 +60,23 @@
                 </template>
 
                 <template #cell(source)="data">
-                    <!-- {{ data.item.targetlist }} -->
                     <b-avatar-group size="40px">
-                        <b-avatar v-for="(target, index) in data.item.targetlist.slice(0, 4)" :key="index"
-                            :src="target.image">
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'"
-                                src="@/assets/Facebook.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'"
-                                src="@/assets/Twitter.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'"
-                                src="@/assets/board.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'"
-                                src="@/assets/Blockdit.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'"
-                                src="@/assets/Instagram.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'"
-                                src="@/assets/Youtube.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'news'"
-                                src="@/assets/News.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'"
-                                src="@/assets/Tiktok.png" class="social-img" />
-                            <img @click="openLink(target.link_original)" v-if="target.source == 'threads'"
-                                src="@/assets/Threads.png" class="social-img" />
+                        <b-avatar 
+                            v-for="(target, index) in data.item.targetlist.slice(0, 4)" 
+                            :key="index"
+                            :src="target.profile_image"
+                            button
+                            @click="openMembersDetails(data.item)"
+                        >
                         </b-avatar>
+
                         <!-- ถ้าเกิน 5 ตัว ให้แสดง Avatar +เพิ่มอีก n -->
-                        <b-avatar v-if="data.item.targetlist.length > 4" :text="'+' + (data.item.targetlist.length - 4)"
-                            variant="secondary"></b-avatar>
+                        <b-avatar button @click="openMembersDetails(data.item)" v-if="data.item.targetlist.length > 4" :text="'+' + (data.item.targetlist.length - 4)"
+                            variant="secondary">
+                        </b-avatar>
+                        <!-- <b-avatar v-else button @click="openMembersDetails(data.item)" text="+"
+                            variant="secondary">
+                        </b-avatar> -->
                     </b-avatar-group>
                 </template>
                 <template #cell(type)="data">
@@ -100,7 +91,7 @@
                     <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="เพิ่มสมาชิกกลุ่ม"
                         @click="toggleDetails(data)" size="sm"></span>
                     <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
-                        @click="linkToProfile(data.item)"></span>
+                        @click="linkToProfileGroup(data.item)"></span>
                     <span class="fas fa-trash text-danger" v-b-tooltip.hover title="ลบกลุ่ม"
                         @click="deleteGroup(data.item.group_id)" size="sm"></span>
                 </template>
@@ -321,6 +312,8 @@
 
         <EditGroupModal :groupData="selectedGroup" :openModal="openEditGroupModal" @close="closeEditGroup"
             @update-group="apiMonitorGroupList" />
+        <GroupMembers :groupName="groupDetails.group_name" :openModal="openMembersModal" :targetlist="groupDetails.targetlist" @close="openMembersModal = false"/>
+        
     </div>
 </template>
 
@@ -331,6 +324,7 @@ import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
 import CreateGroupModal from "./_CreateGroupModal.vue";
 import EditGroupModal from "./_EditGroupModal.vue";
 // import MissingTargets from "./MissingTargets.vue";
+import GroupMembers from './_GroupMembersModal.vue';
 
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
@@ -340,6 +334,7 @@ export default {
         CreateMonitor,
         CreateGroupModal,
         EditGroupModal,
+        GroupMembers,
         // ImportPlatform,
         // MissingTargets,
     },
@@ -348,9 +343,11 @@ export default {
     },
     data() {
         return {
+            groupDetails: {},
             newTarget: {link_original: "", source: null},
             // openRowId: null, // เก็บ ID ของแถวที่เปิดอยู่
             openEditGroupModal: false,
+            openMembersModal: false,
             expandedRow: null,
             expandedRowData: null, // เก็บ data object ของแถวที่เปิด
             load: false,
@@ -445,6 +442,24 @@ export default {
         }
     },
     methods: {
+        linkToProfile(item) {
+            const routeData = this.$router.resolve({
+                name: "MonitorProfile",
+                query: {
+                    id: item._id,
+                    uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
+                    source: item.source,
+                    type: 'targetlist'
+                },
+            });
+            window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
+        },
+        openMembersDetails(item) {
+            console.log("item === ", item);
+            
+            this.groupDetails = item;
+            this.openMembersModal = true;
+        },
         openEditGroup(item) {
             this.selectedGroup = item;
             this.openEditGroupModal = true;
@@ -575,7 +590,7 @@ export default {
             this.currentPageTarget = page;
             this.apiMonitorList();
         },
-        linkToProfile(item) {
+        linkToProfileGroup(item) {
             const routeData = this.$router.resolve({
                 name: "GroupProfile",
                 query: {
@@ -868,6 +883,7 @@ export default {
     },
     async mounted() {
         this.filters.type = this.type;
+        
     }
 };
 
@@ -956,7 +972,7 @@ export default {
 }
 
 .social-img {
-    width: 45px;
+    width: 25px;
 }
 
 .fa-trash,

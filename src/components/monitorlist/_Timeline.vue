@@ -63,17 +63,17 @@
                         </b-row>
                         <b-row v-else class="m-0 align-items-center">
                             <b-col cols="auto" class="p-0 text-left">
-                                <b-avatar v-bind:href="item.account_url" class="" size="45px" :src="item.image">
-                                    <img v-if="item.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                    <img v-if="item.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                <b-avatar v-bind:href="item.account_url" class="" size="45px" :src="item.profile_image">
                                 </b-avatar>
+                                <img v-if="item.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                                <img v-if="item.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                                <img v-if="item.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                                <img v-if="item.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                                <img v-if="item.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                                <img v-if="item.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                                <img v-if="item.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                                <img v-if="item.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                                <img v-if="item.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
                             </b-col>
                             <b-col class="mb-0 text-info text-left">
                                 <!-- <a v-bind:href="item.account_url" class="text-info">
@@ -84,14 +84,12 @@
                                 </a> 
                             </b-col>
                         </b-row>
-                        <b-button v-if="!isThai(item.full_text)" 
+                        <!-- <b-button v-if="!isThai(item.full_text)" 
                             class="zigzag-btn p-2"  
                             @click="translateToThai(item.full_text)" size="sm">
                            <img width="25" height="25" src="https://img.icons8.com/?size=100&id=ISUnogtpbXDv&format=png" />
-                            <!-- <span class="ml-2">
-                                ตรวจสอบข้อมูล
-                            </span> -->
-                        </b-button>
+                            
+                        </b-button> -->
                         
                         <!-- <b-icon :icon="item.icon" font-scale="1.5" class="mr-2"></b-icon> -->
                     </template>
@@ -437,8 +435,11 @@ export default {
     margin: 2px;
     display: block;        /* ป้องกันการมี inline-gap */
 }
-.platform-imgs {
-    width: 45px;
+.platform-imgs{
+    right: -10px;
+    bottom: 0;
+    width: 25px;
+    position: absolute;
 }
 .sort-btn{
     background: linear-gradient(90deg,#FDD071 0%, #ffbcbc 100%);

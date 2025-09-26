@@ -22,7 +22,7 @@
             </b-col>
         </b-row>
         <div class="col-12 px-0 pb-3">
-            <b-row cols="1" cols-md="2" cols-lg="3" class="mx-0">
+            <b-row cols="1" cols-md="2" cols-lg="4" class="mx-0">
                 <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
@@ -40,13 +40,12 @@
                     </b-row>
                 </b-col>
 
-                <b-col class="px-0 px-md-1 mb-2">
+                <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fas fa-image mr-1"/>
                             url ที่อยู่รูปโปรไฟล์  
                             <i
-                                
                                 class="fa fa-exclamation-circle mx-1 text-info"
                                 v-b-tooltip.hover
                                 title="คลิกขวาที่รูปโปรไฟล์ เลือก 'คัดลอกที่อยู่รูปภาพ' หรือ 'Copy image address' แล้ววางที่นี่"
@@ -62,7 +61,7 @@
                             />
                         </div>
                     </b-row>
-                </b-col>
+                </b-col> -->
                 <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
@@ -80,6 +79,46 @@
                                 ]"
                                 v-model="profile.group_type"
                                 placeholder="เลือกประเภทของ community"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>
+                <b-col class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fas fa-robot mr-1" />
+                            ความถี่การเก็บข้อมูล
+                            <i
+                                class="fa fa-exclamation-circle mx-1 text-info"
+                                v-b-tooltip.hover
+                                title="ระดับ 1 = ความถี่ต่ำ,ระดับ 2 = ความถี่ปานกลาง,ระดับ 3 = ความถี่สูง"
+                                style="font-size: 14px; cursor: pointer;"
+                            ></i> :
+                        </b-col>
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                size="sm"
+                                class="input"
+                                :options="[1,2,3]"
+                                v-model="profile.bot_level"
+                                placeholder="เลือกระดับ"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>
+                <b-col class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fa fa-group mr-1" />
+                            สถานะการเข้าร่วมกลุ่ม :
+                        </b-col>
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                size="sm"
+                                class="input"
+                                :options="[{text:'เลือกสถานะกลุ่ม', value:null},{ text:'รอเข้ากลุ่ม',value:'wait'},{text:'เข้ากลุ่มแล้ว',value:'done'}]"
+                                v-model="profile.group_status"
+                                placeholder="เลือกระดับ"
                             />
                         </div>
                     </b-row>
@@ -133,29 +172,6 @@
                                 :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...departmentTypes]"
                                 v-model="profile.department"
                                 placeholder="เลือกหมวดหมู่"
-                            />
-                        </div>
-                    </b-row>
-                </b-col>
-                <b-col class="px-0 px-md-1 mb-2">
-                    <b-row class="w-100 m-0">
-                        <b-col class="text-secondary d-flex p-0 align-items-center">
-                            <i class="fas fa-robot mr-1" />
-                            ระดับความถี่ในการเก็บข้อมูล
-                            <i
-                                class="fa fa-exclamation-circle mx-1 text-info"
-                                v-b-tooltip.hover
-                                title="ระดับ 1 = ความถี่ต่ำ,ระดับ 2 = ความถี่ปานกลาง,ระดับ 3 = ความถี่สูง"
-                                style="font-size: 14px; cursor: pointer;"
-                            ></i> :
-                        </b-col>
-                        <div class="col-12 px-0">
-                            <b-form-select
-                                size="sm"
-                                class="input"
-                                :options="[1,2,3]"
-                                v-model="profile.bot_level"
-                                placeholder="เลือกระดับ"
                             />
                         </div>
                     </b-row>
@@ -336,7 +352,11 @@ export default {
                 profile_image: null,
                 followers: null,
                 following: null,
-                influencer_type: null
+                influencer_type: null,
+                influencer_condition: null,
+                department: null,
+                bot_level: null,
+                name: null,
             },
             province_id: null,
             district_id: null,
@@ -429,6 +449,8 @@ export default {
                     group_type: this.profile.group_type,
                     name: this.profile.name,
                     profile_image: this.profile.profile_image,
+                    bot_level: this.profile.bot_level,
+                    group_status: this.profile.group_status
                 }]
             };
             // console.log("data ==== ", rawData);
@@ -460,7 +482,6 @@ export default {
                 this.$emit('updated');
             })
             .catch((error) => {
-        
                 Swal.fire({
                     title: 'บันทึกไม่สำเสร็จ',
                     text:  error,
