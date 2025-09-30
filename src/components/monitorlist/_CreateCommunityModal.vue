@@ -315,7 +315,7 @@ export default {
                 addUnique(this.platforms[platform], entry);
                 }
             });
-
+            // this.platforms = this.setGroupStatus(this.platforms);
             // ✅ 7. รวมสมาชิกทุก platform
             this.targetLists = Object.values(this.platforms)
                 .flat()
@@ -348,12 +348,24 @@ export default {
                 }
             })
         },
+        setGroupStatus(platform) {
+            // if (platform.facebook && Array.isArray(platform.facebook)) {
+            platform.forEach(group => {
+                    if (group.group_type === "public") {
+                        group.group_status = "done";
+                    } else {
+                        group.group_status = 'wait';
+                    }
+                });
+            // }
+            return platform;
+        },
         async apiAddCommunity() {
             let rawData = {
-                "data": this.targetLists
+                "data": this.setGroupStatus(this.targetLists)
             }
             // console.log(this.communities);
-            // console.log("raw === ", rawData);
+            console.log("raw === ", rawData);
             const config = {
                 method: "post",
                 url: "https://api2.cognizata.com/api/v2/monitor/targetandhashtag",
@@ -388,19 +400,19 @@ export default {
                 });
             })
             .catch((error) => {
-                    Swal.fire({
-                        title: 'บันทึกไม่สำเสร็จ',
-                        text: error,
-                        icon: 'error',
-                        confirmButtonText: 'ตกลง',
-                        customClass: {
-                            confirmButton: 'btn btn-danger'
-                        },
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        buttonsStyling: false
-                    })
-                });
+                Swal.fire({
+                    title: 'บันทึกไม่สำเสร็จ',
+                    text: error,
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง',
+                    customClass: {
+                        confirmButton: 'btn btn-danger'
+                    },
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    buttonsStyling: false
+                })
+            });
         },
     },
     async mounted() {

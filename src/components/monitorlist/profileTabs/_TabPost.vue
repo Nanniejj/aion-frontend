@@ -10,8 +10,8 @@
         <div id="total-post" class="pt-5">
             <!-- header  -->
             <div class="col-12 px-0 h6 text-left">
-                <div class="row m-0 align-content-center">
-                    <div class="col-auto pl-0"> 
+                <b-row class="m-0">
+                    <b-col cols="auto" class="pl-0"> 
                         <img v-if="source == 'twitter'" src="@/assets/Twitter.png"
                             class="social-imgs" />
                         <img v-if="source == 'facebook'" src="@/assets/Facebook.png" class="social-imgs" />
@@ -24,26 +24,21 @@
                         <img v-if="source == 'threads'" src="@/assets/Threads.png" class="social-imgs" />
                         <b-avatar text="All" size="35" style="background-color: #fed16e;"
                             v-if="source == 'all'"></b-avatar>
-                    </div>
-                    <div class="col pl-0 ">
-                        <div v-if="keyWord">
-                            <span v-if="keyWord == ''">All</span>
-                            <span v-else>{{ keyWord }}</span>
+                    </b-col>
+                    <b-col v-if="keyWord" class="pl-0 align-content-center">
+                        <!-- <div > -->
+                            <!-- <span v-if="keyWord == ''">All</span> -->
+                            {{ keyWord }}
                             <span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
                             <i @click="resetKeyWord" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
-                        </div>
-                        <!-- <div v-else-if="tabTitle == 'hashtagTab'">
-                            <span v-if="keyWord == ''"> All</span>
-                            <span v-else>#{{ keyWord }}</span>
-                        </div> -->
-                        <div v-else class="h-100">
-                            <span>โพสต์ทั้งหมด</span>
-                            <span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
-                        </div>
-                    </div>
+                        <!-- </div> -->
+                    </b-col>
+                    <b-col v-else class="align-content-center">
+                        โพสต์ทั้งหมด<span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
+                    </b-col>
                     <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0 text-right d-flex">
                         <!-- วันที่ : {{ start }} - {{ end }} -->
-                        <b-form-select 
+                        <!-- <b-form-select 
                             v-if="this.$route.query.type === 'hashtaglist'" 
                             class="mr-3" id="source-select" 
                             v-model="source" :options="sourceOptions"
@@ -62,13 +57,13 @@
                             id="date-domain"
                             class="w-100">
                             {{ valueDate }}
-                        </date-picker>
+                        </date-picker> -->
                     </div>
-                </div>
+                </b-row>
                 <hr />
             </div>
             <!-- filter -->
-            <b-form-group label="" v-slot="{ ariaDescribedby }">
+            <!-- <b-form-group label="" v-slot="{ ariaDescribedby }">
                 <b-row>
                     <b-col sm="12" md="" class="">
                         <b-form-radio-group v-model="selected" :options="options" :aria-describedby="ariaDescribedby"
@@ -79,7 +74,7 @@
                         ></b-form-select>
                     </b-col>
                 </b-row>
-            </b-form-group>
+            </b-form-group> -->
             <!-- time line -->
             <!-- <b-col cols="12" class="p-0">
                 <b-row class="m-0">
@@ -141,6 +136,14 @@
                             <p v-if="post.full_text" class="text-left" style="font-size: 16px;">
                                 <span  :class="{'truncate-text-3': !post.showAll}">
                                     {{ post.full_text }}
+                                    <!-- <Highlighter
+
+                                        class="my-highlight md-font"
+                                        highlightClassName="highlight2"
+                                        :searchWords="keyWord"
+                                        :autoEscape="true"
+                                        :textToHighlight="post.showAll ? post.full_text : post.full_text.substring(0, 450)"
+                                    /> -->
                                 </span>
                                 <span v-if="post.full_text.length > 450 && !post.showAll" @click="post.showAll = true" style="cursor: pointer;" class="text-info ">อ่านต่อ</span>
                                 <span v-if="post.full_text.length > 450 && post.showAll" @click="post.showAll = false" style="cursor: pointer;" class="text-info ">ย่อบทความ</span>
@@ -510,19 +513,20 @@
 </template>
 <script>
 
-// import Highlighter from "vue-highlight-words";
+import Highlighter from "vue-highlight-words";
 // import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
 import SentimentButton from "./_SentimentButton.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
+
 // import "@justinribeiro/lite-tiktok";
-import { debounce } from 'lodash';
+// import { debounce } from 'lodash';
 // import Timeline from "../_Timeline.vue";
 export default {
     components: {
         SentimentButton,
         VueGallerySlideshow,
-        // Highlighter,
+        Highlighter,
         // Timeline
     },
     props: {
@@ -555,10 +559,14 @@ export default {
             // required: true,
             default: () => [] // ✅ ทั้ง type และ default เป็น Array
         },
-        // keyWord: {
-        //     type: String,
-        //     default:""
-        // }
+        sentiment: {
+            type: String,
+            default:""
+        },
+        sortBy: {
+            type: String,
+            default:""
+        }
     },
     
     data() {
@@ -711,7 +719,7 @@ export default {
                     ...(isHashtagList ? { hashtags: this.$route.query.uid } : { account: this.$route.query.uid }),
                      ...(this.source !== 'all' ? { source: this.source } : {}), // ✅ ลบ key ถ้า source = 'all'
                     // source: this.$route.query.source,
-                    ...(this.keyWord ? { query: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
+                    ...(this.keyWord ? { querySearch: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
                     sort_by: this.selectedSort,
                     sentiment: this.selected,
                     offset: this.offset,
@@ -804,6 +812,22 @@ export default {
                 this.apiUserPosts()
             }
         },
+        sentiment(newVal) {
+            // if (newVal) {
+                this.selected = newVal
+                // this.offset = 0
+                // this.currentPage = 1
+                // this.apiUserPosts()
+            // }
+        },
+        sortBy(newVal) {
+            // if (newVal) {
+                this.selectedSort = newVal
+                // this.offset = 0
+                // this.currentPage = 1
+                // this.apiUserPosts()
+            // }
+        },
         selectedSort(newVal,oldVal) {
             if (newVal !== oldVal) {
                 this.offset = 0
@@ -824,6 +848,10 @@ export default {
 };
 </script>
 <style scoped>
+.highlight2 {
+  background-color: #FDD071;
+  padding: 0 2px;
+}
 #box-reaction {
   background: #ddddddad;
   color: #2c3e50;

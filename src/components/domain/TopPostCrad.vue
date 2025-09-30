@@ -787,7 +787,7 @@ export default {
       }
       console.log(obj);
       // return array ตามลำดับ [agree, disagree, neutral]
-      return [obj.agree, obj.disagree, obj.neutral];
+      return [ obj.neutral, obj.agree, obj.disagree];
     },
     formatOCR(text) {
       if (!text) return ''

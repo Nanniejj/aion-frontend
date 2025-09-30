@@ -133,7 +133,7 @@ export default {
         const obj = this.series
         // console.log(obj);
         // return array ตามลำดับ [agree, disagree, neutral]
-        return [obj.agree, obj.disagree, obj.neutral];
+        return [obj.neutral,obj.agree, obj.disagree];
         },
         getMaxCommentLabel() {
             if(!this.series) return ''

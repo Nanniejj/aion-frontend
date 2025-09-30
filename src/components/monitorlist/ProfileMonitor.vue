@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- avatar  -->
-        <b-row class="m-0">
+        <b-row v-if="type === 'hashtaglist'" class="m-0">
             <b-col xl="4" class="px-0 pr-xl-3">
                 <div class="gradient-bg h-100">
                     <b-row v-if="profile" class="m-0">
@@ -19,13 +19,6 @@
                                             loading="lazy"
                                             class="shadow-sm rounded badge-light rounded-circle shadow"
                                         >
-                                            <!-- <img
-                                                :src="data.profile_image"
-                                                @error="setAltImg"
-                                                class="shadow-sm rounded badge-light rounded-circle shadow"
-                                                style="object-fit: cover;"
-                                                loading="lazy"
-                                            /> -->
                                         </b-avatar>
                                     </span>
                                     <span v-else>
@@ -115,7 +108,6 @@
                 </div>
             </b-col>
             <b-col xl="8" class="text-left px-0 pl-lg-3">
-                
                 <b-card-text v-if="type === 'hashtaglist'" class="my-2">
                     <HashtagBarChar 
                         :start="valueDate[0]"
@@ -212,9 +204,6 @@
                             <!-- influencer type -->
                             <b-row v-if="profile.influencer_type && profile.influencer_type.length !== 0" class="m-0 w-100 ">
                                 <div class="col-12 pt-3">
-                                    <!-- <div class="col-12 pt-3">
-                                        <h6 class="text-center">หมวดหมู่ Influencer</h6>
-                                    </div> -->
                                     <b-row cols="1" cols-sm="2" cols-lg="4" class="px-5 py-3 w-100" style="background-color: #fed06ea4; border-radius: 90px;">
                                         <b-col v-for="(item, index) in profile.influencer_type.length > 4 
                                             ? profile.influencer_type.slice(0, 3) 
@@ -255,7 +244,6 @@
                                     </b-row>
                                 </div>
                             </b-row>
-                            <!-- {{ profile.location }} -->
                         </b-row>
                     </div>
                     <div v-else class="col-12 px-0">
@@ -532,7 +520,103 @@
                     </div>
                 </b-card-text>
             </b-col>
-        </b-row>        
+        </b-row> 
+        <b-row v-else>
+            <b-col cols="12" sm="auto" class="px-3">
+                <b-avatar size="140px" class="p-1 bg-white border border-light shadow">
+                    <span v-if="data.profile_image">
+                        <b-avatar 
+                            :src="data.profile_image"
+                            @error="setAltImg"
+                            size="140px" 
+                            loading="lazy"
+                            class="shadow-sm rounded badge-light rounded-circle shadow"
+                        >
+                        </b-avatar>
+                    </span>
+                    <span v-else>
+                        <b-avatar class="shadow-sm rounded badge-light rounded-circle"
+                            size="140px">
+                        </b-avatar>
+                    </span>
+                </b-avatar>
+                <b-col cols="auto" v-if="selectedSource" class="right">
+                    <img v-if="selectedSource == 'twitter'" src="@/assets/Twitter.png"
+                        class="social-img" />
+                    <img v-else-if="selectedSource == 'facebook'" src="@/assets/Facebook.png"
+                        class="social-img" />
+                    <img v-if="selectedSource == 'news'" src="@/assets/News.png" class="social-img" />
+                    <img v-if="selectedSource == 'pantip'" src="@/assets/Pantip.png"
+                        class="social-img" />
+                    <img v-if="selectedSource == 'instagram'" src="@/assets/Instagram.png"
+                        class="social-img" />
+                    <img v-if="selectedSource == 'youtube'" src="@/assets/Youtube.png"
+                        class="social-img" />
+                    <img v-if="selectedSource == 'blockdit'" src="@/assets/Blockdit.png"
+                        class="social-img" />
+                    <img v-if="selectedSource == 'tiktok'" src="@/assets/Tiktok.png"
+                        class="social-img" />
+                    <img v-if="selectedSource == 'threads'" src="@/assets/Threads.png"
+                        class="social-img" />
+                </b-col>
+            </b-col>
+            <b-col>
+                <b-row class="justify-content-center justify-content-sm-start">
+                    <b-col cols="auto">
+                        <a style="color: #2c3e50;" class="align-items-center" v-bind:href="profile.link_original" target="_blank"> 
+                            <h5 v-if="profile.target_type === 'group'" class="py-2 mb-0 bold">
+                                {{ profile.name || profile.uid }}
+                                <i class="fa fa-external-link text-info mx-1"/>
+                            </h5>
+                            <h5 v-else class="py-2 mb-0 bold">
+                                {{ profile.name || data.account_name || profile.uid }}
+                                <i class="fa fa-external-link text-info mx-1"/>
+                            </h5>
+                        </a> 
+                    </b-col>
+                    <b-col cols="12" class="text-sm-left">
+                        <b-badge v-if="profile.species" class="mr-2 badge-custom" pill>
+                            {{ getSpeciesName(profile.species) }}
+                        </b-badge>
+                        <b-badge v-if="profile.sex" pill :class="'badge-' + profile.sex">{{ getsexTh(profile.sex) }}</b-badge>
+                    </b-col>
+                    <b-col cols="12" class="mt-1">
+                        <b-row class="justify-content-center justify-content-sm-start">
+                            <b-col cols="auto">
+                                <span class="text-info bold" style="font-size: 18px;">{{ formatNumber(profile.followers) }}</span> Followers
+                            </b-col>
+                            <b-col cols="auto">
+                                <span class="text-info bold" >{{ formatNumber(profile.followings) }}</span> Following
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                    
+                    <b-col class="mt-1 text-left" v-if="profile.influencer_type && profile.influencer_type.length !== 0">
+                        <b-badge 
+                            v-for="(item, index) in profile.influencer_type"
+                            :key="index" variant="warning" class="mx-1"
+                            style="background-color: #fed16e;"
+                        >
+                            <b-row class="text-center m-0 align-item-center">
+                                <b-col cols="auto" class="px-0" >
+                                    <!-- <b-avatar v-if="getIcon(item).startsWith('fa-')" style="background-color: #17a2b8;"> -->
+                                        <i class="fas" v-if="getIcon(item).startsWith('fa-')" :class="getIcon(item)"></i>
+                                    <!-- </b-avatar> -->
+
+                                    <!-- <b-avatar v-else :icon="getIcon(item)"></b-avatar> -->
+                                     <b-icon  v-else :icon="getIcon(item)" aria-hidden="true"></b-icon>
+                                </b-col>
+                                <b-col class="px-1">
+                                    <div class="text-icon" style="font-size: 13px;">
+                                        {{ getInfluencerTypeName(item) }}
+                                    </div>
+                                </b-col>
+                            </b-row>
+                        </b-badge>
+                    </b-col>
+                </b-row>
+            </b-col>
+        </b-row>       
 
         <!-- woldCloud -->
         <b-row class="my-5 mx-0">
@@ -579,73 +663,29 @@
             </b-col>
         </b-row> -->
 
-        <!-- time line -->
+        <!-- time line v-if="type === 'hashtaglist'" -->
         <b-row id="timeline-container" class="m-0">
+            <!-- Filters Card -->
             <b-col cols="12" class="px-0">
-                <!-- <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
-                    <b-col cols="12" xl="auto" class="px-0 text-md-left">
-                        <h4 class="mb-0">Posts Timeline</h4>
-                    </b-col>
-                    <b-col cols="12" lg="6" xl="auto" class="px-1">
-                        <b-form-group label-for="search-input" class="mt-3 mt-xl-0 col-12 col-sm px-0 mb-0">
-                            <b-input-group-append>
-                                <b-form-input id="search-input" @input="checkSearch" v-model="search" placeholder="ค้นหา"
-                                    class="w-100 mr-2"></b-form-input>
-                                <b-button size="sm" variant="info" pill :pressed="false" @click="onSearch()" class="shadow-r px-4">ค้นหา</b-button>
-                            </b-input-group-append>
-                        </b-form-group>
-                    </b-col>
-                    <b-col cols="12" lg="6" xl="" class="px-0 ml-xl-auto">
-                        <b-row class="m-0 justify-content-end flex-lg-nowrap mt-3 mt-xl-0">
-                            <b-col cols="auto" class="px-0 mb-3 mb-sm-0">
-                                <date-picker
-                                    v-model="valueDate"
-                                    type="date"
-                                    range
-                                    placeholder="เลือกช่วงเวลา"
-                                    size="sm"
-                                    :disabled-date="(date) => date >= new Date()"
-                                    value-type="format"
-                                    format="YYYY-MM-DD"
-                                    @change="checkDateRange()"
-                                    id="date-domain"
-                                    class="">
-                                    {{ valueDate }}
-                                </date-picker>
-                            </b-col>
-                            <b-col cols="auto" class="px-0 pl-2">
-                                <div class="text-center">
-                                    เรียงจาก :
-                                    <b-button class="sort-btn" @click="toggleSort" pill size="sm">
-                                         {{ selectedSort === 'desc' ? 'ใหม่ → เก่า' : 'เก่า → ใหม่' }}
-                                    </b-button>
-                                </div>
-                            </b-col>
-                        </b-row>
-                    </b-col>
-                </b-row> -->
-                <!-- Filters Card -->
                 <b-card class="mb-3 shadow-sm" style="border-radius: 20px;">
-                    <!-- <b-alert show variant="info">
-                    <div class="text-left"> <b-icon icon="info-circle" class="" variant="info"></b-icon> <small>คำค้นหา (AND
-                        ใช้ช่องว่างหรือ +, OR
-                        ใช้ ,)
-                        <span class="text-muted"> ตัวอย่าง: <code>คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย</code> = (คาเฟ่
-                            AND บรรยากาศดี) OR (มัทฉะ AND อร่อย)</span>
-                        </small></div>
-                    </b-alert> -->
-                    <h4 class="text-left">Timeline</h4>
+                    <h5 class="text-left">Filter</h5>
                     <b-form @submit.prevent="onSearch()">
                     <b-row>
                         <b-col cols="12" md="7">
-                        <b-form-group label="" label-for="kw" class="flex-grow-1">
-                            <b-form-input id="kw" v-model.trim="search"
-                            placeholder="Enter keyword"/>
-                        </b-form-group>
+                            <b-row class="m-0">
+                                <b-form-group label="" label-for="kw" class="flex-grow-1">
+                                    <b-form-input id="kw" v-model.trim="search"
+                                    placeholder="Enter keyword"/>
+                                </b-form-group>
+                                <b-button type="submit" variant="info" 
+                                class="ml-2 px-2 mb-3" :disabled="loading">
+                                    ค้นหา keyword
+                                </b-button>
+                            </b-row>
                         </b-col>
 
                         <b-col cols="12" md="5">
-                        <!-- Sentiment -->
+                        
                         <b-form-group class="pr-md-3 checkbox-v">
                             <b-form-radio-group v-model="selected" :options="sentimentOptions" />
                         </b-form-group>
@@ -653,7 +693,12 @@
 
 
                         <b-col cols="12" md="4">
-                            <b-form-select v-model="selectedSource" class="mb-2" :options="sourceOptions" />
+                            <b-form-select 
+                                v-model="selectedSource" 
+                                class="mb-2" 
+                                :options="sourceOptions" 
+                                :disabled="type === 'targetlist'"
+                            />
                         </b-col>
 
                         <b-col cols="12" md="4">
@@ -667,7 +712,10 @@
                         </b-col>
                         <b-col cols="12" md="4">
                         <section id="date-picker">
-                            <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
+                            <date-picker v-model="valueDate" 
+                            type="date" range 
+                            placeholder="เลือกช่วงเวลา" 
+                            class="w-100" size="sm"
                             :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
                             @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
                         </section>
@@ -677,12 +725,14 @@
                         <b-col cols="auto" md="auto">
                         <div>
                             <div class="align-self-end mb-3">
-                            <b-button type="submit" variant="info" class=" px-4" :disabled="loading">
+                            <!-- <b-button type="submit" variant="info" 
+                                class="mr-2 px-4" :disabled="loading">
                                 ค้นหา
+                            </b-button> -->
+                            <b-button variant="outline-secondary" 
+                                @click="resetFilters" :disabled="loading">
+                                ล้างค่า
                             </b-button>
-                            <!-- <b-button variant="outline-secondary" @click="resetFilters" :disabled="loading">
-                            ล้างค่า
-                        </b-button> -->
                             </div>
                         </div>
                         </b-col>
@@ -729,13 +779,22 @@
                     </b-col>
                 </b-row>
             </b-col> -->
-            <b-col cols="12" class="px-0">
-                <div data-v-633a0eda="" class="text-right allpost"> 
-                    ทั้งหมด <b data-v-633a0eda="">{{totalTimelinePost || 0 | numFormat}}</b> โพสต์
-                </div>
-                
+            <b-col v-if="type === 'hashtaglist'" cols="12" class="px-0 py-2 rounde-lg" :style="{ backgroundColor: !showTimeline ? '#EBFDFF' : '' }">
+                <b-row class="m-0 justify-contents-between aling-items-center">
+                    <b-col data-v-633a0eda="" class="text-left"> 
+                        ทั้งหมด <b data-v-633a0eda="">{{totalTimelinePost || 0 | numFormat}}</b> โพสต์
+                    </b-col>
+                    <b-col data-v-633a0eda="" class="text-right text-info"> 
+                        <b-button v-if="!showTimeline" variant="info" @click="showTimeline = !showTimeline">
+                            แสดง timeline
+                        </b-button>
+                        <b-button v-else variant="outline-info" @click="showTimeline = !showTimeline">
+                            ซ่อน timeline
+                        </b-button>
+                    </b-col>
+                </b-row>
             </b-col>
-            <b-col cols="12" class="px-0">
+            <b-col v-if="type === 'hashtaglist' && showTimeline" cols="12" class="px-0">
                 <Timeline :timelineItems="timelinePosts" :keyword="search"  :disableFabButton="true"/>
                 <vue-element-loading 
                     :active="loading" class="h-100" size="80" 
@@ -769,6 +828,8 @@
             :topDomain="topDomain" 
             :isBottom="alreadyAtBottom"
             :keyWord="keyWord"
+            :sentiment="selected"
+            :sortBy="selectedSort"
             @totalPost="data =>totalPost = data"
             @update:start="data => valueDate = [data, valueDate[1]]"
             @update:end="data => valueDate = [valueDate[0], data]"
@@ -803,6 +864,8 @@ export default {
         const today = moment();
         const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
         return {
+            showTimeline : true,
+            showTimelineFilter : true,
             valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
             selectedSource:'all',
             alreadyAtBottom: false,
@@ -933,24 +996,52 @@ export default {
                 limit: 50,
                 page: 1,
                 hashtags: [],
-            }
+            },
+            
         }
     },
     methods: {
-        // checkSearch() {
-        //     if (!this.search) {
-        //         this.timelinePosts = [];
-        //         this.offset = 0;
-        //         this.apiTimelineUserPosts();
-        //     }
-        // },
-        onSearch() {
-            clearTimeout(this.debounceTimeout);
-            this.debounceTimeout = setTimeout(() => {
-                this.timelinePosts = [];
-                this.offset = 0;
-                this.apiTimelineUserPosts();
-            }, 500);
+        resetFilters() {
+            this.timelinePosts = [];
+            this.offset = 0;
+            this.search = '';
+            this.selectedSort = '';
+            this.selected = null;
+
+            this.keyWord = '';
+            // กำหนดช่วงวันที่ย้อนหลัง 7 วันถึงวันนี้
+            const today = moment().format('YYYY-MM-DD');
+            const past7Days = moment().subtract(6, 'days').format('YYYY-MM-DD');
+            this.valueDate = [past7Days, today]; 
+            console.log(this.valueDate);
+            if (this.type === 'hashtaglist') {
+                this.selectedSource = 'all';
+            }
+            this.apiTimelineUserPosts();
+        },
+        formatNumber(num) {
+           if (num == null) {
+                return '0';
+            }
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            }
+            return num.toString();
+        },
+        async onSearch() {
+            this.timelinePosts = [];
+            this.offset = 0;
+            this.keyWord = this.search;
+            if (this.type === 'hashtaglist') {
+                await this.apiTimelineUserPosts();
+                this.getWordCloudImage();
+            }
+            console.log('this.timelinePosts ==== ', this.timelinePosts);
+            
+           
         },
         viewMore() {
             // this.offset += this.limit;
@@ -1027,10 +1118,11 @@ export default {
                 alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
             } else {
-                this.offset = 0;
-                this.timelinePosts = [];
-                this.apiTimelineUserPosts();
-                this.getWordCloudImage();
+                this.onSearch();
+                // this.offset = 0;
+                // this.timelinePosts = [];
+                // this.apiTimelineUserPosts();
+                
                 
                 // this.selectDate(); // Call your existing method
             }
@@ -1598,10 +1690,10 @@ export default {
                 //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
-                    querySearch: this.search,
+                    // querySearch: this.search,
                     ...(isHashtagList ? { hashtags: this.$route.query.uid } : { account: this.$route.query.uid }),
                     ...(this.selectedSource !== 'all' ? { source: this.selectedSource } : {}), // ✅ ลบ key ถ้า source = 'all'
-                    ...(this.keyWord ? { query: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
+                    ...(this.keyWord ? { querySearch: this.keyWord } : {}), // ✅ ใส่ query เฉพาะเมื่อมีค่า
                     sort_by: this.selectedSort,
                     sentiment: this.selected,
                     offset: this.offset,
@@ -1659,16 +1751,17 @@ export default {
         if (this.$route.query.type === 'targetlist') {
             this.profile.uid = this.$route.query.uid
             this.selectedSource = this.$route.query.source;
-            await this.apiTimelineUserPosts();
-            await this.getWordCloudImage();
+            // await this.apiTimelineUserPosts();
+            // await this.getWordCloudImage();
         }else if (this.$route.query.type === 'hashtaglist') {
             this.selectedSource = 'all'
-            // await this.apiTimelineUserPosts();
+            await this.apiTimelineUserPosts();
         }
         await this.apiMonitorProfile();
         this.apiGetProvinces();
         this.apiGetInfluencerType();
-        
+        await this.getWordCloudImage();
+        // await this.apiTimelineUserPosts();
         // console.log('this.selectedSource ==== ',this.selectedSource);
     },
     computed: {
@@ -1693,38 +1786,76 @@ export default {
         province_id: 'updateFilterLocation',
         district_id: 'updateFilterLocation',
         subDistrict_id: 'updateFilterLocation',
-        valueDate: {
-            deep: true, // เฝ้าการเปลี่ยนแปลงภายใน array
-            handler(newVal, oldVal) {
-                console.log("valueDate timeline changed:", newVal);
-                if (newVal !== oldVal) {
-                    // this.timelinePosts = [];
-                    // this.offset = 0;
-                    const startDate = moment(this.valueDate[0]);
-                    const endDate = moment(this.valueDate[1]);
-
-                    const diffDays = endDate.diff(startDate, 'days');
-
-                    if (diffDays > 31) {
-                        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
-                        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
-                    } else {
-                        this.offset = 0;
-                        this.timelinePosts = [];
-                        this.apiTimelineUserPosts();
-                        this.getWordCloudImage();
-                        
-                        // this.selectDate(); // Call your existing method
-                    }
+        selected: {
+            handler(newVal) {
+                if (this.type === 'hashtaglist') {
+                    this.onSearch();
                 }
-                // this.checkDateRange()
+            }
+        },
+        selectedSort:{
+            handler(newVal) {
+                if (this.type === 'hashtaglist') {
+                    this.onSearch();
+                }
+            }
+        },
+        selectedSource: {
+            handler(newVal) {
+                if (this.type === 'hashtaglist') {
+                    this.onSearch();
+                }
             }
         }
+        // valueDate: {
+        //     deep: true, // เฝ้าการเปลี่ยนแปลงภายใน array
+        //     handler(newVal, oldVal) {
+        //         console.log("valueDate timeline changed:", newVal);
+        //         if (newVal !== oldVal) {
+        //             // this.timelinePosts = [];
+        //             // this.offset = 0;
+        //             const startDate = moment(this.valueDate[0]);
+        //             const endDate = moment(this.valueDate[1]);
+
+        //             const diffDays = endDate.diff(startDate, 'days');
+
+        //             if (diffDays > 31) {
+        //                 alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
+        //                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+        //             } else {
+        //                 this.offset = 0;
+        //                 this.timelinePosts = [];
+        //                 if (this.type === 'hashtaglist') {
+        //                     // this.onSearch();
+        //                     // this.apiTimelineUserPosts();
+        //                 }
+        //                 this.getWordCloudImage();
+        //                 // this.selectDate(); // Call your existing method
+        //             }
+        //         }
+        //         // this.checkDateRange()
+        //     }
+        // }
     },
 }
 </script>
 
 <style scoped>
+
+.badge-male {
+    color: #17a2b8; /* สี info */
+    border: 1px solid #17a2b8;
+    background-color: transparent;
+}
+.badge-female {
+    color: #d29090; /* สี info */
+    border: 1px solid #ffbcbc;
+    background-color: transparent;
+}
+.badge-custom{
+    color: #2c3e50;
+    background: linear-gradient(90deg,#FDD071  0%,  #ffbcbc 100%);
+}
 .sort-btn{
     background: linear-gradient(90deg,#FDD071 0%, #ffbcbc 100%);
     border: none;
@@ -1777,9 +1908,15 @@ export default {
 
 .left{
     position: absolute;
-    /* bottom: 0px; */
+    /* bottom: 10%; */
+    /* right: 5%; */
     top: 90px;
 }
+.right{
+    position: absolute;
+    bottom: 10%; 
+    right: 0px;
+};
 .social-img {
     width: 40px;
 }
@@ -1797,11 +1934,18 @@ export default {
 .mx-datepicker-range {
     width: 100%!important;
 }
-@media only screen and (min-width: 0px) and (max-width: 760px) {
-    
+@media only screen and (min-width: 0px) and (max-width: 450px) {
+    .right{
+        right: 20%;
+    }
 
 }
+@media only screen and (min-width: 451px) and (max-width: 575px) {
+    .right{
+        right: 30%;
+    }
 
+}
 @media only screen and (min-width: 0px) and (max-width: 800px){
     .mx-datepicker-range {
         width: 100%!important;

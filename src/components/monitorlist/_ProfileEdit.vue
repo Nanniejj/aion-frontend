@@ -73,7 +73,7 @@
                                 size="sm"
                                 class="input"
                                 :options="[
-                                    { value: null, text: 'เลือกประเภทของ community' },
+                                    { value: null, text: 'เลือกประเภทของ community'},
                                     { value: 'public', text: 'กลุ่มสาธารณะ' },
                                     { value: 'private', text: 'กลุ่มปิด' },
                                 ]"
@@ -500,6 +500,15 @@ export default {
     mounted() { 
         this.profile = { ...this.item };
         console.log("profile edit === ", this.profile);
+    },
+    watch: {
+        // "profile.group_type"(newVal) {
+        //     if (newVal === "public") {
+        //         this.profile.group_status = "done";
+        //     } else {
+        //         this.profile.group_status = "wait";
+        //     }
+        // }
     }
 }
 </script>

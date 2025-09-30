@@ -12,11 +12,13 @@
                     <b-form-group class="align-items-center text-center mt-3 mt-sm-2 mt-xl-0 mb-0" v-slot="{ ariaDescribedby }">
                         <b-form-radio-group
                             id="radio-group-2"
-                            v-model="group_type"
+                            v-model="groupType"
                             :aria-describedby="ariaDescribedby"
-                            name="radio-sub-component"
+                            name="radio-group"
                         >
                             <b-form-radio :value="null">ทั้งหมด</b-form-radio>
+                            <!-- <b-form-radio value="public">กลุ่มสาธารณะ</b-form-radio>
+                            <b-form-radio value="private">กลุ่มปิด</b-form-radio> -->
                             <b-form-radio v-for="item in options" :key="'item - ' + item.text" :value="item.value">{{item.text}}</b-form-radio>
                         </b-form-radio-group>
                     </b-form-group>
@@ -44,7 +46,9 @@
                     color="#ede7dd" />
                     <!-- thead-class="d-none" -->
                     <b-table 
-                        ref="table" v-if="communities.length !== 0" show-details :items="communities || []" :fields="fields" hover
+                        ref="table" v-if="communities.length !== 0" 
+                        show-details :items="communities || []" 
+                        :fields="tableFields" hover
                         responsive :busy="loading" :striped="false"
                         :bordered="false" :borderless="false" :outlined="false" empty-filtered-text="ไม่พบข้อมูล"
                         :small="false" stacked="md">
@@ -96,6 +100,10 @@
                         <template #cell(insert_timestamp)="data">
                             <span class="small"> {{ formatDate(data.item.insert_timestamp) }}</span>
                         </template>
+                        <template #cell(bot_timestamp)="data" v-if="username === 'adminatapy'">
+                            <span v-if="data.item.latest_bot_update" class="small"> {{ formatDate(data.item.latest_bot_update) }}</span>
+                            <span v-else class="small"> - </span>
+                        </template>
 
                         <template #cell(group_type)="data">
                             <b-badge pill 
@@ -105,26 +113,28 @@
                                 class="text-capitalize text-truncate">{{ data.item.group_type }}
                             </b-badge>
                         </template>
-                        <template #cell(status)="data" v-if="username == 'adminatapy'">
-                            <b-row v-if="data.item.group_type === 'private'" class="align-items-center justify-content-center text-truncate "
-                                :class="data.item.group_status === 'done' ? 'text-success' : 'text-danger'"
+                        <template #cell(status)="data" v-if="username === 'adminatapy'">
+                            <!-- v-if="data.item.group_type === 'private'" -->
+                            <b-row class="align-items-center justify-content-center text-truncate "
+                                :class="data.item.group_status === 'done' || data.item.group_type === 'public' ? 'text-success' : 'text-danger'"
                             >
-                                <b-icon icon="dot" scale="3" :variant="data.item.group_status === 'done' ? 'success' : 'danger'"></b-icon>
-                                <span v-if="data.item.group_status === 'done'">เข้ากลุ่มแล้ว</span>
+                                <b-icon icon="dot" scale="3" 
+                                    :variant="data.item.group_status === 'done'|| data.item.group_type === 'public' ? 'success' : 'danger'"></b-icon>
+                                <span v-if="data.item.group_status === 'done' || data.item.group_type === 'public'">เข้ากลุ่มแล้ว</span>
                                 <span v-else>รอเข้ากลุ่ม</span>
                                 <!-- {{data.item.group_status}} -->
                             </b-row>
                         </template>
 
                         <template #cell(action)="data">
-                            <!-- <b-row class="m-0 justify-content-end align-items-center"> -->
+                            <b-row class="m-0 justify-content-end align-items-center">
                                 <span v-if="username == 'adminatapy'" class="fas fa-pen px-3" v-b-tooltip.hover title="แก้ไขข้อมูล"
                                     @click="data.toggleDetails" size="sm"></span>
                                 <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                                     @click="linkToProfile(data.item)"></span>
                                 <span class="fas fa-trash text-danger px-3" v-b-tooltip.hover title="ลบกลุ่ม"
                                     @click="deleteGroup(data.item)" size="sm"></span>
-                            <!-- </b-row> -->
+                            </b-row>
                         </template>
                         <!-- แถวรายละเอียด -->
                         <template #row-details="row">
@@ -171,7 +181,7 @@ export default {
         return {
             loading: false,
             search: '',
-            group_type: null,
+            groupType: null,
             pagination: {
                 totalCount: 0,
                 totalPages: 1,
@@ -188,7 +198,8 @@ export default {
                 { key: 'name', label: 'ชื่อกลุ่ม' },
                 // { key: 'source', label: 'แหล่งที่มา' },
                 { key: 'followers', label: 'สมาชิก' },
-                { key: 'insert_timestamp', label: 'เวลาล่าสุด' },
+                { key: 'insert_timestamp', label: 'อัพเดตล่าสุด' },
+                { key: 'bot_timestamp', label: 'เก็บล่าสุด' },
                 { key: 'group_type', label: '' },
                 { key: 'status', label: '' },
                 { key: 'action', label: '' }
@@ -196,6 +207,17 @@ export default {
             communities: [],
             influencerTypes: [],
             username: "",
+        }
+    },
+    computed: {
+        tableFields() {
+            let hidden = [];
+
+            if (this.username !== 'adminatapy') {
+                hidden = ['bot_timestamp', 'status']; // กำหนด column ที่ต้องซ่อน
+            }
+
+            return this.fields.filter(f => !hidden.includes(f.key));
         }
     },
     methods: {
@@ -349,7 +371,7 @@ export default {
                     page: this.pagination.currentPage,
                     limit: this.pagination.limit,
                     search: this.search,
-                    group_type: this.group_type === 'all' ? '' : this.group_type
+                    group_type: this.groupType === null ? '' : this.groupType
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -404,8 +426,9 @@ export default {
         await this.getPreview();
     },
     watch: {
-        group_type() {
+        groupType() {
             this.pagination.currentPage = 1;
+            this.search = null;
             this.apiGetCommunities();
         }
     },
