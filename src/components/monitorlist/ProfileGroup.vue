@@ -222,7 +222,7 @@
                 />
                 <Timeline :timelineItems="posts" :keyword="formFilters.keyword"/>
                 <b-col v-if="totalPage > 1" class="p-0 mb-5">
-                    <b-row v-if="page !== totalPage && (total_posts > posts.length)" class="justify-content-md-center align-items-center my-3 mx-0">
+                    <b-row v-if="page !== totalPage && (totalPage > page)" class="justify-content-md-center align-items-center my-3 mx-0">
                         <div class="text-center">
                             <b-button @click="onPageChange" class="sort-btn" pill size="sm">
                                 ดูเพิ่มเติม
@@ -463,23 +463,21 @@ export default {
                     "Content-Type": "application/json",
                     },
                 };
-                if (this.page <= this.totalPage || this.totalPage === null) {
-                    this.loading = true;
-                    
-                    const response = await this.axios(config);
-                    const newPosts = response.data.posts.map(post => ({
-                        ...post,
-                        showAll: false,
-                    }));
-        
-                    // เพิ่มสมาชิกใหม่
-                    this.posts = [...this.posts, ...newPosts];
-                    this.page = response.data.current_page;
-                    this.limit = response.data.limit;
-                    this.total = response.data.total;
-                    this.totalPage = response.data.total_pages;
-                    this.total_posts = response.data.total_posts;
-                }
+                this.axios(config).then(response => {
+                    console.log('Posts fetched successfully:', response.data);
+                const newPosts =  response.data.posts.map(post => ({
+                    ...post,
+                    showAll: false,
+                }));
+                this.posts = [ ...this.posts, ...newPosts];
+                this.page = response.data.current_page;
+                this.limit = response.data.limit;
+                this.total_posts = response.data.total_posts;
+                this.totalPage = response.data.total_pages
+                
+                }).catch(error => {
+                console.error('Error fetching posts:', error);
+                });
             } catch (error) {
                 console.error("Error fetching posts:", error);
                 throw error;

@@ -46,11 +46,10 @@
                     style="min-height: 200px;"
                 >
                     <template #header>
-                        <b-row v-if="type === 'group' " class="m-0 align-items-center">
+                        <!-- <b-row v-if="type === 'group' " class="m-0 align-items-center">
                             <b-col cols="auto" class="p-0 text-left">
                                 <b-avatar v-bind:href="item.account_url" size="45px" :src="item.image">
                                     <img v-if="item.profile_image"  :src="item.profile_image" class="platform-imgs" />
-                                    <!-- <img v-if="item.profile_image"  :src="item.profile_image" class="platform-imgs" /> -->
                                     
                                 </b-avatar>
                             </b-col>
@@ -60,8 +59,8 @@
                                     <i class="fa fa-external-link mx-1"/>
                                 </a> 
                             </b-col>
-                        </b-row>
-                        <b-row v-else class="m-0 align-items-center">
+                        </b-row> -->
+                        <b-row class="m-0 align-items-center">
                             <b-col cols="auto" class="p-0 text-left">
                                 <b-avatar v-bind:href="item.account_url" class="" size="45px" :src="item.profile_image">
                                 </b-avatar>
