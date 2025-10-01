@@ -49,7 +49,13 @@
             <b-col v-if="provinceName || districtName || subDistrictName" class="d-flex px-0" style="font-size: 14px">
                 <i class="fa fa-map-marker mr-2" style="color: #fed06ea4;"/>
                 <span >
-                    {{ provinceName }} {{ `, ${districtName}` }} {{ `, ${subDistrictName}` }}
+                    {{ provinceName }}  
+                </span>
+                <span v-if="districtName">
+                    {{ `, ${districtName}` }}
+                </span>
+                <span v-if="subDistrictName">
+                    {{ `, ${subDistrictName}` }}
                 </span>
                 <!-- <span v-else class="text-secondary" style="font-size: 13px">ไม่ระบุพื้นที่</span> -->
             </b-col>

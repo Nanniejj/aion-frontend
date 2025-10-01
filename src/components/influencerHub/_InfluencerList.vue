@@ -8,7 +8,7 @@
     >
         <template #header>
             <span class="mb-0 text-capitalize">All influencer accounts</span>
-            (<span style="font-size: 18px;" class="font-weight-bold text-info px-2 text-bold">{{ total }}</span>)
+            <!-- (<span style="font-size: 18px;" class="font-weight-bold text-info px-2 text-bold">{{ total }}</span>) -->
         </template>
         <b-card-text >
             <b-row cols="1" cols-md="2" cols-xl="3" v-if="influencers && influencers.length !== 0" class="m-0">

@@ -3,7 +3,7 @@
         <div v-if="showHeader" class="col-12 d-flex justify-content-between p-0">
             <span class="text-left font-weight-bold" style="font-size: 18px;">Filters</span>
             <b-button v-b-toggle.sidebar-1 variant="light" 
-            class="border-0 py-1 text-info" style="background: transparent;">
+            class="border-0 py-1 text-info d-lg-none" style="background: transparent;">
                 <i class="fa fa-sliders"/>
             </b-button>
         </div>
@@ -127,7 +127,7 @@
                         class="px-0"
                         v-model="followers"
                         :min="100"
-                        :max="999999999"
+                        :max="9999999"
                         :interval="1"
                         :enable-cross="false"
                         :dot-size="18"
@@ -336,7 +336,7 @@
                         class="px-0"
                         v-model="followers"
                         :min="100"
-                        :max="999999999"
+                        :max="999999"
                         :interval="1"
                         :enable-cross="false"
                         :dot-size="18"
@@ -560,7 +560,7 @@ export default {
                 this.filterRules.followers = [];
                 this.influencerLevel = null;
             } else {
-                this.followers = [0, 900000000];
+                this.followers = [0, 9000000];
                 this.influencerLevel = null;
             }
         },
@@ -586,7 +586,7 @@ export default {
         setFollowersByLevel(level) {
             switch (level) {
                 case 'top star':
-                    this.followers = [100000] // มากกว่า 1 ล้าน
+                    this.followers = [1000000] // มากกว่า 1 ล้าน
                     // this.followers = [1000001, Infinity] // มากกว่า 1 ล้าน
                     break
                 case 'macro':

@@ -4,9 +4,9 @@
     <div id="content">
       <div class="d-flex">
         <h1 class="title ">Monitor</h1>
-        <div class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor" style="position:relative;margin-left: auto; 
+        <!-- <div class="h4 mb-2 float-right d-flex mt-3 box-menu-monitor" style="position:relative;margin-left: auto; 
 margin-right: 0;">
-          <!-- ในหน้า monitor -->
+         
           <div class="icon-monitor1" @click="$router.push('/monitor')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
@@ -14,7 +14,6 @@ margin-right: 0;">
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Monitor (old ver.)</div>
           </div>
-
           <div class="mr-3 icon-monitor2" @click="toMonitor('Feed')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
@@ -29,8 +28,7 @@ margin-right: 0;">
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Report</div>
           </div>
-
-        </div>
+        </div> -->
       </div>
       <MonitorMain />
 

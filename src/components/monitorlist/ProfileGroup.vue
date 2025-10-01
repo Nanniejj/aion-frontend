@@ -128,7 +128,7 @@
                     <b-row>
                         <b-col cols="12" md="8">
                         <b-form-group label="" label-for="kw" class="pr-md-3 flex-grow-1">
-                            <b-form-input id="kw" v-model.trim="formFilters.keyword"
+                            <b-form-input :disabled="loadingTimeline" id="kw" v-model.trim="formFilters.keyword"
                             placeholder="เช่น คาเฟ่ บรรยากาศดี,มัทฉะ อร่อย" />
                         </b-form-group>
                         </b-col>
@@ -141,7 +141,7 @@
                         </b-col>
                         <b-col cols="12" md="6" class="d-none">
                         <b-form-group label="" label-for="accounts" class="pr-md-3">
-                            <b-form-tags id="accounts" v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
+                            <b-form-tags id="accounts"  v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
                             separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete />
                         </b-form-group>
                         </b-col>
@@ -156,12 +156,15 @@
                         </b-col>
 
                         <b-col cols="12" md="4">
-                            <b-form-select v-model="formFilters.source" class="mb-2" :options="sourceOptions" />
+                            <b-form-select :disabled="loadingTimeline" v-model="formFilters.source" class="mb-2" :options="sourceOptions" />
                         </b-col>
 
                         <b-col cols="12" md="4">
 
-                        <b-form-select v-model="formFilters.sort_by" class="mb-2" :options="[
+                        <b-form-select 
+                            v-model="formFilters.sort_by" class="mb-2" 
+                            :disabled="loadingTimeline"
+                            :options="[
                             { value: 'asc', text: 'โพสต์เก่าสุด' },
                             { value: 'desc', text: 'โพสต์ล่าสุด' },
                             { value: 'engagement', text: 'Engagement' },
@@ -171,7 +174,8 @@
                         <b-col cols="12" md="4">
                         <section id="date-picker">
                             <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
-                            :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
+                            :disabled-date="(date) => date >= new Date()"
+                            :disabled="loadingTimeline" value-type="format" format="YYYY-MM-DD"
                             @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
                         </section>
                         </b-col>                                                                                                                      
@@ -195,19 +199,19 @@
                         </b-form-group>
                         </b-col> -->
                         <b-col cols="auto" md="auto">
-                        <div>
-                            <div class="align-self-end mb-3">
-                            <b-button type="submit" variant="info" class=" px-4" :disabled="loading">
-                                ค้นหา
-                            </b-button>
-                            <!-- <b-button variant="outline-secondary" @click="resetFilters" :disabled="loading">
-                            ล้างค่า
-                        </b-button> -->
+                            <div>
+                                <div class="align-self-end mb-3">
+                                <b-button type="submit" 
+                                variant="info" class="mr-2 px-4" :disabled="loadingTimeline">
+                                    ค้นหา
+                                </b-button>
+                                <b-button variant="outline-secondary" @click="resetFilters" :disabled="loadingTimeline">
+                                    ล้างค่า
+                                </b-button>
+                                </div>
                             </div>
-                        </div>
                         </b-col>
                     </b-row>
-
                     </b-form>
                 </b-card>
             </b-col>
@@ -216,12 +220,12 @@
                     ทั้งหมด <b data-v-633a0eda="">{{total_posts || 0 | numFormat}}</b> โพสต์
                 </div>
                 <vue-element-loading 
-                    :active="loading" class="h-100" size="80" 
+                    :active="loadingTimeline" class="h-100" size="80" 
                     background-color="rgba(255, 255, 255, 0.3)"
                     color="#b6ac9a" 
                 />
                 <Timeline :timelineItems="posts" :keyword="formFilters.keyword"/>
-                <b-col v-if="totalPage > 1" class="p-0 mb-5">
+                <b-col v-if="totalPage > 1 && !loadingTimeline" class="p-0 mb-5">
                     <b-row v-if="page !== totalPage && (totalPage > page)" class="justify-content-md-center align-items-center my-3 mx-0">
                         <div class="text-center">
                             <b-button @click="onPageChange" class="sort-btn" pill size="sm">
@@ -269,6 +273,7 @@ export default {
             posts: [],
             lastParamsSnapshot: null, // เก็บ params ล่าสุด
             loading: false,
+            loadingTimeline: false,
             groupDetails: {},
             openModal: false,
             search: '',
@@ -298,8 +303,6 @@ export default {
                 limit: 50,
                 page: 1,
                 hashtags: [],
-                // startLocal: "2025-09-16T00:00:00",
-                // endLocal: "2025-09-16T23:59:59"
             }
         }
     },
@@ -326,6 +329,21 @@ export default {
                 this.posts = []
                 this.apiGetPost();
             }
+        },
+        resetFilters() {
+            this.formFilters = {
+                sentiment: ["1", "0", "-1"],
+                keyword: "",
+                view_mode: "posts",
+                source: null,
+                sort_by: 'desc',
+                limit: 50,
+                page: 1,
+                hashtags: [],
+            }
+            this.page = 1; // รีเซ็ตกลับหน้าแรก
+            this.posts = []
+            this.apiGetPost();
         },
         handleSearch() {
             clearTimeout(this.debounceTimeout);
@@ -424,66 +442,64 @@ export default {
         //     }
         // }
         async apiGetPost() {
-            try {
-                // สร้าง params ใหม่
-                const params = {
-                    group_id: this.$route.query.id,
-                    // ...(this.selectedSource ? { source: this.selectedSource } : {}),
-                    keyword:this.formFilters.keyword,
-                    source: this.formFilters.source,
-                    sort_by: this.formFilters.sort_by,
-                    sentiment: this.formFilters.sentiment,
-                    from: this.valueDate[0],
-                    to: this.valueDate[1],
-                   
-                };
+            // try {
+            this.loadingTimeline = true
+            // สร้าง params ใหม่
+            const params = {
+                group_id: this.$route.query.id,
+                // ...(this.selectedSource ? { source: this.selectedSource } : {}),
+                keyword:this.formFilters.keyword,
+                source: this.formFilters.source,
+                sort_by: this.formFilters.sort_by,
+                sentiment: this.formFilters.sentiment,
+                from: this.valueDate[0],
+                to: this.valueDate[1],
+                
+            };
 
-                // ตรวจสอบว่า params เปลี่ยนหรือไม่ (ไม่รวม page และ limit)
-                const paramsChanged = JSON.stringify(params) !== JSON.stringify(this.lastParamsSnapshot);
+            // ตรวจสอบว่า params เปลี่ยนหรือไม่ (ไม่รวม page และ limit)
+            const paramsChanged = JSON.stringify(params) !== JSON.stringify(this.lastParamsSnapshot);
 
-                if (paramsChanged) {
-                    this.posts = []; // ลบสมาชิกเดิม
-                    this.page = 1;   // reset page
-                }
+            if (paramsChanged) {
+                this.posts = []; // ลบสมาชิกเดิม
+                this.page = 1;   // reset page
+            }
 
-                // เก็บ snapshot ของ params ล่าสุด (ยกเว้น page, limit)
-                this.lastParamsSnapshot = { ...params };
+            // เก็บ snapshot ของ params ล่าสุด (ยกเว้น page, limit)
+            this.lastParamsSnapshot = { ...params };
 
-                const config = {
-                    method: "get",
-                    url: "https://api2.cognizata.com/api/v2/monitor/getGroupPost",
-                    params: {
-                        ...params,
-                        page: this.page,
-                        limit: this.limit,
-                        querySearch: this.search || undefined, // ส่ง search ถ้ามีค่า
-                    },
-                    headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                    },
-                };
-                this.axios(config).then(response => {
-                    console.log('Posts fetched successfully:', response.data);
-                const newPosts =  response.data.posts.map(post => ({
-                    ...post,
-                    showAll: false,
-                }));
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getGroupPost",
+                params: {
+                    ...params,
+                    page: this.page,
+                    limit: this.limit,
+                    querySearch: this.search || undefined, // ส่ง search ถ้ามีค่า
+                },
+                headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+                },
+            };
+            // console.log('config ==== ', config);
+            
+            this.axios(config).then(response => {
+                console.log('Posts fetched successfully:', response.data);
+            const newPosts =  response.data.posts.map(post => ({
+                ...post,
+                showAll: false,
+            }));
                 this.posts = [ ...this.posts, ...newPosts];
                 this.page = response.data.current_page;
                 this.limit = response.data.limit;
                 this.total_posts = response.data.total_posts;
                 this.totalPage = response.data.total_pages
-                
-                }).catch(error => {
+                this.loadingTimeline = false;
+            }).catch(error => {
                 console.error('Error fetching posts:', error);
-                });
-            } catch (error) {
-                console.error("Error fetching posts:", error);
-                throw error;
-            }finally {
-                this.loading = false;
-            }
+                this.loadingTimeline = false;
+            });
         },
         async getGroupDetail() {
             this.loading = true;
