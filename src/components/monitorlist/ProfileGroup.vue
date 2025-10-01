@@ -260,7 +260,7 @@ export default {
     },
     data() {
         const today = moment();
-        const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
+        const past7Days = moment().subtract(2, 'days'); // รวมวันนี้ = 7 วัน
         return {
             valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
             selectedSource: null,
@@ -337,7 +337,7 @@ export default {
                 view_mode: "posts",
                 source: null,
                 sort_by: 'desc',
-                limit: 50,
+                // limit: 50,
                 page: 1,
                 hashtags: [],
             }
@@ -349,6 +349,7 @@ export default {
             clearTimeout(this.debounceTimeout);
             this.debounceTimeout = setTimeout(() => {
                 this.page = 1; // รีเซ็ตกลับหน้าแรก
+                this.limit = 10
                 this.posts = []
                 this.apiGetPost();
             }, 500);
@@ -369,6 +370,7 @@ export default {
         },
         resetPage() {
             this.page = 1;
+            this.limit = 10;
             this.posts = [];
             this.apiGetPost();
         },
@@ -454,7 +456,7 @@ export default {
                 sentiment: this.formFilters.sentiment,
                 from: this.valueDate[0],
                 to: this.valueDate[1],
-                
+                limit:this.limit
             };
 
             // ตรวจสอบว่า params เปลี่ยนหรือไม่ (ไม่รวม page และ limit)

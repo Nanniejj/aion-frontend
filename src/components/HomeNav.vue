@@ -428,7 +428,7 @@
                   :style="dropdownStyle"
                   :class="{ dropdownStyle: $route.path === '/imagesearch' }"
                   id="dp-txt"
-                >Imgae</router-link>
+                >Image</router-link>
               </b-dropdown-item>
 
 
