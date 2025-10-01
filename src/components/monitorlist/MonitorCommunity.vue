@@ -101,7 +101,7 @@
                             <span class="small"> {{ formatDate(data.item.insert_timestamp) }}</span>
                         </template>
                         <template #cell(bot_timestamp)="data" v-if="username === 'adminatapy'">
-                            <span v-if="data.item.latest_bot_update" class="small"> {{ formatDate(data.item.latest_bot_update) }}</span>
+                            <span v-if="data.item.latest_bot_update" class="small"> {{ formatBotDate(data.item.latest_bot_update) }}</span>
                             <span v-else class="small"> - </span>
                         </template>
 
@@ -287,6 +287,19 @@ export default {
             const formattedTime = `${hours}:${minutes}:${seconds}`;
 
             return `${day}/${month}/${year} , ${formattedTime}`;
+        },
+        formatBotDate(dateStr) {
+            const date = new Date(dateStr);
+            // ✅ ใช้ UTC เพื่อไม่ให้บวกเวลาเพิ่ม
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const year = date.getUTCFullYear();
+
+            const hours = String(date.getUTCHours()).padStart(2, '0');
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+
+            return `${day}/${month}/${year} , ${hours}:${minutes}:${seconds}`;
         },
         async getPreview() {
             const url = 'https://www.facebook.com/groups/jjookklong3';
