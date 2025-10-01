@@ -62,6 +62,14 @@
                     >
                 </div>
             </b-col>
+            <!-- <b-col v-if="tabsMonitor == 'targetlist'" sm="12" class="px-0">
+                <div>
+                    <b-alert show
+                    >ตัวอย่างการใส่ข้อมูล <br />ใส่คำที่ต้องการโดย<b> ไม่ต้องใส่ #</b>
+                    เช่น #การเมือง ให้ใส่ <b>การเมือง</b></b-alert
+                    >
+                </div>
+            </b-col> -->
             <!--------------------------------------------------profile --------------------------------------------------------------->
             <b-col sm="12" class="px-0" v-if="tabsMonitor == 'targetlist'">
                 <label class="mt-3" for="textarea-default"><b>url บัญชี ({{ addTarget.length }})</b></label>
@@ -407,6 +415,8 @@ export default {
             return 'news';
         },
         onTagsInput(tags) {
+            console.log("url ==== ",tags);
+            
             // ✨ 1. Normalize URLs
             let normalizedTags = tags.map(tag => this.normalizeUrl(tag));
 
@@ -424,7 +434,32 @@ export default {
                 });
                 normalizedTags = normalizedTags.slice(0, 100);
             }
+            // 🚫 ห้ามลิงก์ Facebook group (ตรวจทุก subdomain เช่น www, web, m, business ฯลฯ)
+            console.log("normalizedTags ------ ",normalizedTags);
+            
+            // 🚫 ลบลิงก์ Facebook group ออกไปเลย
+            normalizedTags = normalizedTags.filter(tag => {
+                try {
+                    const urlObj = new URL(tag.trim());
+                    const hostname = urlObj.hostname.toLowerCase();
+                    const pathname = urlObj.pathname.toLowerCase();
 
+                    // ถ้าเจอ group → alert และไม่เก็บ
+                    if (hostname.endsWith('facebook.com') && pathname.startsWith('/groups/')) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'ไม่สามารถเพิ่มกลุ่ม Facebook ได้',
+                            text: 'กรุณาใช้ลิงก์จากเพจหรือโปรไฟล์แทน',
+                            showConfirmButton: true
+                        });
+                        return false; // ❌ filter ทิ้ง
+                    }
+                } catch (e) {
+                    // ถ้าไม่ใช่ URL ที่ถูกต้องก็เก็บไว้ (ไม่ตัดทิ้ง)
+                    return true;
+                }
+                return true; // ✅ เก็บไว้
+            });
             
             if (this.tabsMonitor === 'targetlist') {
                 // ✨ 2. Sync addTarget
@@ -535,6 +570,7 @@ export default {
                 return false;
             }
 
+            
             // ✅ อนุญาตเฉพาะแพลตฟอร์มที่กำหนด
             // const allowedHosts = [
             //     'facebook.com', 'www.facebook.com',
