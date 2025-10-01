@@ -95,7 +95,7 @@
                 :day-loading="dayLoadingMap && dayLoadingMap[day.date]" />
             </div>
 
-            <div v-else class="text-muted small mx-2">ไม่มีข้อมูลในวันนี้</div>
+            <div v-else class="text-muted small mx-2">ไม่มีข้อมูล  {{ formatDay(day.date) }} {{ formatMoth(day.date) }}</div>
           </div>
         </div>
       </template>

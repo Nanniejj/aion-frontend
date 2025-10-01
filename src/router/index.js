@@ -496,7 +496,7 @@ const routes = [
       )
   },
   {
-    path: "/searchimage",
+    path: "/imagesearch",
     name: "SearchImg",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -507,7 +507,7 @@ const routes = [
       )
   },
   {
-    path: "/searchimage/post",
+    path: "/imagesearch/post",
     name: "SearchImgPost",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route

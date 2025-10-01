@@ -6,20 +6,19 @@
       </router-link>
     </div>
 
-    <div class="row justify-content-end colorbg  align-items-center">
-     
-        <i
-          class="txt-icon fas fa-user-circle"
-          style="margin-left: 10px; font-size: 24px; color: #fed16e"
-        ></i
-        ><span id="user" class="ml-1 mr-2">{{ username }}</span>
+    <div class="row justify-content-end colorbg align-items-center">
+      <i
+        class="txt-icon fas fa-user-circle"
+        style="margin-left: 10px; font-size: 24px; color: #fed16e"
+      ></i>
+      <span id="user" class="ml-1 mr-2">{{ username }}</span>
 
       <div class="txt-lo" data-toggle="modal" data-target="#myModal">
         <a style="color: #fed16e; margin-top: -2rem">Logout</a>
       </div>
     </div>
 
-    <!------------------------------------------------ phone ver. ---------------------------------------------------------- -->
+    <!-- ============================ PHONE NAV ============================ -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light" id="nav-phone">
       <a class="navbar-brand"></a>
       <button
@@ -36,325 +35,273 @@
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto" id="nav-bar">
-          <!-- <li class="nav-item" id="li-nav">
-            <router-link to="/home" tag="p" exact
-              ><a class="nav-link">
-                <img src="../assets/home.png" alt="logo" class="img-nav" />
-                <strong>Home</strong></a
-              ></router-link
-            >
+          <li class="nav-item" id="li-nav">
+            <router-link to="/domain" tag="p" exact>
+              <a class="nav-link">
+                <img src="../assets/Dashboard.png" alt="logo" class="img-nav" />
+                <strong>Domain</strong>
+              </a>
+            </router-link>
+          </li>
 
-          </li> -->
-          <li class="nav-item" id="li-nav" >
-            <router-link to="/domain" tag="p" exact
-              ><a class="nav-link"
-                ><img
-                  src="../assets/Dashboard.png"
-                  alt="logo"
-                  class="img-nav"
-                /><strong>Domain</strong></a
-              ></router-link
-            >
-            <!-- <hr class="line-nav"> -->
-          </li>
-          <li class="nav-item" id="li-nav" >
-            <router-link to="/platform" tag="p" exact
-              ><a class="nav-link"
-                ><img
-                  src="../assets/Sentiment.png"
-                  alt="logo"
-                  class="img-nav"
-                /><strong>Platform</strong></a
-              ></router-link
-            >
-            <!-- <hr class="line-nav"> -->
-          </li>
           <li class="nav-item" id="li-nav">
-            <router-link to="/wordcloud" tag="p"
-              ><a class="nav-link"
-                ><img
-                  src="../assets/Wordcloud.png"
-                  alt="logo"
-                  class="img-nav"
-                /><strong>Wordcloud</strong></a
-              ></router-link
-            >
-            <!-- <hr class="line-nav"> -->
+            <router-link to="/platform" tag="p" exact>
+              <a class="nav-link">
+                <img src="../assets/Sentiment.png" alt="logo" class="img-nav" />
+                <strong>Platform</strong>
+              </a>
+            </router-link>
           </li>
+
           <li class="nav-item" id="li-nav">
-            <router-link to="/ranking" tag="p"
-              ><a class="nav-link"
-                ><img
-                  src="../assets/Ranking.png"
-                  alt="logo"
-                  class="img-nav"
-                /><strong>Ranking</strong></a
-              ></router-link
-            >
+            <router-link to="/wordcloud" tag="p">
+              <a class="nav-link">
+                <img src="../assets/Wordcloud.png" alt="logo" class="img-nav" />
+                <strong>Wordcloud</strong>
+              </a>
+            </router-link>
           </li>
-          <li class="nav-item" id="li-nav" >
-            <router-link to="/map" tag="p"
-              ><a class="nav-link"
-                ><img
+
+          <li class="nav-item" id="li-nav">
+            <router-link to="/ranking" tag="p">
+              <a class="nav-link">
+                <img src="../assets/Ranking.png" alt="logo" class="img-nav" />
+                <strong>Ranking</strong>
+              </a>
+            </router-link>
+          </li>
+
+          <li class="nav-item" id="li-nav">
+            <router-link to="/map" tag="p">
+              <a class="nav-link">
+                <img
                   src="../assets/mapx.png"
                   alt="logo"
                   class="img-nav"
                   style="margin-bottom: 8px"
-                /><strong>Map</strong><span class="small"> (beta)</span></a
-              ></router-link
-            >
+                />
+                <strong>Map</strong><span class="small"> (beta)</span>
+              </a>
+            </router-link>
           </li>
-          <!-- <li class="nav-item" id="li-nav" >
-            <router-link to="/influencertop" tag="p"
-              ><a class="nav-link"
-                ><img
-                  src="@/assets/Influ.png"
-                  alt="logo"
-                  class="img-nav"
-                /><strong>Top Influencer</strong></a
-              ></router-link
-            >
-          </li> -->
-          <li
-            class=" nav-item dropdown"
-            id="li-nav"
-          >
+
+          <!-- Influencer -->
+          <li class="nav-item dropdown" id="li-nav">
             <a
               class="nav-link dropdown-toggle"
-              id="navbarDropdown"
+              id="navbarDropdownInfluencerPhone"
               role="button"
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
               tag="p"
-              :class="{ 'router-link-exact-active': isActive2 }"
+              :class="{ 'router-link-exact-active': isActiveInfluencer }"
             >
-              <img
-                src="@/assets/Influ.png"
-                alt="logo"
-                class="img-nav"
-              /><strong>Influencer</strong>
+              <img src="@/assets/Influ.png" alt="logo" class="img-nav" />
+              <strong>Influencer</strong>
             </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownInfluencerPhone">
               <router-link
                 to="/influencertop"
                 class="dropdown-item"
-                :class="{ dropdownStyle: isActive10 }"
+                :class="{ dropdownStyle: $route.path === '/influencertop' }"
                 id="nav-router"
-                ><center><strong>Top Influencer</strong></center></router-link
               >
+                <center><strong>Top Influencer</strong></center>
+              </router-link>
+
               <router-link
                 to="/influencerHub"
                 class="dropdown-item"
-                :class="{ dropdownStyle: isActive11 }"
+                :class="{ dropdownStyle: $route.path === '/influencerHub' }"
                 id="nav-router"
-                ><center><strong>Influencer Hub</strong></center></router-link
               >
-             
-
-              <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
+                <center><strong>Influencer Hub</strong></center>
+              </router-link>
             </div>
           </li>
-          <!-- <li class="nav-item " id="li-nav"  v-if="username =='adminatapy'|| username =='adminpeach'">
-          <a class="nav-link" href="https://link.cognizata.com" target="_blank"
-                ><img
-                 src="@/assets/Infurncer.png"
-                  alt="logo"
-                  class="img-nav"
-                  style="margin-bottom: 8px"
-                /><strong>Link</strong></a
-              >
-          </li> -->
 
-          <li class="nav-item" id="li-nav" >
-            <router-link to="/hotissue" tag="p"
-              ><a class="nav-link"
-                ><img
-                  src="../assets/Hotissue.png"
-                  alt="logo"
-                  class="img-nav"
-                  style="margin-bottom: 8px"
-                /><strong>Hot Issue </strong>
-                <span class="small"> </span></a
-              ></router-link
+          <!-- Hot Issue (now dropdown, default click → /timeline) -->
+          <li class="nav-item dropdown" id="li-nav">
+            <a
+              class="nav-link dropdown-toggle"
+              id="navbarDropdownHotPhone"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              tag="p"
+               :class="{ 'router-link-exact-active': isPathHotIssue }"
             >
+             <img src="@/assets/Evaluation.png" alt="logo" class="img-nav" />
+              <!-- <img src="../assets/Hotissue.png" alt="logo" class="img-nav" /> -->
+              <strong>Search</strong><span class="small"> </span>
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownHotPhone">
+              <router-link
+                to="/timeline"
+                class="dropdown-item"
+                :class="{ dropdownStyle: $route.path === '/timeline' }"
+                id="nav-router"
+              >
+                <center><strong>Timeline</strong></center>
+              </router-link>
+              <router-link
+                to="/imagesearch"
+                class="dropdown-item"
+                :class="{ dropdownStyle: $route.path === '/imagesearch' }"
+                id="nav-router"
+              >
+                <center><strong>Image</strong></center>
+              </router-link>
+              <router-link
+                to="/hotissue"
+                class="dropdown-item"
+                :class="{ dropdownStyle: $route.path === '/hotissue' }"
+                id="nav-router"
+              >
+                <center><strong>Hot Issue</strong></center>
+              </router-link>
+            </div>
           </li>
-          <li class="nav-item d-none" id="li-nav" >
-            <router-link to="/keyword" tag="p"
-              ><a class="nav-link"
-                ><img
+
+
+          <!-- Monitor (moved Avatar here, removed Timeline) -->
+          <li class="nav-item dropdown" id="li-nav">
+            <a
+              class="nav-link dropdown-toggle"
+              id="navbarDropdownMonitorPhone"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              tag="p"
+              :class="{ 'router-link-exact-active': isActiveMonitor }"
+            >
+              <img src="../assets/monitor.png" alt="logo" class="img-nav" />
+              <strong>Monitor</strong>
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMonitorPhone">
+              <router-link
+                to="/monitorlist"
+                class="dropdown-item"
+                :class="{ dropdownStyle: $route.path === '/monitorlist' }"
+                id="nav-router"
+              >
+                <center><strong>Monitor</strong></center>
+              </router-link>
+              <router-link
+                to="/feed"
+                class="dropdown-item d-none"
+                :class="{ dropdownStyle: $route.path === '/feed' }"
+                id="nav-router"
+              >
+                <center><strong>Feed</strong></center>
+              </router-link>
+              <router-link
+                to="/report"
+                class="dropdown-item d-none"
+                :class="{ dropdownStyle: $route.path === '/report' }"
+                id="nav-router"
+              >
+                <center><strong>Report</strong></center>
+              </router-link>
+              <router-link
+                to="/avatar"
+                class="dropdown-item"
+                :class="{ dropdownStyle: $route.path === '/avatar' }"
+                id="nav-router"
+              >
+                <center><strong>Avatar</strong></center>
+              </router-link>
+            </div>
+          </li>
+
+          
+          <!-- Keyword (hidden) -->
+          <li class="nav-item d-none" id="li-nav">
+            <router-link to="/keyword" tag="p">
+              <a class="nav-link">
+                <img
                   src="../assets/keyword2.png"
                   alt="logo"
                   class="img-nav"
                   style="margin-bottom: 8px"
-                /><strong>Keyword</strong>
-                <span class="small"> </span></a
-              ></router-link
-            >
+                />
+                <strong>Keyword</strong>
+                <span class="small"> </span>
+              </a>
+            </router-link>
           </li>
-          <!-- <li class="nav-item" id="li-nav" >
-            <router-link to="/monitor" tag="p"
-              ><a class="nav-link"
-                ><img
-                  src="../assets/monitor.png"
-                  alt="logo"
-                  class="img-nav"
-                  style="margin-bottom: 8px"
-                /><strong>Monitor</strong></a
-              ></router-link
-            >
-          </li> -->
-          <li
-            class=" nav-item dropdown"
-            id="li-nav"
-          >
-            <a
-              class="nav-link dropdown-toggle"
-              id="navbarDropdown"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              tag="p"
-              :class="{ 'router-link-exact-active': isActive2 }"
-            >
-              <img
-                src="../assets/monitor.png"
-                alt="logo"
-                class="img-nav"
-              /><strong>Monitor</strong>
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <router-link
-                to="/monitorlist"
-                class="dropdown-item"
-                :class="{ dropdownStyle: isActive10 }"
-                id="nav-router"
-                ><center><strong>Monitor</strong></center></router-link
-              >
-              <router-link
-                to="/feed"
-                class="dropdown-item"
-                :class="{ dropdownStyle: isActive11 }"
-                id="nav-router"
-                ><center><strong>Feed</strong></center></router-link
-              >
-              <router-link
-                to="/report"
-                class="dropdown-item"
-                :class="{ dropdownStyle: isActive12 }"
-                id="nav-router"
-                ><center><strong>Report</strong></center></router-link
-              >
-              <router-link
-                to="/timeline"
-                class="dropdown-item"
-                :class="{ dropdownStyle: isActive13 }"
-                id="nav-router"
-                ><center><strong>Timeline</strong></center></router-link
-              >
 
-              <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
-            </div>
-          </li>
-          <li
-          
-            class=" nav-item dropdown"
-            id="li-nav"
-          >
+          <!-- Evaluation now only Gsearch -->
+          <li class="nav-item dropdown d-none" id="li-nav" >
             <a
               class="nav-link dropdown-toggle"
-        
-              id="navbarDropdown"
+              id="navbarDropdownEvalPhone"
               role="button"
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
               tag="p"
-              :class="{ 'router-link-exact-active': isActive }"
+              :class="{ 'router-link-exact-active': isActiveEvaluation }"
             >
-              <img
-                src="../assets/Evaluation.png"
-                alt="logo"
-                class="img-nav"
-              /><strong>Evaluation</strong>
+              <img src="../assets/Evaluation.png" alt="logo" class="img-nav" />
+              <strong>Evaluation</strong>
             </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <router-link
-                to="/avatar"
-                class="dropdown-item"
-                :class="{ dropdownStyle: isActive5 }"
-                id="nav-router"
-                ><center><strong>Avatar</strong></center></router-link
-              >
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownEvalPhone">
               <router-link
                 to="/gsearch"
                 class="dropdown-item"
-                :class="{ dropdownStyle: isActive4 }"
+                :class="{ dropdownStyle: $route.path === '/gsearch' }"
                 id="nav-router"
-                ><center><strong>Gsearch</strong></center></router-link
               >
-              <!-- <router-link to="/getrelation" class="dropdown-item" :class="{ 'dropdownStyle': isActive9 }" id="nav-router"><center><strong>Relation Post</strong></center></router-link> -->
+                <center><strong>Gsearch</strong></center>
+              </router-link>
             </div>
           </li>
-          <li class="nav-item" id="li-nav" >
-            <router-link to="/setting" tag="p"
-              ><a class="nav-link"
-                ><img
+
+          <li class="nav-item" id="li-nav">
+            <router-link to="/setting" tag="p">
+              <a class="nav-link">
+                <img
                   src="../assets/Setting.png"
                   alt="logo"
                   class="img-nav"
                   style="margin-bottom: 8px"
-                /><strong>Setting</strong></a
-              ></router-link
-            >
+                />
+                <strong>Setting</strong>
+              </a>
+            </router-link>
           </li>
-          <li
-            class="nav-item"
-            id="li-nav"
-            v-if="seen"
-          >
-            <router-link to="/templateusermanagement" tag="p"
-              ><a class="nav-link"
-                ><img
+
+          <li class="nav-item" id="li-nav" v-if="seen">
+            <router-link to="/templateusermanagement" tag="p">
+              <a class="nav-link">
+                <img
                   src="../assets/userx.png"
                   alt="logo"
                   class="img-nav"
                   style="margin-bottom: 8px"
-                /><strong>User Management</strong></a
-              ></router-link
-            >
+                />
+                <strong>User Management</strong>
+              </a>
+            </router-link>
           </li>
         </ul>
       </div>
     </nav>
-    <!-- -------------------------------------------------------- -->
 
-    <!-- navbar -->
+    <!-- ============================ DESKTOP NAV ============================ -->
     <b-navbar toggleable="sm" type="light" variant="light" id="nav-desktop">
       <b-navbar-toggle target="nav-text-collapse"></b-navbar-toggle>
       <b-collapse
         id="nav-text-collapse"
         is-nav
-        class="
-          navbar navbar-expand-sm
-          bg-light
-          navbar-light
-          justify-content-center
-        "
+        class="navbar navbar-expand-sm bg-light navbar-light justify-content-center"
       >
         <b-navbar-nav>
-          <!-- <b-nav-item id="nav-con1">
-            <router-link to="/home" tag="p" exact>
-              <a class="nav-link">
-                <img src="@/assets/home.png" alt="logo" class="img-nav" />
-                <a class="nav-link titlenav">
-                  <strong>Home</strong>
-                </a>
-              </a>
-            </router-link>
-          </b-nav-item> -->
-          <b-nav-item id="nav-con1" >
+          <b-nav-item id="nav-con1">
             <router-link to="/domain" tag="p" exact>
               <a class="nav-link">
                 <img src="@/assets/Dashboard.png" alt="logo" class="img-nav" />
@@ -364,7 +311,8 @@
               </a>
             </router-link>
           </b-nav-item>
-          <b-nav-item id="nav-con1" >
+
+          <b-nav-item id="nav-con1">
             <router-link to="/platform" tag="p" exact>
               <a class="nav-link">
                 <img src="@/assets/Sentiment.png" alt="logo" class="img-nav" />
@@ -374,7 +322,8 @@
               </a>
             </router-link>
           </b-nav-item>
-          <b-nav-item id="nav-con2" >
+
+          <b-nav-item id="nav-con2">
             <router-link to="/wordcloud" tag="p">
               <a class="nav-link">
                 <img src="@/assets/Wordcloud.png" alt="logo" class="img-nav" />
@@ -384,7 +333,8 @@
               </a>
             </router-link>
           </b-nav-item>
-          <b-nav-item id="nav-con1" >
+
+          <b-nav-item id="nav-con1">
             <router-link to="/ranking" tag="p">
               <a class="nav-link">
                 <img src="@/assets/Ranking.png" alt="logo" class="img-nav" />
@@ -394,8 +344,8 @@
               </a>
             </router-link>
           </b-nav-item>
-          <!-- {{ username }} -->
-          <b-nav-item id="nav-con1"  class="" >
+
+          <b-nav-item id="nav-con1">
             <router-link to="/map" tag="p">
               <a class="nav-link">
                 <img src="@/assets/mapx.png" alt="logo" class="img-nav" />
@@ -405,142 +355,158 @@
               </a>
             </router-link>
           </b-nav-item>
-          <!-- <b-nav-item id="nav-con3">
-            <router-link to="/home/clustering" tag="p">
-              <a class="nav-link">
-                <img src="@/assets/Clustering.png" alt="logo" class="img-nav" />
-                <a class="nav-link titlenav">
-                  <strong>Clustering</strong>
-                </a>
-              </a>
-            </router-link>
-          </b-nav-item>-->
 
-           <b-nav-item id="nav-con1" >
+          <!-- Influencer -->
+          <b-nav-item id="nav-con1">
+            <b-nav-item-dropdown no-caret id="dp-color" class="">
+              <template slot="button-content">
+                <a class="nav-link" data-toggle="tab" tag="p" style="padding: 0">
+                  <img src="@/assets/Influ.png" alt="logo" class="img-nav" />
+                  <a class="nav-link titlenav">
+                    <strong>Influencer</strong>
+                  </a>
+                </a>
+              </template>
+
+              <b-dropdown-item to="/influencertop">
+                <router-link
+                  to="/influencertop"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: $route.path === '/influencertop' }"
+                  id="dp-txt"
+                >Top Influencer</router-link>
+              </b-dropdown-item>
+
+              <b-dropdown-item to="/influencerHub">
+                <router-link
+                  to="/influencerHub"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: $route.path === '/influencerHub' }"
+                  id="dp-txt"
+                >Influencer Hub</router-link>
+              </b-dropdown-item>
+            </b-nav-item-dropdown>
+          </b-nav-item>
+
+
+          
+          <!-- Hot Issue (dropdown; button click → /timeline) -->
+          <b-nav-item id="nav-con1">
             <b-nav-item-dropdown no-caret id="dp-color" class="">
               <template slot="button-content">
                 <a
                   class="nav-link"
                   data-toggle="tab"
                   tag="p"
-                  :class="{ 'router-link-exact-active': isActive2 }"
+                 :class="{ 'router-link-exact-active': isPathHotIssue }"
                   style="padding: 0"
                 >
-                  <img
-                    src="@/assets/Influ.png"
-                    alt="logo"
-                    class="img-nav"
-                  />
+                  <!-- <img src="@/assets/Hotissue.png" alt="logo" class="img-nav" /> -->
+                    <img src="@/assets/Evaluation.png" alt="logo" class="img-nav" />
                   <a class="nav-link titlenav">
-                    <strong>Influencer</strong>
+                    <strong>Search</strong><span class="small"> </span>
                   </a>
                 </a>
               </template>
-              <b-dropdown-item  to="/influencertop">
+
+              <b-dropdown-item to="/timeline">
                 <router-link
-                  to="/influencertop"
+                  to="/timeline"
                   tag="a"
                   :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive10 }"
+                  :class="{ dropdownStyle: $route.path === '/timeline' }"
                   id="dp-txt"
-                >
-                    Top Influencer
-                </router-link>
-              </b-dropdown-item>
-              <b-dropdown-item  to="/influencerHub">
-                <router-link
-                  to="/influencerHub"
-                  tag="a"
-                  :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive13}"
-                  id="dp-txt"
-                  >Influencer Hub
-                </router-link>
+                >Timeline</router-link>
               </b-dropdown-item>
               
+              <b-dropdown-item to="/imagesearch">
+                <router-link
+                  to="/imagesearch"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: $route.path === '/imagesearch' }"
+                  id="dp-txt"
+                >Imgae</router-link>
+              </b-dropdown-item>
+
+
+              <b-dropdown-item to="/hotissue">
+                <router-link
+                  to="/hotissue"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: $route.path === '/hotissue' }"
+                  id="dp-txt"
+                >Hot Issue</router-link>
+              </b-dropdown-item>
             </b-nav-item-dropdown>
           </b-nav-item>
-         
 
-          <!-- <b-nav-item id="nav-con1" class=""  href="https://link.cognizata.com" target="_blank" v-if="username =='adminatapy'|| username =='adminpeach'">
-              <a class="nav-link"  >
-                <img src="@/assets/Infurncer.png" alt="logo" class="img-nav" />
-                <div class="nav-link titlenav">
-                  <strong> Link</strong>
-                </div>
-              </a>
-          </b-nav-item> -->
-          <!-- <b-nav-item>
-            <b-nav-item-dropdown no-caret menu-class="item-css" id="nav-con1">
+          <!-- Monitor (moved Avatar here, removed Timeline) -->
+          <b-nav-item id="nav-con1">
+            <b-nav-item-dropdown no-caret id="dp-color" class="">
               <template slot="button-content">
                 <a
                   class="nav-link"
-                  :class="{ 'router-link-exact-active': isActive2 }"
-                  style="padding: 0;"
+                  data-toggle="tab"
+                  tag="p"
+                  :class="{ 'router-link-exact-active': isActiveMonitor }"
+                  style="padding: 0"
                 >
-                  <img src="@/assets/Infurncer.png" alt="logo" class="img-nav" />
+                  <img src="@/assets/monitor.png" alt="logo" class="img-nav" />
                   <a class="nav-link titlenav">
-                    <strong>Influencer</strong>
+                    <strong>Monitor</strong>
                   </a>
                 </a>
               </template>
-              <b-dropdown-item>
+
+              <b-dropdown-item to="/monitorlist">
                 <router-link
-                  to="/influencertop"
+                  to="/monitorlist"
                   tag="a"
                   :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive6 }"
+                  :class="{ dropdownStyle: $route.path === '/monitorlist' }"
                   id="dp-txt"
-                >Top Influencer</router-link>
+                >Monitor</router-link>
               </b-dropdown-item>
-               <b-dropdown-item>
+
+              <b-dropdown-item to="/feed" class="d-none">
                 <router-link
-                  to="/influencerlink"
+                  to="/feed"
                   tag="a"
                   :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive7 }"
+                  :class="{ dropdownStyle: $route.path === '/feed' }"
                   id="dp-txt"
-                >Influencer Link</router-link>
+                >Feed</router-link>
+              </b-dropdown-item>
+
+              <b-dropdown-item to="/report" class="d-none">
+                <router-link
+                  to="/report"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: $route.path === '/report' }"
+                  id="dp-txt"
+                >Report</router-link>
+              </b-dropdown-item>
+
+              <b-dropdown-item to="/avatar">
+                <router-link
+                  to="/avatar"
+                  tag="a"
+                  :style="dropdownStyle"
+                  :class="{ dropdownStyle: $route.path === '/avatar' }"
+                  id="dp-txt"
+                >Avatar</router-link>
               </b-dropdown-item>
             </b-nav-item-dropdown>
-          </b-nav-item> -->
-          <!-- <b-nav-item id="nav-con4">
-            <router-link to="/home/link" tag="p">
-              <a class="nav-link">
-                <img src="@/assets/Newslink.png" alt="logo" class="img-nav" />
-                <a class="nav-link titlenav">
-                  <strong>News Link</strong>
-                </a>
-              </a>
-            </router-link>
-          </b-nav-item> 
-          <b-nav-item id="nav-con1">
-            <router-link to="/gsearch" tag="p">
-              <a class="nav-link">
-                <img src="@/assets/Evaluation.png" alt="logo" class="img-nav" />
-                <a class="nav-link titlenav">
-                  <strong>Gsearch</strong>
-                </a>
-              </a>
-            </router-link>
-          </b-nav-item>-->
-
-          
-         
-
-          <b-nav-item id="nav-con1" >
-            <router-link to="/hotissue" tag="p">
-              <a class="nav-link">
-                <img src="@/assets/Hotissue.png" alt="logo" class="img-nav" />
-                <a class="nav-link titlenav">
-                  <strong>Hot Issue</strong><span class="small"> </span>
-                </a>
-              </a>
-            </router-link>
           </b-nav-item>
 
-          
-          <b-nav-item id="nav-con1" class="d-none" >
+
+          <!-- Keyword (hidden) -->
+          <b-nav-item id="nav-con1" class="d-none">
             <router-link to="/keyword" tag="p">
               <a class="nav-link">
                 <img src="@/assets/keyword2.png" alt="logo" class="img-nav" />
@@ -551,121 +517,36 @@
             </router-link>
           </b-nav-item>
 
-          <!-- <b-nav-item id="nav-con1" >
-            <router-link to="/monitor" tag="p">
-              <a class="nav-link">
-                <img src="@/assets/monitor.png" alt="logo" class="img-nav" />
-                <a class="nav-link titlenav">
-                  <strong>Monitor</strong>
-                </a>
-              </a>
-            </router-link>
-          </b-nav-item> -->
-          <b-nav-item id="nav-con1" >
+          <!-- Evaluation now only Gsearch -->
+          <b-nav-item id="nav-con1" class="d-none">
             <b-nav-item-dropdown no-caret id="dp-color" class="">
               <template slot="button-content">
                 <a
                   class="nav-link"
                   data-toggle="tab"
                   tag="p"
-                  :class="{ 'router-link-exact-active': isActive2 }"
+                  :class="{ 'router-link-exact-active': isActiveEvaluation }"
                   style="padding: 0"
                 >
-                  <img
-                    src="@/assets/monitor.png"
-                    alt="logo"
-                    class="img-nav"
-                  />
-                  <a class="nav-link titlenav">
-                    <strong>Monitor</strong>
-                  </a>
-                </a>
-              </template>
-              <b-dropdown-item  to="/monitorlist">
-                <router-link
-                  to="/monitorlist"
-                  tag="a"
-                  :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive10 }"
-                  id="dp-txt"
-                  >Monitor</router-link
-                >
-              </b-dropdown-item>
-              <b-dropdown-item  to="/timeline">
-                <router-link
-                  to="/timeline"
-                  tag="a"
-                  :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive13}"
-                  id="dp-txt"
-                  >Timeline</router-link
-                >
-              </b-dropdown-item>
-              <b-dropdown-item  to="/feed">
-                <router-link
-                  to="/feed"
-                  tag="a"
-                  :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive11}"
-                  id="dp-txt"
-                  >Feed</router-link
-                >
-              </b-dropdown-item>
-              <b-dropdown-item to="/report">
-                <router-link
-                  to="/report"
-                  tag="a"
-                  :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive12 }"
-                  id="dp-txt"
-                  >Report</router-link
-                >
-              </b-dropdown-item>
-            </b-nav-item-dropdown>
-          </b-nav-item>
-          <b-nav-item id="nav-con1" >
-            <b-nav-item-dropdown no-caret id="dp-color" class=""  >
-              <template slot="button-content">
-                <a
-                  class="nav-link"
-                  data-toggle="tab"
-                  tag="p"
-                  :class="{ 'router-link-exact-active': isActive }"
-                  style="padding: 0"
-                >
-                  <img
-                    src="@/assets/Evaluation.png"
-                    alt="logo"
-                    class="img-nav"
-                  />
+                  <img src="@/assets/Evaluation.png" alt="logo" class="img-nav" />
                   <a class="nav-link titlenav">
                     <strong>Evaluation</strong>
                   </a>
                 </a>
               </template>
-              <b-dropdown-item to="/avatar">
-                <router-link
-                  to="/avatar"
-                  tag="a"
-                  :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive5 }"
-                  id="dp-txt"
-                  >Avatar</router-link
-                >
-              </b-dropdown-item>
               <b-dropdown-item to="/gsearch">
                 <router-link
                   to="/gsearch"
                   tag="a"
                   :style="dropdownStyle"
-                  :class="{ dropdownStyle: isActive4 }"
+                  :class="{ dropdownStyle: $route.path === '/gsearch' }"
                   id="dp-txt"
-                  >Gsearch</router-link
-                >
+                >Gsearch</router-link>
               </b-dropdown-item>
             </b-nav-item-dropdown>
           </b-nav-item>
-          <b-nav-item id="nav-con1" >
+
+          <b-nav-item id="nav-con1">
             <router-link to="/setting" tag="p">
               <a class="nav-link">
                 <img src="@/assets/Setting.png" alt="logo" class="img-nav" />
@@ -686,7 +567,6 @@
               </a>
             </router-link>
           </b-nav-item>
-
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
@@ -698,7 +578,6 @@
     <!-- Modal -->
     <div class="modal fade md-font" id="myModal" role="dialog">
       <div class="modal-dialog">
-        <!-- Modal content-->
         <div class="modal-content">
           <div class="modal-header" style="margin-right: 10px">
             <h4 class="modal-title md-font mt-2">Logout</h4>
@@ -733,6 +612,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import { mapGetters } from "vuex";
 export default {
@@ -749,12 +629,40 @@ export default {
       },
     };
   },
+  computed: {
+    ...mapGetters(["getToSection"]),
 
+    // กลุ่ม Influencer (สำหรับ active class ที่ปุ่ม dropdown)
+    isActiveInfluencer() {
+      return this.$route.path === "/influencertop" || this.$route.path === "/influencerHub";
+    },
+
+    // กลุ่ม Monitor: Monitor/Feed/Report/Avatar (timeline ถูกย้ายออก)
+    isActiveMonitor() {
+      return (
+        this.$route.path === "/monitor" ||
+        this.$route.path === "/monitorlist" ||
+        this.$route.path === "/feed" ||
+        this.$route.path === "/report" ||
+        this.$route.path === "/avatar"
+      );
+    },
+
+    // กลุ่ม Evaluation: ตอนนี้เหลือเฉพาะ Gsearch
+    isActiveEvaluation() {
+      return this.$route.path === "/gsearch";
+    },
+
+    // ใช้เช็คว่าตอนนี้อยู่หน้า hotissue หรือไม่ (รองรับชื่อ route ไม่แน่นอน)
+    isPathHotIssue() {
+      return this.$route.path === "/hotissue"||this.$route.path === "/timeline" || this.$route.path === "/imagesearch";
+    },
+  },
   methods: {
-    showLoading: function() {
+    showLoading() {
       this.allStyle.pointerEvents = "none";
     },
-    stopLoading: function() {
+    stopLoading() {
       this.allStyle.pointerEvents = "all";
     },
     ConfirmLogout() {
@@ -764,7 +672,7 @@ export default {
       localStorage.removeItem("domainArr");
       localStorage.removeItem("issue");
       localStorage.removeItem("roleMion");
-      localStorage.removeItem('tabMonitor')
+      localStorage.removeItem("tabMonitor");
       this.$store.commit("setListProfile", {
         targetlist: [],
         hashtaglist: [],
@@ -790,68 +698,11 @@ export default {
       this.$router.push("login");
     },
   },
-  computed: {
-    ...mapGetters(["getToSection"]),
-    isActive() {
-      return (
-        this.$route.name === "Avatar" ||
-        this.$route.name === "Gsearch" ||
-        this.$route.name === "Getrelation" ||
-        this.$route.name === "trend" ||
-        this.$route.name === "campaign"
-      );
-    },
-    isActive2() {
-      return (
-        this.$route.name === "Monitor" ||
-        this.$route.name === "Feed" ||this.$route.name === "Report"||this.$route.name === "timeline"
-      );
-    },
-    // isActive2() {
-    //   return (
-    //     this.$route.name === "influencertop" ||
-    //     this.$route.name === "influencerlink"
-    //   );
-    // },
-    isActive3() {
-      return this.$route.name === "trend";
-    },
-    isActive4() {
-      return this.$route.name === "Gsearch";
-    },
-    isActive5() {
-      return this.$route.name === "Avatar";
-    },
-    isActive6() {
-      return this.$route.name === "influencertop";
-    },
-    isActive7() {
-      return this.$route.name === "influencerlink";
-    },
-    isActive8() {
-      return this.$route.name === "campaign";
-    },
-    isActive9() {
-      return this.$route.name === "Getrelation";
-    },
-    isActive10() {
-      return this.$route.name === "Monitor";
-    },
-    isActive11() {
-      return this.$route.name === "Feed";
-    },
-    isActive12() {
-      return this.$route.name === "Report";
-    },
-    isActive13() {
-      return this.$route.name === "Candidates";
-    },
-  },
   created() {
     this.$store.commit("setToSection", localStorage.getItem("section"));
     this.username = localStorage.getItem("username");
-    var reftokenOpt = localStorage.getItem("reftokenOpt");
-    if (reftokenOpt == "admin") this.seen = true;
+    const reftokenOpt = localStorage.getItem("reftokenOpt");
+    if (reftokenOpt === "admin") this.seen = true;
   },
 };
 </script>

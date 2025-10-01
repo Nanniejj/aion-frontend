@@ -12,7 +12,7 @@
           <!-- <b-icon icon="sliders" class="mr-1 small"></b-icon> -->
           <span v-if="showFilters" class="small">Hide</span>
           <span v-else class="small">Show</span>
-          <b-badge v-if="activeFilterCount" variant="light" class="ml-2">{{ activeFilterCount }}</b-badge>
+          <!-- <b-badge v-if="activeFilterCount" variant="light" class="ml-2">{{ activeFilterCount }}</b-badge> -->
         </b-button>
       </div>
       <!-- <b-card class="py-0 mb-2 shadow-sm" style="border-radius: 20px;" v-if="!showFilters">

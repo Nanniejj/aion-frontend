@@ -1,5 +1,5 @@
 <template>
-  <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd my-2"
+  <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd my-3"
     v-if="post">
     <div class="position-relative">
       <div class="position-absolute pl-1 pt-1 pb-1" style="
@@ -345,7 +345,7 @@ a {
 }
 
 .card-sd {
-  border: 0px;
+  border: 1px solid #888787;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
     rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
   border-radius: 20px;
@@ -408,9 +408,9 @@ img-cover {
     font-size: 14px;
   }
 
-  .card-sd {
+  /* .card-sd {
     max-width: 289px;
-  }
+  } */
 
 }
 
