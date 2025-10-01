@@ -186,7 +186,7 @@ export default {
           }
         );
 
-        console.log("response data:", data);
+        // console.log("response data:", data);
 
         const rows = Array.isArray(data)
           ? data
@@ -272,17 +272,21 @@ export default {
       this.deletingIds.add(id);
 
       try {
-        const token = localStorage.getItem("token");
+        // ใช้รูปแบบเดียวกับ fetchList: this.axios + await + headers Authorization
         const headers = {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          // DELETE ไม่จำเป็นต้องใส่ Content-Type หากไม่มี body
+          // "Content-Type": "application/json"
         };
 
-        // ลบด้วย DELETE + query string id
-        await api.delete("/image_upload/deleteImageSimilarity", {
-          params: { id },
-          headers,
-        });
+        // ลบด้วย DELETE + query string id โดยใช้ this.axios.delete
+        await this.axios.delete(
+          "https://api2.cognizata.com/api/v2/image_upload/deleteImageSimilarity",
+          {
+            params: { id },
+            headers,
+          }
+        );
 
         // โหลดรายการใหม่ (หรือจะ splice ออกเองก็ได้)
         await this.fetchList();
@@ -309,6 +313,7 @@ export default {
         this.deletingIds.delete(id);
       }
     }
+
 
   },
 };
