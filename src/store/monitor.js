@@ -4,6 +4,7 @@ import { API_V2_URL } from "@/common/config";
 import moment from "moment";
 export default {
   state: {
+    totalImgList:0,
     postall: null,
     mapstatic: [],
     loadMapstatic: false,
@@ -124,6 +125,9 @@ export default {
     socialmo: "",
   },
   getters: {
+    getTotalImgList: (state) => {
+      return state.totalImgList;
+    },
     getPostsAll: (state) => {
       return state.postall;
     },
@@ -255,6 +259,9 @@ export default {
     },
   },
   mutations: {
+     setTotalImgList:  (state, payload) =>{
+    state.totalImgList=payload;
+    },
     setPostsAll: (state, payload) => {
       state.postall = payload;
     },
