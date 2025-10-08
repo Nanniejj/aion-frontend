@@ -466,17 +466,21 @@ export default {
 <style scoped>
 /* จอมือถือ */
 @media only screen and (min-width: 0px) and (max-width: 800px) {
-  .mt-5, .my-5 {
+  .mt-5,
+  .my-5 {
     margin-top: 1rem !important;
-}
+  }
+
   .card-body {
     flex: 1 1 auto;
     min-height: 1px;
     padding: 1px;
   }
-  .small, small {
+
+  .small,
+  small {
     font-size: 72%;
     font-weight: 400;
-}
+  }
 }
 </style>

@@ -25,16 +25,19 @@
           </b-popover>
         </b-col>
 
-        <b-col cols="6" md class="mt-2 mt-md-0">
+        <!-- <b-col cols="6" md class="mt-2 mt-md-0">
           <div class="text-muted small">Date</div>
           <div>{{ formatDate(item.created_at) }}</div>
-        </b-col>
+        </b-col> -->
 
-        <b-col cols="6" md class="mt-2 mt-md-0">
-          <div class="text-muted small">Time</div>
-          <div>{{ formatTime(item.created_at) }}</div>
+        <b-col cols="6" md class="mt-2 mt-md-0 col-c">
+          <div class="text-muted small">Created</div>
+          <div class="small">{{ formatDate(item.created_at) }} {{ formatTime(item.created_at) }}</div>
         </b-col>
-
+        <b-col cols="6" md class="mt-2 mt-md-0 col-c">
+          <div class="text-muted small">Updated</div>
+          <div class="small"> {{ formatDate(item.updated_at) }} {{ formatTime(item.updated_at) }}</div>
+        </b-col>
         <b-col cols="6" md class="mt-2 mt-md-0">
           <div class="text-muted small">Status</div>
           <div>
@@ -314,12 +317,16 @@ export default {
       }
     }
 
-
   },
 };
 </script>
 
 <style scoped>
+.col-c {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
+
 .delete-btn {
   position: absolute;
   top: 8px;
