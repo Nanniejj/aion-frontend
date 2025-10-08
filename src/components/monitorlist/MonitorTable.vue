@@ -163,13 +163,13 @@
                     <span class="small"> {{ formatDate(data.item.insert_timestamp) }}</span>
                 </template>
 
-                <template #cell(influencer_type)="data">
+                <!-- <template #cell(influencer_type)="data">
                     <div v-if="data.item.influencer_condition" class="rounded-lg float-right badge-custom px-3 py-2">
                         <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
                             alt="sparkling" style="filter: brightness(0) invert(1);"/>
                         <span class="md-font ml-2 text-truncate">{{ getInfluConditions(data.item.influencer_condition) }}</span>
                     </div>
-                </template>
+                </template> -->
 
                 <template #cell(action)="data">
                     <b-row cols="3" class="m-0 justify-content-end align-items-center flex-nowrap">
@@ -184,6 +184,10 @@
                             </b-button>
                         </b-col>
                         <b-col cols="auto" class="p-0">
+                            <span v-if="type === 'targetlist' && (data.item.followers < 100000 || data.item.followers === null || data.item.influencer_condition)" class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขข้อมูล"
+                            @click="openEditProfile(data.item)" size="sm"></span>
+                        </b-col>
+                        <b-col cols="auto" class="p-0">
                             <span v-if="type === 'targetlist'" class="fas fa-user-alt-slash text-danger" v-b-tooltip.hover title="เลิกติดตาม" size="sm"
                                 @click="delProfile(data.item)"></span>
                             <span v-if="type === 'hashtaglist'" 
@@ -194,6 +198,7 @@
                             <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูข้อมูลส่วนตัว" size="sm"
                                 @click="linkToProfile(data.item)"></span>
                         </b-col>
+                        
                     </b-row>
                     <!-- <span class="fas fa-list-ul text-info" v-b-tooltip.hover 
                         title="ดูข้อมูลส่วนตัว" size="sm"
@@ -209,13 +214,28 @@
 
                 <!-- แถวรายละเอียด -->
                 <template #row-details="row">
-                    <b-card class="text-left" style="max-height:300px;overflow-y:auto;">
+                    <b-card class="text-left" style="max-height:400px;overflow-y:auto;">
                         <b-row class="bold my-2 mx-0">
                             <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
                             <span class="ml-2">
                                 ตรวจสอบข้อมูล
                             </span>
                         </b-row>
+                        <b-row class="justify-content-center justify-content-sm-start">
+                            <b-col cols="auto">
+                                <span class="text-info bold" style="font-size: 18px;">{{ formatNumber(row.item.followers) }}</span> Followers
+                            </b-col>
+                            <b-col cols="auto">
+                                <span class="text-info bold" style="font-size: 18px;">{{ formatNumber(row.item.followings) }}</span> Following
+                            </b-col>
+                        </b-row>
+                        <hr>
+                        <ProfileEdit 
+                            type="target"
+                            :item="row.item" 
+                            @close="row.toggleDetails()"
+                            @updated="row.toggleDetails(); apiMonitorList()"
+                        />
                         <!-- {{ row.item.summarize }} -->
                     </b-card>
                 </template>
@@ -233,6 +253,13 @@
             align="center" class="my-2"
             @input="onPageChange" 
         />
+        <EditProfileModal 
+            :item="selectedProfile" 
+            :openModal="openEdit" 
+            @close="closeEditProfile"  
+            @updated="apiMonitorList(); closeEditProfile()"
+        />
+
     </div>
 </template>
 
@@ -242,9 +269,12 @@
 import ImportPlatform from "./ImportPlatform.vue";
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
 import MissingTargets from "./MissingTargets.vue";
+import ProfileEdit from './_ProfileEdit.vue';
 // import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import EditProfileModal from "./_EditProfileModal.vue";
+import influConditions from "./dataJson/influConditions.json"
 // import { warn } from "@vue/composition-api";
 // import { mapGetters } from "vuex";
 export default {
@@ -252,12 +282,15 @@ export default {
         CreateMonitor,
         ImportPlatform,
         MissingTargets,
+        ProfileEdit,
+        EditProfileModal
     },
     props: {
         type: String
     },
     data() {
         return {
+            openEdit: false,
             load: false,
             allData: [],  // เก็บข้อมูลทั้งหมด
             data: [],
@@ -276,9 +309,9 @@ export default {
                 { key: 'id', label: 'name' },
                 { key: 'name', label: 'name' },
                 { key: 'source', label: 'source' },
-                // { key: 'link', label: 'ลิงก์เพจ' },
                 { key: 'insert_timestamp', label: 'เวลาล่าสุด' },
-                { key: 'influencer_type', label: '' },
+                // { key: 'link', label: 'ลิงก์เพจ' },
+                // { key: 'influencer_type', label: '' },
                 { key: 'action', label: '' }
             ],
             typeOptions: [
@@ -293,12 +326,7 @@ export default {
                 { value: 100000, text: 'มากกว่า 100,000 follower' },
                 { value: 1000000, text: 'มากกว่า 1,000,000 follower' }
             ],
-            influConditions: [
-                // {text: 'เลือกระดับ Influencer', value: null,  disabled: true },
-                {text: 'ผู้มีอิทธิพลจากยอดติดตาม', value:'follower'},
-                {text: 'ผู้มีอิทธิพลจากโพส', value:'impact'},
-                {text: 'คนทั่วไป', value:'none'},
-            ],
+            influConditions: influConditions,
             striped: false,
             bordered: false,
             borderless: false,
@@ -311,6 +339,8 @@ export default {
             headVariant: null,
             tableVariant: '',
             noCollapse: false,
+            username: "",
+            selectedProfile: null,
             sourceOptions: [
                 { value: '', text: 'All Platform' },
                 { value: 'facebook', text: 'Facebook' },
@@ -355,7 +385,43 @@ export default {
         }
     },
     methods: {
-         rowClass(item) {
+        openEditProfile(item) {
+            this.selectedProfile = item
+            this.openEdit = true
+        },
+        closeEditProfile() {
+            this.openEdit = false
+        },
+        formatNumber(num) {
+           if (num == null) {
+                return '0';
+            }
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            }
+            return num.toString();
+        },
+        formatDate(dateStr) {
+            const date = new Date(dateStr);
+
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const year = date.getFullYear();
+
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; // Convert 0 -> 12
+            const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+            return `${day}/${month}/${year} , ${formattedTime}`;
+        },
+        rowClass(item) {
             // console.log(item.influencer_condition);
             
             if (!item) return
@@ -629,26 +695,11 @@ export default {
                 console.error(error);
             }
         },
-        formatDate(dateStr) {
-            const date = new Date(dateStr);
-
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-            const year = date.getFullYear();
-
-            let hours = date.getHours();
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
-
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; // Convert 0 -> 12
-            const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
-
-            return `${day}/${month}/${year} , ${formattedTime}`;
-        }
+        
     },
     async mounted() {
         this.filters.type = this.type;
+        this.username = localStorage.getItem("username");
         // await this.getMissingTargets();
     }
 };

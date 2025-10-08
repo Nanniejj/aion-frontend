@@ -123,10 +123,25 @@
 
     <!-- Posts -->
     <div>
-      <CardTitle v-for="(post, i) in posts" :key="i" v-bind="post" :post="post" class="mx-2" />
+        
+
+      
+      <!-- <CardTitle v-for="(post, i) in posts" :key="i" v-bind="post" :post="post" class="mx-2" /> -->
       <b-alert v-if="!loading && posts.length === 0" show variant="light" class="text-center">
         ไม่มีโพสต์
       </b-alert>
+      <timeline-posts v-else :items="posts" mode="posts" 
+        sort="recent" :count="count" />
+        <div v-if="totalPages > 1" class="text-center my-2 pb-5">
+            
+            <div v-if="page === totalPages" class="text-center mb-3 py-5">
+            <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.5)"
+                color="#17a2b891" />
+            </div>
+            <b-button v-else variant="outline-info" @click="onPageChange(page + 1)" pill>
+            <span> <i class="fa fa-plus" aria-hidden="true"></i> More</span>
+            </b-button>
+        </div>
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />
@@ -134,10 +149,10 @@
     </div>
 
     <!-- Pagination (bottom) -->
-    <div class="d-flex justify-content-center mt-3" v-if="!loading && posts.length > 0">
+    <!-- <div class="d-flex justify-content-center mt-3" v-if="!loading && posts.length > 0">
       <b-pagination v-model="page" :total-rows="count" :per-page="limit" size="sm" align="center" :disabled="loading"
         @input="onPageChange" />
-    </div>
+    </div> -->
     </div>
   </div>
 </template>
@@ -149,10 +164,10 @@ import VueGallerySlideshow from "vue-gallery-slideshow";
 import PlatformImgChart from "./PlatformImgChart";
 import moment from "moment";
 import "moment/locale/th";
-
+import TimelinePosts from '../timeline/TimelinePosts2.vue';
 export default {
   name: 'PostBoard',
-  components: { CardPost, CardTitle, VueGallerySlideshow, PlatformImgChart },
+  components: { CardPost, CardTitle, VueGallerySlideshow, PlatformImgChart, TimelinePosts },
   props: {
     subject: {
       type: Object,
@@ -290,14 +305,23 @@ export default {
         )
         this.dataImg = data
         // ปรับรูปแบบผลลัพธ์ให้เข้ากับ UI
-        const rows = data?.data || []
-        this.posts = Array.isArray(rows) ? rows : []
+        // const rows = data?.data || []
+        // this.posts = Array.isArray(rows) ? rows : []
+        const rows = Array.isArray(data?.data) ? data.data : [];
 
+        // ✅ ถ้า page = 1 → ล้างข้อมูลเก่า
+        // ✅ ถ้า page > 1 → ต่อข้อมูลใหม่เข้ากับของเดิม
+        if (this.page === 1) {
+            this.posts = rows;
+        } else {
+            this.posts = [...this.posts, ...rows];
+        }
+        
         const apiCount = Number(data?.pagination?.total_posts || 0)
         const computed = this.posts.length
         this.count = apiCount > 0 ? apiCount : Math.max((this.page - 1) * this.limit + computed, 0)
 
-        const apiTotalPages = Number(data?.pagination?.total_posts ?? 0)
+        const apiTotalPages = Number(data?.pagination?.total_pages ?? 0)
         this.totalPages = apiTotalPages > 0
           ? apiTotalPages
           : (this.count && this.limit ? Math.ceil(this.count / this.limit) : 0)
@@ -311,8 +335,7 @@ export default {
       } finally {
         this.loading = false
       }
-    }
-    ,
+    },
 
     async apiPostImageByImageId2() {
       this.loading = true

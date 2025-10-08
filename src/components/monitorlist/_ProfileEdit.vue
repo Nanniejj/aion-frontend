@@ -1,5 +1,5 @@
 <template>
-    <b-col class="text-left px-0 pl-lg-3">    
+    <b-col class="text-left px-0">    
         <!-- <b-card-text class="my-2"> -->
         <b-row class="py-2 mx-0">
             <b-col class="px-0 text-capitalize text-info d-flex align-content-center">
@@ -12,10 +12,10 @@
             </b-col>
             <b-col cols="auto" class="px-0">
                 <div class="d-flex justify-content-between" style="gap: 10px;">
-                    <b-button variant="success" @click="confirmUpdate()">
+                    <b-button size="sm" variant="success" @click="confirmUpdate()">
                         <i class="fa fa-save mr-1"></i>
                     </b-button>
-                    <b-button variant="danger" @click="closeEdit()">
+                    <b-button size="sm" variant="danger" @click="closeEdit()">
                         <i class="fa fa-times mr-1"></i>
                     </b-button>
                 </div>
@@ -40,7 +40,7 @@
                     </b-row>
                 </b-col>
 
-                <!-- <b-col class="px-0 px-md-1 mb-2">
+                <b-col v-if="type === 'target'" class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fas fa-image mr-1"/>
@@ -61,8 +61,8 @@
                             />
                         </div>
                     </b-row>
-                </b-col> -->
-                <b-col class="px-0 px-md-1 mb-2">
+                </b-col>
+                <b-col v-if="type === 'community'" class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fas fa-address-card mr-1" />
@@ -106,7 +106,7 @@
                         </div>
                     </b-row>
                 </b-col>
-                <b-col class="px-0 px-md-1 mb-2">
+                <b-col v-if="type === 'community'" class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fa fa-group mr-1" />
@@ -123,7 +123,7 @@
                         </div>
                     </b-row>
                 </b-col>
-                <!-- <b-col class="px-0 px-md-1 mb-2">
+                <b-col v-if="type === 'target'" class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fas fa-address-card mr-1" />
@@ -135,13 +135,29 @@
                                 class="input"
                                 :options="[{ value: null, text: 'เลือกลักษณะของอินฟลูเอนเซอร์' }, ...speciesTypes]"
                                 v-model="profile.species"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>      
+                <b-col v-if="profile.species === 'brand' || profile.species === 'company' || profile.species === 'government'" class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fa fa-tag mr-1" />
+                            ประเภทธุรกิจ :
+                        </b-col>
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                size="sm"
+                                class="input"
+                                :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...departmentTypes]"
+                                v-model="profile.department"
                                 placeholder="เลือกหมวดหมู่"
                             />
                         </div>
                     </b-row>
-                </b-col> -->
+                </b-col>
 
-                <!-- <b-col class="px-0 px-md-1 mb-2">
+                <b-col v-if="type === 'target'" class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fas fa-award mr-1" />
@@ -158,26 +174,8 @@
                             />
                         </div>
                     </b-row>
-                </b-col> -->
-                <!-- <b-col class="px-0 px-md-1 mb-2">
-                    <b-row class="w-100 m-0">
-                        <b-col class="text-secondary d-flex p-0 align-items-center">
-                            <i class="fa fa-tag mr-1" />
-                            ประเภทธุรกิจ :
-                        </b-col>
-                        <div class="col-12 px-0">
-                            <b-form-select
-                                size="sm"
-                                class="input"
-                                :options="[{ value: null, text: 'เลือกหมวดหมู่' }, ...departmentTypes]"
-                                v-model="profile.department"
-                                placeholder="เลือกหมวดหมู่"
-                            />
-                        </div>
-                    </b-row>
-                </b-col> -->
-
-                <!-- <b-col class="px-0 px-md-1 mb-2">
+                </b-col>
+                <b-col v-if="profile.species === 'people' || profile.species === 'actor' || profile.species === 'expert' || profile.species === 'political'" class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i v-if="profile.sex === 'female'" class="fa fa-venus" />
@@ -195,9 +193,9 @@
                             />
                         </div>
                     </b-row>
-                </b-col> -->
+                </b-col>
 
-                <!-- <b-col class="px-0 px-md-1 mb-2">
+                <b-col v-if="profile.species === 'people' || profile.species === 'actor' || profile.species === 'expert' || profile.species === 'political'" class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
                             <i class="fa fa-birthday-cake mr-1"/>
@@ -206,69 +204,7 @@
                         
                         <b-form-spinbutton id="demo-sb" size="sm" v-model="profile.age" min="0" max="100"></b-form-spinbutton>
                     </b-row>
-                </b-col> -->
-
-                <!-- <b-col class="px-0 px-md-1 mb-2">
-                    <b-row class="w-100 m-0">
-                        <b-col class="text-secondary d-flex p-0 align-items-center">
-                            <i class="fa fa-map-marker mr-1"/>
-                            จังหวัด :
-                        </b-col>
-                        
-                        <div class="col-12 px-0">
-                            <b-form-select
-                                size="sm"
-                                class="input"
-                                :options="[{ value: null, text: 'เลือกจังหวัด' }, ...provinces]"
-                                placeholder="เลือกจังหวัด"
-                                v-model="province_id"
-                                @change="apiGetDistrict(province_id)"
-                            />
-                        </div>
-                    </b-row>
-                </b-col> -->
-
-                <!-- <b-col class="px-0 px-md-1 mb-2">
-                    <b-row class="w-100 m-0">
-                        <b-col class="text-secondary d-flex p-0 align-items-center">
-                            <i class="fa fa-map-marker mr-1"/>
-                            อำเภอ :
-                        </b-col>
-                        
-                        <div class="col-12 px-0">
-                            <b-form-select
-                                :disabled="!province_id"
-                                size="sm"
-                                class="input"
-                                :options="[{ value: null, text: 'เลือกอำเภอ' }, ...districts]"
-                                placeholder="เลือกอำเภอ"
-                                v-model="district_id"
-                                @change="apiGetSubDistrict(district_id)"
-                            />
-                        </div>
-                    </b-row>
-                </b-col> -->
-
-                <!-- <b-col class="px-0 px-md-1 mb-2">
-                    <b-row class="w-100 m-0">
-                        <b-col class="text-secondary d-flex p-0 align-items-center">
-                            <i class="fa fa-map-marker mr-1"/>
-                            ตำบล :
-                        </b-col>
-                        
-                        <div class="col-12 px-0">
-                            <b-form-select
-                                :disabled="!district_id"
-                                size="sm"
-                                class="input"
-                                :options="[{ value: null, text: 'เลือกตำบล' }, ...subDistricts]"
-                                placeholder="เลือกตำบล"
-                                v-model="subDistrict_id"
-                            />
-                        </div>
-                    </b-row>
-                </b-col> -->
-                
+                </b-col>
                 <!-- <b-col class="px-0 px-md-1 mb-2">
                     <b-row class="w-100 m-0">
                         <b-col class="text-secondary d-flex p-0 align-items-center">
@@ -302,9 +238,9 @@
                         />
                     </b-row>
                 </b-col> -->
-
+                
             </b-row>
-            <!-- <b-col cols="12" class="px-0 px-md-1 pb-3">
+            <b-col v-if="profile.influencer_condition === 'follower' || profile.influencer_condition === 'impact'" cols="12" class="px-0 px-md-1 pb-3">
                 <b-row class="w-100 m-0">
                     <b-col class="text-secondary text-left d-flex p-0 align-items-center">
                         <i class="fa fa-tag mr-1" />
@@ -322,7 +258,93 @@
                         />
                     </div>
                 </b-row>
-            </b-col> -->
+            </b-col>
+            <b-col>
+                <b-row class="text-info bold pl-2 pt-2">
+                    ที่อยู่ 
+                </b-row>
+                <b-row cols="1" cols-md="2" cols-lg="4">
+                <b-col class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fa fa-map-marker mr-1"/>
+                            ประเทศ :
+                        </b-col>
+                        
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                size="sm"
+                                class="input"
+                                :options="[{ country_code_num: null, country_name_th: 'เลือกประเทศ' }, ...country]"
+                                v-model="country_id"
+                                value-field="country_code_num"
+                                text-field="country_name_th"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>
+                <b-col v-if="country_id === 764" class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fa fa-map-marker mr-1"/>
+                            จังหวัด :
+                        </b-col>
+                        
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                size="sm"
+                                class="input"
+                                :options="[{ value: null, text: 'เลือกจังหวัด' }, ...provinces]"
+                                placeholder="เลือกจังหวัด"
+                                v-model="province_id"
+                                @change="apiGetDistrict(province_id)"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>
+
+                <b-col v-if="country_id === 764" class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fa fa-map-marker mr-1"/>
+                            อำเภอ :
+                        </b-col>
+                        
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                :disabled="!province_id"
+                                size="sm"
+                                class="input"
+                                :options="[{ value: null, text: 'เลือกอำเภอ' }, ...districts]"
+                                placeholder="เลือกอำเภอ"
+                                v-model="district_id"
+                                @change="apiGetSubDistrict(district_id)"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>
+
+                <b-col v-if="country_id === 764" class="px-0 px-md-1 mb-2">
+                    <b-row class="w-100 m-0">
+                        <b-col class="text-secondary d-flex p-0 align-items-center">
+                            <i class="fa fa-map-marker mr-1"/>
+                            ตำบล :
+                        </b-col>
+                        
+                        <div class="col-12 px-0">
+                            <b-form-select
+                                :disabled="!district_id"
+                                size="sm"
+                                class="input"
+                                :options="[{ value: null, text: 'เลือกตำบล' }, ...subDistricts]"
+                                placeholder="เลือกตำบล"
+                                v-model="subDistrict_id"
+                            />
+                        </div>
+                    </b-row>
+                </b-col>
+                </b-row>
+            </b-col>
         </div>
         <!-- </b-card-text> -->
     </b-col>
@@ -330,7 +352,10 @@
 <script>
 import Swal from 'sweetalert2'
 import Multiselect from 'vue-multiselect'
-
+import speciesTypes from "./dataJson/speciesTypes.json"
+import departmentTypes from "./dataJson/departmentTypes.json"
+import influConditions from "./dataJson/influConditions.json"
+import sexsType from "./dataJson/sexsType.json"
 export default {
     components: { Multiselect },
     props: {
@@ -338,10 +363,14 @@ export default {
             type: Object,
             required: true
         },
-        influencerTypes: {
-            type: Array,
-            required: true
-        },
+        // influencerTypes: {
+        //     type: Array,
+        //     required: true
+        // },
+        type: {
+            type: String,
+            default: 'target'
+        }
     },
     data() {
         return {
@@ -358,54 +387,25 @@ export default {
                 bot_level: null,
                 name: null,
             },
+            country_id: null,
             province_id: null,
             district_id: null,
             subDistrict_id: null,
-            sexs: [
-                { value: null, text: 'ไม่ระบุเพศ' },
-                { value: 'male', text: 'ชาย' },
-                { value: 'female', text: 'หญิง' },
-                { value: 'other', text: 'อื่นๆ' }
-            ],
-            speciesTypes:[
-                { text: 'บุคคลทั่วไป', value: 'people' },
-                { text: 'ดารา / นักแสดง / ศิลปิน', value: 'actor' },
-                { text: 'ผู้เชี่ยวชาญ', value: 'expert' },
-                { text: 'สัตว์เลี้ยง', value: 'pet' },
-                { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
-                { text: 'องค์กร / บริษัท', value: 'company' },
-                { text: 'หน่วยงานราชการ', value: 'government' },
-                { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
-                { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
-                { text: 'เด็ก / ทารก', value: 'kid' },
-                { text: 'คู่รัก / ครอบครัว', value: 'family' },
-                { text: 'สัตว์ธรรมชาติ / สัตว์ป่า', value: 'wild_animal' },
-                { text: 'ไม่ระบุ', value: 'nolabel' }
-            ],
-            influConditions: [
-                {text: 'เลือกระดับ Influencer', value: null,  disabled: true },
-                {text: 'ผู้มีอิทธิพลจากยอดติดตาม', value:'follower'},
-                {text: 'ผู้มีอิทธิพลจากโพส', value:'impact'},
-                {text: 'คนทั่วไป', value:'none'},
-            ],
-            departmentTypes: [
-                { text: "อุตสาหกรรมและการผลิต", value: "manufacturing" },
-                { text: "การค้าและค้าปลีก", value: "retail" },
-                { text: "การเงินและการธนาคาร", value: "finance" },
-                { text: "การแพทย์และสาธารณสุข", value: "healthcare" },
-                { text: "ก่อสร้างและอสังหาริมทรัพย์", value: "construction" },
-                { text: "ขนส่งและโลจิสติกส์", value: "logistics" },
-                { text: "เทคโนโลยีสารสนเทศ (IT)", value: "it" },
-                { text: "การศึกษา", value: "education" },
-                { text: "สื่อสาร / โฆษณา / การตลาด", value: "media_marketing" },
-                { text: "อาหารและเครื่องดื่ม", value: "food_beverage" },
-                { text: "การท่องเที่ยวและโรงแรม", value: "tourism" },
-                { text: "บันเทิงและสันทนาการ", value: "entertainment" },
-                { text: "กฎหมายและที่ปรึกษา", value: "legal_consulting" },
-                { text: "ความงาม / สุขภาพ / ไลฟ์สไตล์", value: "lifestyle" },
-                { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" },
-                
-            ],
+            province_name: null,
+            influencerTypes: [],
+            country : [],
+            provinces: [],
+            districts: [],
+            subDistricts:[],
+            sexs: sexsType,
+            speciesTypes:speciesTypes,
+            influConditions: influConditions,
+            departmentTypes: departmentTypes,
+        }
+    },
+    computed: {
+        location() {
+            return [this.province_id, this.district_id, this.subDistrict_id].filter(v => v != null)
         }
     },
     methods: {
@@ -438,6 +438,234 @@ export default {
                 }
             })
         },
+        async getProvinceNameById(id) {
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getProvinces",
+                    params: { id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+                const response = await this.axios(config);
+                let result = response.data.data[0] || [];
+                // console.log("procince === ",result.name_th);
+                return result.name_th;
+            }catch (error) {
+                // console.error("apiGetInfluencers error:", error);
+                return null;
+                // this.influencers = [];
+            }
+            // finally {
+            //     this.loading = false; // จะทำงานเสมอ ไม่ว่าผลจะ success หรือ error
+            // }
+        },
+        async getDistrictNameById(id) {
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getAmphures",
+                    params: { id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+                const response = await this.axios(config);
+                let result = response.data.data[0] || [];
+                // console.log("procince === ",result.name_th);
+                return result.name_th;
+            }catch (error) {
+                // console.error("apiGetInfluencers error:", error);
+                return null;
+                // this.influencers = [];
+            }
+            // finally {
+            //     this.loading = false; // จะทำงานเสมอ ไม่ว่าผลจะ success หรือ error
+            // }
+        },
+        async getSubDistrictNameById(id) {
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getTambons",
+                    params: { id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+                const response = await this.axios(config);
+                let result = response.data.data[0] || [];
+                // console.log("procince === ",result.name_th);
+                return result.name_th;
+            }catch (error) {
+                // console.error("apiGetInfluencers error:", error);
+                return null;
+                // this.influencers = [];
+            }
+            // finally {
+            //     this.loading = false; // จะทำงานเสมอ ไม่ว่าผลจะ success หรือ error
+            // }
+        },
+        apiGetCountry() {
+            this.province_id = null;
+            this.district_id = null;
+            this.subDistrict_id = null;
+            this.load = true;
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getCountry",
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                let result = response.data.data || [];
+                // console.log(result);
+                this.country = result;
+                // this.provinces = result.map(province => ({
+                //     text: province.name_th,
+                //     value: province.id
+                // }));
+                // console.log('this.provinces ', this.provinces);
+                
+                // this.profile = response.data?.profile
+                // console.log('this.profile ', this.profile);
+                this.load = false;
+            })
+            .catch((error) => {
+                this.load = false;
+                // console.error(error);
+            });
+        },
+        apiGetProvinces() {
+            this.district_id = null;
+            this.subDistrict_id = null;
+            this.load = true;
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/location/getProvinces",
+                // params: {
+                //     type: this.$route.query.type,
+                //     source: this.$route.query.source,
+                //     id: this.$route.query.uid,
+                // },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                let result = response.data.data || [];
+                // console.log(result);
+                
+                this.provinces = result.map(province => ({
+                    text: province.name_th,
+                    value: province.id
+                }));
+                // console.log('this.provinces ', this.provinces);
+                
+                // this.profile = response.data?.profile
+                // console.log('this.profile ', this.profile);
+                this.load = false;
+            })
+            .catch((error) => {
+                this.load = false;
+                // console.error(error);
+            });
+        },
+        async apiGetDistrict(id) {
+            this.province_name = await this.getProvinceNameById(this.province_id);
+            this.subDistrict_id = null;
+            try {
+                const config = {
+                    method: "get",
+                    url: "https://api2.cognizata.com/api/v2/location/getAmphures",
+                    params: { province_id: id },
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                };
+
+                const response = await this.axios(config);
+                const result = response.data.data || [];
+
+                this.districts =  result.map(district => ({
+                    text: district.name_th,
+                    value: district.id
+                }));
+                // console.log(this.districts);
+                
+            } catch (error) {
+                // console.error("apiGetDistrict error:", error);
+                this.districts =  [];
+            }
+        },
+        async apiGetSubDistrict(id) {
+            // this.load = true;
+             try {
+                const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/location/getTambons",
+                params: { amphure_id: id },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+                };
+
+                const response = await this.axios(config);
+                const result = response.data.data || [];
+
+                this.subDistricts = result.map(subDistrict => ({
+                    text: subDistrict.name_th,
+                    value: subDistrict.id
+                }));
+
+                // console.log(this.subDistricts);
+                
+            } catch (error) {
+                // console.error("apiGetDistrict error:", error);
+                this.subDistricts = [];
+            }
+            
+        },
+
+        apiGetInfluencerType() {
+            this.load = true;
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getInfluencerType",
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                // console.log(response);
+                let result = response.data || [];
+                this.influencerTypes = result.map(type => ({
+                    value: type.id,
+                    text: type.name
+                }));
+                this.load = false;
+            })
+            .catch((error) => {
+                this.load = false;
+                // console.error(error);
+            });
+        },
         apiUpdateProfile() {
             // this.handleLocation();
             // this.load = true;
@@ -449,11 +677,25 @@ export default {
                     group_type: this.profile.group_type,
                     name: this.profile.name,
                     profile_image: this.profile.profile_image,
+                    species:this.profile.species, 
+                    sex: this.profile.sex,
+                    age: this.profile.age === 0 ? null : this.profile.age, 
+                    influencer_type: Array.isArray(this.profile.influencer_type)
+                    ? this.profile.influencer_type.map(item => item.value)
+                    : [], 
+                    influencer_condition: this.profile.influencer_condition, 
+                    location: this.location,
+                    country: this.country_id,
+                    province: this.province_name,
+                    followers : this.profile.followers,
+                    following: this.profile.following,
+                    department: this.profile.department,
                     bot_level: this.profile.bot_level,
-                    group_status: this.profile.group_status
+                    group_status: this.profile.group_status,
+
                 }]
             };
-            // console.log("data ==== ", rawData);
+            console.log("data ==== ", rawData);
             
             const config = {
                 method: "put",
@@ -498,17 +740,17 @@ export default {
         },
     },
     mounted() { 
+        this.apiGetInfluencerType();
+        this.apiGetCountry();
+        this.apiGetProvinces();
         this.profile = { ...this.item };
         console.log("profile edit === ", this.profile);
     },
     watch: {
-        // "profile.group_type"(newVal) {
-        //     if (newVal === "public") {
-        //         this.profile.group_status = "done";
-        //     } else {
-        //         this.profile.group_status = "wait";
-        //     }
-        // }
+        province_id(newVal) {
+            this.district_id = null;
+            this.apiGetDistrict(newVal);
+        }
     }
 }
 </script>

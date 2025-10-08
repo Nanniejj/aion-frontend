@@ -82,7 +82,9 @@
     </b-card>
 </template>
 <script>
-
+import speciesTypes from "../monitorlist/dataJson/speciesTypes.json"
+import departmentTypes from "../monitorlist/dataJson/departmentTypes.json"
+import sexsType from "../monitorlist/dataJson/sexsType.json"
 export default {
     props: {
         influencer: {
@@ -99,45 +101,9 @@ export default {
             provinceName: null,
             districtName: null,
             subDistrictName: null,
-            sexs: [
-                {text: 'ไม่ระบุเพศ', value:'other'},
-                {text: 'ชาย', value:'male'},
-                {text: 'หญิง', value:'female'},
-                {text: 'LGBTQ+', value:'lgbtq+'},
-            ],
-            departmentTypes: [
-                { text: "อุตสาหกรรมและการผลิต", value: "manufacturing" },
-                { text: "การค้าและค้าปลีก", value: "retail" },
-                { text: "การเงินและการธนาคาร", value: "finance" },
-                { text: "การแพทย์และสาธารณสุข", value: "healthcare" },
-                { text: "ก่อสร้างและอสังหาริมทรัพย์", value: "construction" },
-                { text: "ขนส่งและโลจิสติกส์", value: "logistics" },
-                { text: "เทคโนโลยีสารสนเทศ (IT)", value: "it" },
-                { text: "การศึกษา", value: "education" },
-                { text: "สื่อสาร / โฆษณา / การตลาด", value: "media_marketing" },
-                { text: "อาหารและเครื่องดื่ม", value: "food_beverage" },
-                { text: "การท่องเที่ยวและโรงแรม", value: "tourism" },
-                { text: "บันเทิงและสันทนาการ", value: "entertainment" },
-                { text: "กฎหมายและที่ปรึกษา", value: "legal_consulting" },
-                { text: "ความงาม / สุขภาพ / ไลฟ์สไตล์", value: "lifestyle" },
-                { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" },
-            ],
-            speciesTypes:[
-                { text: 'บุคคลทั่วไป', value: 'people' },
-                { text: 'นักการเมือง', value: 'politician' },
-                { text: 'ดารา / นักแสดง / ศิลปิน', value: 'actor' },
-                { text: 'ผู้เชี่ยวชาญ', value: 'expert' },
-                { text: 'สัตว์เลี้ยง', value: 'pet' },
-                { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
-                { text: 'องค์กร / บริษัท', value: 'company' },
-                { text: 'หน่วยงานราชการ', value: 'government' },
-                { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
-                { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
-                { text: 'เด็ก / ทารก', value: 'kid' },
-                { text: 'คู่รัก / ครอบครัว', value: 'family' },
-                { text: 'สัตว์ธรรมชาติ / สัตว์ป่า', value: 'wild_animal' },
-                { text: 'ไม่ระบุ', value: 'nolabel' }
-            ],
+            sexs: sexsType,
+            departmentTypes: departmentTypes,
+            speciesTypes:speciesTypes,
         }
     },
     methods: {

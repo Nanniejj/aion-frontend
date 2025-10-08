@@ -1,0 +1,13 @@
+[
+    { "text": "บุคคลทั่วไป", "value": "people" },
+    { "text": "ดารา / นักแสดง / ศิลปิน", "value": "actor" },
+    { "text": "นักการเมือง/ พรรคการเมือง", "value": "political" },
+    { "text": "ผู้เชี่ยวชาญ", "value": "expert" },
+    { "text": "สัตว์เลี้ยง", "value": "pet" },
+    { "text": "แบรนด์ / ร้านค้า", "value": "brand" },
+    { "text": "องค์กร / บริษัท", "value": "company" },
+    { "text": "หน่วยงานราชการ", "value": "government" },
+    { "text": "คู่รัก / ครอบครัว", "value": "family" },
+    { "text": "สัตว์ธรรมชาติ / สัตว์ป่า", "value": "wild_animal" },
+    { "text": "ไม่ระบุ", "value": "nolabel" }
+]

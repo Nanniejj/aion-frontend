@@ -47,13 +47,13 @@
                                     </b-row>
                                     <b-row class="align-items-center m-0">
                                         <b-col cols="12" sm="auto" class="text-center mb-2 px-0">
-                                            <b-avatar icon="people-fill" size="4rem" style="background-color: #fed16e;"></b-avatar>
+                                            <b-avatar :text="index + 1" style="background-color: #fed16e;"></b-avatar>
                                         </b-col>
                                         <b-col cols="12" sm="" class="px-0 px-md-2">
                                             <b-row cols="1" cols-sm="2" class="m-0">
                                                 <b-col class="px-0  px-sm-2">
                                                     <b-form-group id="fieldset-1" label="ชื่อกลุ่ม" label-for="input-1"
-                                                        valid-feedback="Thank you!" :invalid-feedback="invalidFeedback(group.name)"
+                                                        :invalid-feedback="invalidFeedback(group.name)"
                                                         :state="state(group.name)">
                                                         <b-form-input id="input-1"  @click.stop v-model="group.name" trim></b-form-input>
                                                     </b-form-group>
@@ -77,7 +77,7 @@
                                             </div>
                                         </b-button>
                                     </b-row>
-                                    <b-row v-else class="m-0 justify-content-end">
+                                    <!-- <b-row v-else class="m-0 justify-content-end">
                                         <b-button size="sm" v-b-tooltip.hover title="บันทึกร่าง" variant="success" :pressed="false" @click="saveDraft(group)"
                                             class="shadow-r mr-2">
                                             <div class="d-flex align-items-center">
@@ -90,7 +90,7 @@
                                                 <i class="fa fa-close"></i>
                                             </div>
                                         </b-button>
-                                    </b-row>
+                                    </b-row> -->
                                 </b-card-text>
                                 <template #footer>
                                     <div>

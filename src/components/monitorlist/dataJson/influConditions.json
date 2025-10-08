@@ -1,0 +1,6 @@
+[
+    {"text": "เลือกระดับ Influencer", "value": null, "disabled": true },
+    {"text": "ผู้มีอิทธิพลจากยอดติดตาม", "value":"follower"},
+    {"text": "ผู้มีอิทธิพลจากโพส", "value":"impact"},
+    {"text": "คนทั่วไป", "value":"none"}
+]

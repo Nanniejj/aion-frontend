@@ -83,27 +83,7 @@
                                 <b-button v-if="selectedSource !== 'all'" variant="info" pill :pressed="false" @click="resetSource" class="shadow-r px-4 my-4">All Platform</b-button>
                             </b-col>
                         </b-col>
-                        <b-col v-if="type == 'targetlist'" cols="12" class="my-2 px-4">
-                            <b-row style="color: #776167;" v-if="province_id || district_id || subDistrict_id" class="m-0 justify-content-center">
-                                <b-col cols="auto" class="px-0">
-                                    <i class="fa fa-map-marker d-inline"/>
-                                </b-col>
-                                <b-col cols="auto" class="text-truncate text-left">
-                                    <span v-if="province_id" class="text-icon text-center text-truncate d-inline-block">
-                                        <b>{{ selectedProvince }}</b>
-                                    </span>
-                                    <span v-if="district_id" class="text-icon text-center text-truncate d-inline-block">
-                                        <b>, {{ selectedDistrict }}</b>
-                                    </span>
-                                    <span v-if="subDistrict_id" class="text-icon text-center text-truncate d-inline-block">
-                                        <b>, {{  selectedSubDistrict }}</b>
-                                    </span>
-                                    <span v-if="!province_id && !district_id && !subDistrict_id" class="text-icon text-center">
-                                        <b>ไม่ระบุพื้นที่</b>
-                                    </span>
-                                </b-col>
-                            </b-row>
-                        </b-col> 
+                        
                     </b-row>
                 </div>
             </b-col>
@@ -574,24 +554,39 @@
                             </h5>
                         </a> 
                     </b-col>
+                    <b-col v-if="data.country !== null" cols="12" class="text-left">
+                        <i class="fa fa-map-marker"></i>
+                        <span> ประเทศ{{ data.country.country_name_th }}</span>
+                        <span v-if="selectedProvince">, {{ selectedProvince }}</span>
+                        <span v-if="selectedDistrict">, {{ selectedDistrict }}</span>
+                        <span v-if="selectedSubDistrict">, {{ selectedSubDistrict }}</span>
+                    </b-col>
                     <b-col cols="12" class="text-sm-left">
                         <b-badge v-if="profile.species" class="mr-2 badge-custom" pill>
                             {{ getSpeciesName(profile.species) }}
                         </b-badge>
                         <b-badge v-if="profile.sex" pill :class="'badge-' + profile.sex">{{ getsexTh(profile.sex) }}</b-badge>
                     </b-col>
+                    
                     <b-col cols="12" class="mt-1">
                         <b-row class="justify-content-center justify-content-sm-start">
                             <b-col cols="auto">
                                 <span class="text-info bold" style="font-size: 18px;">{{ formatNumber(profile.followers) }}</span> Followers
                             </b-col>
                             <b-col cols="auto">
-                                <span class="text-info bold" >{{ formatNumber(profile.followings) }}</span> Following
+                                <span class="text-info bold" style="font-size: 18px;">{{ formatNumber(profile.followings) }}</span> Following
                             </b-col>
                         </b-row>
                     </b-col>
                     
-                    <b-col class="mt-1 text-left" v-if="profile.influencer_type && profile.influencer_type.length !== 0">
+                    <b-row class="m-0">
+                        <b-col cols="auto">
+                            <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                                alt="sparkling"/>
+                        </b-col>
+                            {{ getInfluConditions(profile.influencer_condition) }}
+                    </b-row>
+                    <b-col cols="12" class="mt-1 text-left" v-if="profile.influencer_type && profile.influencer_type.length !== 0">
                         <b-badge 
                             v-for="(item, index) in profile.influencer_type"
                             :key="index" variant="warning" class="mx-1"
@@ -616,6 +611,8 @@
                     </b-col>
                 </b-row>
             </b-col>
+            
+           
         </b-row>       
 
         <!-- woldCloud -->
@@ -850,6 +847,9 @@ import ProfileWordCloud from './profileTabs/_ProfileWordCloud.vue'
 import HashtagBarChar from "../chart/HashtagBarChar.vue"
 import Timeline from "./_Timeline.vue"
 
+import speciesTypes from "./dataJson/speciesTypes.json"
+import departmentTypes from "./dataJson/departmentTypes.json"
+import influConditions from "./dataJson/influConditions.json"
 export default {
     components: {
         TabDomain,
@@ -921,50 +921,28 @@ export default {
             selectedSort: '',
             loading: false,
             influencerTypes:[],
-            speciesTypes:[
-                { text: 'บุคคลทั่วไป', value: 'people' },
-                { text: 'นักการเมือง', value: 'politician' },
-                { text: 'ดารา / นักแสดง / ศิลปิน', value: 'actor' },
-                { text: 'ผู้เชี่ยวชาญ', value: 'expert' },
-                { text: 'สัตว์เลี้ยง', value: 'pet' },
-                { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
-                { text: 'องค์กร / บริษัท', value: 'company' },
-                { text: 'หน่วยงานราชการ', value: 'government' },
-                { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
-                { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
-                { text: 'เด็ก / ทารก', value: 'kid' },
-                { text: 'คู่รัก / ครอบครัว', value: 'family' },
-                { text: 'สัตว์ธรรมชาติ / สัตว์ป่า', value: 'wild_animal' },
-                { text: 'ไม่ระบุ', value: 'nolabel' }
-            ],
-            influConditions: [
-                {text: 'เลือกระดับ Influencer', value: null,  disabled: true },
-                {text: 'ผู้มีอิทธิพลจากยอดติดตาม', value:'follower'},
-                {text: 'ผู้มีอิทธิพลจากโพส', value:'impact'},
-                {text: 'คนทั่วไป', value:'none'},
-            ],
+            speciesTypes:speciesTypes,
+            //     [
+            //     { text: 'บุคคลทั่วไป', value: 'people' },
+            //     { text: 'ดารา / นักแสดง / ศิลปิน', value: 'actor' },
+            //     { text: 'นักการเมือง/ พรรคการเมือง', value: 'political' },
+            //     { text: 'ผู้เชี่ยวชาญ', value: 'expert' },
+            //     { text: 'สัตว์เลี้ยง', value: 'pet' },
+            //     { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
+            //     { text: 'องค์กร / บริษัท', value: 'company' },
+            //     { text: 'หน่วยงานราชการ', value: 'government' },
+            //     { text: 'คู่รัก / ครอบครัว', value: 'family' },
+            //     { text: 'สัตว์ธรรมชาติ / สัตว์ป่า', value: 'wild_animal' },
+            //     { text: 'ไม่ระบุ', value: 'nolabel' }
+            //     // { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
+            //     // { text: 'ตัวละครในจินตนาการ / การ์ตูน / หนัง', value: 'fictional' },
+            //     //{ text: 'เด็ก / ทารก', value: 'kid' },
+            // ],
+            influConditions: influConditions,
             wordcloud_images: [],
             icon:[],
             keyWord: null,
-            departmentTypes: [
-                { text: "อุตสาหกรรมและการผลิต", value: "manufacturing" },
-                { text: "การค้าและค้าปลีก", value: "retail" },
-                { text: "การเงินและการธนาคาร", value: "finance" },
-                { text: "การแพทย์และสาธารณสุข", value: "healthcare" },
-                { text: "ก่อสร้างและอสังหาริมทรัพย์", value: "construction" },
-                { text: "ขนส่งและโลจิสติกส์", value: "logistics" },
-                { text: "เทคโนโลยีสารสนเทศ (IT)", value: "it" },
-                { text: "การศึกษา", value: "education" },
-                { text: "สื่อสาร / โฆษณา / การตลาด", value: "media_marketing" },
-                { text: "อาหารและเครื่องดื่ม", value: "food_beverage" },
-                { text: "การท่องเที่ยวและโรงแรม", value: "tourism" },
-                { text: "บันเทิงและสันทนาการ", value: "entertainment" },
-                { text: "กฎหมายและที่ปรึกษา", value: "legal_consulting" },
-                { text: "ความงาม / สุขภาพ / ไลฟ์สไตล์", value: "lifestyle" },
-                { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" },
-                
-            ],
-
+            departmentTypes: departmentTypes,
             offset: 0,
             next_offset: null,
             totalTimelinePost: 0,
@@ -1086,28 +1064,28 @@ export default {
                 }
             }
         },
-        handleLocation() {
-            if (this.subDistrict_id) {
-                this.selectedData.location = this.subDistrict_id;
-                this.getProvinceName(this.province_id);
-            } else
-             if (this.district_id) {
-                this.selectedData.location = this.district_id;
-                this.getProvinceName(this.province_id);
-            }else
-            if (this.province_id) {
-                this.selectedData.location = this.province_id;
-                // if (this.selectedData.province) {
+        // handleLocation() {
+        //     if (this.subDistrict_id) {
+        //         this.selectedData.location = this.subDistrict_id;
+        //         this.getProvinceName(this.province_id);
+        //     } else
+        //      if (this.district_id) {
+        //         this.selectedData.location = this.district_id;
+        //         this.getProvinceName(this.province_id);
+        //     }else
+        //     if (this.province_id) {
+        //         this.selectedData.location = this.province_id;
+        //         // if (this.selectedData.province) {
                     
-                // }
-                this.getProvinceName(this.selectedData.location);
-            }
-            else {
-                this.selectedData.location = null;
-            }
-            // console.log("selectedData.location === ",  this.selectedData.location);
+        //         // }
+        //         this.getProvinceName(this.selectedData.location);
+        //     }
+        //     else {
+        //         this.selectedData.location = null;
+        //     }
+        //     // console.log("selectedData.location === ",  this.selectedData.location);
             
-        },
+        // },
         checkDateRange() {
             const startDate = moment(this.valueDate[0]);
             const endDate = moment(this.valueDate[1]);
@@ -1901,7 +1879,7 @@ export default {
 .social-img {
     width: 50px;
     margin-left: -30px;
-    margin-top: 10px;
+    /* margin-top: 10px; */
     z-index: 0;
     position: relative;
 }
@@ -1914,7 +1892,7 @@ export default {
 }
 .right{
     position: absolute;
-    bottom: 10%; 
+    bottom: 20%; 
     right: 0px;
 };
 .social-img {

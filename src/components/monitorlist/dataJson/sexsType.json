@@ -1,0 +1,6 @@
+[
+    {"text": "ไม่ระบุ", "value":"other"},
+    {"text": "ชาย", "value":"male"},
+    {"text": "หญิง", "value":"female"},
+    {"text": "LGBTQ+", "value":"lgbtq+"}
+]

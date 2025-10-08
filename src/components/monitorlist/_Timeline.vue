@@ -124,7 +124,7 @@
                                 ย่อบทความ
                             </span>
                         </p>
-                        <div v-if="item.photos.length && item.source !=='tiktok'" class="d-block d-md-none text-center">
+                        <div v-if="item.photos && item.photos.length && item.source !=='tiktok'" class="d-block d-md-none text-center">
                             <img class="item-image w-100" style="border-radius: 16px;"  :src="item.photos[0]"/>
                         </div>
                     </b-card-text>
@@ -193,7 +193,7 @@
                 <div :class="index % 2 === 0 ? 'left' : 'right'" class="pt-2 item-image-container d-none d-md-block">
                     
                     <hr class="mt-0 bg-info-to-warning"/>
-                    <img v-if="item.photos.length && item.source !=='tiktok'" class="mt-4 mb-0 item-image" :src="item.photos[0]" 
+                    <img v-if="item.photos && item.photos.length && item.source !=='tiktok'" class="mt-4 mb-0 item-image" :src="item.photos[0]" 
                         :class="{
                             'no-top-right-radius mr-3': index % 2 === 1,
                             'no-top-left-radius ml-3': index % 2 === 0

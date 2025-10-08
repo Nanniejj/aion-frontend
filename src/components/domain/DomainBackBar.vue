@@ -1,70 +1,73 @@
 <template>
   <div>
-    <b-row class="pt-md-3 pt-sm-1 pt-lg-3">
-      <b-col class="text-left" lg="auto">
-        <!-- for Phone -->
-        <div id="flowPhone">
-          <div id="flow-tt">
-            <h5 class="title-domain">
-              <span @click="backDomain"> Domain </span>
-              <i class="fas fa-angle-right" />
-              <span id="active"> {{ getClickDomain }} </span>
-            </h5>
-          </div>
-        </div>
-        <!-- for desktop -->
-        <span id="flowBoxes">
-          <div
-            class="rightt hov"
-            @click="backDomain"
-            style="cursor: pointer; color: #4c412b"
-          >
-            <a>Domain</a>
-            <span class="prt"> /</span>
-          </div>
-          <div class="leftt rightt hov active pr-5"  style="max-width: 250px;cursor: pointer">
-            <a style="margin-left: 18px"
-              ><span class="truncate-text-1">{{ getClickDomain }}</span>
-            </a>
-          </div>
-        </span>
-      </b-col>
-      <b-col class="text-lg-right mt-sm-2 mt-md-4 mt-lg-2">
-        <section
-          id="date-picker"
-          class="d-inline position-relative align-bottom"
-        >
-          <date-picker
-            v-model="valueDate"
-            type="date"
-            range
-            placeholder="เลือกช่วงเวลา"
-            size="sm"
-            :disabled-date="(date) => date >= new Date()"
-            value-type="format"
-            format="YYYY-MM-DD"
-            @change="checkDateRange()"
-            id="date-domain"
-            >{{ valueDate }}</date-picker
-          >
-        </section>
-        <i
-          class="fas fa-print fa-2x d-inline ml-2 mr-2"
-          style="cursor: pointer"
-          @click="printWindow()"
-        ></i>
-        <i
-          @click="toReport"
-          class="fas fa-file-export"
-          style="font-size:25px;margin-right:7px;cursor: pointer"
-          v-b-tooltip.hover
-          title="Export Report"
-        ></i>
-        <!-- <ExportDocx style="cursor: pointer;" :key="componentKey" @click="reloadComponent" /> -->
-      </b-col>
+    <b-row class="m-0 pt-md-3 pt-sm-1 pt-lg-3 justify-content-between">
+        <b-col cols="auto" class="text-left py-0 px-0">
+            <!-- for Phone -->
+            <div id="flowPhone" class="px-0">
+            <div id="flow-tt">
+                <h5 class="title-domain">
+                <span @click="backDomain"> Domain </span>
+                <i class="fas fa-angle-right" />
+                <span id="active"> {{ getClickDomain }} </span>
+                </h5>
+            </div>
+            </div>
+            <!-- for desktop -->
+            <b-col class="py-0" id="flowBoxes">
+            <div
+                class="rightt hov"
+                @click="backDomain"
+                style="cursor: pointer; color: #4c412b"
+            >
+                <a>Domain</a>
+                <span class="prt"> /</span>
+            </div>
+            <!-- max-width: 250px; -->
+            <div class="leftt rightt active pl-4"  style="cursor: pointer">
+                <!-- <a style="margin-left: 18px"> -->
+                <span class="text-truncate" style="max-width: 100%;">
+                    {{ getClickDomain }}
+                </span>
+                <!-- </a> -->
+            </div>
+            </b-col>
+        </b-col>
+        <b-col cols="12" xl="" align-self="end" class="d-flex justify-content-center justify-content-sm-end text-sm-right px-0 mt-sm-2 mt-md-4 mt-lg-3 mt-xl-2">
+            <section
+            id="date-picker"
+            class="d-inline position-relative align-bottom"
+            >
+            <date-picker
+                v-model="valueDate"
+                type="date"
+                range
+                placeholder="เลือกช่วงเวลา"
+                size="sm"
+                :disabled-date="(date) => date >= new Date()"
+                value-type="format"
+                format="YYYY-MM-DD"
+                @change="checkDateRange()"
+                id="date-domain"
+                >{{ valueDate }}</date-picker
+            >
+            </section>
+            <i
+            class="fas fa-print fa-2x d-inline ml-2 mr-2"
+            style="cursor: pointer"
+            @click="printWindow()"
+            ></i>
+            <i
+            @click="toReport"
+            class="fas fa-file-export"
+            style="font-size:25px;cursor: pointer"
+            v-b-tooltip.hover
+            title="Export Report"
+            ></i>
+            <!-- <ExportDocx style="cursor: pointer;" :key="componentKey" @click="reloadComponent" /> -->
+        </b-col>
     </b-row>
-    <div
-      class="text-right pr-5 mt-2 text-secondary"
+    <b-col
+      class="text-sm-right px-0 mt-2 text-secondary"
       style="font-size:14px"
       v-if="updated_until"
     >
@@ -75,7 +78,7 @@
         ><i class="fa fa-info-circle" aria-hidden="true"></i> ข้อมูลอัพเดทล่าสุด
         {{ updated_until }}</span
       >
-    </div>
+    </b-col>
   </div>
 </template>
 
@@ -299,16 +302,33 @@ export default {
 #flowBoxes div.active:after {
   background-color: #4c412b;
 }
-@media only screen and (min-width: 0px) and (max-width: 750px) {
-  #flowBoxes {
-    display: none;
-  }
-  #flowPhone {
-    display: -webkit-box;
-    padding: 8px 10px;
-  }
-  .fa-print {
-    font-size: 25px;
-  }
+.mx-input{
+    width: auto;
+}
+@media only screen and (min-width: 0px) and (max-width: 884px) {
+    #flowBoxes {
+        display: none;
+    }
+    #flowPhone {
+        display: -webkit-box;
+        padding: 8px 10px;
+    }
+    .fa-print {
+        font-size: 25px;
+    }
+    .mx-datepicker{
+        width: unset;
+    }
+}
+@media only screen and (min-width: 750px) and (max-width: 1309px) {
+    /* #flowBoxes .active{
+        max-width: 250px;
+    } */
+    .mx-datepicker{
+        width: unset;
+    }
+    #flowBoxes {
+        margin-left: 0px;
+    }
 }
 </style>

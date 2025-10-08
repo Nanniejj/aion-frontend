@@ -140,8 +140,9 @@
                         <template #row-details="row">
                             <b-card class="text-left" style="max-height:400px;overflow-y:auto;">
                                 <ProfileEdit 
+                                    type="community"
                                     :item="row.item" 
-                                    :influencerTypes="influencerTypes"
+                                    
                                     @close="row.toggleDetails()"
                                     @updated="apiGetCommunities()"
                                 />
@@ -205,7 +206,7 @@ export default {
                 { key: 'action', label: '' }
             ],
             communities: [],
-            influencerTypes: [],
+            // influencerTypes: [],
             username: "",
         }
     },
@@ -405,36 +406,10 @@ export default {
                     console.error(error);
                 });
         },
-        apiGetInfluencerType() {
-            this.load = true;
-            const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/monitor/getInfluencerType",
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
-
-            this.axios(config)
-            .then((response) => {
-                // console.log(response);
-                let result = response.data || [];
-                this.influencerTypes = result.map(type => ({
-                    value: type.id,
-                    text: type.name
-                }));
-                this.load = false;
-            })
-            .catch((error) => {
-                this.load = false;
-                // console.error(error);
-            });
-        },
+       
     },
     async mounted() {
         this.username = localStorage.getItem("username");
-        this.apiGetInfluencerType();
         await this.apiGetCommunities();
         await this.getPreview();
     },

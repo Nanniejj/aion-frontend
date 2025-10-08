@@ -88,7 +88,20 @@
           <div class="mt-3">ไม่พบข้อมูล</div>
         </b-card>
       </div>
-      <b-card no-body class="overflow-hidden" header-tag="header" footer-tag="footer"
+
+      <timeline-posts :items="dataPost" mode="posts" sort="recent" :count="datacount" v-else />
+      <div v-if="totalPages > 1" class="text-center my-2 pb-5">
+        
+        <div v-if="currentPage === totalPages" class="text-center mb-3 py-5">
+          <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.5)"
+            color="#17a2b891" />
+        </div>
+        <b-button v-else variant="outline-info" @click="setPage(currentPage + 1)" pill>
+          <span> <i class="fa fa-plus" aria-hidden="true"></i> More</span>
+        </b-button>
+      </div>
+
+        <!-- <b-card no-body class="overflow-hidden" header-tag="header" footer-tag="footer"
         style="max-width: 100%; margin-bottom: 30px" v-for="(datas, k) in paginate" :key="k">
         <template #header>
           <b-row>
@@ -114,7 +127,6 @@
               <img v-if="datas.source === 'threads'" src="@/assets/Threads.png" class="social-img" />
             </b-col>
             <b-col style="text-align: initial">
-              <!-- {{username(datas.account_name)}} -->
               <span id="user-name">
                 <b>{{ datas.account_name }}</b>
                 <a v-if="datas.url_post && datas.url_post.includes('mbasic')"
@@ -122,7 +134,6 @@
                 <a v-else v-bind:href="datas.url_post" class="fa fa-external-link" target="_blank"></a>
               </span>
 
-              <!-- Time -->
               <div id="text-date" style="text-align: start" class="md-font">
                 <span v-if="datas.date">{{ datas.date.split("T")[0] }} |
                   {{ datas.date.split("T")[1] }}</span>
@@ -209,20 +220,6 @@
                   {{ datas.title }}
                 </div>
 
-                <!-- <Highlighter
-                  class="my-highlight md-font"
-                  :style="{
-                    textAlign: 'left',
-                    fontSize: '17px',
-                    padding: '10px',
-                  }"
-                  highlightClassName="highlight4"
-                  :searchWords="highlightText(datas.spotnews_docs.keywords)"
-                  :autoEscape="true"
-                  :textToHighlight="
-                    datas.read ? datas.full_text.slice(0, 450) : datas.full_text
-                  "
-                ></Highlighter> -->
                 <Highlighter class="my-highlight md-font" :style="{
                   textAlign: 'left',
                   fontSize: '17px',
@@ -234,7 +231,6 @@
                 <div v-if="datas.full_text.length > 450" @click="datas.read = !datas.read" id="readmore">
                   <span v-if="datas.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
                 </div>
-                <!-- </read-more> -->
               </b-card-text>
             </b-card-body>
           </b-col>
@@ -243,15 +239,7 @@
               <a v-bind:href="datas.url_post" target="_blank">
                 <img :src="datas.photos && datas.photos[0]" onerror="this.style.display='none'"
                         style="height:450px;border-radius: 10px;" class="my-3" />
-                <!-- <lite-tiktok :videoid="datas.uid" style=" pointer-events: none; "></lite-tiktok> -->    
               </a>
-
-              <!-- <iframe
-                width="auto"
-                height="750"
-                :src="'https://www.tiktok.com/embed/v2/' + datas.uid"
-                allowfullscreen
-              ></iframe> -->
             </div>
             <div id="photo-grid" v-if="
               datas.photos !== null &&
@@ -292,7 +280,7 @@
             </div>
           </b-col>
         </b-row>
-            <div class="text-left ai-box mt-2"
+        <div class="text-left ai-box mt-2"
           v-if="datas && datas.photos_text && datas.photos_text.length"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.photos_text" >
@@ -324,7 +312,6 @@
         <div class="text-left ai-box mt-2" v-if="datas && datas.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.ocr">
-            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
             <div v-if="text.text_sort && text.text_sort.length">
               <b-avatar size="18px" style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx + 1 }}
               </b-avatar>
@@ -355,7 +342,6 @@
           <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
     border-radius: 33px;
 ">
-            <!-- {{ geo.toString() }} -->
             <span v-if="geo.toString() && geo.toString().length == 2">
               {{ matchGeocode(geo).name_th }}
             </span>
@@ -398,7 +384,6 @@
         </div>
         <template #footer>
           <div class="comment-img text-left md-font">
-            <!------------- engages-------------- -->
             <span v-b-tooltip.hover title="Engagement" v-if="datas.source == 'pantip'">
               <span style="font-size:14px;">Engages </span>
               {{ (datas.engagement + datas.comments_count) | numFormat }}
@@ -408,7 +393,6 @@
               <span style="font-size:14px;">Engages </span>{{ datas.engagement | numFormat }}
             </span>
 
-            <!-- popover user comment -->
             <popover :name="'foo' + k" id="foo" v-if="
               datas.source !== 'facebook' &&
               datas.source !== 'youtube' &&
@@ -425,20 +409,14 @@
               <div v-if="datas.comment == undefined" class="text-center">
                 ไม่มีลิสต์รายชื่อ account
               </div>
-              <!-- <div v-for=" comment_tw in datas.retweet_obj"><span >{{comment_tw}}</span></div> -->
               <div id="scroll">
                 <div v-if="datas.comment !== undefined">
-                  <!-- <div v-if="datas.source == 'twitter'">
-                        <i class="fas fa-comment"></i> reply
-                        | <i class="fal fa-retweet"></i> retweet</div>   -->
                   <div v-for="comment in datas.comment" :key="comment">
-                    <!-- fb -->
                     <a id="user-link" v-if="datas.source === 'facebook'"
                       v-bind:href="'https://facebook.com//' + comment.id" target="_blank">
                       <i class="fa fa-user-circle-o" />
                       {{ comment.display_name }}</a>
 
-                    <!-- tw -->
                     <span v-if="datas.source === 'twitter'">
                       <span v-if="comment.post_type == 'reply'">
                         <a id="user-link" v-bind:href="'https://twitter.com/' + comment.account_name
@@ -455,22 +433,18 @@
                           {{ comment.account_name }}</a>
                       </span>
                     </span>
-                    <!-- news -->
-                    <!-- <a id ="user-link" v-if="datas.source === 'news'" v-bind:href="'https://pantip.com//' + comment.account_name" target="_blank">
-                      <i class="fa fa-user-circle-o"/> {{comment.account_name}}</a> -->
-
-                    <!-- IG -->
+                    
                     <a id="user-link" v-if="datas.source === 'instagram'" v-bind:href="'https://www.instagram.com//' + comment.owner.id
                       " target="_blank">
                       <img v-bind:src="comment.owner.profile_pic_url" id="img-user" />
                       {{ comment.owner.username }}</a>
 
-                    <!-- pt -->
+                    
                     <a id="user-link" v-if="datas.source === 'pantip'" v-bind:href="'https://pantip.com//profile/' + comment.username
                       " target="_blank">
                       <img v-bind:src="comment.photo" id="img-user" />
                       {{ comment.username }}</a>
-                    <!-- yt -->
+                    
                     <a id="user-link" v-if="datas.source === 'youtube'" v-bind:href="'https://www.youtube.com/' + comment.author_link
                       " target="_blank">
                       <img v-bind:src="comment.photo" id="img-user" />
@@ -478,7 +452,6 @@
                   </div>
                 </div>
 
-                <!-- <div v-if="datas.comment==''" class="text-center">ไม่มีลิสต์รายชื่อ account</div> -->
               </div>
             </popover>
             <span id="box-reaction" v-b-tooltip.hover title="Comments" :aria-expanded="visible ? 'true' : 'false'"
@@ -489,10 +462,8 @@
               </span>
               <span v-else class="md-font">
                 {{ datas.comments_count | numFormat }}&nbsp;</span>
-              <!-- <span  class="md-font" v-if="datas.comments_count==''&&datas.source == 'twitter'"> 0 </span> -->
             </span>
 
-            <!-- twitter -->
             <span v-if="datas.source !== 'facebook' && datas.source !== 'youtube'">
               <span v-if="datas.retweets_count !== '0' && datas.retweets_count" id="box-reaction" v-b-tooltip.hover
                 title="Retweet">
@@ -515,7 +486,6 @@
                 {{ datas.views_count | numFormat }}
               </span>
             </span>
-            <!-- share blockdit -->
             <span v-if="datas.source == 'blockdit' && datas.engagement">
               <span id="box-reaction" v-b-tooltip.hover title="Share">
                 <i class="fa fa-share"></i>
@@ -524,10 +494,8 @@
                 </span>
               </span>
             </span>
-            <!-- reaction-->
             <span v-if="datas.reaction">
               <span v-if="datas.reaction != ''">
-                <!-- pt -->
                 <span v-if="datas.reaction.Good">
                   <span v-if="datas.reaction.Good !== '0'" id="box-reaction" v-b-tooltip.hover title="Good Content">
                     <i class="fa fa-plus"></i>
@@ -544,8 +512,7 @@
                     </span>
                   </span>
                 </span>
-                <!-- pt -->
-                <!-- fb -->
+                
                 <span v-if="datas.reaction.Likes">
                   <span v-if="datas.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
                     <img v-if="datas.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
@@ -633,7 +600,7 @@
                   </span>
                 </span>
 
-                <!-- yt -->
+                
                 <span v-if="datas.reaction.view_count" v-b-tooltip.hover title="Views">
                   <span v-if="datas.reaction.view_count !== ''" id="box-reaction"><i class="fas fa-eye"></i>
                     <span class="md-font" v-if="datas.reaction.view_count !== ''">
@@ -658,10 +625,10 @@
                     </span>
                   </span>
                 </span>
-                <!-- end yt -->
+                
               </span>
             </span>
-            <!-- comment content -->
+           
             <b-collapse :id="'btn' + page + k" class="mt-2" v-if="datas.comments && datas.comments.length">
               <b-card id="cmt-card" class="text-left">
                 <span v-if="datas.source == 'news' && datas.comments">
@@ -701,7 +668,6 @@
                           <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
                         </a>
 
-                        <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                         <span> </span>
                       </b-col>
                       <b-col lg="11">
@@ -733,9 +699,9 @@
             </b-collapse>
           </div>
         </template>
-      </b-card>
+        </b-card> -->
     </div>
-    <ul class="pagination" v-if="datacount != 0">
+    <!-- <ul class="pagination" v-if="datacount != 0">
       <li class="page-item" v-for="pageNumber in totalPages" :key="pageNumber">
         <span v-if="
           Math.abs(pageNumber - currentPage) < 3 ||
@@ -750,15 +716,21 @@
             first: pageNumber == 1 && Math.abs(pageNumber - currentPage) > 3,
           }">{{ pageNumber }}</a></span>
       </li>
-    </ul>
-    <input type="number" class="form-control md-font" v-model="gotopage" id="setpage" style="width: 150px"
-      v-if="datacount != 0" />
+    </ul> -->
+    <!-- <input type="number" class="form-control md-font" v-model="gotopage" id="setpage" style="width: 150px"
+      v-if="datacount != 0" /> -->
 
-    <span v-if="datacount != 0">
+    <!-- <span v-if="datacount != 0">
       <button type="button" class="btn btn-default" @click="page()">
         <span id="submit" class="md-font">Go to Page</span>
       </button>
-    </span>
+    </span> -->
+
+    <back-to-top bottom="50px" right="50px">
+        <button type="button" class="btn btn-to-top">
+          <i class="fa fa-chevron-up"></i>
+        </button>
+    </back-to-top>
   </div>
 </template>
 
@@ -775,6 +747,8 @@ import subdistricts from "@/components/map/subdistricts.json";
 import SentimentBar from "@/components/domain/SentimentBar.vue";
 import ReadMoreBox from "./ReadMore.vue";
 
+
+import TimelinePosts from '../timeline/TimelinePosts2.vue';
 export default {
   props: {
     checkpost: {
@@ -878,15 +852,25 @@ export default {
     Highlighter,
     VueGallerySlideshow,
     SentimentBar,
-    ReadMoreBox
+    ReadMoreBox,
+    TimelinePosts
   },
   computed: {
-    ...mapGetters(["getClickDomain"]),
+    ...mapGetters(["getClickDomain","getSearchWords"]),
 
     paginate() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
       return this.dataIssue.slice(start, end); // แบ่งข้อมูลสำหรับแต่ละหน้า
+    },
+    dataPost() {
+        const start = 0;
+        const end = ((this.currentPage - 1) * this.itemsPerPage) + this.itemsPerPage;
+        let posts = this.dataIssue.slice(start, end); // แบ่งข้อมูลสำหรับแต่ละหน้า
+        console.log("post ==== ", posts);
+        console.log("start, end ==== ", start, end);
+        
+        return posts
     },
     totalPages() {
       return Math.ceil(this.datacount / this.itemsPerPage); // คำนวณจำนวนหน้าทั้งหมด
@@ -934,44 +918,48 @@ export default {
     highlightText(full_text) {
       
 
-      var word = [];
-      if (this.checked) {
-        word.push(...this.heightword);
-        if (this.andkey.length) {
-          this.andkey.forEach(function (key) {
+        var word = [];
+        if (this.checked) {
+            word.push(...this.heightword);
+            if (this.andkey.length) {
+            this.andkey.forEach(function (key) {
 
-            if (
-              key.length == 2 &&
-              full_text.includes(key[0]) &&
-              full_text.includes(key[1])
-            ) {
-              
-              
-              word.push(...key);
-            }
+                if (
+                key.length == 2 &&
+                full_text.includes(key[0]) &&
+                full_text.includes(key[1])
+                ) {
+                
+                
+                word.push(...key);
+                }
 
-            if (
-              key.length == 3 &&
-              full_text.includes(key[0]) &&
-              full_text.includes(key[1]) &&
-              full_text.includes(key[2])
-            ) {
-              word.push(...key);
-            }
-            if (
-              key.length == 4 &&
-              full_text.includes(key[0]) &&
-              full_text.includes(key[1]) &&
-              full_text.includes(key[2]) &&
-              full_text.includes(key[3])
-            ) {
-              word.push(...key);
-            }
-          });
+                if (
+                key.length == 3 &&
+                full_text.includes(key[0]) &&
+                full_text.includes(key[1]) &&
+                full_text.includes(key[2])
+                ) {
+                word.push(...key);
+                }
+                if (
+                key.length == 4 &&
+                full_text.includes(key[0]) &&
+                full_text.includes(key[1]) &&
+                full_text.includes(key[2]) &&
+                full_text.includes(key[3])
+                ) {
+                word.push(...key);
+                }
+            });
 
-       
+        
+            }
+            this.$store.commit("setSearchWords", word);
+        } else {
+            this.$store.commit("setSearchWords", []);
         }
-      }
+    //   this.getSearchWords = word
       return word;
     },
     selectSort() {
@@ -1174,10 +1162,11 @@ export default {
         method: "get",
         url: "https://api2.cognizata.com/api/v2/userposts/getSpotnewsId",
         params: {
-          sentiment: stm || "",
-          sort_by: this.sort,
-          cluster: this.$route.query.cluster,
-          _id: this.$route.query.id,
+            sentiment: stm || "",
+            limit: 10,
+            sort_by: this.sort,
+            cluster: this.$route.query.cluster,
+            _id: this.$route.query.id,
         },
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -1231,15 +1220,42 @@ export default {
         });
         this.andkey = result;
         this.heightword = k;
+        this.highlightText(this.heightword);
+        
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
-  },
+
+    },
+    watch: {
+        checked() {
+            this.highlightText(this.heightword);
+        }
+    }
+    
 };
 </script>
 
 <style scoped>
+.btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+  background-color: #fed16e;
+  border-color: #fed16e;
+  color: #fff;
+  box-shadow: 2px 1px 4px #888888;
+}
+
+.btn-to-top:hover {
+  background-color: #f7c24e;
+  border-color: #f7c24e;
+  color: #fff;
+}
 .card-platform {
   margin-bottom: 18px;
   border-radius: 15px;

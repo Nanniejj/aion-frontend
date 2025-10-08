@@ -170,7 +170,6 @@
                     </b-form-checkbox>
                 </div>
                 <b-form-group label="หมวดหมู่ Influencer">
-                    <!-- <b-form-select v-model="filterRules.category" :options="categories"></b-form-select> -->
                     <Multiselect
                         v-model="selectedTypes"
                         :options="influencerTypes"
@@ -389,7 +388,7 @@
                         placeholder="เลือกหมวดหมู่"
                        @input="updateInfluencerType"
                     />
-                    <!-- <b-form-select v-model="filterRules.category" :options="categories"></b-form-select> -->
+                    
                 </b-form-group>
                 <b-form-group label="ประเภทธุรกิจ">
                     <b-form-select v-model="filterRules.department" :options="departmentTypes"></b-form-select>
@@ -435,6 +434,9 @@ import VueSlider from 'vue-slider-component'
 import Multiselect from 'vue-multiselect'
 import 'vue-slider-component/theme/default.css'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
+
+import speciesTypes from "../monitorlist/dataJson/speciesTypes.json"
+import departmentTypes from "../monitorlist/dataJson/departmentTypes.json"
 export default {
     components: {
         VueSlider,
@@ -469,46 +471,8 @@ export default {
                 influencer_type:[]
             },
             influencerLevel: '',
-            departmentTypes:[
-                { text: "เลือกประเภทธุรกิจ", value: null },
-                { text: "อุตสาหกรรมและการผลิต", value: "manufacturing" },
-                { text: "การค้าและค้าปลีก", value: "retail" },
-                { text: "การเงินและการธนาคาร", value: "finance" },
-                { text: "การแพทย์และสาธารณสุข", value: "healthcare" },
-                { text: "ก่อสร้างและอสังหาริมทรัพย์", value: "construction" },
-                { text: "ขนส่งและโลจิสติกส์", value: "logistics" },
-                { text: "เทคโนโลยีสารสนเทศ (IT)", value: "it" },
-                { text: "การศึกษา", value: "education" },
-                { text: "สื่อสาร / โฆษณา / การตลาด", value: "media_marketing" },
-                { text: "อาหารและเครื่องดื่ม", value: "food_beverage" },
-                { text: "การท่องเที่ยวและโรงแรม", value: "tourism" },
-                { text: "บันเทิงและสันทนาการ", value: "entertainment" },
-                { text: "กฎหมายและที่ปรึกษา", value: "legal_consulting" },
-                { text: "ความงาม / สุขภาพ / ไลฟ์สไตล์", value: "lifestyle" },
-                { text: "สังคม / องค์กรไม่แสวงกำไร", value: "nonprofit" }
-            ],
-            categories: [
-                { value: null, text: "All Categories" },
-                { value: "category1", text: "Category 1" },
-                { value: "category2", text: "Category 2" },
-                { value: "category3", text: "Category 3" },
-            ],
-            speciesTypes: [
-                { value: null, text: "เลือกลักษณะบัญชี" },
-                { text: 'บุคคลทั่วไป', value: 'people' },
-                { text: 'ดารา / นักแสดง / ศิลปิน', value: 'actor' },
-                { text: 'ผู้เชี่ยวชาญ', value: 'expert' },
-                { text: 'นักการเมือง/ พรรคการเมือง', value: 'political' },
-                { text: 'สัตว์เลี้ยง', value: 'pet' },
-                { text: 'แบรนด์ / ร้านค้า', value: 'brand' },
-                { text: 'องค์กร / บริษัท', value: 'company' },
-                { text: 'บัญชีอัตโนมัติ / บอท / AI', value: 'bot' },
-                { text: 'ตัวละครในจินตนาการ / การ์ตูน/หนัง',value: 'fictional' },
-                { text: 'เด็ก / ทารก', value: 'kid' },
-                { text: 'คู่รัก / ครอบครัว', value: 'family' },
-                { text: 'สัตว์ธรรมชาติ / สัตว์ป่า', value: 'wild_animal' },
-                { text: 'ไม่ระบุ', value: 'none' }
-            ],
+            departmentTypes:departmentTypes,
+            speciesTypes:speciesTypes,
             sourceOptions: [
                 { value: null, text: 'All Platform' },
                 { value: 'facebook', text: 'Facebook' },
