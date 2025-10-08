@@ -314,7 +314,7 @@ export default {
         keywordInput: "",
         view_mode: "posts",
         source: [null],
-        sort_by: "recent",
+        sort_by: "engagement",//recent
         limit: 50,
         page: 1,
         hashtags: []
@@ -324,7 +324,7 @@ export default {
         keywordInput: "",
         view_mode: "posts",
         source: [null],
-        sort_by: "recent",
+        sort_by: "recent", 
         limit: 50,
         page: 1,
         accountsInput: [],
