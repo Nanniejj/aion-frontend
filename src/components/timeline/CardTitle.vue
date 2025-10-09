@@ -142,7 +142,7 @@
       <span class="clickable small" @click="showAllComments = true" size="sm">
         ดูทั้งหมด
       </span>
-      <CommentsAllModal v-model="showAllComments" :comments="post.comments || []" :accountName="post.account_name"
+      <CommentsAllModal v-model="showAllComments" :comments="post.comments || []" :accountName="post.account_name" :post="post"
         :filterMode="filterMode" />
       <li class="station" style="color: rgb(0, 108, 183);"
         v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.filter(x => x.username !== post.account_name).slice(0, 5))"

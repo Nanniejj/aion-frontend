@@ -1,5 +1,67 @@
 <template>
-  <b-modal v-model="showProxy" size="lg" title="ความคิดเห็นทั้งหมด" hide-footer scrollable class="py-5 popup-comment">
+  <b-modal v-model="showProxy" size="lg" hide-footer scrollable class="py-5 popup-comment">
+    <!-- Header แบบ custom (ใช้ slot="modal-header" แทน #modal-header) -->
+    <template slot="modal-header">
+      <div class="w-100 py-2 position-relative">
+        <b-button variant="link" class="position-absolute close-btn p-0" style="right: -6px;top:0px"
+          @click="showProxy = false">
+          <b-icon icon="x" font-scale="1.8" style="color: #1b97a6;"></b-icon>
+        </b-button>
+        <div class="d-flex align-items-center pt-2">
+          <a :href="post.url_post" target="_blank"><b-avatar :src="headerAvatar" size="44" class="mr-2" /></a>
+
+          <div class="d-flex flex-column">
+            <div class="font-weight-bold" style="line-height: 1.2;">
+              <a :href="post.url_post" target="_blank" style="color: #1b97a6;font-size: 14px;"> {{ headerAccountName
+              }}</a>
+            </div>
+            <div class="text-muted small" v-if="headerDate">
+              {{ headerDate }} {{ headerTime }}
+            </div>
+          </div>
+       <div class="text-left ml-auto" style="zoom:78%">
+          <b-button-group size="sm" class="my-2" v-if="post.source == 'facebook'">
+            <b-button :variant="filterMode === 'topComments' ? 'info' : 'outline-info'"
+              @click="filterMode = 'topComments'">
+              Top Comments
+            </b-button>
+            <b-button :variant="filterMode === 'topFans' ? 'info' : 'outline-info'" @click="filterMode = 'topFans'"  v-if="post.comments.filter(x => x.is_top_fan).length">
+              Top Fan
+            </b-button>
+          </b-button-group>
+        </div>
+
+        </div>
+
+
+        
+      </div>
+    </template>
+    <!-- เนื้อหาโพสต์ (สรุป/ท่อนต้น) -->
+    <div v-if="headerFullText" class="small  post-preview">
+      <b-row>
+        <b-col cols="12" md="3" v-if="post.photos && post.photos.length" class="img-col">
+          <!-- รูป preview -->
+          <b-card-img class="img-cover" @error="setAltImg"
+            :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
+            @click="showImage = true" />
+
+          <!-- Modal แสดงรูปเต็ม -->
+          <b-modal v-model="showImage" size="xl" centered hide-footer>
+            <img @error="setAltImg"
+              :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
+              class="w-100" style="max-height: 80vh; object-fit: contain" crossorigin="anonymous" />
+          </b-modal>
+        </b-col>
+        <b-col>
+          <ReadMoreBox :text="headerFullText" :limit="350" :mobileLimit="110" :breakpoint="800" />
+        
+        </b-col>
+      </b-row>
+
+    </div>
+    <hr class="my-2" />
+    <!-- รายการคอมเมนต์ -->
     <div v-if="filteredAll.length">
       <div v-for="(c, i) in filteredAll" :key="c.id || i" class="d-flex align-items-start mb-3">
         <b-avatar v-if="c.photo" :src="c.photo" size="38" :class="c.is_top_fan ? 'story-ring' : ''" />
@@ -44,6 +106,7 @@
         </div>
       </div>
     </div>
+
     <div v-else class="text-muted small">ไม่พบความคิดเห็น</div>
   </b-modal>
 </template>
@@ -51,15 +114,22 @@
 <script>
 import moment from "moment";
 import "moment/locale/th";
-
+import ReadMoreBox from "./ReadMore2.vue";
 export default {
   name: "CommentsAllModal",
-  // รองรับ v-model แบบ classic: v-model="showAllComments"
+  components: { ReadMoreBox },
   props: {
-    value: { type: Boolean, default: false },           // <-- v-model
+    value: { type: Boolean, default: false },        // v-model
     comments: { type: Array, default: () => [] },
     accountName: { type: String, default: "" },
-    filterMode: { type: String, default: "topComments" } // ใช้ตัวเดียวกับสวิตช์ด้านนอก
+    filterMode: { type: String, default: "topComments" }, // 'topComments' | 'topFans'
+    post: { type: Object, default: () => null }      // รับข้อมูลโพสต์เพื่อโชว์บนหัวโมดัล
+  },
+  data() {
+    return {
+      showImage: false,
+            default_avatar: require("@/assets/no-image.jpg"),
+    }
   },
   computed: {
     showProxy: {
@@ -67,19 +137,48 @@ export default {
       set(v) { this.$emit("input", v); }
     },
     filteredAll() {
-      // ตัดคอมเมนต์ของเจ้าของโพสต์ออก เหมือนลิสต์ด้านล่าง
-      const base = (this.comments || []).filter(x => x.username !== this.accountName);
+      const base = (this.comments || []).filter(x => x && x.username !== this.accountName);
       if (this.filterMode === "topFans") return base.filter(x => x.is_top_fan);
-      return base; // topComments = ทั้งหมด (ให้ backend จัดอันดับมาแล้ว)
+      return base;
+    },
+    // ---- header computed (เลี่ยงการใช้ ?. ใน template) ----
+    headerAvatar() {
+      const noimg = require("@/assets/no-image.jpg");
+      return this.post && this.post.profile_image ? this.post.profile_image : noimg;
+    },
+    headerAccountName() {
+      if (this.post && this.post.account_name) return this.post.account_name;
+      if (this.accountName) return this.accountName;
+      return "ไม่ระบุ";
+    },
+    headerFullText() {
+      if (this.post && this.post.full_text) {
+        return this.post.full_text.replace("...___...", "");
+      }
+      return "";
+    },
+    headerDate() {
+      if (this.post && this.post.date) return this.formatDate(this.post.date);
+      return "";
+    },
+    headerTime() {
+      if (this.post && this.post.date) return this.formatTime(this.post.date);
+      return "";
     }
   },
   methods: {
+      setAltImg(event) {
+      event.target.src = this.default_avatar;
+    },
     formatDate(date) {
+      if (!date) return "";
       const d = moment(date).subtract(7, "hours");
-      return moment(d).format("ll")||d
+      return moment(d).format("ll");
     },
     formatTime(date) {
-      return (date || "").slice(11, 16)||d
+      if (!date) return "";
+      const iso = typeof date === "string" ? date : new Date(date).toISOString();
+      return iso.slice(11, 16);
     }
   }
 };
@@ -127,14 +226,51 @@ export default {
   max-width: 180px;
   overflow: hidden;
   white-space: nowrap;
-  color:#56a7b6;
+  color: #56a7b6;
   text-overflow: ellipsis;
 }
 
+.post-preview {
+  background: #f8fafb;
+  border: 1px dashed #d8e6ea;
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #3b4a59;
+}
+
+.img-col {
+  overflow: hidden;
+}
+
+.img-cover {
+  width: 100%;
+  height: 117px;
+  /* fix ความสูง */
+  object-fit: cover;
+  /* รูปไม่บีบ */
+  border-radius: 20px;
+}
+
+img-cover {
+  width: 100%;
+  height: 212px;
+  object-fit: cover;
+  border-radius: 20px;
+  cursor: pointer;
+  /* แสดงว่าเป็นรูปคลิกได้ */
+  transition: transform 0.3s ease-in-out;
+}
+
+.img-cover:hover {
+  transform: scale(1.05);
+}
+
+@media only screen and (min-width: 0px) and (max-width: 800px) {}
 </style>
-<style >
-.modal-title{
-   font-size: 17px !important;
-      line-height: 2.5 !important;
+
+<style>
+.modal-title {
+  font-size: 17px !important;
+  line-height: 2.5 !important;
 }
 </style>
