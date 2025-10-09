@@ -32,7 +32,7 @@
           </b-col>
 
 
-          <b-col>
+          <b-col class=" position-relative">
             <div class="text-left bold d-flex align-items-center mt-2 flex-wrap">
               <span class="account-name">{{ post.account_name }} </span>
               <span class="d-inline-block box-link ml-2">
@@ -142,7 +142,7 @@
       <span class="clickable small" @click="showAllComments = true" size="sm">
         ดูทั้งหมด
       </span>
-      <CommentsAllModal v-model="showAllComments" :comments="post.comments || []" :accountName="post.account_name"
+      <CommentsAllModal v-model="showAllComments" :comments="post.comments || []" :accountName="post.account_name" :post="post"
         :filterMode="filterMode" />
       <li class="station" style="color: rgb(0, 108, 183);"
         v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.filter(x => x.username !== post.account_name).slice(0, 5))"
@@ -574,10 +574,11 @@ ul {
 }
 
 .avatar-pile {
-  position: relative;
-  /* height: 32px; */
-  bottom: 23px;
-  /* สูงเท่าขนาด avatar */
+  width: 200px;
+  position: absolute;
+  right: 8px;
+  bottom: 20px;
+  zoom: 90%;
 }
 
 .avatar-item {
@@ -685,6 +686,7 @@ img-cover {
     position: relative;
     zoom: 80%;
     bottom: 55px;
+     width: unset;
     /* bottom: 23px; */
 
   }
@@ -692,7 +694,7 @@ img-cover {
   .reaction {
     zoom: 85%;
     position: relative !important;
-  /* bottom: 17px !important; */
+    /* bottom: 17px !important; */
   }
 
   .date-label2 {
