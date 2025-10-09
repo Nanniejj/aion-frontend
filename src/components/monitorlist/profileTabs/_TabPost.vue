@@ -769,8 +769,8 @@ export default {
         if (this.$route.query.type !== 'targetlist') {
             this.valueDate = [this.start, this.end];
             this.selectDate();
-            this.apiUserPosts();
         }
+        this.apiUserPosts();
     },
     watch: {
         source: {

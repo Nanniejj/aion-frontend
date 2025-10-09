@@ -17,7 +17,13 @@
                 <h5><b>เพิ่มกลุ่มบัญชี</b></h5>
                 <hr />
             </div>
-
+            <div>
+                <b-alert show>การเลือกประเภทของกลุ่มบัญชี <br />
+                    ประเภท<b>กลุ่ม</b>: จัดกลุ่มบัญชีที่ทำ<b>กิจกรรมคล้ายกัน</b>,
+                    ประเภท<b>บุคคล</b>: จัดกลุ่มบัญชีที่เป็น<b>บุคคลเดียวกัน</b>แต่คนละ platform, 
+                    ประเภท<b>องค์กร</b>: จัดกลุ่มบัญชีที่เป็น<b>องค์กรเดียวกัน</b>แต่คนละ platform
+                </b-alert>
+            </div>
             <!-- body -->
             <b-row cols="1" cols-xl="2" class="my-1 mx-0">
                 <!-- create new Groups dashed-border-->
@@ -77,6 +83,41 @@
                                             </div>
                                         </b-button>
                                     </b-row>
+                                    <hr/>
+                                    <b-row v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0" class="m-0 mb-2 justify-content-between align-items-center">
+                                        <b-col cols="auto" class="px-0 text-info">
+                                            <span>เพิ่มบัญชีที่ไม่อยู่ใน monitor</span>
+                                        </b-col>
+                                    </b-row>
+                                    <b-row v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0" class="m-0 mb-2">
+                                        <b-col class="px-0">
+                                            <b-form-group label="URL">
+                                                <b-form-input 
+                                                    v-model="newTarget.link_original"
+                                                    type="url"
+                                                    placeholder="Enter URL"
+                                                    required
+                                                    pattern="https?://.+"
+                                                ></b-form-input>
+                                            </b-form-group>
+                                        </b-col>
+                                        <b-col class="pr-0">
+                                            <b-form-group label="platform" label-for="type-select">
+                                                <b-form-select aria-atomic="false" v-model="newTarget.source"
+                                                    :options="sourceOptions" class="" value-field="value"
+                                                    text-field="text" disabled-field="notEnabled"
+                                                ></b-form-select>
+                                            </b-form-group>
+                                        </b-col>
+                                    </b-row>
+                                    <b-col v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0" cols="12" class="p-0 text-right">
+                                        <b-button variant="info" :disabled="!newTarget.link_original || !newTarget.source" size="sm" pill :pressed="false" @click="handleNewTarge"
+                                            class="shadow-r ml-2 ">
+                                            <div class="d-flex align-items-center">
+                                                เพิ่มบัญชี
+                                            </div>
+                                        </b-button>
+                                    </b-col>
                                     <!-- <b-row v-else class="m-0 justify-content-end">
                                         <b-button size="sm" v-b-tooltip.hover title="บันทึกร่าง" variant="success" :pressed="false" @click="saveDraft(group)"
                                             class="shadow-r mr-2">
@@ -94,13 +135,15 @@
                                 </b-card-text>
                                 <template #footer>
                                     <div>
-                                        <b-col cols="12" class="d-flex p-0">
-                                            <span>สมาชิกในกลุ่ม ({{ (group.targets.length || 0) | numFormat }})</span>
-                                            <span>
-                                                <!-- <i class="material-icons">keyboard_arrow_down</i> -->
-                                            </span>
-                                            <!-- {{ group }} -->
-                                        </b-col>
+                                        <b-row class="d-flex p-0 pb-2">
+                                            <b-col>สมาชิกในกลุ่ม ({{ (group.targets.length || 0) | numFormat }})</b-col>
+                                            <!-- <b-col v-if="group.show && group.targets" @click="group.show = false" class="text-right text-info">
+                                                ซ่อน {{ group.show }}
+                                            </b-col>
+                                            <b-col v-if="!group.show && group.targets" @click="group.show = true" class="text-right text-info">
+                                                แสดง {{ group.show }}
+                                            </b-col> -->
+                                        </b-row>
                                         <b-row cols="1" class="m-0">
                                             <b-col class="mb-2 px-2" v-for="target in group.targets" :key="target.id" >
                                                 <b-card
@@ -149,52 +192,16 @@
                             </b-card>
                         </b-col>
                     </b-row>
-                    <b-row v-else class="m-0 justify-content-center align-items-center dashed-border" style="height: 64vh;">
+                    <b-row v-else class="m-0 justify-content-center align-items-center dashed-border" style="height: 50vh;">
                         <b-col class="text-center">
                             <span class="text-muted">- กรุณากดปุ่ม <span class="text-info">"เพิ่มกลุ่ม"</span> เพื่อสร้างกลุ่ม -</span>
                         </b-col>
                     </b-row>
                 </b-col>
 
-
-
                 <!-- show targetlist -->
                 <b-col v-if="selectedGroup && Object.keys(selectedGroup).length > 0" class="">
-                    <b-row class="m-0 mb-2 justify-content-between align-items-center">
-                        <b-col cols="auto" class="px-0 text-info">
-                            <span>เพิ่มบัญชีที่ไม่อยู่ใน monitor</span>
-                        </b-col>
-                        <b-col cols="auto">
-                            <b-button size="sm" pill :pressed="false" @click="handleNewTarge"
-                                class="shadow-r ml-2 ">
-                                <div class="d-flex align-items-center">
-                                    เพิ่มบัญชี
-                                </div>
-                            </b-button>
-                        </b-col>
-                    </b-row>
-                    <b-row class="m-0 mb-2">
-                        <b-col class="px-0">
-                            <b-form-group label="URL">
-                                <b-form-input 
-                                    v-model="newTarget.link_original"
-                                    type="url"
-                                    placeholder="Enter URL"
-                                    required
-                                    pattern="https?://.+"
-                                ></b-form-input>
-                            </b-form-group>
-                        </b-col>
-                        <b-col class="pr-0">
-                            <b-form-group label="platform" label-for="type-select">
-                                <b-form-select aria-atomic="false" v-model="newTarget.source"
-                                    :options="sourceOptions" class="" value-field="value"
-                                    text-field="text" disabled-field="notEnabled"
-                                ></b-form-select>
-                            </b-form-group>
-                        </b-col>
-                    </b-row>
-                    <hr>
+                    
                     <b-row class="m-0 mb-2">
                         <b-col cols="auto" class="d-flex pl-0 text-info justify-content-between align-items-center">
                             <span>รายชื่อบัญชีใน monitor ที่แนะนำ</span>
@@ -209,7 +216,7 @@
                             </b-button>
                         </b-col>
                     </b-row>
-                    <b-row cols="1" class="m-0 modal-body-scrollable" style="max-height: 40vh;">
+                    <b-row cols="1" class="m-0 modal-body-scrollable" style="max-height: 50vh;">
                         <b-col class="mb-2 px-2" v-for="target in targetLists" :key="target.id" >
                             <b-card
                                 bg-variant="white" text-variant=""
@@ -259,7 +266,7 @@
                     </b-col>
                 </b-col>
                 <b-col v-else >
-                    <b-row  class="m-0 justify-content-center align-items-center" style="min-height: 70vh;">
+                    <b-row  class="m-0 justify-content-center align-items-center" style="min-height:40vh;">
                         <b-col class="text-center mt-5">
                             <span class="text-muted">- กรุณาเลือกกลุ่มก่อนเพิ่มสมาชิก -</span>
                         </b-col>
@@ -421,8 +428,10 @@ export default {
                 // return;
             } else {
                 if (this.selectedGroup === group) {
+                    group.show = false;
                     this.selectedGroup = {};
                 } else {
+                    group.show = true;
                     this.selectedGroup = group;
                 }
             }
@@ -456,7 +465,7 @@ export default {
         },
         invalidFeedback(name) {
             if (name.trim().length === 0) {
-                return "Please enter your group name."
+                return "กรุณาตั้งชื่อกลุ่ม"
             }
             return ""
         },
@@ -479,6 +488,7 @@ export default {
         },
         clear() {
             this.groups = [];
+            this.selectedGroup = {};
         },
         hideModal() {
             // this.addGroup = false;
