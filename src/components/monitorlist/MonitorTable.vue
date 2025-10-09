@@ -121,7 +121,13 @@
                 <template #cell(name)="data">
                     <div class="d-flex justify-content-start align-items-center" >
                         <span v-if="type == 'targetlist'" class="mr-2">
+                            <!-- <i class='fas fa-star' style="position: absolute; z-index: 2;left: 6.5%;color: rgb(254, 209, 110);"></i> -->
+                            <b-avatar 
+                                v-if="data.item.influencer_condition" icon="star-fill" 
+                                size="20" class="icon-bg" 
+                                style="position: absolute; z-index: 2;left:6.5%;background-color: rgb(254, 209, 110);"></b-avatar>
                             <b-avatar :src="data.item.profile_image"
+                                :class="{'avatar-gradient-border':data.item.influencer_condition}"
                                 v-if="data && data.item && data.item.profile_image">
                             </b-avatar>
                             <b-avatar :src="data.item.profile_image" v-else> </b-avatar>
@@ -173,7 +179,7 @@
 
                 <template #cell(action)="data">
                     <b-row cols="3" class="m-0 justify-content-end align-items-center flex-nowrap">
-                        <b-col cols="auto" class="p-0">
+                        <b-col v-if="username === 'adminatapy'" cols="auto" class="p-0">
                             <b-button v-if="data.item.followers >= 100000 && !data.item.influencer_condition" 
                                 @click="data.toggleDetails" variant="warning" size="sm" pill style="background-color: #fed16e;">
                                 <span v-b-tooltip.hover title="ตรวจพบบัญชีที่อาจเป็น Influencer" class="float-right">
@@ -183,7 +189,7 @@
                                 </span>
                             </b-button>
                         </b-col>
-                        <b-col cols="auto" class="p-0">
+                        <b-col v-if="username === 'adminatapy'" cols="auto" class="p-0">
                             <span v-if="type === 'targetlist' && (data.item.followers < 100000 || data.item.followers === null || data.item.influencer_condition)" class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขข้อมูล"
                             @click="openEditProfile(data.item)" size="sm"></span>
                         </b-col>
@@ -708,6 +714,18 @@ export default {
 </script>
 
 <style scoped>
+.avatar-gradient-border {
+  border: 3px solid transparent; /* ให้มีขอบแต่โปร่งใส */
+  border-radius: 50%;
+  background-image: linear-gradient(#bfbfbf, #bfbfbf),
+                    linear-gradient(135deg, #fdc754, #f69a9a);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+}
+
+.avatar-gradient-border .b-avatar-img {
+  border-radius: 50%;
+}
 .badge-custom{
     color: #2c3e50;
     background: linear-gradient(90deg,#FDD071  0%,  #ffbcbc 100%);

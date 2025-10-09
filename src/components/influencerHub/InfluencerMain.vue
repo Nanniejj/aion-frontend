@@ -48,7 +48,7 @@
                         :filters="filters"
                     />
                 </b-col>
-                <b-col cols="12" align-self="end" class="">
+                <b-col cols="12" align-self="center" class="mb-3">
                     <b-pagination 
                         v-model="currentPage"
                         :total-rows="totalRows" 

@@ -921,7 +921,7 @@ import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
 import SentimentBar from "@/components/domain/SentimentBar.vue";
 
-import TimelinePosts from "../timeline/TimelinePosts2.vue";
+import TimelinePosts from "@/components/timeline/TimelinePosts2.vue";
 export default {
   props: {
     checkpost: {

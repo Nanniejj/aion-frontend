@@ -556,7 +556,7 @@
                     </b-col>
                     <b-col v-if="data.country !== null" cols="12" class="text-left">
                         <i class="fa fa-map-marker"></i>
-                        <span> ประเทศ{{ data.country.country_name_th }}</span>
+                        <span v-if="data.country.country_name_th"> ประเทศ{{ data.country.country_name_th }}</span>
                         <span v-if="selectedProvince">, {{ selectedProvince }}</span>
                         <span v-if="selectedDistrict">, {{ selectedDistrict }}</span>
                         <span v-if="selectedSubDistrict">, {{ selectedSubDistrict }}</span>

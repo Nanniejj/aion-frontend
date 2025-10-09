@@ -748,7 +748,7 @@ import SentimentBar from "@/components/domain/SentimentBar.vue";
 import ReadMoreBox from "./ReadMore.vue";
 
 
-import TimelinePosts from '../timeline/TimelinePosts2.vue';
+import TimelinePosts from '@/components/timeline/TimelinePosts2.vue';
 export default {
   props: {
     checkpost: {
