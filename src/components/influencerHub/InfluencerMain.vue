@@ -101,6 +101,7 @@ export default {
             // Handle the applied filters here
             this.filters = filters;
             console.log('Filters applied:', filters);
+            this.influencers = [];
             this.apiGetInfluencer();
         },
         async apiGetInfluencer(){
@@ -133,7 +134,7 @@ export default {
 
                 const response = await this.axios(config);
                 const result = response.data.data || [];
-                console.log("res ==== ",response);
+                console.log("res influencer ==== ",response);
                 
                 this.influencers = result
                 this.currentPage = response.data.page;

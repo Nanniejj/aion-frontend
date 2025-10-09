@@ -31,7 +31,7 @@
                 </b-form-group>
                 <b-form-group label="ค้นหา">
                     <b-form-input v-model="filterRules.search" 
-                    placeholder="ค้นหาด้วยชื่อบัญชี หรือ url ..."></b-form-input>
+                    placeholder="ค้นหาด้วยชื่อบัญชี หรือ UID"></b-form-input>
                 </b-form-group>
                 <div>
                     <label class="mb-2 d-block">เพศ</label>
@@ -113,11 +113,11 @@
                     <b-row class="m-0">
                         <b-col v-if="influencerLevel && influencerLevel === 'top star' " class="px-0 py-3 text-info">
                             ผู้ติดตามมากกว่า {{ followers[0] | numFormat  }} คน
-                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                            <i @click="onResetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
                         </b-col>
                         <b-col v-if="influencerLevel && influencerLevel !== 'top star' " class="px-0 py-3 text-info">
                             ผู้ติดตาม {{ followers[0] | numFormat  }} - {{ followers[1] | numFormat }} คน
-                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                            <i @click="onResetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
                         </b-col>
                     </b-row>
                 </div>
@@ -239,7 +239,7 @@
                 </b-form-group>
                 <b-form-group label="ค้นหา">
                     <b-form-input v-model="filterRules.search" 
-                    placeholder="ค้นหาด้วยชื่อบัญชี หรือ url ..."></b-form-input>
+                    placeholder="ค้นหาด้วยชื่อบัญชี หรือ UID ..."></b-form-input>
                 </b-form-group>
                 <div>
                     <label class="mb-2 d-block">เพศ</label>
@@ -321,11 +321,11 @@
                     <b-row class="m-0">
                         <b-col v-if="influencerLevel && influencerLevel === 'top star' " class="px-0 py-3 text-info">
                             ผู้ติดตามมากกว่า {{ followers[0] | numFormat  }} คน
-                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                            <i @click="onResetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
                         </b-col>
                         <b-col v-if="influencerLevel && influencerLevel !== 'top star' " class="px-0 py-3 text-info">
                             ผู้ติดตาม {{ followers[0] | numFormat  }} - {{ followers[1] | numFormat }} คน
-                            <i @click="resetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
+                            <i @click="onResetFollowers" style="cursor: pointer;" class="fa fa-close text-danger cursor-pointer"></i>
                         </b-col>
                     </b-row>
                 </div>
@@ -334,7 +334,7 @@
                     <vue-slider
                         class="px-0"
                         v-model="followers"
-                        :min="100"
+                        :min="0"
                         :max="999999"
                         :interval="1"
                         :enable-cross="false"
@@ -390,12 +390,13 @@
                     />
                     
                 </b-form-group>
-                <b-form-group label="ประเภทธุรกิจ">
-                    <b-form-select v-model="filterRules.department" :options="departmentTypes"></b-form-select>
-                </b-form-group>
                 <b-form-group label="ลักษณะบัญชี">
-                    <b-form-select v-model="filterRules.species" :options="speciesTypes"></b-form-select>
+                    <b-form-select v-model="filterRules.species" :options="[ {value:null, text:'เลือกลักษณะบัญชี'}, ...speciesTypes]"></b-form-select>
                 </b-form-group>
+                <b-form-group label="ประเภทธุรกิจ">
+                    <b-form-select v-model="filterRules.department" :options="[ {value:null, text:'เลือกประเภทธุรกิจ'}, ...departmentTypes]"></b-form-select>
+                </b-form-group>
+                
                 <b-form-group label="จังหวัด">
                     <b-form-select 
                         placeholder="เลือกจังหวัด"
@@ -721,6 +722,9 @@ export default {
             this.handleFilter();
             // Emit the filter criteria to the parent component
             this.$emit("filter-applied", this.filterRules);
+            if (!this.showHeader) {
+                this.$root.$emit('bv::toggle::collapse', 'sidebar-1');
+            }
         },
         resetFilters() {
             // Reset the filter criteria

@@ -73,7 +73,7 @@
             </b-row>
         </b-card-text>
         <template #footer>
-            <div class=" mt-2">
+            <div v-if="influencer.influencer_type" class=" mt-2">
                 <b-badge style="background-color:#fed06ea4 !important;" class="mr-2" v-for="(item, index) in influencerTypes" :key="index" pill variant="light" >
                     {{ item.text }}
                 </b-badge>

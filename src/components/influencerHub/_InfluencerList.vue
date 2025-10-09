@@ -60,6 +60,7 @@ export default {
     },
     methods: {
         getInfluencerType(items) {
+            if (!Array.isArray(items)) return []; // เช็คก่อนว่า items เป็น array
             const result = this.influencerTypes.filter(obj =>
                 items.includes(obj.value)
             );
@@ -184,6 +185,7 @@ export default {
     async mounted() {
         this.apiGetInfluencerType();
         this.apiGetProvinces();
+
     }
 }
 </script>

@@ -288,7 +288,7 @@
                                 
                                 <b-form-input
                                     type="text"
-                                    v-model="selectedData.follower"
+                                    v-model="selectedData.followers"
                                     @keypress="onlyNumber"
                                     placeholder="กรอกจำนวนผู้ติดตาม (เฉพาะตัวเลข)"
                                 />
@@ -417,7 +417,7 @@
                             <b-row class="d-flex p-0">
                                 <b-col cols="6" class="px-0 pr-4">
                                     <span class="font-weight-bold ">
-                                        {{ selectedData.followers ? selectedData.followers : 'ไม่ระบุ' }}
+                                        {{ selectedData.followers ? selectedData.followers : 'ไม่ระบุ' | numFormat }}
                                     </span>
                                     <span class=" text-secondary text-14px">
                                         Followers
@@ -425,7 +425,7 @@
                                 </b-col> 
                                 <b-col cols="6" class="px-0">
                                     <span class="font-weight-bold ">
-                                        {{ selectedData.following ? selectedData.following : 'ไม่ระบุ' }}
+                                        {{ selectedData.following ? selectedData.following : 'ไม่ระบุ' | numFormat }}
                                     </span>
                                     <span class=" text-secondary text-14px">
                                         Following
@@ -981,6 +981,11 @@ export default {
         this.mapTargetInfoToSelectedData();
         this.getPreview();
     },  
+    watch: {
+        editable(newVal, oldVal) {
+            this.exportData();
+        }
+    },
 }
 </script>
 <style scoped>

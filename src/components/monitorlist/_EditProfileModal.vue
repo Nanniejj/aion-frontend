@@ -32,7 +32,7 @@
                                 </span>
                             </b-row>
                         </b-col>
-                        <b-col cols="auto" class="px-0">
+                        <!-- <b-col cols="auto" class="px-0">
                             <div class="d-flex justify-content-between" style="gap: 10px;">
                                 <b-button size="sm" variant="success" @click="confirmUpdate()">
                                     <i class="fa fa-save mr-1"></i>
@@ -41,7 +41,7 @@
                                     <i class="fa fa-times mr-1"></i>
                                 </b-button>
                             </div>
-                        </b-col>
+                        </b-col> -->
                     </b-row>
                     <div class="col-12 px-0 pb-3">
                         <b-row cols="1" cols-md="2" cols-lg="4" class="mx-0">
@@ -121,7 +121,11 @@
                                         <b-form-select
                                             size="sm"
                                             class="input"
-                                            :options="[1,2,3]"
+                                            :options="[
+                                                {value:1 , text:'ความถี่ต่ำ'},
+                                                {value:2 , text:'ความถี่ปานกลาง'},
+                                                {value:3 , text:'ความถี่สูง'},
+                                            ]"
                                             v-model="profile.bot_level"
                                             placeholder="เลือกระดับ"
                                         />
@@ -227,7 +231,7 @@
                                     <b-form-spinbutton id="demo-sb" size="sm" v-model="profile.age" min="0" max="100"></b-form-spinbutton>
                                 </b-row>
                             </b-col>
-                            <!-- <b-col class="px-0 px-md-1 mb-2">
+                            <b-col class="px-0 px-md-1 mb-2">
                                 <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fas fa-users mr-1"/>
@@ -242,9 +246,9 @@
                                         placeholder="กรอกจำนวนผู้ติดตาม (เฉพาะตัวเลข)"
                                     />
                                 </b-row>
-                            </b-col> -->
+                            </b-col>
 
-                            <!-- <b-col class="px-0 px-md-1 mb-2">
+                            <b-col class="px-0 px-md-1 mb-2">
                                 <b-row class="w-100 m-0">
                                     <b-col class="text-secondary d-flex p-0 align-items-center">
                                         <i class="fa fas fa-star mr-1"/>
@@ -254,12 +258,12 @@
                                     <b-form-input
                                         size="sm"
                                         type="text"
-                                        v-model="profile.following"
+                                        v-model="profile.followings"
                                         @keypress="onlyNumber"
                                         placeholder="กรอกจำนวน account ที่กำลังติดตาม (เฉพาะตัวเลข)"
                                     />
                                 </b-row>
-                            </b-col> -->
+                            </b-col>
                             
                         </b-row>
                         <b-col v-if="profile.influencer_condition === 'follower' || profile.influencer_condition === 'impact'" cols="12" class="px-0 px-md-1 pb-3">
@@ -381,7 +385,7 @@
                     </b-button>
 
                 </b-col> -->
-                <b-col cols="auto">
+                <b-col cols="auto" class="px-0">
                     <b-button @click="apiUpdateProfile()" class="btn btn-save" size="sm">
                         บันทึก
                     </b-button>
@@ -427,7 +431,7 @@ export default {
                 species: null,
                 profile_image: null,
                 followers: null,
-                following: null,
+                followings: null,
                 influencer_type: null,
                 influencer_condition: null,
                 department: null,
@@ -459,6 +463,12 @@ export default {
         }
     },
     methods: {
+        onlyNumber(e) {
+            const char = String.fromCharCode(e.keyCode);
+            if (!/[0-9]/.test(char) && e.key !== 'Backspace') {
+                e.preventDefault();
+            }
+        },
         closeEdit() {
             this.$emit('close');
         },
@@ -773,7 +783,7 @@ export default {
                     country: this.country_id,
                     province: this.province_name,
                     followers : this.profile.followers,
-                    following: this.profile.following,
+                    followings: this.profile.followings,
                     department: this.profile.department,
                     bot_level: this.profile.bot_level,
                     group_status: this.profile.group_status,

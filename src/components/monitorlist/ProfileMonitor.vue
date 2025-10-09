@@ -556,7 +556,10 @@
                     </b-col>
                     <b-col v-if="data.country !== null" cols="12" class="text-left">
                         <i class="fa fa-map-marker"></i>
-                        <span v-if="data.country.country_name_th"> ประเทศ{{ data.country.country_name_th }}</span>
+                        <span v-if="data.country && data.country.country_name_th">
+                            ประเทศ{{ data.country.country_name_th }}
+                        </span>
+
                         <span v-if="selectedProvince">, {{ selectedProvince }}</span>
                         <span v-if="selectedDistrict">, {{ selectedDistrict }}</span>
                         <span v-if="selectedSubDistrict">, {{ selectedSubDistrict }}</span>
@@ -579,7 +582,7 @@
                         </b-row>
                     </b-col>
                     
-                    <b-row v-if="profile.influencer_condition && profile.influencer_condition !== none" class="m-0">
+                    <b-row v-if="profile.influencer_condition && profile.influencer_condition !== 'none'" class="m-0">
                         <b-col cols="auto">
                             <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
                                 alt="sparkling"/>

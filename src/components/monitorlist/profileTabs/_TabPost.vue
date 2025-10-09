@@ -621,7 +621,7 @@ export default {
             // if (!this.start || !this.end) return [null, null]; // ป้องกัน undefined
             // console.log("startAndEnd in tab post");
             
-            return [this.start, this.end];
+            return [this.start ?? null, this.end ?? null];
         }
     },
     created() {
@@ -793,17 +793,33 @@ export default {
             },
             // immediate: true // หรือใช้เงื่อนไขเหมือนด้านบนก็ได้
         },
+        // startAndEnd: {
+        //     handler([newStart, newEnd], [oldStart, oldEnd]) {
+        //         // if (newStart !== oldStart && newEnd !== oldEnd) {
+        //         //     console.log("watch startAndEnd old tab post : ", oldStart, oldEnd);
+        //         //     console.log("watch startAndEnd new tab post : ", newStart, newEnd);
+        //         //     // this.checkDateRange();
+        //         // }
+        //         this.valueDate = [newStart, newEnd];
+        //         this.apiUserPosts();
+        //     },
+        //     immediate: true
+        // },
         startAndEnd: {
-            handler([newStart, newEnd], [oldStart, oldEnd]) {
-                // if (newStart !== oldStart && newEnd !== oldEnd) {
-                //     console.log("watch startAndEnd old tab post : ", oldStart, oldEnd);
-                //     console.log("watch startAndEnd new tab post : ", newStart, newEnd);
-                //     // this.checkDateRange();
-                // }
+            immediate: true,
+            handler(value, oldValue) {
+            // ถ้า value เป็น undefined ให้ return ออก
+            if (!value || !Array.isArray(value)) return;
+
+            const [newStart, newEnd] = value;
+            const [oldStart, oldEnd] = oldValue || [null, null];
+
+            // ตรวจสอบว่าค่าใหม่ต่างจากเดิมไหมก่อนเรียก API
+            if (newStart !== oldStart || newEnd !== oldEnd) {
                 this.valueDate = [newStart, newEnd];
                 this.apiUserPosts();
-            },
-            immediate: true
+            }
+            }
         },
         keyWord(newVal) {
             if (newVal) {
