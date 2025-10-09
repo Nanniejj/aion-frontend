@@ -121,11 +121,13 @@
                 <template #cell(name)="data">
                     <div class="d-flex justify-content-start align-items-center" >
                         <span v-if="type == 'targetlist'" class="mr-2">
+                            <span style="position: absolute;">
+                                <b-avatar 
+                                    v-if="data.item.influencer_condition" icon="star-fill" 
+                                    size="20" class="icon-bg" 
+                                    style=""></b-avatar>
+                            </span>
                             <!-- <i class='fas fa-star' style="position: absolute; z-index: 2;left: 6.5%;color: rgb(254, 209, 110);"></i> -->
-                            <b-avatar 
-                                v-if="data.item.influencer_condition" icon="star-fill" 
-                                size="20" class="icon-bg" 
-                                style="position: absolute; z-index: 2;left:6.5%;background-color: rgb(254, 209, 110);"></b-avatar>
                             <b-avatar :src="data.item.profile_image"
                                 :class="{'avatar-gradient-border':data.item.influencer_condition}"
                                 v-if="data && data.item && data.item.profile_image">
@@ -714,6 +716,12 @@ export default {
 </script>
 
 <style scoped>
+.icon-bg{
+    position: relative; 
+    z-index: 2;
+    left: -7px;
+    background-color: rgb(254, 209, 110);
+}
 .avatar-gradient-border {
   border: 3px solid transparent; /* ให้มีขอบแต่โปร่งใส */
   border-radius: 50%;

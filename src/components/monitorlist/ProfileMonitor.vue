@@ -579,7 +579,7 @@
                         </b-row>
                     </b-col>
                     
-                    <b-row class="m-0">
+                    <b-row v-if="profile.influencer_condition && profile.influencer_condition !== none" class="m-0">
                         <b-col cols="auto">
                             <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
                                 alt="sparkling"/>
@@ -611,8 +611,6 @@
                     </b-col>
                 </b-row>
             </b-col>
-            
-           
         </b-row>       
 
         <!-- woldCloud -->
