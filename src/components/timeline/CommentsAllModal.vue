@@ -1,5 +1,5 @@
 <template>
-  <b-modal v-model="showProxy" size="lg" title="ความคิดเห็นทั้งหมด" hide-footer scrollable class="py-5">
+  <b-modal v-model="showProxy" size="lg" title="ความคิดเห็นทั้งหมด" hide-footer scrollable class="py-5 popup-comment">
     <div v-if="filteredAll.length">
       <div v-for="(c, i) in filteredAll" :key="c.id || i" class="d-flex align-items-start mb-3">
         <b-avatar v-if="c.photo" :src="c.photo" size="38" :class="c.is_top_fan ? 'story-ring' : ''" />
@@ -130,7 +130,10 @@ export default {
   color:#56a7b6;
   text-overflow: ellipsis;
 }
-.modal-title {
+
+</style>
+<style>
+.modal-title{
    font-size: 15px !important;
       line-height: 2.5 !important;
 }
