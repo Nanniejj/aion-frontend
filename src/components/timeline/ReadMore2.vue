@@ -1,84 +1,58 @@
 <template>
-  <div class="d-inline">
-    <div
-      :style="{ height: showFull ? 'auto' : maxHeight, overflow: 'hidden' }"
-      ref="textBox"
-      class="mb-1 text-left d-inline"
-    >
-      <Highlighter
-        class="my-highlight"
-        :style="{ textAlign:'left', fontSize:'15px', lineHeight:'1.5' }"
-        highlightClassName="highlight2"
-        :searchWords="cleanSearchWords"
-        :autoEscape="true"
-        :textToHighlight="safeTitle"  
-      />
-    </div>
+  <div class="text-left py-1 pb-3 text-read">
+    {{ displayText }}
+    <button
+      v-if="shouldTruncate"
+      class="btn btn-link p-0 ml-1 align-baseline small"
+      @click="expanded = !expanded"
 
-    <div v-if="isOverflowing" class="text-right pb-3">
-      <button @click="toggleShow" class="btn btn-link p-0 text-right">
-        <span class="small" style="color:#3d6fa1;">
-          {{ showFull ? 'ย่อข้อความ' : 'อ่านเพิ่ม' }}
-        </span>
-      </button>
-    </div>
+    >
+    <span style="font-size: 13px;color: #17a2b8;">  {{ expanded ? ' ย่อ ' : ' อ่านต่อ ' }}</span>
+    </button>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import Highlighter from "vue-highlight-words";
-
 export default {
-  name: "ReadMore",
-  components: { Highlighter },
+  name: 'ReadMoreBox',
   props: {
-    item: { type: Object, required: true },
-    maxHeight: { type: String, default: "55px" },
-    page:{type: String, default: ""}
-  },
-  computed: {
-    ...mapGetters(["getSearchWords"]),
-    cleanSearchWords() {
-      const arr = Array.isArray(this.getSearchWords) ? this.getSearchWords : [];
-      return arr.filter(Boolean).map(s => String(s));
-    },
-    safeTitle() {
-      // แทน item?.title || ''
-      return (this.item && this.item.title) ? String(this.item.title) : "";
-    }
+    text: { type: String, required: true },
+    limit: { type: Number, default: 280 },        // desktop / จอใหญ่
+    mobileLimit: { type: Number, default: 160 },   // จอ ≤ breakpoint
+    breakpoint: { type: Number, default: 800 },
   },
   data() {
-    return { showFull: false, isOverflowing: false };
+    return {
+      expanded: false,
+      viewportWidth: (typeof window !== 'undefined') ? window.innerWidth : 1024,
+    };
   },
-  mounted() { this.checkOverflow(); },
-  methods: {
-    toggleShow() { this.showFull = !this.showFull; },
-    checkOverflow() {
-      this.$nextTick(() => {
-        const el = this.$refs.textBox;
-        this.isOverflowing = !!(el && el.scrollHeight > el.offsetHeight);
-      });
-    }
-  },
-  watch: {
-    item: {
-      handler() {
-        this.showFull = false;
-        this.$nextTick(() => this.checkOverflow());
-      },
-      deep: true
+  computed: {
+    limitToUse() {
+      return this.viewportWidth <= this.breakpoint ? this.mobileLimit : this.limit;
     },
-    cleanSearchWords() { this.$nextTick(() => this.checkOverflow()); }
-  }
+    shouldTruncate() {
+      return (this.text || '').length > this.limitToUse;
+    },
+    displayText() {
+      const t = this.text || '';
+      if (!this.shouldTruncate) return t;
+      return this.expanded ? t : t.slice(0, this.limitToUse) + '…';
+    },
+  },
+  mounted() {
+    // อัปเดตเมื่อหน้าจอเปลี่ยนขนาด
+    this._onResize = () => { this.viewportWidth = window.innerWidth; };
+    window.addEventListener('resize', this._onResize, { passive: true });
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this._onResize);
+  },
 };
 </script>
-
 <style scoped>
-/* Vue 2 + vue-loader v15 ใช้ /deep/ หรือ >>> ไม่ใช่ ::v-deep */
- .highlight2 {
-  background-color: #f7dca2;
-  border-radius: 2px;
-  padding: 0 2px;
-}
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+.text-read{
+  font-size: 15px;
+}}
 </style>

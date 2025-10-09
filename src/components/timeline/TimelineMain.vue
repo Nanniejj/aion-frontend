@@ -1143,6 +1143,9 @@ export default {
 
 /* จอมือถือ */
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  div.card.mb-3.shadow-sm > div > form > div.row.mt-2.justify-content-end{
+    zoom: 85% !important;
+  }
   .filter-btn {
     top: -6px;
     right: -1px;

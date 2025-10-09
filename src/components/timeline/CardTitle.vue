@@ -44,12 +44,14 @@
               </span>
             </div>
 
-            <div class=" read-m mt-md-2 pb-1" v-if="post.full_text">
-              <ReadMoreBox :item="{ title: post.full_text.replace('...___...', '') }" :maxHeight="'95px'" />
+            <div class="mt-md-2 pb-1" v-if="post.full_text">
+              <ReadMoreBox :text="post.full_text.replace('...___...', '')" :limit="300" :mobileLimit="110"
+                :breakpoint="800" />
             </div>
             <div v-else> <br> </div>
 
-            <div class="bold small text-muted position-absolute mt-1 text-left w-100"
+
+            <div class="bold small text-muted position-absolute mt-1 text-left w-100 reaction"
               style="bottom: -8px; left: 1px; background-color: white">
               <span class="d-inline-block box-link" @click="$emit('goPost', { post, type: 'engages' })">
                 <i class="fas fa-chart-line"></i>
@@ -106,19 +108,20 @@
             </div>
 
 
-
+            <div v-if="post.comments && post.comments.length" class="avatar-pile text-right clickable"
+              @click="toggleComments" :aria-expanded="showComments">
+              <b-avatar
+                v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.filter(x => x.username !== post.account_name).slice(0, 5))"
+                :key="c.id || i" v-if="c.photo" :src="c.photo" size="28" :style="avatarStyle(i)"
+                :class="c.is_top_fan ? 'avatar-item story-ring' : 'avatar-item'" />
+            </div>
 
           </b-col>
 
         </b-row>
       </div>
 
-      <div v-if="post.comments && post.comments.length" class="avatar-pile text-right clickable" @click="toggleComments" :aria-expanded="showComments">
-        <b-avatar
-          v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.filter(x => x.username !== post.account_name).slice(0, 5))"
-          :key="c.id || i" v-if="c.photo" :src="c.photo" size="28" :style="avatarStyle(i)"
-          :class="c.is_top_fan ? 'avatar-item story-ring' : 'avatar-item'" />
-      </div>
+
       <!-- <div v-if="post.comments && post.comments.length" class="avatar-pile text-right">
         <b-avatar v-for="(c, i) in post.comments.filter(x=>x.is_top_fan).slice(0, 5)" :key="c.id || i" v-if="c.photo" :src="c.photo" size="28"
          :style="avatarStyle(i)"  :class="c.is_top_fan ? 'avatar-item story-ring' : 'avatar-item'"/>
@@ -136,6 +139,11 @@
           Top Fan
         </b-button>
       </b-button-group>
+      <span class="clickable small" @click="showAllComments = true" size="sm">
+        ดูทั้งหมด
+      </span>
+      <CommentsAllModal v-model="showAllComments" :comments="post.comments || []" :accountName="post.account_name"
+        :filterMode="filterMode" />
       <li class="station" style="color: rgb(0, 108, 183);"
         v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.filter(x => x.username !== post.account_name).slice(0, 5))"
         :key="c.id || i" v-if="c.photo">
@@ -192,26 +200,20 @@
 
     </ul>
 
-    <!-- <ul class="sitemap" v-if="post.comments && post.comments.length">
-      <ul>
-        <li v-for="(c, i) in post.comments.slice(0, 5)" :key="c.id || i" v-if="c.photo">
-          <a :href="c.url" > 
-            <b-avatar  v-if="c.photo" :src="c.photo" size="38"
-         /> {{ c.username }}</a>  <span class="small">{{ c.content }}</span>
-        </li>
-      </ul>
-    </ul> -->
+
 
   </div>
 </template>
 
 <script>
-import ReadMoreBox from "./ReadMore.vue";
+import ReadMoreBox from "./ReadMore2.vue";
 import moment from "moment";
 import "moment/locale/th";
+import CommentsAllModal from "./CommentsAllModal.vue";
+
 export default {
   name: "CardPost",
-  components: { ReadMoreBox },
+  components: { ReadMoreBox, CommentsAllModal },
   props: {
     post: {
       type: Object,
@@ -238,6 +240,7 @@ export default {
       showImage: false,
       filterMode: "topComments", // 'topComments' | 'topFans'
       showComments: false,
+      showAllComments: false,
     };
   },
   computed: {},
@@ -678,6 +681,20 @@ img-cover {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+  .avatar-pile {
+    position: relative;
+    zoom: 80%;
+    bottom: 55px;
+    /* bottom: 23px; */
+
+  }
+
+  .reaction {
+    zoom: 85%;
+    position: relative !important;
+  /* bottom: 17px !important; */
+  }
+
   .date-label2 {
     font-size: 10px !important;
     position: absolute;
@@ -700,14 +717,12 @@ img-cover {
     min-width: 0;
   }
 
-  div.row>div.col>div.bold.small.text-muted.position-absolute.mt-1.text-left.w-100 {
+  /* div.row>div.col>div.bold.small.text-muted.position-absolute.mt-1.text-left.w-100 {
     position: relative !important;
     bottom: 24px !important;
-  }
+  } */
 
-  /* .avatar-pile {
-  position: unset
-} */
+
   .read-m {
     font-size: 14px;
   }
