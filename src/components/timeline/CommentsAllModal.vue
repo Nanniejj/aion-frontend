@@ -132,9 +132,9 @@ export default {
 }
 
 </style>
-<style>
+<style >
 .modal-title{
-   font-size: 15px !important;
+   font-size: 17px !important;
       line-height: 2.5 !important;
 }
 </style>
