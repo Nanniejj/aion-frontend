@@ -25,9 +25,15 @@
 
             <!-- Modal แสดงรูปเต็ม -->
             <b-modal v-model="showImage" size="xl" centered hide-footer>
-              <img @error="setAltImg"
+              <!-- <img @error="setAltImg"
                 :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
-                class="w-100" style="max-height: 80vh; object-fit: contain" crossorigin="anonymous" />
+                class="w-100" style="max-height: 80vh; object-fit: contain" crossorigin="anonymous" /> -->
+                <img
+                    @error="setAltImg"
+                    :src="getImageSrc(post)"
+                    class="w-100"
+                    style="max-height: 80vh; object-fit: contain"
+                />
             </b-modal>
           </b-col>
 
@@ -244,7 +250,16 @@ export default {
     };
   },
   computed: {},
-  methods: {
+    methods: {
+        getImageSrc(post) {
+            const fallback = require('@/assets/no-image.jpg')
+            const photo = post?.photos?.[0]
+            if (!photo) return fallback
+            return photo
+        },
+        setAltImg(e) {
+            e.target.src = require('@/assets/no-image.jpg')
+        },
     toggleComments() {
       this.showComments = !this.showComments;
     },
