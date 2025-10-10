@@ -458,17 +458,18 @@ export default {
                 to: this.valueDate[1],
                 limit:this.limit
             };
-
+            // เก็บ snapshot ของ params ล่าสุด (ยกเว้น page, limit)
+            this.lastParamsSnapshot = { ...params };
             // ตรวจสอบว่า params เปลี่ยนหรือไม่ (ไม่รวม page และ limit)
             const paramsChanged = JSON.stringify(params) !== JSON.stringify(this.lastParamsSnapshot);
-
+            console.log("paramsChanged === ",paramsChanged,this.lastParamsSnapshot);
+            
             if (paramsChanged) {
                 this.posts = []; // ลบสมาชิกเดิม
                 this.page = 1;   // reset page
             }
 
-            // เก็บ snapshot ของ params ล่าสุด (ยกเว้น page, limit)
-            this.lastParamsSnapshot = { ...params };
+            
 
             const config = {
                 method: "get",
