@@ -63,6 +63,7 @@
     "vue-d3-cloud": "^0.2.0",
     "vue-d3-network": "^0.1.28",
     "vue-element-loading": "^2.0.2",
+    "vue-excel-xlsx": "^1.2.2",
     "vue-filter-number-format": "^3.0.1",
     "vue-gallery-slideshow": "^1.5.2",
     "vue-google-charts": "^0.3.3",

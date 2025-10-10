@@ -90,7 +90,7 @@
               </b-form-group>
             </b-col>
 
-            <b-col cols="12"  md="4">
+            <b-col cols="12" md="4">
               <!-- Sentiment -->
               <b-form-group class="pr-md-3 checkbox-v">
                 <!-- <span class="text-muted small">sentiment</span> -->
@@ -215,13 +215,17 @@
       <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" />
 
       <!-- Loading -->
-
+      <ExportExcelButton class="mt-md-0 " :posts="postsFromApi" :filters="filters"
+        :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
+        :comments-limit="100" style="right: 5px;" v-if="!loading" />
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />
       </div>
       <!-- Timeline -->
       <!-- <div v-if="postsFromApi.data&&postsFromApi.data.length==0"> ไม่พบข้อมูล</div> -->
+
+
       <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
         @changeDaySort="changeDaySort" :count="count" v-else />
       <div v-if="filters.view_mode === 'posts' && !loading && filters.page < totalPages" class="text-center my-2 pb-5">
@@ -252,6 +256,8 @@ import { mapGetters } from "vuex";
 import ChartTime from "@/components/timeline/ChartTime.vue";
 import FilterTemplates from "@/components/timeline/FilterTemplates.vue";
 import SaveTemplateModal from "@/components/timeline/SaveTemplateModal.vue";
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+
 // import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
@@ -260,7 +266,7 @@ function uid() {
   return 'tpl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
 }
 export default {
-  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal },
+  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal, ExportExcelButton },
   watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
@@ -324,7 +330,7 @@ export default {
         keywordInput: "",
         view_mode: "posts",
         source: [null],
-        sort_by: "recent", 
+        sort_by: "recent",
         limit: 50,
         page: 1,
         accountsInput: [],
@@ -428,26 +434,26 @@ export default {
   },
   methods: {
     formatRange(start, end) {
-  try {
-    const opts = { year: 'numeric', month: 'short', day: 'numeric' };
-    const sDate = new Date(start);
-    const eDate = new Date(end);
+      try {
+        const opts = { year: 'numeric', month: 'short', day: 'numeric' };
+        const sDate = new Date(start);
+        const eDate = new Date(end);
 
-    if (isNaN(sDate) || isNaN(eDate)) throw new Error('Invalid date');
+        if (isNaN(sDate) || isNaN(eDate)) throw new Error('Invalid date');
 
-    const sameDay =
-      sDate.getFullYear() === eDate.getFullYear() &&
-      sDate.getMonth() === eDate.getMonth() &&
-      sDate.getDate() === eDate.getDate();
+        const sameDay =
+          sDate.getFullYear() === eDate.getFullYear() &&
+          sDate.getMonth() === eDate.getMonth() &&
+          sDate.getDate() === eDate.getDate();
 
-    const s = sDate.toLocaleDateString('th-TH', opts);
-    const e = eDate.toLocaleDateString('th-TH', opts);
+        const s = sDate.toLocaleDateString('th-TH', opts);
+        const e = eDate.toLocaleDateString('th-TH', opts);
 
-    return sameDay ? s : `${s} – ${e}`;
-  } catch (err) {
-    return start === end ? String(start) : `${start} – ${end}`;
-  }
-},
+        return sameDay ? s : `${s} – ${e}`;
+      } catch (err) {
+        return start === end ? String(start) : `${start} – ${end}`;
+      }
+    },
     loadTemplatesFromLS() {
       try {
         const raw = localStorage.getItem(LS_TPL_KEY);
@@ -1047,18 +1053,21 @@ export default {
 };
 </script>
 <style scoped>
-.card-hide{
-   background-image: linear-gradient(to right, #e2f2f5, #d1ecf1);
-    /* background-image: linear-gradient(to right, #fed06ea4, #f0cfda); */
+.card-hide {
+  background-image: linear-gradient(to right, #e2f2f5, #d1ecf1);
+  /* background-image: linear-gradient(to right, #fed06ea4, #f0cfda); */
 }
+
 .filter-btn {
   top: 38px;
   right: 15px;
   z-index: 2;
 }
-.filter-btn .btn{
+
+.filter-btn .btn {
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
+
 .badge-light {
   color: #35393b;
   background-color: #ffffffa9 !important;
@@ -1143,9 +1152,10 @@ export default {
 
 /* จอมือถือ */
 @media only screen and (min-width: 0px) and (max-width: 800px) {
-  div.card.mb-3.shadow-sm > div > form > div.row.mt-2.justify-content-end{
+  div.card.mb-3.shadow-sm>div>form>div.row.mt-2.justify-content-end {
     zoom: 85% !important;
   }
+
   .filter-btn {
     top: -6px;
     right: -1px;

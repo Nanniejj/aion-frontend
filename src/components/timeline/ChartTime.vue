@@ -1,6 +1,6 @@
 <template>
   <div id="chart">
-    <div class="text-center my-10 py-4" v-if="loading">
+    <div class="text-center mt-10 py-4 pb-0" v-if="loading">
       <vue-element-loading :active="loading" size="30" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891"
         spinner="bar-fade-scale" />
     </div>
@@ -430,7 +430,9 @@ export default {
   max-width: 100%;
   margin: 24px auto;
 }
-
+#chart {
+  margin-bottom: 0px;
+}
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   #chart>div>div:nth-child(2) {
     padding-left: 0px;
