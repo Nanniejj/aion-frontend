@@ -1,6 +1,5 @@
 <template>
     <div>
-        <!-- {{getListMonitorProfile.targetlist.length}} -->
         <button class="btn btn-add mt-3 mt-xl-0 w-100" @click="open = true">
             <i class="fa fa-plus" />
             <span style="font-size: 16px">
@@ -28,16 +27,9 @@
             <b-row cols="1" cols-xl="2" class="my-1 mx-0">
                 <!-- create new Groups dashed-border-->
                 <b-col class="px-0">
-                    <b-row class="m-0 mb-2 text-right">
-                        <b-col>
-                            <b-button variant="info" @click="addGroup" class="">
-                                <i class="fa fa-plus mr-1" />
-                                <span>เพิ่มกลุ่ม</span>
-                            </b-button>
-                        </b-col>
-                    </b-row>
+                    
                     <!-- {{ targetLists }} -->
-                    <b-row v-if="groups.length > 0" cols="1" class="m-0 modal-body-scrollable" style="max-height: 65vh;">
+                    <b-row v-if="groups.length > 0" cols="1" class="m-0 modal-body-scrollable" style="max-height: 60vh;">
                         <b-col v-for="(group, index) in groups" :key="index" class="mb-2 px-0">
                             <b-card 
                                 bg-variant="white" text-variant="" 
@@ -45,7 +37,7 @@
                                 :class="[{
                                     'is-selected': group === selectedGroup
                                 }]"
-                                
+                                body-class="p-2"
                             >
                                 <b-card-text>
                                     <b-row class="m-0 justify-content-end">
@@ -53,22 +45,23 @@
                                     </b-row>
                                     <b-row class="align-items-center m-0">
                                         <b-col cols="12" sm="auto" class="text-center mb-2 px-0">
-                                            <b-avatar :text="index + 1" style="background-color: #fed16e;"></b-avatar>
+                                            <b-avatar :text="`${index + 1}`" style="background-color: #fed16e;"></b-avatar>
                                         </b-col>
                                         <b-col cols="12" sm="" class="px-0 px-md-2">
                                             <b-row cols="1" cols-sm="2" class="m-0">
                                                 <b-col class="px-0  px-sm-2">
                                                     <b-form-group id="fieldset-1" label="ชื่อกลุ่ม" label-for="input-1"
+                                                        class="mb-0"
                                                         :invalid-feedback="invalidFeedback(group.name)"
                                                         :state="state(group.name)">
                                                         <b-form-input id="input-1"  @click.stop v-model="group.name" trim></b-form-input>
                                                     </b-form-group>
                                                 </b-col>
                                                 <b-col @click.stop class="px-0">
-                                                    <b-form-group label="ประเภท" label-for="type-select">
+                                                    <b-form-group label="ประเภท" label-for="type-select" class="mb-0">
                                                         <b-form-select v-model="group.group_type"
                                                             :options="options" class="mb-3" value-field="value"
-                                                            text-field="text" disabled-field="notEnabled"
+                                                            text-field="text" disabled-field="notEnabled" hide-detail
                                                             :state="stateType(group.group_type)"></b-form-select>
                                                     </b-form-group>
                                                 </b-col>
@@ -83,14 +76,14 @@
                                             </div>
                                         </b-button>
                                     </b-row>
-                                    <hr/>
+                                    <hr v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0"/>
                                     <b-row v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0" class="m-0 mb-2 justify-content-between align-items-center">
                                         <b-col cols="auto" class="px-0 text-info">
                                             <span>เพิ่มบัญชีที่ไม่อยู่ใน monitor</span>
                                         </b-col>
                                     </b-row>
                                     <b-row v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0" class="m-0 mb-2">
-                                        <b-col class="px-0">
+                                        <!-- <b-col class="px-0">
                                             <b-form-group label="URL">
                                                 <b-form-input 
                                                     v-model="newTarget.link_original"
@@ -100,24 +93,39 @@
                                                     pattern="https?://.+"
                                                 ></b-form-input>
                                             </b-form-group>
-                                        </b-col>
-                                        <b-col class="pr-0">
+                                        </b-col> -->
+                                        <!-- <b-col class="pr-0">
                                             <b-form-group label="platform" label-for="type-select">
                                                 <b-form-select aria-atomic="false" v-model="newTarget.source"
                                                     :options="sourceOptions" class="" value-field="value"
                                                     text-field="text" disabled-field="notEnabled"
                                                 ></b-form-select>
                                             </b-form-group>
-                                        </b-col>
+                                        </b-col> -->
+                                        <b-form-tags
+                                            input-id="tags-pills"
+                                            v-model="addTarget"
+                                            tag-variant="light"
+                                            tag-pills
+                                            size="md"
+                                            placeholder="กรอง url แล้ว Enter เพื่อเพิ่มบัญชี"
+                                            separator=" ,;"
+                                            remove-on-delete
+                                            @input="onTagsInput"
+                                        />
+                                            <!-- :tag-validator="validator"
+                                            :tag-formatter="formatTag"
+                                            @input="onTagsInput"
+                                            @tag-state="onTagState" -->
                                     </b-row>
-                                    <b-col v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0" cols="12" class="p-0 text-right">
+                                    <!-- <b-col v-if="selectedGroup == group && Object.keys(selectedGroup).length > 0" cols="12" class="p-0 text-right">
                                         <b-button variant="info" :disabled="!newTarget.link_original || !newTarget.source" size="sm" pill :pressed="false" @click="handleNewTarge"
                                             class="shadow-r ml-2 ">
                                             <div class="d-flex align-items-center">
                                                 เพิ่มบัญชี
                                             </div>
                                         </b-button>
-                                    </b-col>
+                                    </b-col> -->
                                     <!-- <b-row v-else class="m-0 justify-content-end">
                                         <b-button size="sm" v-b-tooltip.hover title="บันทึกร่าง" variant="success" :pressed="false" @click="saveDraft(group)"
                                             class="shadow-r mr-2">
@@ -133,22 +141,18 @@
                                         </b-button>
                                     </b-row> -->
                                 </b-card-text>
-                                <template #footer>
-                                    <div>
+                                <template #footer v-if="group.targets.length > 0">
+                                    <div >
                                         <b-row class="d-flex p-0 pb-2">
                                             <b-col>สมาชิกในกลุ่ม ({{ (group.targets.length || 0) | numFormat }})</b-col>
-                                            <!-- <b-col v-if="group.show && group.targets" @click="group.show = false" class="text-right text-info">
-                                                ซ่อน {{ group.show }}
-                                            </b-col>
-                                            <b-col v-if="!group.show && group.targets" @click="group.show = true" class="text-right text-info">
-                                                แสดง {{ group.show }}
-                                            </b-col> -->
+                                            <i v-if="group.showMember" @click="group.showMember = !group.showMember" class='fas fa-angle-down px-2'></i>
+                                            <i v-else  @click="group.showMember = !group.showMember" class='fas fa-angle-up px-2'></i>
                                         </b-row>
-                                        <b-row cols="1" class="m-0">
+                                        <b-row v-if="group.showMember" cols="1" class="m-0">
                                             <b-col class="mb-2 px-2" v-for="target in group.targets" :key="target.id" >
                                                 <b-card
                                                     bg-variant="white" text-variant=""
-                                                    class="card-target mb-2 h-100" body-class="px-2 pt-0 pb-2"
+                                                    class="mb-2 h-100" body-class="px-2 pt-0 pb-2"
                                                 >
                                                     <b-card-text class="h-100">
                                                         <b-row class="m-0 flex-nowrap h-100">
@@ -167,6 +171,15 @@
                                                             </b-col>
                                                             <b-col cols="auto" class="p-0 text-right">
                                                                 <b-row cols="1" class="m-0 h-100 justify-content-end">
+                                                                    <b-col align-self="start" class="p-0 pt-2 text-right text-danger">
+                                                                        <i 
+                                                                            @click="removeTargetList(target)" 
+                                                                            class="fa fa-close"
+                                                                            v-b-tooltip.hover
+                                                                            title="ลบสมาชิก"
+                                                                            style="cursor: pointer;"   
+                                                                        ></i>
+                                                                    </b-col>
                                                                     <b-col align-self="end" class="p-0 text-right">
                                                                         <b-avatar class="" size="25px" :src="target.image">
                                                                             <img @click="openLink(target.url)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
@@ -191,10 +204,33 @@
                                 </template>
                             </b-card>
                         </b-col>
+                        <b-row class="m-0 mb-2 text-center">
+                            <b-col>
+                                <b-button variant="info" @click="addGroup" class="">
+                                    <i class="fa fa-plus mr-1" />
+                                    <span>เพิ่มกลุ่ม</span>
+                                </b-button>
+                            </b-col>
+                        </b-row>
                     </b-row>
                     <b-row v-else class="m-0 justify-content-center align-items-center dashed-border" style="height: 50vh;">
                         <b-col class="text-center">
-                            <span class="text-muted">- กรุณากดปุ่ม <span class="text-info">"เพิ่มกลุ่ม"</span> เพื่อสร้างกลุ่ม -</span>
+                            <b-row class="m-0 mb-2 justify-content-center align-items-center">
+                                    <b-col cols="auto" class="p-0 text-muted">
+                                        - กรุณากดปุ่ม 
+                                    </b-col>
+                                            
+                                    <b-col  cols="auto">
+                                        <b-button variant="info" @click="addGroup" class="">
+                                            <i class="fa fa-plus mr-1" />
+                                            <span>เพิ่มกลุ่ม</span>
+                                        </b-button>
+                                    </b-col>
+                                    <b-col cols="auto" class="p-0 text-muted">
+                                        เพื่อสร้างกลุ่ม -
+                                    </b-col>
+                                </b-row>
+                                <!-- <span class="text-info">"เพิ่มกลุ่ม"</span>  -->
                         </b-col>
                     </b-row>
                 </b-col>
@@ -221,6 +257,7 @@
                             <b-card
                                 bg-variant="white" text-variant=""
                                 class="card-target mb-2 h-100" body-class="px-2 pt-0 pb-2"
+                                :class="{ 'is-selected' : isTargetSelected(target) }"
                                 @click="handleTargetList(target)"
                             >
                                 <b-card-text class="h-100">
@@ -315,6 +352,8 @@ export default {
         return {
             selectedGroup: {},
             newGroups: { name: "", group_type: null, targets: [] },
+            addTarget: [],
+            // prevAddTarget: [],
             newTarget: {link_original: "", source: null},
             groups: [],
             targetLists: [],
@@ -344,6 +383,70 @@ export default {
         };
     },
     methods: {
+        openLink(url) {
+            if (!url) return;
+            // ถ้าไม่มี http/https ให้เติม http:// ให้ก่อน
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+
+            // เปิดลิงก์ในแท็บใหม่ และป้องกัน window.opener
+            window.open(url, '_blank', 'noopener,noreferrer');
+        },
+        removeTrailingSlash(url) {
+            // return url.endsWith('/') ? url.slice(0, -1) : url;
+            if (!url) return url;
+
+            try {
+                // ลบส่วน #anchor ถ้ามี
+                url = url.split('#')[0];
+
+                // จัดการกรณี profile.php?id=xxxxx
+                url = url.replace(/profile\.php\?id=([0-9]+)/, '$1');
+
+                // ลบ / ท้ายสุด ถ้ามี
+                if (url.endsWith('/')) {
+                    url = url.slice(0, -1);
+                }
+
+                return url;
+            } catch (e) {
+                console.error('Error in removeTrailingSlash:', e);
+                return url;
+            }
+        },
+        formatTargets(targets) {
+           return targets.map(url => {
+                return {
+                    url: url,
+                    source: this.detectPlatform(url)
+                };
+            });
+        },
+        detectPlatform(url) {
+            if (url.includes("facebook.com")) return 'facebook';
+            if (url.includes("tiktok.com")) return 'tiktok';
+            if (url.includes("youtube.com") || url.includes("youtu.be")) return 'youtube';
+            if (url.includes("instagram.com")) return 'instagram';
+            if (url.includes("twitter.com") || url.includes("x.com")) return 'twitter';
+            if (url.includes("pantip.com")) return 'pantip';
+            if (url.includes("blockdit.com")) return 'blockdit';
+            if (url.includes("threads.com")) return 'threads';
+            return 'news';
+        },
+        isTargetSelected(target) {
+            return this.selectedGroup.targets.some(t => t.uid === target.uid);
+        },
+        removeTargetList(target) {
+            console.log("taget === ", target);
+            
+             if (!this.selectedGroup || !this.selectedGroup.targets) return;
+
+            // ลบ item ที่ uid ตรงกัน
+            this.selectedGroup.targets = this.selectedGroup.targets.filter(t => t.url !== target.url);
+
+            console.log("หลังลบ target:", this.selectedGroup.targets);
+        },
         handleTargetList(target) {
             let newTarget = {
                 profile_image: target.profile_image || null,
@@ -411,6 +514,29 @@ export default {
                 this.handleTargetList(this.newTarget);
                 this.newTarget = { link_original: "", source: null };
             }
+        },
+        onTagsInput() {
+            // ตัด www. และ / ตัวท้าย
+            this.addTarget = this.addTarget.map(url => this.removeTrailingSlash(url.replace("www.", "")));
+            
+            // จัดรูปแบบเป็น { url, source }
+            let targets = this.formatTargets(this.addTarget);
+            console.log("target formatted === ", targets);
+
+            // เพิ่มลง selectedGroup.targets
+            targets.forEach(target => {
+                // สร้าง object สำหรับ handleTargetList
+                const newTarget = {
+                    profile_image: null,
+                    name: null,
+                    uid: null,
+                    link_original: target.url,
+                    source: target.source
+                };
+                this.handleTargetList(newTarget);
+                this.addTarget = []
+            });
+            
         },
         setSelectedGroup(group) {
             if (!group.name || group.name.trim() === "" || !group.group_type) {
@@ -482,7 +608,8 @@ export default {
             {
                 name: this.newGroups.name,
                 group_type: this.newGroups.group_type,
-                targets: this.newGroups.targets
+                targets: this.newGroups.targets,
+                showMember: true
             });
             this.newGroups = { name: "", group_type: null, targets: [] };
         },

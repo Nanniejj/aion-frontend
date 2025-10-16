@@ -216,13 +216,16 @@
                 </b-card>
             </b-col>
             <b-col cols="12" class="px-0">
+                <ExportExcelButton class="mt-md-0 " :posts="posts" :filters="formFilters"
+                :disabled="loadingTimeline || (Array.isArray(posts) && posts.length === 0)" inline-comments="json"
+                :comments-limit="20" style="right: 5px;" v-if="!loadingTimeline" />
                 <div data-v-633a0eda="" class="text-right allpost"> 
                     ทั้งหมด <b data-v-633a0eda="">{{total_posts || 0 | numFormat}}</b> โพสต์
                 </div>
                 <vue-element-loading 
                     :active="loadingTimeline" class="h-100" size="80" 
                     background-color="rgba(255, 255, 255, 0.3)"
-                    color="#b6ac9a" 
+                    color="#b6ac9a"
                 />
                 <Timeline :timelineItems="posts" :keyword="formFilters.keyword"/>
                 <b-col v-if="totalPage > 1 && !loadingTimeline" class="p-0 mb-5">
@@ -252,11 +255,14 @@ import Swal from 'sweetalert2'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 import moment from "moment";
 import Timeline from "./_Timeline.vue"
-import GroupMembers from './_GroupMembersModal.vue';
+import GroupMembers from './modals/_GroupMembersModal.vue';
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+
 export default {
     components: {
         Timeline,
-        GroupMembers
+        GroupMembers,
+        ExportExcelButton
     },
     data() {
         const today = moment();
@@ -268,9 +274,10 @@ export default {
             selectedSort: "desc",
             totalPage: null,
             total_posts: 0,
-            limit: 10,
+            limit: 50,
             page: 1,
             posts: [],
+            postForExport:[],
             lastParamsSnapshot: null, // เก็บ params ล่าสุด
             loading: false,
             loadingTimeline: false,
@@ -300,7 +307,6 @@ export default {
                 view_mode: "posts",
                 source: null,
                 sort_by: 'desc',
-                limit: 50,
                 page: 1,
                 hashtags: [],
             }
@@ -349,7 +355,7 @@ export default {
             clearTimeout(this.debounceTimeout);
             this.debounceTimeout = setTimeout(() => {
                 this.page = 1; // รีเซ็ตกลับหน้าแรก
-                this.limit = 10
+                // this.limit = 10
                 this.posts = []
                 this.apiGetPost();
             }, 500);
@@ -370,7 +376,7 @@ export default {
         },
         resetPage() {
             this.page = 1;
-            this.limit = 10;
+            // this.limit = 10;
             this.posts = [];
             this.apiGetPost();
         },
@@ -456,17 +462,22 @@ export default {
                 sentiment: this.formFilters.sentiment,
                 from: this.valueDate[0],
                 to: this.valueDate[1],
-                limit:this.limit
+                // limit:this.limit
             };
+            console.log("params === ",params);
+            
             // เก็บ snapshot ของ params ล่าสุด (ยกเว้น page, limit)
-            this.lastParamsSnapshot = { ...params };
+            // this.lastParamsSnapshot = { ...params };
+
             // ตรวจสอบว่า params เปลี่ยนหรือไม่ (ไม่รวม page และ limit)
             const paramsChanged = JSON.stringify(params) !== JSON.stringify(this.lastParamsSnapshot);
-            console.log("paramsChanged === ",paramsChanged,this.lastParamsSnapshot);
+            console.log("paramsChanged === ",paramsChanged);
+            console.log("lastParamsSnapshot === ",this.lastParamsSnapshot);
             
             if (paramsChanged) {
                 this.posts = []; // ลบสมาชิกเดิม
                 this.page = 1;   // reset page
+                this.lastParamsSnapshot = { ...params };
             }
 
             
@@ -495,7 +506,7 @@ export default {
             }));
                 this.posts = [ ...this.posts, ...newPosts];
                 this.page = response.data.current_page;
-                this.limit = response.data.limit;
+                // this.limit = response.data.limit;
                 this.total_posts = response.data.total_posts;
                 this.totalPage = response.data.total_pages
                 this.loadingTimeline = false;
