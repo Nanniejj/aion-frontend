@@ -214,10 +214,23 @@
 
       <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" />
 
-      <!-- Loading -->
-      <ExportExcelButton class="mt-md-0 " :posts="postsFromApi" :filters="filters"
+
+      <!-- <ExportExcelButton class="mt-md-0 " :posts="postsFromApi" :filters="filters"
         :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
-        :comments-limit="20" style="right: 5px;" v-if="!loading" />
+        :comments-limit="20" style="right: 5px;" v-if="!loading" /> -->
+
+      <ExportExcelButton :posts="postsFromApi" :filters="filters"
+        :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" :full-export="true"
+        :api-base="'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'" :count="count"
+        :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loading" />
+
+      <!-- <ExportExcelButton class="mt-md-0" :posts="postsFromApi" :filters="filters"
+        :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
+        :comments-limit="20" :full-export="true"
+        :api-base="'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'" :count="count"
+        :api-page-hard-limit="0" :daily-cap="2000" style="right: 5px;" v-if="!loading" /> -->
+
+      <!-- {{ loading }} -->
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />
