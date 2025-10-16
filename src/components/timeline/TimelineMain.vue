@@ -217,7 +217,7 @@
       <!-- Loading -->
       <ExportExcelButton class="mt-md-0 " :posts="postsFromApi" :filters="filters"
         :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
-        :comments-limit="50" style="right: 5px;" v-if="!loading" />
+        :comments-limit="20" style="right: 5px;" v-if="!loading" />
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />

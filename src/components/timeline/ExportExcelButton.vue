@@ -87,7 +87,7 @@ export default {
                 content: c?.content || '',
                 time: c?.time || '',
                 url: c?.url || '',
-                photo: c?.photo || ''
+                // photo: c?.photo || ''
             }));
             try {
                 return JSON.stringify(arr);
@@ -160,16 +160,16 @@ export default {
         flattenComments() {
             const rows = [];
             const pushRow = (post, c, dateOverride = null) => rows.push({
-                post_id: post?._id || '',
+                account_name: post?.account_name || '',
+                full_text: post?.full_text || '',
                 post_url: post?.url_post || post?.uid || '',
                 post_date: (dateOverride || post?.date || '').toString(),
                 source: post?.source || '',
-                account_name: post?.account_name || '',
                 comment_username: c?.username || '',
                 comment_content: c?.content || '',
                 comment_time: c?.time || '',
                 comment_url: c?.url || '',
-                comment_photo: c?.photo || ''
+                //  comment_photo: c?.photo || ''
             });
 
             if (this.isDaily) {
@@ -224,11 +224,12 @@ export default {
 
         autosizeCommentsSheet(ws) {
             ws['!cols'] = [
+                { wch: 24 }, // account_name
                 { wch: 24 }, // post_id
                 { wch: 50 }, // post_url
                 { wch: 20 }, // post_date
                 { wch: 12 }, // source
-                { wch: 24 }, // account_name
+
                 { wch: 28 }, // comment_username
                 { wch: 80 }, // comment_content
                 { wch: 22 }, // comment_time
@@ -283,8 +284,8 @@ export default {
 </script>
 <style scoped>
 @media only screen and (min-width: 0px) and (max-width: 800px) {
-   #overflow-page > div:nth-child(2) > div > div.text-right.mt-md-0 > button{
-    zoom: 80%;
-   } 
+    #overflow-page>div:nth-child(2)>div>div.text-right.mt-md-0>button {
+        zoom: 80%;
+    }
 }
 </style>
