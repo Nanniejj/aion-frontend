@@ -88,8 +88,10 @@
                 <template #cell(action)="data">
                     <span class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขกลุ่ม"
                         @click="openEditGroup(data.item)" size="sm"></span>
-                    <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="เพิ่มสมาชิกกลุ่ม"
-                        @click="toggleDetails(data)" size="sm"></span>
+                    <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="แก้ไขสมาชิกกลุ่ม"
+                        @click="openEditGroupMember(data.item)" size="sm"></span>
+                    <!-- <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="เพิ่มสมาชิกกลุ่ม"
+                        @click="toggleDetails(data)" size="sm"></span> -->
                     <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                         @click="linkToProfileGroup(data.item)"></span>
                     <span class="fas fa-trash text-danger" v-b-tooltip.hover title="ลบกลุ่ม"
@@ -126,8 +128,8 @@
                                                     <!-- </b-row> -->
                                                     <a class="text-truncate d-block" 
                                                         href="#" 
-                                                        @click.prevent="openLink(target.link_original)">
-                                                        {{ target.link_original }}
+                                                        @click.prevent="openLink(target.link_crawl)">
+                                                        {{ target.link_crawl }}
                                                     </a>
                                                 </b-col>
                                                 <b-col cols="auto" class="p-0 text-right">
@@ -137,15 +139,15 @@
                                                         </b-col>
                                                         <b-col align-self="end" class="p-0 text-right">
                                                             <b-avatar class="" size="25px" :src="target.image">
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
                                                             </b-avatar>
                                                         </b-col>
                                                     </b-row>
@@ -188,8 +190,8 @@
                                                 <span>{{ target.name || target.uid }}</span>
 
                                                 <div class="d-flex">
-                                                    <a @click.prevent="openLink(target.link_original)" class="text-truncate d-block text-info">
-                                                        {{ target.link_original }}
+                                                    <a @click.prevent="openLink(target.link_crawl)" class="text-truncate d-block text-info">
+                                                        {{ target.link_crawl }}
                                                     </a>
                                                 </div>
                                             </b-col>
@@ -200,15 +202,15 @@
                                                     </b-col>
                                                     <b-col align-self="end" class="p-0 text-right">
                                                         <b-avatar class="" size="25px" :src="target.image">
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
                                                         </b-avatar>
                                                     </b-col>
                                                 </b-row>
@@ -264,8 +266,8 @@
 
                                                     <!-- </b-row> -->
                                                     <div class="d-flex">
-                                                        <a @click.prevent="openLink(target.link_original)" class="text-truncate d-block text-info">
-                                                            {{ target.link_original }}
+                                                        <a @click.prevent="openLink(target.link_crawl)" class="text-truncate d-block text-info">
+                                                            {{ target.link_crawl }}
                                                         </a>
                                                     </div>
                                                 </b-col>
@@ -276,15 +278,15 @@
                                                         </b-col> -->
                                                         <b-col align-self="end" class="p-0 text-right">
                                                             <b-avatar class="" size="25px" :src="target.image">
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
                                                             </b-avatar>
                                                         </b-col>
                                                     </b-row>
@@ -309,11 +311,19 @@
 
         <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" align="center" class="my-2"
             @input="onPageChange" />
-
-        <EditGroupModal :groupData="selectedGroup" :openModal="openEditGroupModal" @close="closeEditGroup"
-            @update-group="apiMonitorGroupList" />
+        <EditGroupMembersModal
+            :openModal="openEditGroupMemberModal"
+            :selectedGroup="selectedGroup"
+            @close="openEditGroupMemberModal = false"
+            @update-group="apiMonitorGroupList"
+        />
+        <EditGroupModal 
+            :groupData="selectedGroup" 
+            :openModal="openEditGroupModal" 
+            @close="closeEditGroup"
+            @update-group="apiMonitorGroupList" 
+        />
         <GroupMembers :groupName="groupDetails.group_name" :openModal="openMembersModal" :targetlist="groupDetails.targetlist" @close="openMembersModal = false"/>
-        
     </div>
 </template>
 
@@ -321,10 +331,11 @@
 
 <script>
 import CreateMonitor from "@/components/monitorlist/CreateMonitor.vue";
-import CreateGroupModal from "./_CreateGroupModal.vue";
-import EditGroupModal from "./_EditGroupModal.vue";
+import CreateGroupModal from "./modals/_CreateGroupModal.vue";
+import EditGroupModal from "./modals/_EditGroupModal.vue";
+import EditGroupMembersModal from "./modals/_EditGroupMembersModal.vue";
 // import MissingTargets from "./MissingTargets.vue";
-import GroupMembers from './_GroupMembersModal.vue';
+import GroupMembers from './modals/_GroupMembersModal.vue';
 
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
@@ -335,6 +346,7 @@ export default {
         CreateGroupModal,
         EditGroupModal,
         GroupMembers,
+        EditGroupMembersModal,
         // ImportPlatform,
         // MissingTargets,
     },
@@ -344,9 +356,10 @@ export default {
     data() {
         return {
             groupDetails: {},
-            newTarget: {link_original: "", source: null},
+            newTarget: {link_crawl: "", source: null},
             // openRowId: null, // เก็บ ID ของแถวที่เปิดอยู่
             openEditGroupModal: false,
+            openEditGroupMemberModal: false,
             openMembersModal: false,
             expandedRow: null,
             expandedRowData: null, // เก็บ data object ของแถวที่เปิด
@@ -464,6 +477,10 @@ export default {
             this.selectedGroup = item;
             this.openEditGroupModal = true;
         },
+        openEditGroupMember(item) {
+            this.selectedGroup = item;
+            this.openEditGroupMemberModal = true;
+        },
         closeEditGroup() {
             this.openEditGroupModal = false;
             this.selectedGroup = {};
@@ -477,7 +494,7 @@ export default {
 
             // เช็คว่ามีอยู่แล้วหรือยัง
             const exists = this.newTargets.some(t =>
-                t.link_original === newItem.link_original && t.source === newItem.source
+                t.link_crawl === newItem.link_crawl && t.source === newItem.source
             );
 
             if (!exists) {
@@ -503,8 +520,8 @@ export default {
             const urlPattern = /^(https?:\/\/)([\w.-]+)(:\d+)?(\/.*)?$/i;
 
             if (
-                !this.newTarget.link_original ||
-                this.newTarget.link_original.trim() === "" ||
+                !this.newTarget.link_crawl ||
+                this.newTarget.link_crawl.trim() === "" ||
                 !this.newTarget.source
             ) {
                 Swal.fire({
@@ -518,7 +535,7 @@ export default {
                 allowEscapeKey: false,
                 buttonsStyling: false
                 });
-            } else if (!urlPattern.test(this.newTarget.link_original.trim())) {
+            } else if (!urlPattern.test(this.newTarget.link_crawl.trim())) {
                 Swal.fire({
                 title: 'URL ไม่ถูกต้อง',
                 text: 'กรุณากรอก URL ที่ขึ้นต้นด้วย http:// หรือ https://',
@@ -532,7 +549,7 @@ export default {
                 });
             } else {
                 this.handleNewTarget(this.newTarget);
-                this.newTarget = { link_original: "", source: null };
+                this.newTarget = { link_crawl: "", source: null };
             }
         },
         toggleDetails(data) {
@@ -612,7 +629,7 @@ export default {
         },
         transformToTarget(data) {
             return data.map(item => ({
-                URL: item.link_original,
+                URL: item.link_crawl,
                 source: item.source
             }))
         },

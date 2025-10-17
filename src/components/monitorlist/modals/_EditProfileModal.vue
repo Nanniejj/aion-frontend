@@ -398,10 +398,10 @@
 <script>
 import Swal from 'sweetalert2'
 import Multiselect from 'vue-multiselect'
-import speciesTypes from "./dataJson/speciesTypes.json"
-import departmentTypes from "./dataJson/departmentTypes.json"
-import influConditions from "./dataJson/influConditions.json"
-import sexsType from "./dataJson/sexsType.json"
+import speciesTypes from "../dataJson/speciesTypes.json"
+import departmentTypes from "../dataJson/departmentTypes.json"
+import influConditions from "../dataJson/influConditions.json"
+import sexsType from "../dataJson/sexsType.json"
 export default {
     components: { Multiselect },
     props: {

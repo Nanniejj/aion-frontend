@@ -9,7 +9,7 @@
         </button> -->
 
         <vue-modaltor :visible="openModal" @hide="hideModal" :animation-panel="'modal-slide-top'"
-            :resize-width="{ 3000: '50%', 1350: '80%', 768: '90%' }"
+            :resize-width="{ 3000: '60%', 1350: '80%', 768: '90%' }"
         >
             <!-- :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }" -->
             <!-- :resize-width="{ 3000: '99%', 1350: '90%', 768: '90%' }" -->

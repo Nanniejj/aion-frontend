@@ -168,7 +168,7 @@
 </template>
 
 <script>
-import CreateCommunityModal from './_CreateCommunityModal.vue';
+import CreateCommunityModal from './modals/_CreateCommunityModal.vue';
 import ProfileEdit from './_ProfileEdit.vue';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';

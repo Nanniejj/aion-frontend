@@ -281,7 +281,7 @@ import ProfileEdit from './_ProfileEdit.vue';
 // import { load } from "@syncfusion/ej2-vue-maps";
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
-import EditProfileModal from "./_EditProfileModal.vue";
+import EditProfileModal from "./modals/_EditProfileModal.vue";
 import influConditions from "./dataJson/influConditions.json"
 // import { warn } from "@vue/composition-api";
 // import { mapGetters } from "vuex";

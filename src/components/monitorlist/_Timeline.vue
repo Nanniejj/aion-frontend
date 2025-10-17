@@ -224,6 +224,7 @@
 <script>
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import Highlighter from "vue-highlight-words";
+
 export default {
     components: {
         VueGallerySlideshow,

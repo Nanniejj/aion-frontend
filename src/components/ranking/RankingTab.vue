@@ -626,14 +626,14 @@ export default {
       this.$store.commit("setShowWordList", false);
       this.WordsFre = datas.name;
       this.$store.commit("setObName", datas.name);
-      this.$store.dispatch("fetchSentimentStat", {
-        start_date: this.getWordCloudStartDate,
-        end_date: this.getWordCloudEndDate,
-        domain: this.getObjectName,
-        subdomain: this.getSubDomain,
-        source: this.getSocial,
-        objects: datas.name,
-      });
+    //   this.$store.dispatch("fetchSentimentStat", {
+    //     start_date: this.getWordCloudStartDate,
+    //     end_date: this.getWordCloudEndDate,
+    //     domain: this.getObjectName,
+    //     subdomain: this.getSubDomain,
+    //     source: this.getSocial,
+    //     objects: datas.name,
+    //   });
 
       //post detail
       this.$store.dispatch("fetchSentimentDetailRanking", {
