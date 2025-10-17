@@ -517,6 +517,17 @@ const routes = [
         /* webpackChunkName: "targetprofile" */ "../views/SearchImgPost.vue"
       )
   },
+  {
+    path: "/rankingperson",
+    name: "RankingPerson",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/RankingPerson.vue"
+      )
+  },
    // {
   //   path: "/home",
   //   name: "Section",

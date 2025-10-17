@@ -222,7 +222,7 @@
       <ExportExcelButton :posts="postsFromApi" :filters="filters"
         :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" :full-export="true"
         :api-base="'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'" :count="count"
-        :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loading" />
+        :prefer-single-shot="true" inline-comments="json" :comments-limit="20" v-if="!loading" />
 
       <!-- <ExportExcelButton class="mt-md-0" :posts="postsFromApi" :filters="filters"
         :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
@@ -231,6 +231,8 @@
         :api-page-hard-limit="0" :daily-cap="2000" style="right: 5px;" v-if="!loading" /> -->
 
       <!-- {{ loading }} -->
+      
+      <SummaryButton :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" />
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />
@@ -270,7 +272,7 @@ import ChartTime from "@/components/timeline/ChartTime.vue";
 import FilterTemplates from "@/components/timeline/FilterTemplates.vue";
 import SaveTemplateModal from "@/components/timeline/SaveTemplateModal.vue";
 import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
-
+import SummaryButton from "@/components/timeline/SummaryButton.vue";
 // import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
@@ -279,7 +281,7 @@ function uid() {
   return 'tpl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
 }
 export default {
-  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal, ExportExcelButton },
+  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal, ExportExcelButton,SummaryButton },
   watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
