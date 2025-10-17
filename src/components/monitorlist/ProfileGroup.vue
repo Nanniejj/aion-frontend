@@ -216,9 +216,14 @@
                 </b-card>
             </b-col>
             <b-col cols="12" class="px-0">
-                <ExportExcelButton class="mt-md-0 " :posts="posts" :filters="formFilters"
+                <!-- <ExportExcelButton class="mt-md-0 " :posts="posts" :filters="formFilters"
                 :disabled="loadingTimeline || (Array.isArray(posts) && posts.length === 0)" inline-comments="json"
-                :comments-limit="20" style="right: 5px;" v-if="!loadingTimeline" />
+                :comments-limit="20" style="right: 5px;" v-if="!loadingTimeline" /> -->
+
+                <ExportExcelButton :posts="postForExport" :filters="formFilters"
+                    :disabled="loading || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
+                    :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loadingTimeline" />
+                    
                 <div data-v-633a0eda="" class="text-right allpost"> 
                     ทั้งหมด <b data-v-633a0eda="">{{total_posts || 0 | numFormat}}</b> โพสต์
                 </div>
@@ -302,6 +307,7 @@ export default {
                 { value: "threads", text: "Threads" }
             ],
             formFilters: {
+                group_id: this.$route.query.id,
                 sentiment: ["1", "0", "-1"],
                 keyword: "",
                 view_mode: "posts",
@@ -390,8 +396,8 @@ export default {
             const diffTime = Math.abs(end - start);
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-            if (diffDays > 31) {
-                alert("เลือกช่วงเวลาได้ไม่เกิน 31 วัน");
+            if (diffDays > 3) {
+                alert("เลือกช่วงเวลาได้ไม่เกิน 3 วัน");
                 this.valueDate = []; // reset ค่า
             }else {
                 // console.log('check');
@@ -492,8 +498,8 @@ export default {
                     querySearch: this.search || undefined, // ส่ง search ถ้ามีค่า
                 },
                 headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
                 },
             };
             // console.log('config ==== ', config);
@@ -510,6 +516,75 @@ export default {
                 this.total_posts = response.data.total_posts;
                 this.totalPage = response.data.total_pages
                 this.loadingTimeline = false;
+            }).catch(error => {
+                console.error('Error fetching posts:', error);
+                this.loadingTimeline = false;
+            });
+        },
+        async apiGetAllPost() {
+            console.log("get all post");
+            
+            // try {
+            this.loadingTimeline = true
+            // สร้าง params ใหม่
+            // const params = {
+            //     group_id: this.$route.query.id,
+            //     // ...(this.selectedSource ? { source: this.selectedSource } : {}),
+            //     keyword:this.formFilters.keyword,
+            //     source: this.formFilters.source,
+            //     sort_by: this.formFilters.sort_by,
+            //     sentiment: this.formFilters.sentiment,
+            //     from: this.valueDate[0],
+            //     to: this.valueDate[1],
+            //     limit:this.total_posts
+            // };
+            // console.log("params === ",params);
+            
+            // เก็บ snapshot ของ params ล่าสุด (ยกเว้น page, limit)
+            // this.lastParamsSnapshot = { ...params };
+
+            // ตรวจสอบว่า params เปลี่ยนหรือไม่ (ไม่รวม page และ limit)
+            // const paramsChanged = JSON.stringify(params) !== JSON.stringify(this.lastParamsSnapshot);
+            // console.log("paramsChanged === ",paramsChanged);
+            // console.log("lastParamsSnapshot === ",this.lastParamsSnapshot);
+            
+            // if (paramsChanged) {
+            //     this.posts = []; // ลบสมาชิกเดิม
+            //     this.page = 1;   // reset page
+            //     this.lastParamsSnapshot = { ...params };
+            // }
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getGroupPost",
+                params: {
+                    group_id: this.$route.query.id,
+                    keyword:this.formFilters.keyword,
+                    source: this.formFilters.source,
+                    sort_by: this.formFilters.sort_by,
+                    sentiment: this.formFilters.sentiment,
+                    from: this.valueDate[0],
+                    to: this.valueDate[1],
+                    page: this.page,
+                    limit: Math.min(this.total_posts, 2000),
+                    //limit: this.total_posts,
+                    querySearch: this.search || undefined, // ส่ง search ถ้ามีค่า
+                },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+            // console.log('config ==== ', config);
+            
+            this.axios(config).then(response => {
+                console.log('Posts fetched successfully:', response.data);
+                // const newPosts =  response.data.posts.map(post => ({
+                //     ...post,
+                //     showAll: false,
+                // }));
+                this.postForExport = response.data.posts
+                this.loadingTimeline = false
+               
             }).catch(error => {
                 console.error('Error fetching posts:', error);
                 this.loadingTimeline = false;
@@ -547,10 +622,19 @@ export default {
 
     },
     async mounted() {
-        await this.apiGetPost();
         await this.getGroupDetail();
+        await this.apiGetPost();
         console.log(this.$route.query.name);
     },
+    watch: {
+        total_posts: {
+            handler(newVal, oldVal) {
+                this.apiGetAllPost();
+            },
+            immediate: true
+        }
+    }
+
 }
 </script>
 

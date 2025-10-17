@@ -221,20 +221,24 @@
         </b-row>
 
       </b-card>
-      <b-row class="mb-1">
-        <b-col cols="6" md="6" lg="6" class="m-auto my-1">
-          <div class="bold text-lg-left text-md-left h6">
+      <b-row class="mb-1 justify-contents-between">
+        <b-col cols="12" md="6" lg="" class=" my-1">
+          <div class="bold text-left text-md-left h6">
             All Posts | {{ this.$route.query.domain }}
           </div>
         </b-col>
-        <b-col cols="6" md="6" lg="6" class="m-auto my-1 text-right">
+        <b-col cols="12" md="6" lg="auto" class="d-flex align-items-center my-1 text-right">
           <span id="post-comment">
             <i class="far fa-paper-plane" />
 
             <b>
-              <span v-if="datacount !== 0"> {{ datacount | numFormat }} </span><span v-else> 0 </span></b>
+              <span v-if="datacount !== 0"> {{ datacount | numFormat }} </span>
+              <span v-else> 0 </span></b>
             โพสต์
           </span>
+          <ExportExcelButton :posts="dataIssue"
+        :disabled="load || (Array.isArray(dataIssue) && dataIssue.length === 0)" :full-export="true"
+        :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!load" />
         </b-col>
       </b-row>
 
@@ -922,6 +926,8 @@ import subdistricts from "@/components/map/subdistricts.json";
 import SentimentBar from "@/components/domain/SentimentBar.vue";
 
 import TimelinePosts from "@/components/timeline/TimelinePosts2.vue";
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+
 export default {
   props: {
     checkpost: {
@@ -968,6 +974,7 @@ export default {
       visible: false,
       index: null,
       dataPhoto: [],
+      postForExport:[],
       currentImageFather: null,
       overlayActiveFather: false,
       start_date: "",
@@ -1048,7 +1055,8 @@ export default {
     Highlighter,
     VueGallerySlideshow,
     SentimentBar,
-    TimelinePosts
+    TimelinePosts,
+    ExportExcelButton
   },
   computed: {
     ...mapGetters(["getClickDomain"]),

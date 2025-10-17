@@ -84,6 +84,10 @@
         <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print">
           <b-icon-printer /> Print
         </b-button>
+        <ExportExcelButton :posts="postForExport" :filters="filters"
+        :disabled="loading || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
+        :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loading" />
+                    
         <!-- <b-button size="sm" variant="outline-info" @click="exportSelected" v-b-tooltip.hover title="Export">
           <b-icon-download /> Export
         </b-button> -->
@@ -165,9 +169,11 @@ import PlatformImgChart from "./PlatformImgChart";
 import moment from "moment";
 import "moment/locale/th";
 import TimelinePosts from '../timeline/TimelinePosts2.vue';
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+
 export default {
   name: 'PostBoard',
-  components: { CardPost, CardTitle, VueGallerySlideshow, PlatformImgChart, TimelinePosts },
+  components: { CardPost, CardTitle, VueGallerySlideshow, PlatformImgChart, TimelinePosts, ExportExcelButton },
   props: {
     subject: {
       type: Object,
@@ -240,7 +246,9 @@ export default {
       platforms: ['Facebook', 'X', 'Instagram', 'Pantip', 'Youtube', 'News', 'Tiktok', 'Blockdit', 'Threads'],
 
       // data
-      posts: []
+        posts: [],
+        postForExport:[],
+        filters:{}
     }
   },
   computed: {
@@ -249,27 +257,27 @@ export default {
     }
   },
   methods: {
- printPosts() {
-  // ใส่สไตล์พิมพ์ margin ต่ำสุด (ครั้งเดียว)
-  const STYLE_ID = 'print-style-min-margin';
-  if (!document.getElementById(STYLE_ID)) {
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.media = 'print';
-    style.textContent = `
-      @page { size: auto; margin: 0; }    /* ขอบกระดาษ 0 */
-      @media print {
-        html, body { margin: 0 !important; padding: 0 !important; }
-      }
-    `;
-    document.head.appendChild(style);
-  }
+    printPosts() {
+    // ใส่สไตล์พิมพ์ margin ต่ำสุด (ครั้งเดียว)
+    const STYLE_ID = 'print-style-min-margin';
+    if (!document.getElementById(STYLE_ID)) {
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.media = 'print';
+        style.textContent = `
+        @page { size: auto; margin: 0; }    /* ขอบกระดาษ 0 */
+        @media print {
+            html, body { margin: 0 !important; padding: 0 !important; }
+        }
+        `;
+        document.head.appendChild(style);
+    }
 
-  this.$nextTick(() => {
-    try { window.print(); } catch (e) { console.error(e); }
-  });
-}
-,
+    this.$nextTick(() => {
+        try { window.print(); } catch (e) { console.error(e); }
+    });
+    }
+    ,
     formatDate(date) {
       let dates = moment(date).subtract(7, "hours");
       let date2 = moment(dates).format("ll");
@@ -295,7 +303,7 @@ export default {
           source: this.select_social,
           sentiment: this.selected
         }
-
+        this.filters = params
         const token = localStorage.getItem('token')
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
@@ -330,6 +338,61 @@ export default {
         this.posts = []
         this.count = 0
         this.totalPages = 0
+        // ถ้าจะจัดการ 401:
+        // if (e?.response?.status === 401) this.$router.push('/login')
+      } finally {
+        this.loading = false
+      }
+    },
+    async apiAllPostImageByImageId() {
+      this.loading = true
+      try {
+        const params = {
+          image_id: this.$route.query.id,
+          source: this.select_social || undefined, // ส่งเฉพาะถ้ามีเลือก
+          page: this.page,
+          sort_by: this.sort || 'engagement',
+          limit: this.count,
+          page: this.page,
+          source: this.select_social,
+          sentiment: this.selected
+        }
+        this.filters = params
+        const token = localStorage.getItem('token')
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+
+        const { data } = await this.axios.get(
+          'https://api2.cognizata.com/api/v2/image_upload/getImageUserposts',
+          { params, headers }
+        )
+        this.dataImg = data
+        // ปรับรูปแบบผลลัพธ์ให้เข้ากับ UI
+        // const rows = data?.data || []
+        // this.posts = Array.isArray(rows) ? rows : []
+        const rows = Array.isArray(data?.data) ? data.data : [];
+        console.log("rows == ", rows);
+        this.postForExport = rows
+        // ✅ ถ้า page = 1 → ล้างข้อมูลเก่า
+        // ✅ ถ้า page > 1 → ต่อข้อมูลใหม่เข้ากับของเดิม
+        // if (this.page === 1) {
+        //     this.posts = rows;
+        // } else {
+        //     this.posts = [...this.posts, ...rows];
+        // }
+        
+        // const apiCount = Number(data?.pagination?.total_posts || 0)
+        // const computed = this.posts.length
+        // this.count = apiCount > 0 ? apiCount : Math.max((this.page - 1) * this.limit + computed, 0)
+
+        // const apiTotalPages = Number(data?.pagination?.total_pages ?? 0)
+        // this.totalPages = apiTotalPages > 0
+        //   ? apiTotalPages
+        //   : (this.count && this.limit ? Math.ceil(this.count / this.limit) : 0)
+      } catch (e) {
+        console.error(e)
+        this.postForExport = []
+        // this.count = 0
+        // this.totalPages = 0
         // ถ้าจะจัดการ 401:
         // if (e?.response?.status === 401) this.$router.push('/login')
       } finally {
@@ -394,7 +457,15 @@ export default {
   },
   mounted() {
     this.apiPostImageByImageId()
-  },
+    },
+    watch: {
+        count: {
+            handler(newVal, oldVal) {
+                this.apiAllPostImageByImageId();
+            },
+            // immediate: true
+        }
+    },
   filters: {
     numFormat(v) {
       const n = Number(v || 0)

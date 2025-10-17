@@ -64,14 +64,14 @@
                             @input="onTagsInput"
                         />
                     </b-row>
-                    <b-col class="text-right p-0">
+                    <b-col class="text-right p-0 mb-3">
                         <b-button @click="showTargetLists = !showTargetLists" pill variant="info" size="sm">
                            <span v-if="!showTargetLists">แสดงบัญชีจาก monitor</span> 
                            <span v-else>ซ่อนบัญชีจาก monitor</span> 
                         </b-button>
                     </b-col>
 
-                    <hr v-if="(newTargets.length > 0) && (selectedGroup.targetlist.length !== 0)">
+                    <!-- <hr v-if="(newTargets.length > 0) && (selectedGroup.targetlist.length !== 0)"> -->
                     <b-col cols="12" class="p-0 " >
                         <b-row cols="1" class="m-0 pr-3 modal-body-scrollable" style="max-height: 40vh;">
                             <target-card v-for="(target,index) in newTargets" :key="target.id" 
