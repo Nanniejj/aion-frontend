@@ -27,10 +27,10 @@
         <b-card class="custom-card">
           <!-- <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
             color="#b6ac9a" /> -->
-          <b-row class="mb-3 mx-0">
-            <b-col cols="12" md="4" style="margin-bottom: 10px; padding-left: 10px; text-align: left;">
-              <div class="text-h5">
-                <strong>Objects </strong>
+          <b-row class="mb-3 mb-lg-0 mx-0">
+            <b-col cols="12" sm="4" style="padding-left: 10px; text-align: left;">
+              <div class="h5">
+                <strong>ประเด็น </strong>
               </div>
             </b-col>
             <b-col class="d-md-flex justify-content-end px-0">

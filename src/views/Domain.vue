@@ -6,13 +6,38 @@
         <TitleLogo v-show="elementVisible" />
       </Transition>
       <!-- <Map/> -->
-      <b-row v-if="!getPushDomainStat">
-        <b-col>
-          <h1 class="title">Domain</h1>
+      <b-row class="mx-0 mx-lg-5" v-if="!getPushDomainStat">
+        <b-col cols="12" md="" >
+          <h1 class="title m-0 pb-0">เรื่อง (Domain)</h1>
         </b-col>
-        <b-col><i class="fas fa-print fa-2x" @click="printWindow()"></i></b-col>
+        <b-col class="pr-0" style="padding-top: 20px;">
+            <b-form-group label-for="search-input" class="">
+                <b-input-group-append>
+                    <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
+                        class="w-100 mr-2"></b-form-input>
+                        <!-- ปุ่มล้างค่า -->
+                        <b-input-group-append style="position: absolute;right: 96px;" v-if="search">
+                            <b-button
+                                variant="link"
+                                @click="resetSearch()"
+                                title="ล้างข้อความ"
+                                class="px-2"
+                                style="color: red; text-decoration: none;"
+                            >
+                                <i class="fa fa-times"></i>
+                            </b-button>
+                        </b-input-group-append>
+                    <b-button variant="warning" style="background-color: #fed16e;" pill :pressed="false" @click="hasSearched = true" class="shadow-r px-4">ค้นหา</b-button>
+                </b-input-group-append>
+            </b-form-group>
+        </b-col>
+        <b-col cols="auto"><i class="fas fa-print fa-2x px-0" @click="printWindow()"></i></b-col>
       </b-row>
-      <DomainList v-if="!getPushDomainStat" />
+      <DomainList v-if="!getPushDomainStat" 
+        :search="search" 
+        :hasSearched="hasSearched"
+        @updated="hasSearched = false"
+        />
       <DomainMain v-if="getPushDomainStat" />
       <back-to-top bottom="50px" right="50px">
         <button type="button" class="btn btn-to-top">
@@ -44,7 +69,9 @@ export default {
   },
   data() {
     return {
-      elementVisible: false,
+        search: '',
+        hasSearched: false,
+        elementVisible: false,
     };
   },
 
@@ -60,7 +87,20 @@ export default {
       "getShowIntro",
     ]),
   },
-  methods: {
+    methods: {
+    resetSearch() {
+        this.search = ''
+        this.hasSearched = true
+    },
+    onSearch() {
+        this.hasSearched = true
+      // ตรวจสอบว่าผู้ใช้กรอกคำค้นหรือไม่ (ใส่ก็ได้ไม่ใส่ก็ได้)
+    //   if (this.search.trim() !== '') {
+    //     this.hasSearched = true
+    //   } else {
+    //     this.hasSearched = false
+    //   }
+    },
     printWindow: function () {
       try {
         window.print();

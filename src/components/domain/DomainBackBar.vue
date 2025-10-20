@@ -6,7 +6,7 @@
             <div id="flowPhone" class="px-0">
             <div id="flow-tt">
                 <h5 class="title-domain">
-                <span @click="backDomain"> Domain </span>
+                <span @click="backDomain">เรื่อง (Domain) </span>
                 <i class="fas fa-angle-right" />
                 <span id="active"> {{ getClickDomain }} </span>
                 </h5>
@@ -19,7 +19,7 @@
                 @click="backDomain"
                 style="cursor: pointer; color: #4c412b"
             >
-                <a>Domain</a>
+                <a>เรื่อง (Domain)</a>
                 <span class="prt"> /</span>
             </div>
             <!-- max-width: 250px; -->
@@ -66,6 +66,7 @@
             <!-- <ExportDocx style="cursor: pointer;" :key="componentKey" @click="reloadComponent" /> -->
         </b-col>
     </b-row>
+    
     <b-col
       class="text-sm-right px-0 mt-2 text-secondary"
       style="font-size:14px"

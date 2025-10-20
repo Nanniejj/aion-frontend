@@ -113,7 +113,7 @@ export default {
       idDomain: 0,
       fields: [
         { key: "id", label: "#", sortable: true, class: "text-center" },
-        { key: "name", label: "Domain", sortable: true },
+        { key: "name", label: "เรื่อง", sortable: true },
 
         {
           key: "display",

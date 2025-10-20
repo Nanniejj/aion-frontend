@@ -2,8 +2,9 @@
   <b-container fluid>
     <b-row class="px-0">
       <b-col md="6" class="mt-2 ">
-        <div class="text-left ml-2 h5">Subdomain Statistics <span class="small">(posts)</span></div>
-        <b-row>
+        <!-- <div class="text-left ml-2 h5">Subdomain Statistics <span class="small">(posts)</span></div> -->
+        <div class="text-left h5">หมวดหมู่ <span class="small">(Subdomain)</span></div>
+        <b-row class="m-0">
           <b-col class="px-0">
             <div v-if="sublabelType === 'posts'">
               <!-- <b-form-select v-model="subdomainChartType" class="mb-3" size="sm" :options="[
@@ -46,11 +47,12 @@
           :series="finalSeriesSubdomain" />
       </b-col>
       <b-col md="6" class="mt-2">
-        <div class="text-left ml-2 h5 mt-3 mt-md-0">Top 10 Objects <span class="small">(posts)</span></div>
+        <!-- <div class="text-left ml-2 h5 mt-3 mt-md-0">Top 10 Objects <span class="small">(posts)</span></div> -->
+        <div class="text-left h5 mt-3 mt-md-0">Top 10 ประเด็น <span class="small">(Objects)</span></div>
         <b-row>
           <!-- {{ subdomains }} -->
           <b-col> <v-select class="mb-3 w-100 se-subdomain" :options="subdomains" v-model="subdomain_idText"
-              label="name" :reduce="s => s.subdomain_id" multiple placeholder="เลือก Subdomain" /></b-col>
+              label="name" :reduce="s => s.subdomain_id" multiple placeholder="เลือกหมวดหมู่" /></b-col>
           <b-col>
             <div class="text-center">
               <b-button-group class="mx-1">

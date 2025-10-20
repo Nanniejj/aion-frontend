@@ -5,7 +5,7 @@
       <!-- Search Input with Icon -->
       <b-row class="justify-content-md-end">
         <b-col>
-          <div class="h4 text-left"> {{ $route.params.domain }}</div>
+          <div class="h4 text-left bold">เรื่อง {{ $route.params.domain }}</div>
         </b-col>
         <!-- Input Field with Search Icon -->
         <b-col cols="12" sm="12" md="4" lg="4" class="mt-2 mt-md-0 pr-md-0 mr-md-2">
@@ -56,149 +56,24 @@
         </b-col>
       </b-row>
       <br />
-      <div>
+      <div v-if="loadWord">
         <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
           spinner="line-scale" color="#7cd1dc" />
       </div>
       <!-- ก้อน subdomain สีฟ้า -->
-      <div v-for="(subdomain, subIndex) in filteredSubdomains" :key="subdomain.subdomain_id" class="mb-4">
+      <div v-else class="mb-4">
+        <b-col class="px-0 pb-3">
+          <div class="h5 text-left bold">หมวดหมู่</div>
+        </b-col>
         <ObjectCard 
+            v-for="(subdomain, subIndex) in filteredSubdomains" :key="subdomain.subdomain_id" 
             :subdomain="subdomain"
             :searchQuery="keyword"
             @edit-subDomain="editSubdomain(subIndex)"
             @delete-subDomain="openDeleteSubdomainModal(subIndex, subdomain)"
             @reset="apiList"
         />
-        <!-- ชื่อ Subdomain -->
-        <!-- <b-col sm="12" md="4" lg="4" class="d-flex justify-content-between align-items-center"
-          style="background-color: #7cd1dc; color: #000; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 10px; margin-bottom: 0px;">
-          <span class="text-center subdomain-name" style="flex: 1;">
-            {{ subdomain.subdomain_name }}
-            
-          </span>
-
-          <div class="d-flex justify-content-end">
-            <b-button size="sm" class="rounded-circle"
-              style="background-color: white;  color: #2c3e50; width: 30px; height: 30px;"
-              @click="editSubdomain(subIndex)">
-              <i class="fa fa-pencil"></i>
-            </b-button>
-
-            <b-button size="sm" class="rounded-circle ml-2"
-              style="background-color: white;  color: #2c3e50; width: 30px; height: 30px;"
-              @click="openDeleteSubdomainModal(subIndex, subdomain)">
-              <i class="fa fa-trash-alt"></i>
-            </b-button>
-            
-          </div>
-        </b-col> -->
-
-        <!-- Objects ใน Card -->
-        <!-- <b-card class="custom-card">
-          <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
-            color="#b6ac9a" />
-          <b-row class="mb-3 mx-0">
-            <b-col cols="12" sm="4" style="margin-bottom: 10px; padding-left: 10px; text-align: left;">
-              <div class="text-h5"><strong>Objects </strong>
-               
-              </div>
-            </b-col>
-            <div class="card-actions"
-              style="border: unset; border-radius: 10px; padding: 2px; margin-top: 15px; cursor: pointer;">
-              
-              <CreateObject :objectData="subdomain" />
-              
-            </div>
-          </b-row>
-
-          
-          <b-row v-if="subdomain && subdomain.objects && subdomain.objects.length">
-            <b-col class="">
-              <div class="scroll-obj">
-                <div v-for="(object, objIndex) in subdomain.objects" :key="objIndex"
-                  class="object-item d-flex align-items-center justify-content-between py-2 px-3 " :class="{
-                    'active-item':
-                      subdomain.activeObjectId === object.object_id,
-                    'inactive-item':
-                      subdomain.activeObjectId !== object.object_id,
-                  }" @click="setActive(subIndex, object.object_id, object)"
-                  style="border: 0px solid #ccc; border-radius: 15px; margin-bottom: 20px; cursor: pointer;">
-                  <span class="text-center object-name" style="flex: 1;">
-                    {{ object.object_name }}
-                  </span>
-
-                  <div class="d-flex justify-content-end">
-                    <EditObjectKeyword :objectData="{ subdomain_id: subdomain.subdomain_id, ...subdomain.datakeyword }"
-                      :btn="'edit'" />
-
-                    
-
-                    <b-button size="sm" class="rounded-circle"
-                      style="background-color: white; color: #2c3e50; width: 30px; height: 30px; margin-right: 3px;"
-                      @click="openDeleteObjectModal(subIndex, objIndex, object)">
-                      <i class="fa fa-trash-alt icon-hover"></i>
-                    </b-button>
-                  </div>
-                </div>
-              </div>
-            </b-col>
-
-          
-            <b-col cols="12" md="7" lg="8" style="text-align: left;">
-              <div v-if="
-                subdomain && subdomain.datakeyword && subdomain.datakeyword.keywords &&
-                subdomain.datakeyword.keywords.length
-              ">
-                <strong class="my-3">Keywords</strong><br />
-                <div v-for="(keyword, index) in subdomain.datakeyword.keywords" :key="index"
-                  class="keyword-box my-1 px-3">
-                 
-                  <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
-                    :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="keyword"></Highlighter>
-                </div>
-
-                
-
-              </div>
-
-              
-              <div v-if="
-                subdomain && subdomain.datakeyword && subdomain.datakeyword.and_keywords &&
-                subdomain.datakeyword.and_keywords.length
-              " style="margin-top: 10px;">
-                <strong class="my-3">Include Keywords</strong><br />
-                <div v-for="(and_keywords, index) in subdomain.datakeyword
-                  .and_keywords" :key="index" class="keyword-box px-3 my-1">
-                  <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
-                    :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="and_keywords"></Highlighter>
-                </div>
-              </div>
-
-             
-              <div v-if="
-                subdomain && subdomain.datakeyword && subdomain.datakeyword.not_keywords &&
-                subdomain.datakeyword.not_keywords.length
-              " style="margin-top: 10px;">
-                <strong class="my-3">Exclude Keywords</strong><br />
-                <div v-for="(not_keywords, index) in subdomain.datakeyword
-                  .not_keywords" :key="index" class="keyword-box px-3 my-1">
-                  <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
-                    :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="not_keywords"></Highlighter>
-                  
-                </div>
-              </div>
-
-              <div v-if="subdomain && subdomain.datakeyword">
-                <EditObjectKeyword :objectData="{ subdomain_id: subdomain.subdomain_id, ...subdomain.datakeyword }"
-                  :btn="'icon'" />
-              </div>
-            </b-col>
-          </b-row>
-          <div v-else class="my-3 gray">
-            ไม่พบข้อมูล
-          </div>
-        </b-card>  -->
-      </div>
+       </div>
 
       <!-- edit subdomain -->
       <b-modal v-b-modal.modal-center id="edit-subdomain-modal" ref="editSubdomainModal" @hidden="resetEditModal"
@@ -224,21 +99,6 @@
       <!-- Modal สำหรับลบ subdomain -->
       <b-modal id="confirm-delete-subdomain-modal" title="ยืนยันการลบ Subdomain" hide-footer>
         <b-form @submit.prevent="handleDeleteSubdomain" centered>
-          <!-- <b-form-group label="Domain ID">
-            <b-form-input
-              v-model="newDomainId"
-              type="number"
-              disabled
-            ></b-form-input>
-          </b-form-group>
-
-          <b-form-group label="Subdomain ID">
-            <b-form-input
-              v-model="newSubdomainId"
-              type="text"
-              disabled
-            ></b-form-input>
-          </b-form-group> -->
 
           <p>
             คุณต้องการลบ <strong>{{ deleteSubdomainName }}</strong> หรือไม่?
@@ -296,26 +156,6 @@
           </div>
         </b-form>
       </b-modal>
-
-      <!-- Modal for เพิ่ม Keyword -->
-      <!-- <b-modal
-        id="add-keyword-modal"
-        @hidden="resetAddKeywordModal"
-        title="เพิ่ม Keyword"
-        hide-footer
-      >
-        <b-form @submit.prevent="handleAddKeyword">
-          <b-form-group label="ชื่อ Keyword">
-            <b-form-input v-model="newKeyword" required></b-form-input>
-          </b-form-group>
-
-          <div class="d-flex justify-content-end mt-3">
-            <b-button class="btn-submit" @click="handleAddKeyword"
-              >บันทึก</b-button
-            >
-          </div>
-        </b-form>
-      </b-modal> -->
       <b-modal id="edit-object-keyword-modal" v-model="showEditModal" size="lg" hide-footer
         content-class="custom-modal-content" centered>
         <template #modal-title>
@@ -537,12 +377,10 @@ export default {
         };
         const response = await this.axios(config);
 
-        console.log("ดึงข้อมูลสำเร็จ:", response.data);
+        console.log("ดึงข้อมูลสำเร็จ apiList:", response.data);
 
         if (response.data.domain_id) {
           this.domainId = response.data.domain_id; //เซ็ตค่า domain_id ที่ได้จาก API
-
-
           //แปลงข้อมูล Subdomains โดยตั้งค่า display เป็น true ถ้าไม่มีค่า
           this.subdomains = response.data.subdomains.map((subdomain) => {
             const firstObject =
@@ -555,14 +393,11 @@ export default {
               datakeyword: firstObject || {},
             };
           });
-          this.filteredSubdomains = this.subdomains
+            this.filteredSubdomains = this.subdomains
+            this.loadWord = false
         }
-        // localStorage.getItem("active_subIndex");
-        // localStorage.getItem("active_objectId");
-        // const storedSubdomainId = localStorage.getItem("activeSubdomainId");
-        // const storedObjectId = localStorage.getItem("activeObjectId");
         this.subdomainKeywords = this.collectKeywords(this.subdomains)
-        this.loadWord = false
+        
         console.log("ดึงข้อมูลสำเร็จ2:", this.subdomains);
       } catch (error) {
         this.loadWord = false
@@ -570,7 +405,7 @@ export default {
       }
     },
     async apiGetSuggestionKeywrords() {
-        this.loadWord = true
+        // this.loadWord = true
         try {
             const config = {
                 method: "get",
@@ -582,7 +417,7 @@ export default {
                 },
             };
             const response = await this.axios(config);
-            this.loadWord = false;
+            // this.loadWord = false;
             if (response && response.data && response.data.length > 0) {
                 console.log("res === ", response);
                 let data = response.data[0];
@@ -594,7 +429,7 @@ export default {
             }
             
         } catch (error) {
-            this.loadWord = false
+            // this.loadWord = false
             this.suggestionKeywrords = []
             console.error("Error fetching API:", error);
         }

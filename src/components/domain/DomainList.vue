@@ -1,10 +1,14 @@
 <template>
   <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3">
-    <div class="prt h3">Domain List</div>
+    <b-col class="prt h3 text-left">Domain List</b-col>
+    <b-col class="text-left mb-2 text-secondary">
+        ทั้งหมด {{  totalCount }} เรื่อง
+    </b-col>
     <b-row cols="2" cols-sm="2" cols-md="3" cols-lg="4" class="m-auto">
       <!-- <LinkMain />
       <LinkMain2 /> -->
-      <b-col v-for="(domain, k) in getListDomain" :key="k">
+      <!-- <b-col v-for="(domain, k) in getListDomain" :key="k"> -->
+      <b-col v-for="(domain, k) in domainList" :key="k">
         <span id="box-domain" class="mt-3 mb-3 h5" @click="toDomainStat(domain)">
           <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.8)"
             color="#b6ac9a" />
@@ -27,9 +31,22 @@ export default {
     VueElementLoading,
     LinkMain,
     LinkMain2
-  },
+    },
+    props: {
+        hasSearched: {
+            type: Boolean,
+            default : false
+        },
+        search: {
+            type: String,
+            default: ''
+        }
+    },
   data() {
-    return {};
+      return {
+        domainList: [],
+        totalCount: 0,
+    };
   },
   computed: {
     ...mapGetters(["getListDomain", "getLoadStatus"]),
@@ -45,14 +62,58 @@ export default {
       this.$store.commit("setPushDomainStat", true)
       this.$store.commit("setClickDomain", domain.name)
       this.$store.commit("setClickDomainId", domain.id)
-    }
+      },
+    async apiGetDomains() {
+        this.loading = true;
+        // console.log('apiMonitorList ===',this.currentPage);
+        
+        const config = {
+            method: "get",
+            url: "https://api2.cognizata.com/api/v2/domain/getDomainlist",
+            params: {
+                name: this.search
+            },
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+        };
+
+        this.axios(config)
+        .then((response) => {
+            const resData = response.data;
+            this.domainList = resData.data || [];
+            // this.totalRows = resData.pagination?.totalCount || this.data.length;
+            this.totalCount = resData.totalCount || this.domainList.length;
+            this.loading = false;
+            this.$emit('updated')
+            
+        })
+        .catch((error) => {
+            this.loading = false;
+            this.domainList = [];
+            console.error(error);
+        });
+    },
   },
   created() {
     if (this.getListDomain) {
       this.$store.dispatch("fetchListDomain");
     }
 
-  },
+    },
+    mounted() {
+        this.apiGetDomains()
+    },
+    watch: {
+        hasSearched: {
+            handler(newVal) {
+                if (newVal === true) {
+                    this.apiGetDomains();
+                }
+            },
+        }
+    }
 };
 </script>
 <style scoped>

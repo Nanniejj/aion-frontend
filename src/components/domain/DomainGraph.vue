@@ -6,10 +6,11 @@
 
     <b-row>
       <b-col lg="8" class="text-left">
-        <div class="mb-sm-4">
-          <span class="h5 mr-3">Post</span>
+        <!-- <div class="mb-sm-4">
+          <span class="h5 mr-3">จำนวน {{ select }} เกี่ยวกับ</span>
           <span id="domain-tag" class="">{{ getClickDomain }}</span>
-        </div>
+          <span class="h5 mr-3">{{ selectFilter }}</span>
+        </div> -->
         <div class="text-right my-3 mb-8">
           <!-- {{ selectFilter }} -->
           <b-row align-h="end">
