@@ -127,14 +127,14 @@ export default {
     async fetchAllOnceByLimitCount() {
       const params = this.baseParams();
       params.page = 1;
-      params.limit = this.count > 0 ? this.count : 100000; // ใช้ count เป็นหลัก
+      params.limit = this.count > 0 ? this.count : 2000; // ใช้ count เป็นหลัก
       const { data } = await axios.get(this.apiBase, { params });
       return data?.data || [];
     },
 
     // ----- posts: paging fallback -----
     async fetchAllOnceByPaging() {
-      const pageSize = this.apiPageHardLimit > 0 ? this.apiPageHardLimit : 1000;
+      const pageSize = this.apiPageHardLimit > 0 ? this.apiPageHardLimit : 2000;
       const total = this.count || 0;
       const pages = Math.max(1, Math.ceil(total / pageSize));
       const paramsBase = this.baseParams();
