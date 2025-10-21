@@ -15,16 +15,221 @@
     <div>
       <!-- <b-img :src="subject.avatar"  class="" rounded="lg" /> -->
       <!-- {{ dataImg }} -->
-      <b-row>
-        <b-col cols="12" md="6">
-          <b-avatar button :src="dataImg.image.url" size="20" class="iconimg my-3" rounded="lg"
+      <b-row class="mx-0 mb-3">
+        <b-col cols="12" lg="auto" class="">
+          <b-avatar button :src="dataImg.image.url" size="20" class="iconimg my-3 justify-content-start w-auto" rounded="lg"
             @click="onClick(0, dataImg.image.url)" />
-
           <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
         </b-col>
-        <b-col class="py-3" cols="12" md="6">
-          <PlatformImgChart :platform="dataImg.source_counts" class="ma-auto " />
+        <b-col class="py-3 px-0" cols="12" lg="">
+            <!-- <StaticTimeline :datachart="datachart" /> -->
+            <b-row>
+                <b-col cols="12" lg="">
+                    <b-col cols="12" sm="12" lg="">
+                        <b-row cols="2" cols-sm="4" cols-md="4" class="small py-2">
+                            <b-col>
+                                <div><i class="far fa-comments "></i>
+                                <span class="h6 bold"> {{
+                                    datachart.totals.message_sum || 0 | numFormat }}</span>
+                                </div> messages
+                            </b-col>
+                            <b-col>
+                                <div><i class="far fa-paper-plane "></i>
+                                <span class="h6 bold"> {{
+                                    datachart.totals.posts || 0 | numFormat }}</span>
+                                </div> posts
+                            </b-col>
+                            <b-col>
+                                <div> <i class="far fa-comment " aria-hidden="true"></i>
+                                <span class="h6 bold"> {{
+                                    (datachart.totals.message_sum - datachart.totals.posts) || 0 | numFormat }}</span>
+                                </div>
+                                comments
+                            </b-col>
+                            <b-col>
+                                <div> <i class="fas fa-chart-line "></i>
+                                <span class="h6 bold"> {{
+                                    datachart.totals.engagement_sum || 0 | numFormat }}</span>
+                                </div> engages
+                            </b-col>
+                        </b-row>
+                        <SentimentBar :positive="datachart.totals.positiveSentiment || 0"
+                        :neutral="datachart.totals.neutralSentiment || 0" :negative="datachart.totals.negativeSentiment || 0"
+                        class="py-3 stm-sm mb-3" />
+                    </b-col>
 
+                    <b-row cols="6" cols-md="9"  class="mx-0">
+                        <!-- Facebook -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/cfb.png" class="img-issue" />
+                                    <!-- {{ datachart.totals.facebook | numFormat}} -->
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.facebook | numFormat }}
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.facebook) }})</div>
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- Twitter -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/ctw.png" class="img-issue" />
+                                    <!-- {{ datachart.totals.facebook | numFormat}} -->
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.twitter | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.twitter) }})</div>
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- Instagram -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/cig.png" class="img-issue" />
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.instagram | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.instagram) }})</div>
+    
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- Pantip -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/cpt.png" class="img-issue" />
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.pantip | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.pantip) }})</div>
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- YouTube -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/cyt.png" class="img-issue" />
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.youtube | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.youtube) }})</div>
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- News -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/cn.png" class="img-issue" />
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.news | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.news) }})</div>
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- TikTok -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/tt.png" class="img-issue" />
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.tiktok | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.tiktok) }})</div>
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- Blockdit -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/Block.png" class="img-issue" />
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.blockdit | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.blockdit) }})</div>
+    
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+    
+                        <!-- Threads -->
+                        <b-col>
+                            <b-row>
+                            <b-col cols="12">
+                                <div class="text-center">
+                                <div class="h3">
+                                    <img src="@/assets/ctd.png" class="img-issue" />
+                                </div>
+                                <div class="small">
+                                    {{ datachart.totals.threads | numFormat }}
+                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                </div>
+                                <div class="small-sub p-0">({{ pct(datachart.totals.threads) }})</div>
+    
+                                </div>
+                            </b-col>
+                            </b-row>
+                        </b-col>
+                    </b-row>
+                </b-col>
+                <b-col cols="12" lg="auto">
+                    <PlatformImgChart :platform="dataImg.source_counts" class="ma-auto " />
+                </b-col>
+            </b-row>
         </b-col>
       </b-row>
 
@@ -70,6 +275,14 @@
 
       </div>
     </b-card>
+
+    <!-- chart -->
+    <!-- <b-col cols="12" class="mx-0">
+        <StaticTimeline :datachart="datachart" />
+    </b-col> -->
+     <!-- {{ series[0] }} -->
+    <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
+
     <!-- Top bar + Export -->
     <div class="d-flex align-items-center justify-content-between">
       <div class="text-left">
@@ -139,7 +352,7 @@
         <div v-if="totalPages > 1" class="text-center my-2 pb-5">
             
             <div v-if="page === totalPages" class="text-center mb-3 py-5">
-            <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.5)"
+            <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
                 color="#17a2b891" />
             </div>
             <b-button v-else variant="outline-info" @click="onPageChange(page + 1)" pill>
@@ -170,10 +383,11 @@ import moment from "moment";
 import "moment/locale/th";
 import TimelinePosts from '../timeline/TimelinePosts2.vue';
 import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
-
+import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
+import SentimentBar from "@/components/domain/SentimentBar.vue";
 export default {
   name: 'PostBoard',
-  components: { CardPost, CardTitle, VueGallerySlideshow, PlatformImgChart, TimelinePosts, ExportExcelButton },
+  components: { CardPost, CardTitle, VueGallerySlideshow, PlatformImgChart, TimelinePosts, ExportExcelButton, StaticTimeline, SentimentBar },
   props: {
     subject: {
       type: Object,
@@ -247,8 +461,68 @@ export default {
 
       // data
         posts: [],
-        postForExport:[],
-        filters:{}
+        postForExport: [],
+        lastPayload: null,
+        datachart: null,
+        series: [],
+        filters: {},
+        chartOptions: {
+            colors: ['#ff962e', '#17a2b8', '#e75aa1'],
+            chart: {
+            type: 'line',
+            fontFamily: 'Prompt, FontAwesome, sans-serif',
+            toolbar: {
+                show: true,
+                tools: { download: true, selection: true, zoom: true, pan: true, reset: true }
+            }
+            // events จะถูกผูกใน mounted()
+            },
+            stroke: { curve: 'smooth', width: 3 },
+            markers: { size: 5 },
+            legend: { position: 'top' },
+            xaxis: {
+            type: 'datetime',
+            labels: {
+                datetimeUTC: true,
+                formatter: (v) => {
+                const ts = Number(v)
+                if (!Number.isFinite(ts)) return ''
+                return new Intl.DateTimeFormat('th-TH', {
+                    timeZone: 'Asia/Bangkok',
+                    hourCycle: 'h23',
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).format(ts)
+                }
+            }
+            },
+            tooltip: {
+            shared: true,
+            x: {
+                formatter: (v) => {
+                const ts = Number(v)
+                if (!Number.isFinite(ts)) return ''
+                return new Intl.DateTimeFormat('th-TH', {
+                    timeZone: 'Asia/Bangkok',
+                    hourCycle: 'h23',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).format(ts)
+                }
+            }
+            },
+            yaxis: [
+            { seriesName: 'Posts', title: { text: 'Posts' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
+            { seriesName: 'Messages', title: { text: 'Messages' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
+            { seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } }
+            ],
+            noData: { text: 'กำลังโหลดข้อมูล...' }
+        }
     }
   },
   computed: {
@@ -290,7 +564,110 @@ export default {
       this.dataPhoto = [url];  // เซ็ตภาพก่อน
       this.index = i;          // แล้วค่อยเปิดที่ index 0
     },
-    async apiPostImageByImageId() {
+    isAllZero(rows) {
+      return rows.length > 0 && rows.every(r =>
+        Number(r.post_count || 0) === 0 &&
+        Number(r.engagement_sum || 0) === 0 &&
+        Number(r.message_sum || 0) === 0
+      )
+    },
+    setNoDataText(text) {
+      const patch = { noData: { text } }
+      if (this.$refs.chart?.updateOptions) {
+        this.$refs.chart.updateOptions(patch, false, true)
+      } else if (this.$refs.chart?.chart?.updateOptions) {
+        this.$refs.chart.chart.updateOptions(patch, false, true)
+      } else {
+        this.chartOptions = { ...this.chartOptions, ...patch }
+      }
+      },
+    parseOffsetToMs(tzStr) {
+      const m = /^([+-])(\d{2}):?(\d{2})$/.exec(String(tzStr).trim())
+      if (!m) return 0
+      const sign = m[1] === '+' ? 1 : -1
+      const hh = parseInt(m[2], 10) || 0
+      const mm = parseInt(m[3], 10) || 0
+      return sign * (hh * 60 + mm) * 60 * 1000
+    },
+    applyData(payload) {
+        this.lastPayload = payload
+        const tz = (payload?.range?.timezone) || '+07:00'
+        const rows = Array.isArray(payload?.seriesHourly) ? payload.seriesHourly : []
+        console.log('apply === ', rows);
+        
+        if (!rows.length || this.isAllZero(rows)) {
+            this.series = []
+            this.setNoDataText('ไม่พบข้อมูล')
+            return
+        }
+
+        this.setNoDataText('')
+
+        const offsetMs = this.parseOffsetToMs(tz)
+        const keyOf = (d, t) => `${d} ${t.padStart(5, '0')}`
+        const dataMap = new Map()
+
+        rows.forEach(r => {
+            const key = keyOf(r.date, r.time)
+            dataMap.set(key, {
+            post: Number(r.post_count || 0),
+            engagement: Number(r.engagement_sum || 0),
+            msg: Number(r.message_sum || 0)
+            })
+        })
+
+        const toUtcMs = (d, t) => Date.parse(`${d}T${t}:00${tz}`)
+        const localMsFromUtc = (utc) => utc + offsetMs
+
+        let minLocal = Infinity
+        let maxLocal = -Infinity
+        rows.forEach(r => {
+            const utc = toUtcMs(r.date, r.time)
+            const local = localMsFromUtc(utc)
+            if (local < minLocal) minLocal = local
+            if (local > maxLocal) maxLocal = local
+        })
+
+        const HOUR = 3600000
+        const gridStartLocal = Math.floor(minLocal / HOUR) * HOUR
+        const gridEndLocal = Math.floor(maxLocal / HOUR) * HOUR
+
+        const posts = []
+        const engagements = []
+        const messages = []
+
+        for (let lt = gridStartLocal; lt <= gridEndLocal; lt += HOUR) {
+            const iso = new Date(lt).toISOString()
+            const d = iso.slice(0, 10)
+            const t = iso.slice(11, 16)
+            const key = keyOf(d, t)
+            const val = dataMap.get(key)
+
+            // ✅ ถ้าไม่มีข้อมูลในชั่วโมงนั้นเลย ให้ข้าม
+            if (!val || (val.post === 0 && val.msg === 0 && val.engagement === 0)) {
+            continue
+            }
+
+            const tsUTC = lt - offsetMs
+            posts.push([tsUTC, val.post])
+            messages.push([tsUTC, val.msg])
+            engagements.push([tsUTC, val.engagement])
+        }
+
+        // ✅ สร้าง series เฉพาะที่มีข้อมูลจริง
+        const series = []
+        if (posts.length) series.push({ name: 'Posts', data: posts, yAxisIndex: 0 })
+        if (messages.length) series.push({ name: 'Messages', data: messages, yAxisIndex: 1 })
+        if (engagements.length) series.push({ name: 'Engagement', data: engagements, yAxisIndex: 2 })
+
+        if (!series.length) {
+            this.setNoDataText('ไม่พบข้อมูล')
+        }
+
+        this.series = series
+        console.log('series === ', this.series);
+    },
+      async apiPostImageByImageId() {
       this.loading = true
       try {
         const params = {
@@ -429,7 +806,41 @@ export default {
         this.loading = false
       }
     },
+    async apiGetImagePostCharts() {
+        // this.loading = true
+      try {
+        const params = {
+          image_id: this.$route.query.id,
+          source: this.select_social || undefined, // ส่งเฉพาะถ้ามีเลือก
+          page: this.page,
+          sort_by: this.sort || 'engagement',
+          limit: this.count,
+          page: this.page,
+          source: this.select_social,
+          sentiment: this.selected
+        }
+        this.filters = params
+        const token = localStorage.getItem('token')
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
+        const { data } = await this.axios.get(
+          'https://api2.cognizata.com/api/v2/image_upload/getImagePostCharts',
+          { params, headers }
+          )
+          this.datachart = data
+          this.applyData(data)
+        console.log(data);
+      } catch (e) {
+        console.error(e)
+        // this.postForExport = []
+        // this.count = 0
+        // this.totalPages = 0
+        // ถ้าจะจัดการ 401:
+        // if (e?.response?.status === 401) this.$router.push('/login')
+      } finally {
+        // this.loading = false
+      }
+    },
     onPageChange(p) {
       if (this.loading) return
       this.page = p
@@ -449,14 +860,23 @@ export default {
       if (k.includes('failed') || k.includes('error')) return 'danger'
       return 'secondary'
     },
-
+    pct(n) {
+        const socialKeys = ["tiktok","youtube","facebook","twitter","threads","news","blockdit","pantip","instagram"];
+        let platform = Object.fromEntries(
+            Object.entries(this.datachart.totals).filter(([key]) => socialKeys.includes(key))
+        );
+        const total = Object.values(platform || {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
+        if (!total) return "0%";
+        return ((Number(n) || 0) * 100 / total).toFixed(1) + "%";
+    },
     exportSelected() {
       // TODO: Implement export logic
       console.log('Export clicked')
     }
   },
   mounted() {
-    this.apiPostImageByImageId()
+      this.apiPostImageByImageId()
+    this.apiGetImagePostCharts()
     },
     watch: {
         count: {
@@ -481,6 +901,13 @@ export default {
 }
 </style>
 <style scoped>
+.img-issue {
+  width: 24px;
+  height: 24px;
+}
+.small-sub {
+  font-size: x-small;
+}
 .btn-secondary {
   background-color: transparent !important;
 }
@@ -494,8 +921,8 @@ export default {
 }
 
 .iconimg {
-  height: 350px !important;
-  width: 600px !important;
+  height: 300px !important;
+  /* width: 600px !important; */
 }
 
 .iconimg .b-avatar>.b-icon {
@@ -546,6 +973,10 @@ export default {
   object-fit: cover;
 }
 
+.row-cols-md-9 > * {
+  flex: 0 0 auto;
+  width: calc(100% / 9);
+}
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   .rdo {
     zoom: 75%
@@ -554,6 +985,12 @@ export default {
   .iconimg {
     height: 200px !important;
     width: 600px !important;
+  }
+}
+/* ไม่ต้องตั้ง width สำหรับหน้าจอ <768px (sm/xs) */
+@media (max-width: 516px) {
+  .row-cols-md-9 > * {
+    width: auto; /* จะใช้ค่า cols ของมือถือ/ค่า default ของ b-row */
   }
 }
 @page { size: A4; margin: 0; }

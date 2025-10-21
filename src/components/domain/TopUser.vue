@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="text-left">
-      <span class="h5 mr-1">Top Influencers</span>
+      <span class="h5 mr-3">Top Users</span>
       <!-- <span class="mr-2">| สื่อสังคมออนไลน์</span> -->
       <span class="domain-tag mr-3">สื่อสังคมออนไลน์</span>
     </div>

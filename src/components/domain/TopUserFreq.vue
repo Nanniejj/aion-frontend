@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="text-left">
-      <span class="h5 mr-3">Top Influencers</span>
-      <span class="domain-tag mr-3" >สื่อสำนักข่าว</span>
+      <span class="h5 mr-3">Top Users</span>
+      <span class="domain-tag mr-3">สื่อสำนักข่าว</span>
       <!-- <span class="mr-2">| สื่อสำนักข่าว</span> -->
       <!-- <div class="d-inline-block">
         <div v-if="startd === endd" class="text-left onedate">

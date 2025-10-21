@@ -1,12 +1,16 @@
 <template>
-  <div>
-    <client-only>
-      <apexchart type="donut" height="350" :options="chartOptions" :series="series" />
-    </client-only>
-  </div>
+  <!-- <b-row> -->
+    <b-col cols="auto">
+        <client-only>
+          <apexchart type="donut" height="340" :options="chartOptions" :series="series" />
+        </client-only>
+    </b-col>
+    <!-- {{ platform }} -->
+  <!-- </b-row> -->
 </template>
 
 <script>
+
 import VueApexCharts from "vue-apexcharts";
 
 export default {
@@ -72,7 +76,7 @@ export default {
         labels,
         colors,
         legend: {
-          show: true,
+          show: false,
           position: "right",
           horizontalAlign: "center",
           fontSize: "14px",
@@ -160,6 +164,19 @@ export default {
         ]
       };
     }
-  }
+    },
+    methods: {
+       
+    }
 };
 </script>
+
+<style scoped>
+.img-issue {
+  width: 24px;
+  height: 24px;
+}
+.small-sub {
+  font-size: x-small;
+}
+</style>
