@@ -81,7 +81,7 @@ export default {
     endpoint: { type: String, default: '/api/v2/facerecognition/getFacePersonTop' },
     from: { type: String },
     to: { type: String },
-    source: { type: [String, null] },
+    source: { type: Array },
     sentiment: { type: [String, Number, Array, null] }, 
     names: { type: Array },
     limit: { type: Number, default: 20 },
@@ -160,7 +160,7 @@ export default {
     normalizeItem(raw = {}) {
       const name = raw.person_name || raw.name || 'ไม่ทราบชื่อ'
       const mentions = pickNum(raw.mentions, raw.total, raw.count, raw.posts, raw.value)
-      const avatar = raw.image_paths[0] || null
+      const avatar = raw.image_paths[0] || raw.image_paths[1] ||raw.image_paths[2] ||null
       return { name, mentions, avatar }
       function pickNum(...nums){ for (const n of nums){ const v=Number(n); if(!isNaN(v)) return v } return 0 }
     },

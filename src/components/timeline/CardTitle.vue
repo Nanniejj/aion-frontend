@@ -23,18 +23,29 @@
               :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
               @click="showImage = true" />
 
-            <!-- Modal แสดงรูปเต็ม -->
-            <b-modal v-model="showImage" size="xl" centered hide-footer>
-              <!-- <img @error="setAltImg"
-                :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
-                class="w-100" style="max-height: 80vh; object-fit: contain" crossorigin="anonymous" /> -->
+
+              <div v-if="post.photos.length > 1" id="picmore" @click="onClick(1, post.photos)"
+            onerror="this.style.display='none'">
+            +{{ post.photos.length - 1 }}
+          </div>
+
+          <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
+          <!-- Modal แสดงรูปเต็ม -->
+          <b-modal v-model="showImage" size="xl" centered hide-footer>
+            <img @error="setAltImg"
+              :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) "
+              class="w-100" style="max-height: 80vh; object-fit: contain" crossorigin="anonymous" />
+          </b-modal>
+           
+            <!-- <b-modal v-model="showImage" size="xl" centered hide-footer>
+            
                 <img
                     @error="setAltImg"
                     :src="getImageSrc(post)"
                     class="w-100"
                     style="max-height: 80vh; object-fit: contain"
                 />
-            </b-modal>
+            </b-modal> -->
           </b-col>
 
 
@@ -216,10 +227,10 @@ import ReadMoreBox from "./ReadMore2.vue";
 import moment from "moment";
 import "moment/locale/th";
 import CommentsAllModal from "./CommentsAllModal.vue";
-
+import VueGallerySlideshow from "vue-gallery-slideshow";
 export default {
   name: "CardPost",
-  components: { ReadMoreBox, CommentsAllModal },
+  components: { ReadMoreBox, CommentsAllModal,VueGallerySlideshow },
   props: {
     post: {
       type: Object,
@@ -240,6 +251,10 @@ export default {
   },
   data() {
     return {
+           index: null,
+      dataPhoto: [],
+ 
+      visible: false,
       readmoreLimit: 120,   // ปรับจำนวนตัวอักษรได้
       expandedMap: {},       // เก็บสถานะขยาย/ย่อ รายการละ field
       default_avatar: require("@/assets/no-image.jpg"),
@@ -251,6 +266,14 @@ export default {
   },
   computed: {},
     methods: {
+       onClick(i, data) {
+      console.log(data);
+      this.index = i;
+      this.dataPhoto = data;
+    },
+    setAltImg(event) {
+      event.target.src = this.default_avatar;
+    },
         getImageSrc(post) {
             const fallback = require('@/assets/no-image.jpg')
             const photo = post?.photos?.[0]
@@ -383,6 +406,21 @@ ul {
 }
 </style>
 <style scoped>
+#picmore {
+  background: #000000ad;
+  color: white;
+  padding: 5px 15px;
+  font-size: 15px;
+  /* margin: -44px; */
+  z-index: 999;
+  position: absolute;
+  /* width: 68px; */
+  right: 15px;
+  bottom: 0px;
+  cursor: pointer;
+  /* border-radius:10px; */
+}
+
 .clickable {
   cursor: pointer;
   user-select: none;

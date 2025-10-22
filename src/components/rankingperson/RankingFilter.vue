@@ -7,8 +7,9 @@
           <v-select
             :options="options"
             label="text"
-            :reduce="p => p.value"
+            :reduce="p => p.text"
             multiple
+            class="sl-pp"
             v-model="local.names"
             :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'"
             :disabled="loading || options.length === 0"
@@ -24,7 +25,7 @@
         </b-col>
 
         <!-- platform -->
-        <b-col cols="12" md="3">
+        <b-col cols="12" md="6">
           <v-select
             :options="sourceOptions"
             v-model="local.source"
@@ -38,8 +39,8 @@
         </b-col>
 
         <!-- sentiment -->
-        <b-col cols="12" md="3">
-          <b-form-group class="pr-md-3 checkbox-v">
+        <b-col cols="12" md="4" class="text-left ">
+          <b-form-group class="pr-md-3 checkbox-v mt-2">
             <b-form-checkbox-group
               v-model="local.sentiment"
               :options="sentimentOptions"
@@ -51,7 +52,7 @@
 
         <!-- date range -->
         <b-col cols="12" md="4">
-          <section id="date-picker">
+          <section id="date-picker" class="mt-2">
             <date-picker
               v-model="local.valueDate"
               type="date"
@@ -59,7 +60,7 @@
               placeholder="เลือกช่วงเวลา"
               class="w-100"
               size="sm"
-              :disabled-date="(date) => date >= new Date()"
+              :disabled-date="date => date > new Date()"  
               value-type="format"
               format="YYYY-MM-DD"
               @change="onDateChange"
@@ -69,23 +70,23 @@
         </b-col>
 
         <!-- sort -->
-        <b-col cols="12" md="4">
+        <!-- <b-col cols="12" md="4">
           <b-form-select
             v-model="local.sort_by"
             class="mb-2"
             :options="[
-              { value: 'descend', text: 'โพสต์เก่าสุด' },
-              { value: 'recent', text: 'โพสต์ล่าสุด' },
+              { value: 'asc', text: 'โพสต์เก่าสุด' },
+              { value: 'desc', text: 'โพสต์ล่าสุด' },
               { value: 'engagement', text: 'Engagement' },
             ]"
             @change="emitFilters"
           />
-        </b-col>
+        </b-col> -->
 
         <!-- ค้นหา -->
         <b-col cols="12" md="4">
-          <div class="align-self-end mb-3">
-            <b-button type="submit" variant="info" class="px-4" :disabled="loading" @click="emitFilters">
+          <div class="align-self-end mt-2">
+            <b-button type="submit" variant="info" class="px-4" :disabled="loading" @click="emitFilters" size="sm">
               ค้นหา
             </b-button>
           </div>
@@ -99,12 +100,14 @@
 import axios from 'axios'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
-import moment from "moment";
+import moment from 'moment'
 
 export default {
+  name: 'RankingFilter',
   components: { vSelect },
   props: {
-    value: { type: Object, required: true } // ใช้กับ v-model
+    // อย่าใส่ null ใน type เด็ดขาด (กัน instanceof error)
+    value: { type: Object, required: false, default: () => ({}) }
   },
   data() {
     return {
@@ -113,96 +116,127 @@ export default {
       options: [],
       page: 1,
 
-      // เก็บค่า UI ไว้แยกจาก value (เพื่อควบคุมและ emit กลับ)
+      // state UI แยกจาก value
       local: {
         names: this.value?.names || [],
-        source: this.value?.source || [null],
+        source: this.value?.source?.length ? this.value.source : [null],  // All
+        _sourcePrev: this.value?.source?.length ? this.value.source : [null],
         sentiment: (this.value?.sentiment || [-1,0,1]).map(Number),
-        // ใช้ date-picker แบบ string 'YYYY-MM-DD'
-        valueDate: [
-          moment(this.value?.from || new Date()).format("YYYY-MM-DD"),
-          moment(this.value?.to || new Date()).format("YYYY-MM-DD")
-        ],
-        sort_by: this.value?.sort_by || 'recent'
+
+        // ปล่อยว่าง => emitFilters จะ default เป็น 7 วันล่าสุด
+        valueDate: Array.isArray(this.value?.valueDate) && this.value.valueDate.length === 2
+          ? this.value.valueDate
+          : [],
+
+        sort_by: this.value?.sort_by || 'desc'
       },
 
       sentimentOptions: [
-        { text: "Positive", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Negative", value: -1 }
+        { text: 'Positive', value: 1 },
+        { text: 'Neutral', value: 0 },
+        { text: 'Negative', value: -1 }
       ],
       sourceOptions: [
-        { value: null, text: "All Platform" },
-        { value: "facebook", text: "Facebook" },
-        { value: "twitter", text: "X" },
-        { value: "pantip", text: "Board" },
-        { value: "news", text: "News" },
-        { value: "youtube", text: "YouTube" },
-        { value: "instagram", text: "Instagram" },
-        { value: "blockdit", text: "Blockdit" },
-        { value: "tiktok", text: "Tiktok" },
-        { value: "threads", text: "Threads" }
+        { value: null,        text: 'All Platform' },
+        { value: 'facebook',  text: 'Facebook' },
+        { value: 'twitter',   text: 'X' },
+        { value: 'pantip',    text: 'Board' },
+        { value: 'news',      text: 'News' },
+        { value: 'youtube',   text: 'YouTube' },
+        { value: 'instagram', text: 'Instagram' },
+        { value: 'blockdit',  text: 'Blockdit' },
+        { value: 'tiktok',    text: 'Tiktok' },
+        { value: 'threads',   text: 'Threads' }
       ]
     }
   },
   watch: {
-    // ถ้าหน้าแม่อัปเดต value (เช่น reset) ให้ sync มา local ด้วย
+    // sync จาก parent -> local (เช่น reset)
     value: {
       deep: true,
-      handler(v){
-        this.local.names = v?.names || []
-        this.local.source = v?.source || [null]
-        this.local.sentiment = (v?.sentiment || [-1,0,1]).map(Number)
-        this.local.valueDate = [
-          moment(v?.from || new Date()).format("YYYY-MM-DD"),
-          moment(v?.to || new Date()).format("YYYY-MM-DD")
-        ]
-        this.local.sort_by = v?.sort_by || 'recent'
+      handler(v) {
+        const safe = v || {}
+        this.local.names = safe.names || []
+        this.local.source = safe.source?.length ? safe.source : [null]
+        this.local._sourcePrev = [...this.local.source]
+        this.local.sentiment = (safe.sentiment || [-1,0,1]).map(Number)
+
+        if (safe.from && safe.to) {
+          this.local.valueDate = [
+            moment(safe.from).format('YYYY-MM-DD'),
+            moment(safe.to).format('YYYY-MM-DD'),
+          ]
+        } else {
+          this.local.valueDate = []
+        }
+        this.local.sort_by = safe.sort_by || 'desc'
       }
     }
   },
   methods: {
-    toISOZ(strYMD, isEnd=false) {
-      // แปลง 'YYYY-MM-DD' -> ISO UTC Z
-      const t = isEnd ? '23:59:59.999' : '00:00:00.000'
-      const d = new Date(`${strYMD}T${t}Z`)
-      return d.toISOString()
-    },
     onDateChange() {
       this.emitFilters()
     },
-    onSourceChange(val, old) {
-      // คง logic เดิม: ถ้าเลือก All ร่วมกับอย่างอื่น ให้ normalize
-      const toArr = x => Array.isArray(x) ? x : (x == null ? [] : [x])
-      const arr = toArr(this.local.source)
-      const oldArr = toArr(old)
 
-      if (arr.length === 0) {
-        this.local.source = [null]
-        this.emitFilters()
-        return
-      }
-      if (arr.includes(null) && arr.length > 1) {
-        const clickedAllJustNow = !oldArr?.includes(null)
-        this.local.source = clickedAllJustNow ? [null] : arr.filter(v => v !== null)
-      }
+    onSourceChange(newVal) {
+      const normalized = this.normalizeSource(newVal, this.local._sourcePrev)
+      this.local.source = normalized
+      this.local._sourcePrev = [...normalized]
       this.emitFilters()
     },
-    emitFilters() {
-      // เตรียม payload ที่หน้าแม่ต้องการ
-      const [d1, d2] = this.local.valueDate || []
-      const from = d1 ? this.toISOZ(d1, false) : null
-      const to   = d2 ? this.toISOZ(d2, true) : null
 
-      // เผื่อคอมโพเนนต์ลูกบางตัวต้องการ source เดี่ยว
-      const sourceOne = (this.local.source || [])[0] ?? null
+    // All = null
+    normalizeSource(val, old) {
+      const toArr = x => Array.isArray(x) ? x : (x == null ? [] : [x])
+      const arrRaw = toArr(val)
+      const oldArr = toArr(old)
+      const allowed = this.sourceOptions.map(o => o.value)
+
+      // ลบซ้ำ + กันค่าที่ไม่อยู่ใน allowed
+      let arr = [...new Set(arrRaw)].filter(v => allowed.includes(v))
+
+      // ไม่เลือกอะไรเลย -> [null]
+      if (arr.length === 0) return [null]
+
+      // มีทั้ง null และอย่างอื่น
+      if (arr.includes(null) && arr.length > 1) {
+        const prevHadAll = oldArr.includes(null)
+        const clickedAll = !prevHadAll && arr.includes(null)
+        arr = clickedAll ? [null] : arr.filter(v => v !== null)
+      }
+      return arr
+    },
+
+    // ช่วงวันแบบโลคอล (ไม่ใช้ Z)
+    getDateRangeLocal() {
+      const arr = this.local?.valueDate || []
+      const hasStart = Array.isArray(arr) && !!arr[0]
+      const hasEnd   = Array.isArray(arr) && !!arr[1]
+
+      if (!hasStart || !hasEnd) {
+        const endYMD   = moment().format('YYYY-MM-DD')
+        const startYMD = moment(endYMD).subtract(2, 'days').format('YYYY-MM-DD')
+        return { from: `${startYMD}T00:00:00`, to: `${endYMD}T23:59:59` }
+      }
+      const [d1, d2] = arr
+      return { from: `${d1}T00:00:00`, to: `${d2}T23:59:59` }
+    },
+
+    emitFilters() {
+      const { from, to } = this.getDateRangeLocal()
+
+      // ส่งหลายค่า (ตัด All ออก) + เผื่ออยากได้ CSV
+      const sourceArr = Array.isArray(this.local.source)
+        ? this.local.source.filter(v => v != null)
+        : []
+      const sourceCSV = sourceArr.length ? sourceArr.join(',') : null
 
       const payload = {
         ...this.value,
         from,
         to,
-        source: this.local.source,         // array
-        sourceOne,                         // single
+        source: sourceArr,       // อาร์เรย์หลายค่า เช่น ['facebook','youtube']
+        sourceCSV,               // "facebook,youtube" (ถ้าจำเป็นต้องใช้)
         sentiment: (this.local.sentiment || []).map(Number),
         names: this.local.names || [],
         sort_by: this.local.sort_by,
@@ -215,9 +249,10 @@ export default {
       this.loading = true
       this.error = null
       try {
-        const baseURL = 'https://api2.cognizata.com/api/v2/facerecognition/getFacePerson'
-        const params = { limit: 'all', page: this.page }
-        const res = await axios.get(baseURL, { params })
+        const res = await axios.get(
+          'https://api2.cognizata.com/api/v2/facerecognition/getFacePerson',
+          { params: { limit: 'all', page: this.page } }
+        )
         const list = Array.isArray(res.data) ? res.data : (res.data?.data || [])
         this.options = list.map(p => ({
           value: p._id || p.id,
@@ -234,13 +269,19 @@ export default {
   },
   mounted() {
     this.fetchOptions()
-    // emit ค่าตั้งต้นรอบแรก
+    // emit ค่าตั้งต้นรอบแรก: ถ้า valueDate ว่าง จะได้ 7 วันล่าสุด
     this.emitFilters()
   }
 }
 </script>
-
+<style>
+.sl-pp .vs__selected-options {
+  overflow: auto;
+  max-height:64px ;
+}
+</style>
 <style scoped>
+
 .shadow-sm { border-radius: 20px; }
 button:disabled { opacity: .6; cursor: not-allowed; }
 @media only screen and (min-width: 0) and (max-width:1100px) {
