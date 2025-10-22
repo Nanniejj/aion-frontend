@@ -11,365 +11,362 @@
       <span class="bold" @click="$router.push('/imagesearch')" style="cursor: pointer;">Image Search </span> >
       <span>Posts</span>
     </div>
-<div ref="printArea">
-    <div>
-      <!-- <b-img :src="subject.avatar"  class="" rounded="lg" /> -->
-      <!-- {{ dataImg }} -->
-      <b-row class="mx-0 mb-3">
-        <b-col cols="12" lg="auto" class="">
-          <b-avatar button :src="dataImg.image.url" size="20" class="iconimg my-3 justify-content-start w-auto" rounded="lg"
-            @click="onClick(0, dataImg.image.url)" />
-          <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
-        </b-col>
-        <b-col class="py-3 px-0" cols="12" lg="">
-            <!-- <StaticTimeline :datachart="datachart" /> -->
-            <b-row>
-                <b-col cols="12" lg="">
-                    <b-col cols="12" sm="12" lg="">
-                        <b-row cols="2" cols-sm="4" cols-md="4" class="small py-2">
+    <div ref="printArea">
+        <div>
+        <!-- <b-img :src="subject.avatar"  class="" rounded="lg" /> -->
+        <!-- {{ dataImg }} -->
+        <b-row class="mx-0 mb-3">
+            <b-col v-if="dataImg && dataImg.image && dataImg.image.url" cols="12" lg="auto" class="">
+            <b-avatar button :src="dataImg.image.url" size="20" class="iconimg my-3 justify-content-start w-auto" rounded="lg"
+                @click="onClick(0, dataImg.image.url)" />
+            <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
+            </b-col>
+            <b-col v-if="datachart && datachart.totals" class="py-3 px-0" cols="12" lg="">
+                <!-- <StaticTimeline :datachart="datachart" /> -->
+                <b-row>
+                    <b-col cols="12" lg="">
+                        <b-col cols="12" sm="12" lg="">
+                            <b-row cols="2" cols-sm="4" cols-md="4" class="small py-2">
+                                <b-col>
+                                    <div><i class="far fa-comments "></i>
+                                    <span class="h6 bold"> {{
+                                        datachart.totals.message_sum || 0 | numFormat }}</span>
+                                    </div> messages
+                                </b-col>
+                                <b-col>
+                                    <div><i class="far fa-paper-plane "></i>
+                                    <span class="h6 bold"> {{
+                                        datachart.totals.posts || 0 | numFormat }}</span>
+                                    </div> posts
+                                </b-col>
+                                <b-col>
+                                    <div> <i class="far fa-comment " aria-hidden="true"></i>
+                                    <span class="h6 bold"> {{
+                                        (datachart.totals.message_sum - datachart.totals.posts) || 0 | numFormat }}</span>
+                                    </div>
+                                    comments
+                                </b-col>
+                                <b-col>
+                                    <div> <i class="fas fa-chart-line "></i>
+                                    <span class="h6 bold"> {{
+                                        datachart.totals.engagement_sum || 0 | numFormat }}</span>
+                                    </div> engages
+                                </b-col>
+                            </b-row>
+                            <SentimentBar :positive="datachart.totals.positiveSentiment || 0"
+                            :neutral="datachart.totals.neutralSentiment || 0" :negative="datachart.totals.negativeSentiment || 0"
+                            class="py-3 stm-sm mb-3" />
+                        </b-col>
+
+                        <b-row cols="6" cols-md="9"  class="mx-0">
+                            <!-- Facebook -->
                             <b-col>
-                                <div><i class="far fa-comments "></i>
-                                <span class="h6 bold"> {{
-                                    datachart.totals.message_sum || 0 | numFormat }}</span>
-                                </div> messages
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/cfb.png" class="img-issue" />
+                                        <!-- {{ datachart.totals.facebook | numFormat}} -->
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.facebook | numFormat }}
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.facebook) }})</div>
+                                    </div>
+                                </b-col>
+                                </b-row>
                             </b-col>
+        
+                            <!-- Twitter -->
                             <b-col>
-                                <div><i class="far fa-paper-plane "></i>
-                                <span class="h6 bold"> {{
-                                    datachart.totals.posts || 0 | numFormat }}</span>
-                                </div> posts
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/ctw.png" class="img-issue" />
+                                        <!-- {{ datachart.totals.facebook | numFormat}} -->
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.twitter | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.twitter) }})</div>
+                                    </div>
+                                </b-col>
+                                </b-row>
                             </b-col>
+        
+                            <!-- Instagram -->
                             <b-col>
-                                <div> <i class="far fa-comment " aria-hidden="true"></i>
-                                <span class="h6 bold"> {{
-                                    (datachart.totals.message_sum - datachart.totals.posts) || 0 | numFormat }}</span>
-                                </div>
-                                comments
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/cig.png" class="img-issue" />
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.instagram | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.instagram) }})</div>
+        
+                                    </div>
+                                </b-col>
+                                </b-row>
                             </b-col>
+        
+                            <!-- Pantip -->
                             <b-col>
-                                <div> <i class="fas fa-chart-line "></i>
-                                <span class="h6 bold"> {{
-                                    datachart.totals.engagement_sum || 0 | numFormat }}</span>
-                                </div> engages
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/cpt.png" class="img-issue" />
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.pantip | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.pantip) }})</div>
+                                    </div>
+                                </b-col>
+                                </b-row>
+                            </b-col>
+        
+                            <!-- YouTube -->
+                            <b-col>
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/cyt.png" class="img-issue" />
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.youtube | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.youtube) }})</div>
+                                    </div>
+                                </b-col>
+                                </b-row>
+                            </b-col>
+        
+                            <!-- News -->
+                            <b-col>
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/cn.png" class="img-issue" />
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.news | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.news) }})</div>
+                                    </div>
+                                </b-col>
+                                </b-row>
+                            </b-col>
+        
+                            <!-- TikTok -->
+                            <b-col>
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/tt.png" class="img-issue" />
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.tiktok | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.tiktok) }})</div>
+                                    </div>
+                                </b-col>
+                                </b-row>
+                            </b-col>
+        
+                            <!-- Blockdit -->
+                            <b-col>
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/Block.png" class="img-issue" />
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.blockdit | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.blockdit) }})</div>
+        
+                                    </div>
+                                </b-col>
+                                </b-row>
+                            </b-col>
+        
+                            <!-- Threads -->
+                            <b-col>
+                                <b-row>
+                                <b-col cols="12">
+                                    <div class="text-center">
+                                    <div class="h3">
+                                        <img src="@/assets/ctd.png" class="img-issue" />
+                                    </div>
+                                    <div class="small">
+                                        {{ datachart.totals.threads | numFormat }}
+                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
+                                    </div>
+                                    <div class="small-sub p-0">({{ pct(datachart.totals.threads) }})</div>
+        
+                                    </div>
+                                </b-col>
+                                </b-row>
                             </b-col>
                         </b-row>
-                        <SentimentBar :positive="datachart.totals.positiveSentiment || 0"
-                        :neutral="datachart.totals.neutralSentiment || 0" :negative="datachart.totals.negativeSentiment || 0"
-                        class="py-3 stm-sm mb-3" />
                     </b-col>
-
-                    <b-row cols="6" cols-md="9"  class="mx-0">
-                        <!-- Facebook -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/cfb.png" class="img-issue" />
-                                    <!-- {{ datachart.totals.facebook | numFormat}} -->
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.facebook | numFormat }}
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.facebook) }})</div>
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- Twitter -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/ctw.png" class="img-issue" />
-                                    <!-- {{ datachart.totals.facebook | numFormat}} -->
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.twitter | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.twitter) }})</div>
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- Instagram -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/cig.png" class="img-issue" />
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.instagram | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.instagram) }})</div>
-    
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- Pantip -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/cpt.png" class="img-issue" />
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.pantip | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.pantip) }})</div>
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- YouTube -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/cyt.png" class="img-issue" />
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.youtube | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.youtube) }})</div>
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- News -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/cn.png" class="img-issue" />
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.news | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.news) }})</div>
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- TikTok -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/tt.png" class="img-issue" />
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.tiktok | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.tiktok) }})</div>
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- Blockdit -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/Block.png" class="img-issue" />
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.blockdit | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.blockdit) }})</div>
-    
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-    
-                        <!-- Threads -->
-                        <b-col>
-                            <b-row>
-                            <b-col cols="12">
-                                <div class="text-center">
-                                <div class="h3">
-                                    <img src="@/assets/ctd.png" class="img-issue" />
-                                </div>
-                                <div class="small">
-                                    {{ datachart.totals.threads | numFormat }}
-                                    <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
-                                </div>
-                                <div class="small-sub p-0">({{ pct(datachart.totals.threads) }})</div>
-    
-                                </div>
-                            </b-col>
-                            </b-row>
-                        </b-col>
-                    </b-row>
-                </b-col>
-                <b-col cols="12" lg="auto">
-                    <PlatformImgChart :platform="dataImg.source_counts" class="ma-auto " />
-                </b-col>
-            </b-row>
-        </b-col>
-      </b-row>
+                    <b-col v-if="dataImg && dataImg.source_counts" cols="12" lg="auto">
+                        <PlatformImgChart :platform="dataImg.source_counts" class="ma-auto " />
+                    </b-col>
+                </b-row>
+            </b-col>
+        </b-row>
 
 
-      <!-- <b-card img-src="https://picsum.photos/400/200/?image=41" img-alt="Image" img-top>
-      <b-card-text>
-        This is a wider card with supporting text below as a natural lead-in to additional content.
-        This card has even longer content than the first.
-      </b-card-text>
-      <template #footer>
-        <small class="text-muted">Footer Text</small>
-      </template>
-</b-card> -->
-    </div>
-    <!-- Header -->
-    <b-card class="mb-3 shadow-sm card-photo sd-g d-none">
-      <div>
+        <!-- <b-card img-src="https://picsum.photos/400/200/?image=41" img-alt="Image" img-top>
+        <b-card-text>
+            This is a wider card with supporting text below as a natural lead-in to additional content.
+            This card has even longer content than the first.
+        </b-card-text>
+        <template #footer>
+            <small class="text-muted">Footer Text</small>
+        </template>
+    </b-card> -->
+        </div>
+        <!-- Header -->
+        <b-card class="mb-3 shadow-sm card-photo sd-g d-none">
+        <div>
 
-        <div class="d-flex align-items-center" v-if="dataImg">
-          <div class="flex-grow-1 text-left" v-if="dataImg.image">
-            <!-- <div class="font-weight-bold h5 mb-0">{{ subject.title }}</div> -->
-            <small class="text-muted mx-2">Date {{ formatDate(dataImg.image.created_at) }} | {{ formatTime(
-              dataImg.image.created_at) }}</small>
+            <div class="d-flex align-items-center" v-if="dataImg">
+            <div class="flex-grow-1 text-left" v-if="dataImg.image">
+                <!-- <div class="font-weight-bold h5 mb-0">{{ subject.title }}</div> -->
+                <small class="text-muted mx-2">Date {{ formatDate(dataImg.image.created_at) }} | {{ formatTime(
+                dataImg.image.created_at) }}</small>
 
-          </div>
-          <div class="text-right mr-3">
-            <div class="mb-1">
+            </div>
+            <div class="text-right mr-3">
+                <div class="mb-1">
 
-              <div class="flex-grow-2 text-center mr-2">
+                <div class="flex-grow-2 text-center mr-2">
 
-                <div class="font-weight-bold h6 mb-0 mt-2">
-                  {{ count | numFormat }} <small class="text-muted">Posts</small>
-                  <b-badge :variant="statusVariant(dataImg.image.status)" pill class="py-2 px-3 text-uppercase mx-2"
-                    v-if="dataImg.image && dataImg.image.status">
-                    {{ dataImg.image.status }}
-                  </b-badge>
+                    <div class="font-weight-bold h6 mb-0 mt-2">
+                    {{ count | numFormat }} <small class="text-muted">Posts</small>
+                    <b-badge :variant="statusVariant(dataImg.image.status)" pill class="py-2 px-3 text-uppercase mx-2"
+                        v-if="dataImg.image && dataImg.image.status">
+                        {{ dataImg.image.status }}
+                    </b-badge>
 
+                    </div>
                 </div>
-              </div>
+                </div>
             </div>
-          </div>
+            </div>
+
         </div>
+        </b-card>
 
-      </div>
-    </b-card>
+        <!-- chart -->
+        <!-- <b-col cols="12" class="mx-0">
+            <StaticTimeline :datachart="datachart" />
+        </b-col> -->
+        <!-- {{ series[0] }} -->
+        <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
 
-    <!-- chart -->
-    <!-- <b-col cols="12" class="mx-0">
-        <StaticTimeline :datachart="datachart" />
-    </b-col> -->
-     <!-- {{ series[0] }} -->
-    <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
-
-    <!-- Top bar + Export -->
-    <div class="d-flex align-items-center justify-content-between">
-      <div class="text-left">
-        All ({{ count | numFormat }})
-      </div>
-      <div class="d-flex align-items-center">
-        <!-- Page size -->
-        <!-- <div class="mr-2">
-          <b-form-select size="sm" :options="pageSizeOptions" v-model="limit" @change="resetAndFetch"
-            class="select-sort" />
-        </div> -->
-        <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print">
-          <b-icon-printer /> Print
-        </b-button>
-        <ExportExcelButton :posts="postForExport" :filters="filters"
-        :disabled="loading || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
-        :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loading" />
-                    
-        <!-- <b-button size="sm" variant="outline-info" @click="exportSelected" v-b-tooltip.hover title="Export">
-          <b-icon-download /> Export
-        </b-button> -->
-      </div>
-    </div>
-
-    <hr />
-    <!-- Controls -->
-    <div>
-      <b-row class="my-1 mb-2">
-        <!-- sentiment (คงไว้ แต่ API ใหม่นี้ไม่ได้ใช้ส่ง) -->
-        <b-col sm="12" md="auto">
-          <b-form-radio-group v-model="selected" :options="options" name="radio-inline"
-            class="mt-1 mb-2 text-left ml-2 rdo" @change="resetAndFetch" />
-        </b-col>
-
-        <!-- source -->
-        <b-col cols="6" md="">
-          <b-form-select :options="itemSocial" v-model="select_social" @change="resetAndFetch" id="search-input"
-            size="sm" class="mb-2 select-sort" placeholder="Select Platform" />
-        </b-col>
-
-        <!-- sort (คงไว้ แต่ API ใหม่นี้ไม่ได้ใช้ส่ง) -->
-        <b-col cols="6" md="" class="text-right">
-          <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
-            @change="resetAndFetch" />
-        </b-col>
-      </b-row>
-    </div>
-
-
-    <!-- {{  $route.query.id }} -->
-
-    <div class="text-center my-4 py-4" v-if="loading">
-      <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891" />
-    </div>
-
-    <!-- Posts -->
-    <div>
-        
-
-      
-      <!-- <CardTitle v-for="(post, i) in posts" :key="i" v-bind="post" :post="post" class="mx-2" /> -->
-      <b-alert v-if="!loading && posts.length === 0" show variant="light" class="text-center">
-        ไม่มีโพสต์
-      </b-alert>
-      <timeline-posts v-else :items="posts" mode="posts" 
-        sort="recent" :count="count" />
-        <div v-if="totalPages > 1" class="text-center my-2 pb-5">
-            
-            <div v-if="page === totalPages" class="text-center mb-3 py-5">
-            <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
-                color="#17a2b891" />
-            </div>
-            <b-button v-else variant="outline-info" @click="onPageChange(page + 1)" pill>
-            <span> <i class="fa fa-plus" aria-hidden="true"></i> More</span>
+        <!-- Top bar + Export -->
+        <div class="d-flex align-items-center justify-content-between">
+        <div class="text-left">
+            All ({{ count | numFormat }})
+        </div>
+        <div class="d-flex align-items-center">
+            <!-- Page size -->
+            <!-- <div class="mr-2">
+            <b-form-select size="sm" :options="pageSizeOptions" v-model="limit" @change="resetAndFetch"
+                class="select-sort" />
+            </div> -->
+            <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print">
+            <b-icon-printer /> Print
             </b-button>
+            <ExportExcelButton :posts="postForExport" :filters="filters"
+            :disabled="loading || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
+            :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loading" />
+                        
+            <!-- <b-button size="sm" variant="outline-info" @click="exportSelected" v-b-tooltip.hover title="Export">
+            <b-icon-download /> Export
+            </b-button> -->
         </div>
-      <div class="text-center my-4 py-4" v-if="loading">
-        <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
-          color="#17a2b891" />
-      </div>
-    </div>
+        </div>
 
-    <!-- Pagination (bottom) -->
-    <!-- <div class="d-flex justify-content-center mt-3" v-if="!loading && posts.length > 0">
-      <b-pagination v-model="page" :total-rows="count" :per-page="limit" size="sm" align="center" :disabled="loading"
-        @input="onPageChange" />
-    </div> -->
+        <hr />
+        <!-- Controls -->
+        <div>
+        <b-row class="my-1 mb-2">
+            <!-- sentiment (คงไว้ แต่ API ใหม่นี้ไม่ได้ใช้ส่ง) -->
+            <b-col sm="12" md="auto">
+            <b-form-radio-group v-model="selected" :options="options" name="radio-inline"
+                class="mt-1 mb-2 text-left ml-2 rdo" @change="resetAndFetch" />
+            </b-col>
+
+            <!-- source -->
+            <b-col cols="6" md="">
+            <b-form-select :options="itemSocial" v-model="select_social" @change="resetAndFetch" id="search-input"
+                size="sm" class="mb-2 select-sort" placeholder="Select Platform" />
+            </b-col>
+
+            <!-- sort (คงไว้ แต่ API ใหม่นี้ไม่ได้ใช้ส่ง) -->
+            <b-col cols="6" md="" class="text-right">
+            <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
+                @change="resetAndFetch" />
+            </b-col>
+        </b-row>
+        </div>
+
+
+        <!-- {{  $route.query.id }} -->
+
+        <div class="text-center my-4 py-4" v-if="loading">
+        <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891" />
+        </div>
+
+        <!-- Posts -->
+        <div>
+        <!-- <CardTitle v-for="(post, i) in posts" :key="i" v-bind="post" :post="post" class="mx-2" /> -->
+        <b-alert v-if="!loading && posts.length === 0" show variant="light" class="text-center">
+            ไม่มีโพสต์
+        </b-alert>
+        <timeline-posts v-else :items="posts" mode="posts" 
+            sort="recent" :count="count" />
+            <div v-if="totalPages > 1" class="text-center my-2 pb-5">
+                
+                <div v-if="page === totalPages" class="text-center mb-3 py-5">
+                <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
+                    color="#17a2b891" />
+                </div>
+                <b-button v-else variant="outline-info" @click="onPageChange(page + 1)" pill>
+                <span> <i class="fa fa-plus" aria-hidden="true"></i> More</span>
+                </b-button>
+            </div>
+        <div class="text-center my-4 py-4" v-if="loading">
+            <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
+            color="#17a2b891" />
+        </div>
+        </div>
+
+        <!-- Pagination (bottom) -->
+        <!-- <div class="d-flex justify-content-center mt-3" v-if="!loading && posts.length > 0">
+        <b-pagination v-model="page" :total-rows="count" :per-page="limit" size="sm" align="center" :disabled="loading"
+            @input="onPageChange" />
+        </div> -->
     </div>
   </div>
 </template>

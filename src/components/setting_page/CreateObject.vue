@@ -1,14 +1,14 @@
 <template>
   <span>
     <b-button size="md" class="w-md-auto" pill style="background-color: #fdd071;color: #2c3e50;" @click="open = true;">
-      <i class="fa fa-plus" style="font-size: 18px; line-height: 1;"></i> เพิ่ม Object
+      <i class="fa fa-plus" style="font-size: 18px; line-height: 1;"></i> เพิ่มประเด็น
     </b-button>
     <vue-modaltor :visible="open" @hide="open = false;" :animation-panel="'modal-slide-top'"
       :resize-width='{ 3000: "55%", 1200: "70%", 768: "90%" }'>
 
       <div class="px-3">
         <!-- {{ objectData }} -->
-        <h5><b>เพิ่ม Object</b></h5>
+        <h5><b>เพิ่มประเด็น</b></h5>
         <hr>
         <p>คำแนะนำ : กรุณาใส่ชื่อถุงคำที่ต้องการ Keyword ให้ enter หากมีมากกว่า 1 คำ</p>
         <b-container>
@@ -26,7 +26,7 @@
           <!-- Social Media Inputs -->
 
           <!-- Object Name -->
-          <b-form-group label="Object" label-class="font-weight-bold">
+          <b-form-group label="ประเด็น" label-class="font-weight-bold">
             <b-form-input v-model="objectName" maxlength="50" required></b-form-input>
             <small class="text-muted">{{ objectName.length }} / 50 ตัวอักษร</small>
           </b-form-group>

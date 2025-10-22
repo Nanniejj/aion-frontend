@@ -2,7 +2,7 @@
   <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3">
     <b-col class="prt h3 text-left">Domain List</b-col>
     <b-col class="text-left mb-2 text-secondary">
-        ทั้งหมด {{  totalCount }} เรื่อง
+        ทั้งหมด {{  totalCount || 0 | numFormat }} เรื่อง
     </b-col>
     <b-row cols="2" cols-sm="2" cols-md="3" cols-lg="4" class="m-auto">
       <!-- <LinkMain />

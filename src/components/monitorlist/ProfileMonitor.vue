@@ -1091,8 +1091,9 @@ export default {
             const startDate = moment(this.valueDate[0]);
             const endDate = moment(this.valueDate[1]);
 
-            const diffDays = endDate.diff(startDate, 'days');
-
+            const diffDays = endDate.diff(startDate, 'days') + 1; // รวมวันเริ่มต้นด้วย
+            console.log("diff === ", diffDays);
+            
             if (diffDays > 31) {
                 alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');

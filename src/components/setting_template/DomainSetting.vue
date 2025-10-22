@@ -7,11 +7,14 @@
       <!-- User Interface controls -->
       <b-row id="input-btn" class="m-0 align-items-center justify-content-lg-between flex-md-nowrap">
         <b-col md="auto" class="mt-lg-0 pl-0 mb-2 mb-md-0">
-            <h5 class="m-0 text-left">จัดการ Domain 
-                <span class="text-info">
-                    ({{ getItemsDomain.length }})
-                </span>
+            <h5 class="m-0 text-left">จัดการหัวเรื่อง (Domain) 
+                <!-- <span class="text-info">
+                    {{ getItemsDomain.length }}
+                </span> -->
             </h5>
+            <b-col class="text-left mb-2 text-secondary px-0">
+                ทั้งหมด {{ getItemsDomain.length || 0 | numFormat}} เรื่อง
+            </b-col>
         </b-col>
         <b-col sm="" lg="auto" class="px-0 ml-0 ml-lg-auto">
             <b-input-group size="md">

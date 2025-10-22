@@ -8,7 +8,7 @@
       <!-- <Map/> -->
       <b-row class="mx-0 mx-lg-5" v-if="!getPushDomainStat">
         <b-col cols="12" md="" >
-          <h1 class="title m-0 pb-0">เรื่อง (Domain)</h1>
+          <h4 class="title m-0 pb-0">หัวเรื่อง (Domain)</h4>
         </b-col>
         <b-col class="pr-0" style="padding-top: 20px;">
             <b-form-group label-for="search-input" class="">

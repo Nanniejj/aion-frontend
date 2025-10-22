@@ -5,19 +5,19 @@
     <b-button pill class="w-100 w-md-auto"
       style="background-color: #7cd1dc; color: black; border:#7cd1dc;box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;"
       @click="open = true;">
-      <i class="fa fa-plus"></i> เพิ่ม Subdomain
+      <i class="fa fa-plus"></i> เพิ่มหมวดหมู่
     </b-button>
     <!-- <span style="font-size:16px;"> เพิ่ม SubDomain </span></button> -->
     <vue-modaltor :visible="open" @hide="hideModal" :animation-panel="'modal-slide-top'"
       :resize-width='{ 3000: "50%", 992: "60%", 768: "90%" }'>
       <b-container fluid>
-        <h5><b>เพิ่ม SubDomain</b></h5>
+        <h5><b>เพิ่มหมวดหมู่</b></h5>
         <hr>
         <b-row class="my-1">
-          <b-col sm="12">คำแนะนำ : กรุณาใส่ชื่อ SubDomain ที่ต้องการ</b-col>
+          <b-col sm="12" class="text-danger">คำแนะนำ : กรุณาใส่ชื่อ<b> หมวดหมู่ </b>ที่ต้องการ</b-col>
           <b-col sm="12">
             <br>
-            <label for="input-small2"><b>SubDomain </b></label>
+            <label for="input-small2"><b>หมวดหมู่</b></label>
           </b-col>
           <b-col sm="12">
             <b-form-input id="input-small2" placeholder="" maxlength="50" v-model="addSubDomain" focus></b-form-input>

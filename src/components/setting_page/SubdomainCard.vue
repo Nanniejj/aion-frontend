@@ -80,7 +80,7 @@
         :ok-only="true" class="custom-modal" centered>
         <!-- Form for Editing Subdomain -->
         <b-form ref="editForm" @submit.prevent="handleEditSubdomain" class="custom-form">
-          <h5><b>แก้ไข Subdomain</b></h5>
+          <h5><b>แก้ไขหมวดหมู่</b></h5>
           <hr>
           <b-form-group label-for="edit-subdomain">
             <b-form-input id="edit-subdomain" v-model="editSubdomainName" required class="subdomain-input"
@@ -115,7 +115,7 @@
       <b-modal id="add-object-modal" v-model="showObjectModal" size="lg" hide-footer
         content-class="custom-modal-content" centered>
         <template #modal-title>
-          <h5 class="custom-modal-title font-weight-bold">เพิ่ม Object</h5>
+          <h5 class="custom-modal-title font-weight-bold">เพิ่มประเด็น</h5>
         </template>
 
         <CreateObject @close="showObjectModal = false" :objectData="clickAddObj" v-if="clickAddObj" />

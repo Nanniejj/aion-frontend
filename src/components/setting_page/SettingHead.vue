@@ -5,7 +5,7 @@
       <b-row>
         <b-col class="text-left">
           <span class="h4"
-            ><a href="#/setting" style="color:#2c3e50;">เรื่อง</a> > <span class="bold">หมวดหมู่</span> </span
+            ><a href="#/setting" style="color:#2c3e50;">หัวเรื่อง</a> > <span class="bold">หมวดหมู่</span> </span
           >
           <span class="float-right"
             ><i

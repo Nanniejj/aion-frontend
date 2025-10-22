@@ -213,7 +213,7 @@
       </b-card>
 
       <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" />
-
+      <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" />
 
       <!-- <ExportExcelButton class="mt-md-0 " :posts="postsFromApi" :filters="filters"
         :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
@@ -232,7 +232,7 @@
 
       <!-- {{ loading }} -->
       
-      <SummaryButton :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" />
+      
       <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
           color="#17a2b891" />

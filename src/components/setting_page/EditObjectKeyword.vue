@@ -18,13 +18,13 @@
       {{ dataKeyword.object_id }} -->
         <!-- {{ dataKeyword }} -->
         <!-- {{ objectData }} -->
-        <h5><b>แก้ไข Object</b></h5>
+        <h5><b>แก้ไขประเด็น</b></h5>
         <hr />
-        <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
+        <p class="text-danger">คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
         <b-container>
           <!-- {{ objectData }} -->
           <!-- Object Name -->
-          <b-form-group label="Object" label-class="font-weight-bold">
+          <b-form-group label="ประเด็น" label-class="font-weight-bold">
             <b-form-input v-model="objectName" maxlength="50" required></b-form-input>
             <small class="text-muted">{{ objectName.length }} / 50 ตัวอักษร</small>
           </b-form-group>

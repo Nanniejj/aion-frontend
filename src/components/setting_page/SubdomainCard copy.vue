@@ -304,7 +304,7 @@
       <b-modal id="add-object-modal" v-model="showObjectModal" size="lg" hide-footer
         content-class="custom-modal-content" centered>
         <template #modal-title>
-          <h5 class="custom-modal-title font-weight-bold">เพิ่ม Object</h5>
+          <h5 class="custom-modal-title font-weight-bold">เพิ่มประเด็น</h5>
         </template>
 
         <CreateObject @close="showObjectModal = false" :objectData="clickAddObj" v-if="clickAddObj" />

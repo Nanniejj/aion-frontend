@@ -1,9 +1,9 @@
 <template>
   <!-- <b-row> -->
     <b-col cols="auto">
-        <client-only>
+        <!-- <client-only> -->
           <apexchart type="donut" height="340" :options="chartOptions" :series="series" />
-        </client-only>
+        <!-- </client-only> -->
     </b-col>
     <!-- {{ platform }} -->
   <!-- </b-row> -->

@@ -2,21 +2,20 @@
   
 <div> 
 <button class="btn btn-add" @click="open = true;"><i class="fa fa-plus"/>
-<span  style="font-size:16px;"> เพิ่ม Domain </span></button>
+<span  style="font-size:16px;"> เพิ่มหัวเรื่อง </span></button>
 
  <vue-modaltor :visible="open" @hide="hideModal" :animation-panel="'modal-slide-top'" :resize-width='{3000:"40%",992:"50%",768:"90%"}'>
      <b-container fluid>
-        <h5><b>เพิ่ม Domain</b></h5> <hr>
+        <h5><b>เพิ่มหัวเรื่อง</b></h5> <hr>
           <b-row class="my-1">
-              <b-col sm="12"><span style="white-space: nowrap;">คำแนะนำ : กรุณาใส่ชื่อ Domain ที่ต้องการ</span></b-col>
+              <b-col sm="12"><span style="white-space: nowrap;">คำแนะนำ : กรุณาใส่ชื่อ เรื่อง ที่ต้องการ</span></b-col>
             <b-col sm="12">
               <br>
-              <label for="input-small1"><b>Domain </b></label>
+              <label for="input-small1"><b>ชื่อเรื่อง </b></label>
             </b-col>
             <b-col sm="12">
               <b-form-input id="input-small1" placeholder="" v-model="addDomain"  maxlength="50" ></b-form-input>
               <small class="text-muted">{{ addDomain.length }} / 50 ตัวอักษร</small>
-
             </b-col>
           </b-row>
           <b-row class="my-1">

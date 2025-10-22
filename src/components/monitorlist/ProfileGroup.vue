@@ -271,7 +271,7 @@ export default {
     },
     data() {
         const today = moment();
-        const past7Days = moment().subtract(2, 'days'); // รวมวันนี้ = 7 วัน
+        const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
         return {
             valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
             selectedSource: null,
@@ -394,10 +394,11 @@ export default {
 
             // คำนวณจำนวนวันต่างกัน
             const diffTime = Math.abs(end - start);
-            const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
-            if (diffDays > 3) {
-                alert("เลือกช่วงเวลาได้ไม่เกิน 3 วัน");
+            const diffDays = diffTime / (1000 * 60 * 60 * 24) + 1 ;
+            console.log("diff === ", diffDays);
+            
+            if (diffDays > 7) {
+                alert("เลือกช่วงเวลาได้ไม่เกิน 7 วัน");
                 this.valueDate = []; // reset ค่า
             }else {
                 // console.log('check');

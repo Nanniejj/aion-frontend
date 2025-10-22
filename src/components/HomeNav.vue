@@ -144,7 +144,7 @@
                 :class="{ dropdownStyle: $route.path === '/timeline' }"
                 id="nav-router"
               >
-                <center><strong>Timeline</strong></center>
+                <center><strong>Timeline</strong><span class="small"> (beta)</span></center>
               </router-link>
               <router-link
                 to="/imagesearch"
@@ -152,7 +152,7 @@
                 :class="{ dropdownStyle: $route.path === '/imagesearch' }"
                 id="nav-router"
               >
-                <center><strong>Image</strong></center>
+                <center><strong>Image</strong><span class="small"> (beta)</span></center>
               </router-link>
               <router-link
                 to="/hotissue"
@@ -419,6 +419,7 @@
                   :class="{ dropdownStyle: $route.path === '/timeline' }"
                   id="dp-txt"
                 >Timeline</router-link>
+                <span class="small"> (beta)</span>
               </b-dropdown-item>
               
               <b-dropdown-item to="/imagesearch">
@@ -429,6 +430,7 @@
                   :class="{ dropdownStyle: $route.path === '/imagesearch' }"
                   id="dp-txt"
                 >Image</router-link>
+                <span class="small"> (beta)</span>
               </b-dropdown-item>
 
 
