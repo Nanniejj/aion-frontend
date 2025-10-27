@@ -6,6 +6,10 @@
             </div>
 
             <div class="d-flex align-items-center">
+                <div class="text-center my-4 py-4" v-if="loading">
+            <vue-element-loading :active="loading" size="30" background-color="rgba(255, 255, 255, 0.5)"
+                color="#17a2b891" class="mr-2"/>
+        </div>
                 <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print">
                     <b-icon-printer /> Print
                 </b-button>
@@ -65,10 +69,10 @@
             </b-row>
         </div>
 
-        <div class="text-center my-4 py-4" v-if="loading">
+        <!-- <div class="text-center my-4 py-4" v-if="loading">
             <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
                 color="#17a2b891" />
-        </div>
+        </div> -->
 
         <!-- Posts -->
         <div>
@@ -165,7 +169,9 @@ export default {
                 { text: 'instagram', value: 'instagram' },
                 { text: 'blockdit', value: 'blockdit' },
                 { text: 'tiktok', value: 'tiktok' },
-                { text: 'threads', value: 'threads' }
+                { text: 'threads', value: 'threads' },
+                { text: 'news', value: 'news' },
+                { text: 'สื่อออนไลน์ทั้งหมด', value: 'facebook,twitter,pantip,youtube,instagram,blockdit,tiktok,threads' },
             ],
             options: [
                 { text: 'Positive', value: '1' },

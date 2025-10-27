@@ -1,101 +1,167 @@
 <!-- TopAccountsCard.vue -->
 <template>
-  <div>
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
-      <h5 class="mb-2 mb-sm-0">Top Accounts ที่พูดถึงเราบ่อยๆ</h5>
-      <div class="d-flex" style="gap:.5rem;">
-        <b-form-input
-          v-model="search"
-          size="sm"
-          placeholder="ค้นหา account / uid / แหล่งที่มา"
-          class="w-auto"
-        />
-        <b-form-select
-          v-model="sourceFilter"
-          :options="sourceOptions"
-          size="sm"
-          class="w-auto"
-        />
+  <div class="py-2 mx-0 box-spot-bg">
+    <vue-element-loading :active="loading" size="80" background-color="rgba(255,255,255,0.5)" color="#b6ac9a" />
+
+    <!-- header + controls -->
+
+    <b-row>
+      <b-col class="text-left">
+        <h5 class="mb-2 mb-sm-0">Top 10 Users </h5>
+        <div class="text-left text-muted">
+          <small>บัญชีที่กล่าวถึงมากที่สุด 10 อันดับ </small>
+        </div>
+      </b-col>
+      <b-col class="text-right">
+        <b-button-group size="sm" class="ml-1">
+          <b-button :variant="view === 'cards' ? 'info' : 'outline-info'" @click="setView('cards')">
+            <i class="fas fa-th-large mr-1"></i> Cards
+          </b-button>
+          <b-button :variant="view === 'chart' ? 'info' : 'outline-info'" @click="setView('chart')">
+            <i class="fas fa-chart-bar mr-1"></i> Chart
+          </b-button>
+        </b-button-group>
+      </b-col>
+    </b-row>
+    <!-- <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
+     
+      <div class="d-flex flex-wrap align-items-center" style="gap:.5rem;">
+        <b-form-input v-model="searchInput" size="sm" placeholder="ค้นหา account / uid / แหล่งที่มา" class="w-auto"
+          @input="onSearchInput" />
+        <b-form-select v-model="sourceFilter" :options="sourceOptions" size="sm" class="w-auto" @change="resetScroll" />
+        <b-form-select v-model="sortBy" :options="sortOptions" size="sm" class="w-auto" @change="resetScroll" />
+
+       
+      </div>
+    </div> -->
+
+    <!-- ===== CARDS VIEW (SLIDER) ===== -->
+    <div v-if="view === 'cards'">
+      <div v-if="rows.length" class="slider-container">
+        <b-button class="slider-button btn-left" @click="scrollLeft" v-b-tooltip.hover title="เลื่อนซ้าย">
+          <i class="fa fa-chevron-left"></i>
+        </b-button>
+
+        <div class="slider" ref="slider">
+          <div class="d-flex box-flex-small">
+            <div v-for="(item, i) in rows" :key="item.uid" class="slider-item px-2">
+              <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0">
+                <div class="d-flex justify-content-between p-2">
+                  <span class="position-absolute h5 py-2 bold">{{ i + 1 }}</span>
+                  <!-- <b-badge :variant="sourceVariant(item.source)" class="text-capitalize">
+                    {{ item.source || 'unknown' }}
+                  </b-badge> -->
+                </div>
+                <div class="ta-hero d-flex flex-column align-items-center justify-content-center">
+                  <b-avatar :src="item.profile_image || null"
+                    :text="!item.profile_image ? initials(item.name || item.uid) : null" size="72" variant="light"
+                    class="mb-2" />
+                  <img v-if="item.source === 'twitter'" :src="imgtw" class="social-img" />
+                  <img v-if="item.source === 'facebook'" :src="imgfb" class="social-img" />
+                  <img v-if="item.source === 'pantip'" :src="imgpt" class="social-img" />
+                  <img v-if="item.source === 'youtube'" :src="imgyt" class="social-img" />
+                  <img v-if="item.source === 'news'" :src="imgnw" class="social-img" />
+                  <img v-if="item.source === 'instagram'" :src="imgig" class="social-img" />
+                  <img v-if="item.source === 'blockdit'" :src="imgbd" class="social-img" />
+                  <img v-if="item.source === 'tiktok'" :src="imgtt" class="social-img" />
+                  <img v-if="item.source === 'threads'" :src="imgtd" class="social-img" />
+                  <div class="text-center px-3">
+                    <a :href="item.link_crawl">
+                      <div class="h6 mb-0 text-truncate">{{ item.name || item.uid }}</div>
+                      <small class="text-muted text-truncate d-block">@{{ item.uid }}</small>
+                    </a>
+                  </div>
+                </div>
+                <div class="px-3 pb-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <small class="text-muted">Mention count</small>
+                    <b-badge pill variant="success">{{ item.count }}</b-badge>
+                  </div>
+                  <b-progress :value="progress(item.count)" :max="maxCount" height="6px" class="mb-3" />
+                  <div class="d-flex align-items-center justify-content-between">
+                    <!-- <b-button :href="item.link_crawl" target="_blank" rel="noopener noreferrer" size="sm"
+                      variant="outline-secondary">เปิดลิงก์</b-button> -->
+                    <!-- <b-button size="sm" variant="info" @click="$emit('add-watch', item)">ติดตาม</b-button> -->
+                  </div>
+                </div>
+              </b-card>
+            </div>
+          </div>
+        </div>
+
+        <b-button class="slider-button btn-right" @click="scrollRight" v-b-tooltip.hover title="เลื่อนขวา">
+          <i class="fa fa-chevron-right"></i>
+        </b-button>
+      </div>
+
+      <div v-else-if="!loading" class="py-8 text-center text-muted">ไม่พบรายการที่ตรงกับเงื่อนไข</div>
+
+      <div class="text-right mt-2">
+        <b-button size="sm" variant="outline-info" class="p-1" @click="$emit('requestLoadMore')" :disabled="!hasMore"
+          v-b-tooltip.hover title="โหลดเพิ่ม" pill>
+          <i class="fa fa-plus"></i>
+        </b-button>
       </div>
     </div>
 
-    <b-row>
-      <b-col
-        v-for="(item, i) in displayRows"
-        :key="item.uid + i"
-        cols="12" sm="6" md="4" lg="3" xl="3"
-        class="mb-4"
-      >
-        <b-card
-          class="ta-card h-100 shadow-sm"
-          :class="{ 'ta-top': i < 3 }"
-          body-class="p-0"
-        >
-          <!-- ribbon badges -->
-          <div class="d-flex justify-content-between p-2">
-            <b-badge pill variant="primary">#{{ i+1 }}</b-badge>
-            <b-badge :variant="sourceVariant(item.source)" class="text-capitalize">
-              {{ item.source || 'unknown' }}
-            </b-badge>
-          </div>
+    <!-- ===== CHART VIEW (ใช้คอมโพเนนต์ใหม่) ===== -->
+    <div v-else>
+      <!-- <TopAccountsChart :key="chartKey" :items="chartItems" :limit="chartLimit"
+        @add-watch="$emit('add-watch', $event)" /> -->
 
-          <!-- hero area -->
-          <div class="ta-hero d-flex flex-column align-items-center justify-content-center">
-            <b-avatar
-              :src="item.profile_image || null"
-              :text="!item.profile_image ? initials(item.name || item.uid) : null"
-              size="72"
-              variant="light"
-              class="mb-2"
-            />
-            <div class="text-center px-3">
-              <div class="h6 mb-0 text-truncate">{{ item.name || item.uid }}</div>
-              <small class="text-muted text-truncate d-block">@{{ item.uid }}</small>
-            </div>
-          </div>
-
-          <!-- content -->
-          <div class="px-3 pb-3">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <small class="text-muted">Mention count</small>
-              <b-badge pill variant="success">{{ item.count }}</b-badge>
-            </div>
-
-            <b-progress :value="progress(item.count)" :max="maxCount" height="6px" class="mb-3" />
-
-            <div class="d-flex align-items-center justify-content-between">
-              <b-button :href="item.link_crawl" target="_blank" size="sm" variant="outline-secondary">
-                เปิดลิงก์
-              </b-button>
-              <b-button size="sm" variant="primary" @click="$emit('add-watch', item)">
-                ติดตาม
-              </b-button>
-            </div>
-          </div>
-        </b-card>
-      </b-col>
-    </b-row>
-
-    <div v-if="displayRows.length === 0" class="text-center text-muted py-4">
-      ไม่พบรายการที่ตรงกับเงื่อนไข
+      <TopAccountsProgress :items="chartItems" :limit="chartLimit"
+        :order="sortBy.startsWith('count') ? (sortBy === 'count-asc' ? 'asc' : 'desc') : 'desc'"
+        @add-watch="$emit('add-watch', $event)" />
     </div>
   </div>
 </template>
 
 <script>
+import TopAccountsChart from './TopAccountsChart.vue';
+import TopAccountsProgress from './TopAccountsProgress.vue';
 export default {
   name: 'TopAccountsCard',
+  components: { TopAccountsChart, TopAccountsProgress },
   props: {
     accounts: { type: Array, required: true },
-    limit: { type: Number, default: 0 }
+    limit: { type: Number, default: 0 },     // จำกัดจำนวนการ์ดในโหมด Cards
+    loading: { type: Boolean, default: false },
+    hasMore: { type: Boolean, default: false },
+    chartLimit: { type: Number, default: 15 },    // จำกัดจำนวนใน Chart
+    defaultView: { type: String, default: 'cards' } // 'cards' | 'chart'
   },
   data() {
     return {
-      search: '',
-      sourceFilter: 'all'
+      search: '',        // ที่ใช้จริงในการกรอง
+      searchInput: '',   // ผูกกับกล่องค้นหา (debounce)
+      sourceFilter: 'all',
+      sortBy: 'count-desc',
+      view: this.defaultView,
+      _t: null,
+      default_avatar: require("@/assets/no-image.jpg"),
+      imgtw: require("@/assets/Twitter.png"),
+      imgfb: require("@/assets/Facebook.png"),
+      imgpt: require("@/assets/board.png"),
+      imgig: require("@/assets/Instagram.png"),
+      imgnw: require("@/assets/News.png"),
+      imgyt: require("@/assets/Youtube.png"),
+      imgbd: require("@/assets/Blockdit.png"),
+      imgtt: require("@/assets/Tiktok.png"),
+      imgtd: require("@/assets/Threads.png"),
     };
   },
+  watch: {
+    defaultView(v) { this.view = v; }
+  },
   computed: {
+    sortOptions() {
+      return [
+        { value: 'count-desc', text: 'มาก → น้อย' },
+        { value: 'count-asc', text: 'น้อย → มาก' },
+        { value: 'name-asc', text: 'ชื่อ A → Z' },
+        { value: 'name-desc', text: 'ชื่อ Z → A' }
+      ];
+    },
     normalized() {
       const rows = (this.accounts || []).map(a => ({
         count: Number(a.count || 0),
@@ -103,14 +169,15 @@ export default {
         uid: a.uid || '',
         name: a.name || a.uid || '',
         link_crawl: a.link_crawl || '#',
-        source: a.source || this.guessSource(a.link_crawl),
+        source: (a.source || this.guessSource(a.link_crawl || '') || 'unknown').toLowerCase(),
         profile_image: a.profile_image || null
       }));
-      rows.sort((x, y) => y.count - x.count);
-      return rows;
-    },
-    maxCount() {
-      return Math.max(1, ...this.normalized.map(r => r.count || 0));
+      // dedupe by uid: เก็บตัวที่ count สูงสุด
+      const byUid = new Map();
+      for (const r of rows) {
+        if (!byUid.has(r.uid) || r.count > byUid.get(r.uid).count) byUid.set(r.uid, r);
+      }
+      return Array.from(byUid.values());
     },
     sourceOptions() {
       const set = new Set(this.normalized.map(r => r.source || 'unknown'));
@@ -125,11 +192,46 @@ export default {
         return passSource && (q ? txt.includes(q) : true);
       });
     },
-    displayRows() {
-      return this.limit > 0 ? this.filtered.slice(0, this.limit) : this.filtered;
+    sorted() {
+      const arr = [...this.filtered];
+      switch (this.sortBy) {
+        case 'count-asc': arr.sort((a, b) => a.count - b.count); break;
+        case 'name-asc': arr.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'th')); break;
+        case 'name-desc': arr.sort((a, b) => (b.name || '').localeCompare(a.name || '', 'th')); break;
+        default: arr.sort((a, b) => b.count - a.count); // count-desc
+      }
+      return arr;
+    },
+    maxCount() {
+      return Math.max(1, ...this.sorted.map(r => r.count || 0));
+    },
+    rows() {
+      return this.limit > 0 ? this.sorted.slice(0, this.limit) : this.sorted;
+    },
+    // ส่งให้ TopAccountsChart (ให้ลูกจัดการ limit เอง)
+    chartItems() {
+      return this.sorted;
+    },
+    // บังคับ remount chart เมื่อฟิลเตอร์/เรียง/ค้นหาเปลี่ยน
+    chartKey() {
+      return ['chart', this.sourceFilter, this.sortBy, this.search, this.chartItems.length].join('|');
     }
   },
   methods: {
+    setView(v) {
+      this.view = v;
+      this.$nextTick(() => this.resetScroll());
+    },
+    resetScroll() {
+      const slider = this.$refs.slider;
+      if (slider) slider.scrollLeft = 0;
+    },
+    scrollLeft() { const s = this.$refs.slider; if (s) s.scrollLeft -= 300; },
+    scrollRight() { const s = this.$refs.slider; if (s) s.scrollLeft += 300; },
+    onSearchInput() {
+      clearTimeout(this._t);
+      this._t = setTimeout(() => { this.search = this.searchInput; }, 200);
+    },
     initials(name) {
       const parts = String(name || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
       const first = (parts[0] || '').charAt(0);
@@ -145,18 +247,81 @@ export default {
       return 'news';
     },
     sourceVariant(s) {
-      const m = { twitter: 'info', youtube: 'danger', facebook: 'primary', news: 'secondary', instagram: 'warning', unknown: 'dark' };
+      const m = { twitter: 'info', youtube: 'danger', facebook: 'info', news: 'secondary', instagram: 'warning', unknown: 'dark' };
       return m[(s || 'unknown').toLowerCase()] || 'secondary';
     },
     progress(count) {
-      // แปลง count เป็นค่าร้อยละสำหรับ progress bar เทียบกับ maxCount
       return (Number(count || 0) / this.maxCount) * 100;
     }
+  },
+  beforeDestroy() {
+    if (this._t) clearTimeout(this._t);
   }
 };
 </script>
 
 <style scoped>
+.social-img {
+  width: 35px !important;
+  margin-top: -40px !important;
+  margin-left: 40px !important;
+  height: 35px !important;
+  z-index: 99;
+}
+
+/* โครงพื้นฐานจากสไลด์เดิม + การ์ด TopAccounts */
+.box-flex-small {
+  width: 65vw;
+  padding: 0 20px;
+}
+
+.box-spot-bg {
+  min-height: 300px !important;
+  background-color: #ffffff;
+  border-radius: 11px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  border-radius: 15px;
+}
+
+.slider {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 10px;
+  width: 100%;
+}
+
+.slider::-webkit-scrollbar {
+  display: none;
+}
+
+.slider-item {
+  flex: 0 0 auto;
+  width: 200px;
+}
+
+.slider-button {
+  background-color: #3f3b3b00;
+  color: rgb(112, 108, 108);
+  border: none;
+  padding: 10px 15px;
+  margin: 0 4px;
+  cursor: pointer;
+  border-radius: 15px;
+  font-size: 20px;
+}
+
+.slider-button:hover {
+  background-color: #fed16e;
+  color: #fff;
+}
+
 .ta-card {
   border: 0;
   border-radius: 20px;
@@ -164,11 +329,50 @@ export default {
   transition: transform .15s ease, box-shadow .15s ease;
   background: #fff;
 }
-.ta-card:hover { transform: translateY(-2px); box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.08); }
-.ta-card.ta-top { box-shadow: 0 0.85rem 1.6rem rgba(0,0,0,.12); }
+
+.ta-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, .08);
+}
+
+.ta-card.ta-top {
+  box-shadow: 0 0.85rem 1.6rem rgba(0, 0, 0, .12);
+}
+
 .ta-hero {
   padding: 20px 16px 8px;
-  background: linear-gradient(160deg, #e8f2ff, #fff);
+  background: linear-gradient(160deg, #fad88dbf, #fff);
 }
-.text-truncate { max-width: 180px; }
+
+.text-truncate {
+  max-width: 180px;
+}
+
+@media (max-width: 800px) {
+  .slider-button.btn-left {
+    background: #fed06ebf;
+    color: white;
+    border: none;
+    padding: 5px 11px;
+    border-radius: 15px;
+    font-size: 20px;
+  }
+
+  .slider-button.btn-right {
+    position: absolute;
+    right: -18px;
+    padding: 5px 11px;
+    background: #fed06ebf;
+    color: white;
+  }
+
+  .box-flex-small {
+    width: 98vw;
+    padding: 0 5px;
+  }
+
+  .slider-item {
+    width: 290px;
+  }
+}
 </style>
