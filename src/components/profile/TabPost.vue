@@ -177,6 +177,11 @@
                 </span>
               </div>
             </b-col>
+            <b-col cols="auto">
+                <div class="text-right">
+                    <i v-b-tooltip.hover title="ลบโพสต์" @click="confirmDeletePost(profilePost._id)" class='text-danger fas fa-trash'></i>
+                </div>
+            </b-col>
           </b-row>
         </template>
         <b-row>
@@ -788,6 +793,9 @@ import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 export default {
   components: {
     VueGallerySlideshow,
@@ -1027,7 +1035,8 @@ export default {
       return word;
     },
   },
-  methods: {
+    methods: {
+
     formatOCR(text) {
     if (!text) return "";
     let s = String(text).trim();
@@ -1043,14 +1052,14 @@ export default {
       ],
       ALLOWED_ATTR: { a: ["href", "title", "target", "rel"] }
     });
-  },
-  formatSummarize(text) {
-    if (!text) return "";
-    const paragraphs = String(text)
-      .split(/\n\n+/)
-      .map(p => `<p style="margin:0 0 6px; line-height:1.4;">${p.replace(/\n/g,"<br>")}</p>`);
-    return paragraphs.join("");
-  },
+    },
+    formatSummarize(text) {
+        if (!text) return "";
+        const paragraphs = String(text)
+        .split(/\n\n+/)
+        .map(p => `<p style="margin:0 0 6px; line-height:1.4;">${p.replace(/\n/g,"<br>")}</p>`);
+        return paragraphs.join("");
+    },
     filterNumbers(numbers) {
       // Create a copy of the numbers array and sort by length
       const filtered = [...numbers].sort(
@@ -1140,7 +1149,6 @@ export default {
       return word;
     },
     getTheSelected(k, v, uid) {
-
       var err;
       if (v == 1) {
         err = "Positive";
@@ -1149,9 +1157,10 @@ export default {
       } else {
         err = "Negative";
       }
-      this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?").then(
+        this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?")
+            .then(
         () => {
-          const encoded = encodeURI(uid);
+          const encoded = encodeURIComponent(uid);
           var _this = this;
           var config = {
             method: "get",
@@ -1217,7 +1226,17 @@ export default {
           //   this.$alert("Sentiment เป็น " + err + " แล้ว!").then(() => {});
           // }
         }
-      );
+      ) .catch (e => {
+        // if (!e) {
+        //     // confirm cancel
+        //     alert("ยกเลิกการเปลี่ยน Sentiment แล้ว");
+        // } else if (e.response) {
+        //     alert("เกิดข้อผิดพลาด: " + e.response.data.message);
+        // } else {
+        //     console.error(e);
+        //     alert("เกิดข้อผิดพลาดในการเปลี่ยน Sentiment");
+        // }
+    });
     },
     setAltImg(event) {
       event.target.src = this.default_avatar;
@@ -1506,6 +1525,59 @@ export default {
       this.isInfinite = true;
       this.infiniteScroll();
     },
+    confirmDeletePost(post_id) {
+        // console.log(data, target_id);
+        let domainName = this.getClickDomain;
+        Swal.fire({
+            title: 'ยืนยันการลบโพสต์',
+            text: `ต้องการลบโพสต์ออกจากหัวเรื่อง "${domainName}" หรือไม่?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ลบ',
+            cancelButtonText: 'ยกเลิก',
+            didOpen: () => {
+                const iconContent = document.querySelector('.swal2-icon-content');
+                if (iconContent) iconContent.style.display = 'none';
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.removePost(post_id);
+                // this.apiDeleteTarget(data.item.group_id, target_id);
+                // this.toggleDetails(data);
+            }
+        });
+    },
+    async removePost(post_id) {
+        let domain_id = this.getClickDomainId;
+        const config = {
+            method: "put",
+            url: `https://api2.cognizata.com/api/v2/userposts/removeDomain?id=${post_id}&domain_id=${domain_id}`,
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+        };
+        this.axios(config)
+        .then((response) => {
+            this.load = false;
+            Swal.fire({
+                title: 'สำเร็จ',
+                text: 'ลบกลุ่มเรียบร้อยแล้ว',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2000
+            });
+            // this.apiMonitorGroupList();
+        })
+        .catch((error) => {
+            this.load = false;
+            console.error(error);
+            Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบโพสต์ได้', 'error');
+        });
+        console.log("post id ==== ",config);
+    }
   },
   mounted() {
     const script = document.createElement("script");
