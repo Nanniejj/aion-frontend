@@ -7,7 +7,7 @@
                 <b-row align-v="center">
                     <b-col cols="6">
                         <div class="d-flex align-items-center w-100">
-                            <span class="h4 bold py-0 my-0 rank-no" :class="(i % 2 === 0) ? 'rank-dark' : 'rank-light'">
+                            <span class="h5 bold py-0 my-0 rank-no" :class="(i % 2 === 0) ? 'rank-dark' : 'rank-light'">
                                 {{ i + 1 }}
                             </span>
 
@@ -133,6 +133,16 @@ export default {
 </script>
 
 <style scoped>
+.progress-bar {
+    background: linear-gradient(70deg, #7ac9d6 40%, #9378bf 100%) !important;
+}
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: 3px 12px;
+    background-color: #fff;
+    /* border: 1px solid rgba(0, 0, 0, .125); */
+}
 .social-img {
   width: 25px !important;
   margin-top: 20px !important;

@@ -2,28 +2,26 @@
     <div class="container my-3">
         <div class="d-flex align-items-center justify-content-between">
             <div class="text-left">
-                All ({{ count | numFormat }}) <b> {{ name }}</b>
+                All ({{ count.toLocaleString() || 0 }}) <b> {{ name }}</b>
             </div>
 
             <div class="d-flex align-items-center">
-                <div class="text-center my-4 py-4" v-if="loading">
-            <vue-element-loading :active="loading" size="30" background-color="rgba(255, 255, 255, 0.5)"
-                color="#17a2b891" class="mr-2"/>
-        </div>
-                <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print">
+                <!-- <div class="text-center my-4 py-4" v-if="loadingExport">
+                    <vue-element-loading :active="loadingExport" size="30" background-color="rgba(255, 255, 255, 0.5)"
+                        color="#17a2b891" class="mr-2" />
+                </div> -->
+                <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print" pill>
                     <b-icon-printer /> Print
                 </b-button>
                 <ExportExcelButton :posts="postForExport" :filters="filters"
-                    :disabled="loading || (Array.isArray(postForExport) && postForExport.length === 0)"
+                    :disabled="loadingExport || (Array.isArray(postForExport) && postForExport.length === 0)"
                     :full-export="true" :prefer-single-shot="true" inline-comments="json" :comments-limit="20"
-                    v-if="!loading" />
+                    />
             </div>
         </div>
 
         <hr />
-        <div>
-            <top-accounts :accounts="accountItem" :limit="10" />
-        </div>
+
         <!-- Controls -->
         <div>
             <b-row class="my-1 mb-2">
@@ -50,8 +48,16 @@
             <!-- name & date range -->
             <b-row class="my-1">
                 <b-col md="6" class="mb-2">
-                    <b-input-group size="sm">
+                    <!-- <b-input-group size="sm">
                         <b-input-group-prepend is-text>ชื่อบุคคล</b-input-group-prepend>
+                        <b-form-input v-model.trim="name" @keyup.enter="resetAndFetch"
+                            placeholder="เช่น อนุทิน ชาญวีรกูล" />
+                        <b-input-group-append>
+                            <b-button size="sm" variant="info" @click="resetAndFetch">ค้นหา</b-button>
+                        </b-input-group-append>
+                    </b-input-group> -->
+                    <b-input-group size="sm">
+                        <b-input-group-prepend is-text>keyword</b-input-group-prepend>
                         <b-form-input v-model.trim="name" @keyup.enter="resetAndFetch"
                             placeholder="เช่น อนุทิน ชาญวีรกูล" />
                         <b-input-group-append>
@@ -59,8 +65,8 @@
                         </b-input-group-append>
                     </b-input-group>
                 </b-col>
-                <b-col md="6" class="mb-2">
-                    <section id="date-picker" class="mt-2">
+                <b-col md="6">
+                    <section id="date-picker" class="w-100">
                         <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา"
                             class="w-100" size="sm" :disabled-date="d => d > new Date()" value-type="format"
                             format="YYYY-MM-DD" @change="onDateChange" id="date-domain" />
@@ -68,11 +74,13 @@
                 </b-col>
             </b-row>
         </div>
-
-        <!-- <div class="text-center my-4 py-4" v-if="loading">
+        <div>
+            <top-accounts :accounts="accountItem" :limit="10" />
+        </div>
+        <div class="text-center my-4 py-4" v-if="loading">
             <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
                 color="#17a2b891" />
-        </div> -->
+        </div>
 
         <!-- Posts -->
         <div>
@@ -156,7 +164,8 @@ export default {
             limit: 20,
             totalPages: 0,
             count: 0,
-
+            loadingPosts: false,   // โหลดโพสต์/ไทม์ไลน์
+            loadingExport: false,  // โหลดข้อมูลสำหรับ Export เท่านั้น
             loading: false,
 
             // selects
@@ -300,7 +309,7 @@ export default {
 
         async fetchAllForExport() {
             // ดึงทั้งหมดสำหรับ export (ครั้งเดียว)
-            this.loading = true
+            this.loadingExport = true
             try {
                 const params = this.buildParams({ all: true })
                 const token = localStorage.getItem('token')
@@ -313,7 +322,7 @@ export default {
                 console.error(e)
                 this.postForExport = []
             } finally {
-                this.loading = false
+                this.loadingExport = false
             }
         },
 
@@ -465,6 +474,10 @@ export default {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+    .mx-datepicker-range {
+        width: 100% !important;
+    }
+
     .rdo {
         zoom: 75%
     }

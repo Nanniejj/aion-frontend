@@ -6,14 +6,14 @@
     <!-- header + controls -->
 
     <b-row>
-      <b-col class="text-left">
-        <h5 class="mb-2 mb-sm-0">Top 10 Users </h5>
+      <b-col class="text-left" cols="12" md="6">
+        <h5 class="mb-sm-0">Top 10 Users </h5>
         <div class="text-left text-muted">
           <small>บัญชีที่กล่าวถึงมากที่สุด 10 อันดับ </small>
         </div>
       </b-col>
-      <b-col class="text-right">
-        <b-button-group size="sm" class="ml-1">
+      <b-col class="text-right" cols="12" md="6">
+        <b-button-group size="sm" class="ml-1 btn-sw">
           <b-button :variant="view === 'cards' ? 'info' : 'outline-info'" @click="setView('cards')">
             <i class="fas fa-th-large mr-1"></i> Cards
           </b-button>
@@ -47,15 +47,13 @@
             <div v-for="(item, i) in rows" :key="item.uid" class="slider-item px-2">
               <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0">
                 <div class="d-flex justify-content-between p-2">
-                  <span class="position-absolute h5 py-2 bold">{{ i + 1 }}</span>
-                  <!-- <b-badge :variant="sourceVariant(item.source)" class="text-capitalize">
-                    {{ item.source || 'unknown' }}
-                  </b-badge> -->
+                  <span class="position-absolute h6 py-2 bold pt-3 px-1 " style="color:#7782bf;">{{ i + 1 }}</span>
+                 
                 </div>
                 <div class="ta-hero d-flex flex-column align-items-center justify-content-center">
                   <b-avatar :src="item.profile_image || null"
                     :text="!item.profile_image ? initials(item.name || item.uid) : null" size="72" variant="light"
-                    class="mb-2" />
+                    class="mb-2 avatar-d" />
                   <img v-if="item.source === 'twitter'" :src="imgtw" class="social-img" />
                   <img v-if="item.source === 'facebook'" :src="imgfb" class="social-img" />
                   <img v-if="item.source === 'pantip'" :src="imgpt" class="social-img" />
@@ -66,18 +64,23 @@
                   <img v-if="item.source === 'tiktok'" :src="imgtt" class="social-img" />
                   <img v-if="item.source === 'threads'" :src="imgtd" class="social-img" />
                   <div class="text-center px-3">
-                    <a :href="item.link_crawl">
-                      <div class="h6 mb-0 text-truncate">{{ item.name || item.uid }}</div>
-                      <small class="text-muted text-truncate d-block">@{{ item.uid }}</small>
+                    <a :href="item.link_crawl" target="_blank">
+                      <div class="mb-0 text-truncate small">{{ item.name || item.uid }}</div>
+                      <!-- <small class="text-muted text-truncate d-block">@{{ item.uid }}</small> -->
                     </a>
+                  </div>
+                  <div class="py-0 my-0"><small class="text-muted " >กล่าวถึง</small></div>
+                  <div class=" py-0 my-0">
+                    
+                  <span class="bold mx-1"> {{ item.count | numFormat}}</span>   <small class="text-muted" style="font-size: x-small;">โพสต์</small>
                   </div>
                 </div>
                 <div class="px-3 pb-3">
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <small class="text-muted">Mention count</small>
-                    <b-badge pill variant="success">{{ item.count }}</b-badge>
-                  </div>
-                  <b-progress :value="progress(item.count)" :max="maxCount" height="6px" class="mb-3" />
+                  <!-- <div class="d-flex align-items-center justify-content-between mb-2">
+                    <small class="text-muted">กล่าวถึง</small>
+                    <b-badge pill variant="success">{{ item.count }} โพสต์</b-badge>
+                  </div> -->
+                  <!-- <b-progress :value="progress(item.count)" :max="maxCount" height="6px" class="mb-3" /> -->
                   <div class="d-flex align-items-center justify-content-between">
                     <!-- <b-button :href="item.link_crawl" target="_blank" rel="noopener noreferrer" size="sm"
                       variant="outline-secondary">เปิดลิงก์</b-button> -->
@@ -96,12 +99,12 @@
 
       <div v-else-if="!loading" class="py-8 text-center text-muted">ไม่พบรายการที่ตรงกับเงื่อนไข</div>
 
-      <div class="text-right mt-2">
+      <!-- <div class="text-right mt-2">
         <b-button size="sm" variant="outline-info" class="p-1" @click="$emit('requestLoadMore')" :disabled="!hasMore"
           v-b-tooltip.hover title="โหลดเพิ่ม" pill>
           <i class="fa fa-plus"></i>
         </b-button>
-      </div>
+      </div> -->
     </div>
 
     <!-- ===== CHART VIEW (ใช้คอมโพเนนต์ใหม่) ===== -->
@@ -261,6 +264,7 @@ export default {
 </script>
 
 <style scoped>
+
 .social-img {
   width: 35px !important;
   margin-top: -40px !important;
@@ -276,7 +280,7 @@ export default {
 }
 
 .box-spot-bg {
-  min-height: 300px !important;
+  min-height: auto !important;
   background-color: #ffffff;
   border-radius: 11px;
 }
@@ -304,6 +308,7 @@ export default {
 .slider-item {
   flex: 0 0 auto;
   width: 200px;
+  
 }
 
 .slider-button {
@@ -328,11 +333,13 @@ export default {
   overflow: hidden;
   transition: transform .15s ease, box-shadow .15s ease;
   background: #fff;
+  
 }
 
 .ta-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, .08);
+  
 }
 
 .ta-card.ta-top {
@@ -341,13 +348,19 @@ export default {
 
 .ta-hero {
   padding: 20px 16px 8px;
-  background: linear-gradient(160deg, #fad88dbf, #fff);
+    border-radius: 20px;
+ background: #17A3B8CE; 
+ box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  background:linear-gradient(to top, #b8d3d3a4, #decff0);
+    /* background: linear-gradient(0deg, #ffe6e6 40%, #FDD071 100%); */
 }
 
 .text-truncate {
   max-width: 180px;
 }
-
+a{
+  color: #2c3e50;
+}
 @media (max-width: 800px) {
   .slider-button.btn-left {
     background: #fed06ebf;
@@ -372,7 +385,19 @@ export default {
   }
 
   .slider-item {
-    width: 290px;
+    width: 120px;
+  }
+  .avatar-d{
+    width: 45px !important;
+    height:45px !important;
+  }
+  .social-img{
+    width: 25px !important;
+    height: 25px!important;
+      margin-top: -35px !important;
+  }
+  .btn-sw{
+    zoom: 75%;
   }
 }
 </style>
