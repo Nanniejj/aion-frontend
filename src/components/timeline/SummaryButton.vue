@@ -1,5 +1,5 @@
 <template>
-    <div class="d-none">
+    <div class="">
         <!-- <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
                       title="comments analysis" v-if="postDomain.summarize">
                       <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
@@ -22,7 +22,7 @@
             class="analysis-button"
             :class="{ 'is-glowing': analyzing }"
             type="button"
-            @click="toggle"
+            @click="summarizePosts()"
         >
             <!-- :disabled="analyzing" -->
             <img
@@ -47,9 +47,8 @@
                         color="#17a2b891" />
                 </div>
                 <div v-else class="text-left">
-                    
+                    <div v-html="formatSummarize(fullSummary)"></div>
                 </div>
-
             </b-card>
         </b-collapse>
     </div>
@@ -71,16 +70,46 @@ export default {
         return {
             open: false,
             analyzing: false,
+            fullSummary: null,
         };
     },
     computed: {
-
+        
     },
     methods: {
+        formatSummarize(text) {
+            if (!text) return '';
+
+            // ✅ แปลง Markdown พื้นฐานเป็น HTML
+            let html = text
+                // หัวข้อ ## → <h3>
+                .replace(/^##\s?(.*)$/gm, '<h3 style="margin: 12px 0 6px; font-size: 1.1rem;">$1</h3>')
+                // หัวข้อ ### → <h4>
+                .replace(/^###\s?(.*)$/gm, '<h4 style="margin: 8px 0 4px; font-size: 1rem;">$1</h4>')
+                // รายการ bullet `*`
+                .replace(/^\*\s+(.*)$/gm, '<li>$1</li>')
+                // รายการเลข `1.`, `2.` ฯลฯ
+                .replace(/^\d+\.\s+(.*)$/gm, '<li>$1</li>')
+                // **ตัวหนา**
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                // บรรทัดว่าง → <p>
+                .replace(/\n{2,}/g, '</p><p>')
+                // แปลงบรรทัดเดี่ยวเป็น <br>
+                .replace(/\n/g, '<br>');
+
+            // ✅ ครอบ <ul> และ <ol> ให้ถูกต้อง
+            html = html
+                .replace(/(<li>.*<\/li>)/gs, '<ul style="margin:4px 0 8px 20px; padding:0;">$1</ul>')
+                .replace(/(<ul>)(?:\s*<ul>)+/g, '$1'); // ป้องกันซ้อนซ้ำ
+
+            // ✅ ครอบด้วย <p> ทั้งหมดถ้าไม่ใช่ <h3>, <ul> ฯลฯ
+            html = `<p style="margin:0 0 6px; line-height:1.5;">${html}</p>`;
+
+            return html;
+            },
         toggle() {
-            this.analyzing = !this.analyzing;
+            // this.analyzing = !this.analyzing;
             this.open = !this.open;
-           
         },
         formatDateRange() {
             const start = new Date(this.filters.startLocal);
@@ -131,6 +160,43 @@ export default {
                 this.$bvToast && this.$bvToast.toast('คัดลอกสรุปแล้ว', { variant: 'success', autoHideDelay: 1500 });
             } catch (e) {
                 this.$bvToast && this.$bvToast.toast('คัดลอกไม่สำเร็จ', { variant: 'danger', autoHideDelay: 2000 });
+            }
+        },
+        async summarizePosts() {
+            // ตัวอย่างฟังก์ชันวิเคราะห์โพสต์ (จำลองดีเลย์)
+            this.analyzing = true;
+            const bodyData = {
+                posts: this.posts.slice(0, 5)
+                // [
+                //     {
+                //         date: "2025-10-17",
+                //         source: "facebook",
+                //         account_name: "กันจอมพลัง",
+                //         full_text: "บ้านหนองจาน",
+                //         url_post: "https://www.facebook.com/gunjompalang1/videos/1978280722928879/",
+                //         engagement: 83000,
+                //         comments: []
+                //     }
+                // ]
+            };
+            const config = {
+                method: "post",
+                url: "https://api2.cognizata.com/api/v2/userposts/summarize-timeline",
+                data: bodyData,
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+            try {
+                const response = await this.axios(config); // ✅ ใช้ await
+                this.fullSummary = response.data.final_summary || "ไม่มีสรุปผล";
+                this.analyzing = false;
+                this.open = true;
+                console.log("Response:", response.data);
+            } catch (error) {
+                this.analyzing = false;
+                console.error("Error calling API:", error);
             }
         }
     }
