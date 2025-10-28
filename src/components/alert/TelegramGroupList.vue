@@ -52,20 +52,58 @@
               <div>Group ID : {{ selectedGroup.userId }}</div>
               <div @click="confirmDelete(selectedGroup)" class="my-2 pointer"> <span
                   class="fa fa-trash-alt text-danger pointer" v-b-tooltip.hover title="ลบ"> </span> delete group</div>
+
+
+<b-row >
+            <b-col cols="auto" >
+              <div class="h6"> เลือกโหมด</div>
             </b-col>
+            <b-col> <b-button-group>
+
+
+                <b-button :variant="groupMode === 'domain' ? 'info' : 'outline-info'" @click="groupMode = 'domain'"
+                  size="sm">Domain</b-button>
+                <b-button :variant="groupMode === 'group' ? 'info' : 'outline-info'" @click="groupMode = 'group'"
+                  size="sm">Group</b-button>
+              </b-button-group></b-col>
           </b-row>
 
+            </b-col>
+          </b-row>
+          
         </div>
 
         <div class="mt-2">
-          <v-select class="mb-3" :options="domain" v-model="groupSetting.domain_idText" label="name" :reduce="d => d.id"
-            placeholder="เลือก Domain" @input="selectDomain" />
-          <v-select class="mb-3" :options="subdomain" v-model="groupSetting.subdomain_idText" label="subdomain_name"
-            :reduce="s => s.subdomain_id" multiple placeholder="เลือก Subdomain" @input="selectSubdomain" />
-          <v-select class="mb-3" :options="filteredObjects" v-model="groupSetting.object_idText" label="object_name"
-            :reduce="o => o.object_id" multiple
-            :disabled="!groupSetting.subdomain_idText || groupSetting.subdomain_idText.length === 0"
-            placeholder="เลือก Object" />
+          <!-- ...ภายใน <div class="mt-2"> เดิม ก่อน v-select domain ตัวแรก ... -->
+
+
+          <!-- โหมด Domain: แสดงตัวเลือกเดิม -->
+          <div v-if="groupMode === 'domain'">
+            <v-select class="mb-3" :options="domain" v-model="groupSetting.domain_idText" label="name"
+              :reduce="d => d.id" placeholder="เลือก Domain" @input="selectDomain" />
+
+            <v-select class="mb-3" :options="subdomain" v-model="groupSetting.subdomain_idText" label="subdomain_name"
+              :reduce="s => s.subdomain_id" multiple placeholder="เลือก Subdomain" @input="selectSubdomain" />
+
+            <v-select class="mb-3" :options="filteredObjects" v-model="groupSetting.object_idText" label="object_name"
+              :reduce="o => o.object_id" multiple
+              :disabled="!groupSetting.subdomain_idText || groupSetting.subdomain_idText.length === 0"
+              placeholder="เลือก Object" />
+          </div>
+
+          <!-- โหมด Group: แสดงตัวเลือก Group จาก API -->
+        
+          <div v-else>
+               <!-- {{ groupOptions }} -->
+           
+            <v-select class="mb-3" :options="groupOptions" v-model="groupSetting.monitorGroupId"
+              :reduce="g => g.group_id" label="group_name" placeholder="ค้นหา/เลือก Group" 
+            />
+            <div v-if="groupSetting.monitorGroupId" class="text-muted small">
+              เลือก: {{ selectedGroupName }}
+            </div>
+          </div>
+
 
           <b-form-group label="คำค้นหา (เช่น: PM2.5, ไฟป่า)" class="mb-3">
             <b-form-tags v-model="groupSetting.querySearch" separator=",;"
@@ -122,18 +160,18 @@
         </div>
       </div>
     </b-modal>
- <!-- Modal ยืนยันการเปลี่ยนสถานะ -->
-      <b-modal v-model="showToggleModal" hide-footer>
-        <div class="text-center py-3">
-          <div class="h5">ยืนยันการเปลี่ยนสถานะ</div>
-          คุณต้องการเปลี่ยนสถานะของ "{{ selectedGroup && selectedGroup.groupTitle }}" หรือไม่?
-          <div class="mt-3">
-            <b-button variant="primary" class="mx-2" @click="toggleStatus(selectedGroup)"
-              style="background-color:#17a2b8;border-color:#17a2b8;">ยืนยัน</b-button>
-            <b-button variant="secondary" class="mx-2" @click="cancelToggle">ยกเลิก</b-button>
-          </div>
+    <!-- Modal ยืนยันการเปลี่ยนสถานะ -->
+    <b-modal v-model="showToggleModal" hide-footer>
+      <div class="text-center py-3">
+        <div class="h5">ยืนยันการเปลี่ยนสถานะ</div>
+        คุณต้องการเปลี่ยนสถานะของ "{{ selectedGroup && selectedGroup.groupTitle }}" หรือไม่?
+        <div class="mt-3">
+          <b-button variant="primary" class="mx-2" @click="toggleStatus(selectedGroup)"
+            style="background-color:#17a2b8;border-color:#17a2b8;">ยืนยัน</b-button>
+          <b-button variant="secondary" class="mx-2" @click="cancelToggle">ยกเลิก</b-button>
         </div>
-      </b-modal>
+      </div>
+    </b-modal>
     <!-- Modal ยืนยันการลบ -->
     <b-modal v-model="showDeleteModal" hide-footer>
       <div class="text-center py-3">
@@ -161,21 +199,30 @@ export default {
   props: {
     domain: Array,
     searchText: String
-    // allSubdomainData: Array
   },
   data() {
     return {
-        showToggleModal: false,
+      showToggleModal: false,
       showDeleteModal: false,
       groups: [],
       allSubdomainData: [],
       subdomain: [],
       selectedGroup: null,
       showSettingModal: false,
+
+      // โหมดเลือก
+      groupMode: 'domain', // 'domain' | 'group'
+
       groupSetting: {
+        // โหมด domain
         domain_idText: null,
         subdomain_idText: [],
         object_idText: [],
+        // โหมด group
+        monitorGroupId: null,      // number (group_id)
+        monitorGroupName: '',      // string (group_name)
+
+        // ตัวกรองอื่น ๆ (คงเดิม)
         querySearch: [],
         hashtags: [],
         sentiment: [],
@@ -186,12 +233,17 @@ export default {
         statusAlert: false,
         spikePosts: 10
       },
+
+      // ตัวเลือกรายการ group จาก API
+      groupOptions: [],  // { group_id, group_name }[]
+      groupSearchTerm: '',
+
       durationValue: 1,
-      durationUnit: 'hours', // default
+      durationUnit: 'hours',
       sentimentOptions: [
-        { label: "Positive", value: "positive" },
-        { label: "Neutral", value: "neutral" },
-        { label: "Negative", value: "negative" }
+        { label: 'บวก', value: 1 },
+        { label: 'กลาง', value: 0 },
+        { label: 'ลบ', value: -1 }
       ],
       durationUnits: [
         { value: 'minutes', text: 'นาที' },
@@ -199,11 +251,6 @@ export default {
         { value: 'days', text: 'วัน' },
         { value: 'weeks', text: 'สัปดาห์' },
         { value: 'custom', text: 'ระบุวันและเวลาเอง' }
-      ],
-      sentimentOptions: [
-        { label: 'บวก', value: 1 },
-        { label: 'กลาง', value: 0 },
-        { label: 'ลบ', value: -1 }
       ],
       loading: false,
       error: null,
@@ -216,20 +263,23 @@ export default {
         (group.groupTitle || "").toLowerCase().includes(this.searchText.toLowerCase())
       );
     },
-    // filteredGroups() {
-    //   return this.groups.filter(group => (group.groupTitle || "").toLowerCase().includes(this.searchText.toLowerCase()));
-    // },
     filteredObjects() {
       if (!this.groupSetting.subdomain_idText?.length) return [];
       return this.allSubdomainData
         .filter(sd => this.groupSetting.subdomain_idText.includes(sd.subdomain_id))
         .flatMap(sd => sd.objects || []);
+    },
+    selectedGroupName() {
+      const found = this.groupOptions.find(g => g.group_id === this.groupSetting.monitorGroupId);
+      return found ? found.group_name : this.groupSetting.monitorGroupName || '';
     }
   },
   mounted() {
     this.fetchGroups();
+    this.fetchGroupOptions('');
   },
   methods: {
+    // ---------- โหมด Domain ----------
     selectSubdomain() {
       this.groupSetting.object_idText = []
     },
@@ -237,6 +287,28 @@ export default {
       this.groupSetting.subdomain_idText = []
       this.groupSetting.object_idText = []
     },
+
+    // ---------- โหมด Group ----------
+   
+   
+    async fetchGroupOptions(search = '') {
+      try {
+        const token = localStorage.getItem("token");
+        const url = `https://api2.cognizata.com/api/v2/monitor/monitorGroupName?type=grouplist&page=1&limit=500&search=${encodeURIComponent(search)}`;
+        const res = await axios.get(url, {
+          headers: token ? { Authorization: "Bearer " + token } : {}
+        });
+        // แมปให้เหลือเฉพาะที่ใช้แสดง
+        console.log('res',res.data);
+        
+        const list = Array.isArray(res.data.data) ? res.data.data : [];
+        this.groupOptions = list
+      } catch (e) {
+        console.error('โหลด Group List ไม่สำเร็จ', e);
+        this.groupOptions = [];
+      }
+    },
+
     onImageError(event) {
       event.target.src = this.defaultGroupImage;
     },
@@ -261,9 +333,7 @@ export default {
     cancelDelete() {
       this.showDeleteModal = false;
       this.showSettingModal = false;
-      // this.selectedGroup = null;
-    }
-    ,
+    },
 
     async getSubdomain() {
       const domainId = this.groupSetting.domain_idText
@@ -285,14 +355,11 @@ export default {
           subdomain_name: s.subdomain_name
         }));
 
-        this.allSubdomainData = subdomains; // เก็บทั้ง subdomain และ objects ไว้ใช้ต่อ
-        // console.log('allSub', this.allSubdomainData);
-
+        this.allSubdomainData = subdomains;
       } catch (error) {
         console.error(error);
       }
-    }
-    ,
+    },
 
     async fetchGroups() {
       this.loading = true;
@@ -305,7 +372,8 @@ export default {
         this.loading = false;
       }
     },
-        cancelToggle() {
+
+    cancelToggle() {
       this.selectedGroup = null
       this.showToggleModal = false
     },
@@ -320,21 +388,33 @@ export default {
           const updated = res.data;
           const idx = this.groups.findIndex(g => g._id === updated._id);
           if (idx !== -1) this.groups.splice(idx, 1, updated);
-           this.showToggleModal = false
+          this.showToggleModal = false
         })
         .catch(() => alert("Toggle failed"));
     },
+
     openSetting(group) {
       this.selectedGroup = group;
-      console.log('      this.selectedGroup', this.selectedGroup);
 
       axios
         .get(`https://api2.cognizata.com/api/v2/alert_telegram/getgroupsetting/${group._id}`)
-        .then(res => {
+        .then(async (res) => {
+          // ตรวจว่ามีการตั้งค่าแบบ group ไหม
+          const isGroupMode = !!res.data?.monitorGroupId || !!res.data?.monitorGroupName;
+
+          this.groupMode = isGroupMode ? 'group' : 'domain';
+
           this.groupSetting = {
-            domain_idText: res.data.domain_id || null,
-            subdomain_idText: res.data.subdomain_id || [],
-            object_idText: res.data.object_id || [],
+            // domain mode fields
+            domain_idText: isGroupMode ? null : (res.data.domain_id || null),
+            subdomain_idText: isGroupMode ? [] : (res.data.subdomain_id || []),
+            object_idText: isGroupMode ? [] : (res.data.object_id || []),
+
+            // group mode fields
+            monitorGroupId: res.data.monitorGroupId || null,
+            monitorGroupName: res.data.monitorGroupName || '',
+
+            // common filters
             querySearch: res.data.querySearch || [],
             hashtags: res.data.hashtags || [],
             sentiment: res.data.sentiment || [],
@@ -345,16 +425,31 @@ export default {
             statusAlert: res.data.statusAlert || false,
             spikePosts: res.data.spikePosts || ''
           };
+
+          // โหลด group options (เพื่อโชว์ label) ถ้าเป็นโหมด group
+          if (this.groupMode === 'group') {
+            await this.fetchGroupOptions('');
+          }
+
           this.showSettingModal = true;
         })
         .catch(() => alert("โหลดการตั้งค่าไม่สำเร็จ"));
     },
-    saveSetting(user) {
 
+    saveSetting(user) {
+      // เตรียม payload ตามโหมด
+      const isDomainMode = this.groupMode === 'domain';
       const payload = {
-        domain_id: this.groupSetting.domain_idText,
-        subdomain_id: this.groupSetting.subdomain_idText,
-        object_id: this.groupSetting.object_idText,
+        // โหมด domain: ส่งฟิลด์เหล่านี้
+        domain_id: isDomainMode ? this.groupSetting.domain_idText : null,
+        subdomain_id: isDomainMode ? this.groupSetting.subdomain_idText : [],
+        object_id: isDomainMode ? this.groupSetting.object_idText : [],
+
+        // โหมด group: ส่งเฉพาะ group ที่เลือก
+        monitorGroupId: !isDomainMode ? this.groupSetting.monitorGroupId : null,
+        monitorGroupName: !isDomainMode ? this.selectedGroupName : '',
+
+        // ฟิลด์ส่วนกลาง
         querySearch: this.groupSetting.querySearch,
         hashtags: this.groupSetting.hashtags,
         sentiment: this.groupSetting.sentiment,
@@ -366,7 +461,8 @@ export default {
         statusAlert: this.groupSetting.statusAlert || false,
         spikePosts: this.groupSetting.spikePosts || null,
         lastSentPostId: null
-      }
+      };
+
       axios
         .put(`https://api2.cognizata.com/api/v2/alert_telegram/updategroupsetting/${this.selectedGroup._id}`, payload)
         .then(() => {
@@ -375,13 +471,16 @@ export default {
         })
         .catch(() => alert("บันทึกไม่สำเร็จ"));
     },
+
     cancelSetting() {
       this.selectedGroup = null;
       this.showSettingModal = false;
+      
     }
   }
 };
 </script>
+
 
 <style scoped>
 .truncate-230 {
