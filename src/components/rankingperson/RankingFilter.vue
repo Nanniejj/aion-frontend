@@ -76,7 +76,7 @@
 
         <!-- ค้นหา -->
         <b-col cols="12" md="auto">
-          <div class="align-self-end mt-2">
+          <div class="align-self-end mt-2 d-none">
             <b-button type="submit" variant="info" class="px-4" :disabled="loading" @click="emitFilters" size="sm">
               ค้นหา
             </b-button>
