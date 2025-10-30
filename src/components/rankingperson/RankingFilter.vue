@@ -1,20 +1,16 @@
 <template>
-  <div class="my-5">
+  <div class="mt-1">
     <b-card class="mb-3 shadow-sm">
+      <!-- <div>face recognition</div> -->
+      <div class="text-left mb-2 ">  
+        <b-icon  icon="person-bounding-box" scale="1.2" ></b-icon> 
+        ค้นหาบุคคลจากใบหน้า</div>
       <b-row>
         <!-- เลือกบุคคล -->
         <b-col cols="12" md="6">
-          <v-select
-            :options="options"
-            label="text"
-            :reduce="p => p.text"
-            multiple
-            class="sl-pp"
-            v-model="local.names"
-            :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'"
-            :disabled="loading || options.length === 0"
-            @input="emitFilters"
-          >
+          <v-select :options="options" label="text" :reduce="p => p.text" multiple class="sl-pp" v-model="local.names"
+            :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'" :disabled="loading || options.length === 0"
+            @input="emitFilters">
             <template v-slot:option="option">
               <div class="my-1">
                 <b-avatar :src="option.photo" size="65px"></b-avatar>
@@ -26,48 +22,43 @@
 
         <!-- platform -->
         <b-col cols="12" md="6">
-          <v-select
-            :options="sourceOptions"
-            v-model="local.source"
-            id="search-source"
-            label="text"
-            :reduce="src => src.value"
-            placeholder="Select Platform"
-            multiple
-            @input="onSourceChange"
-          />
+          <v-select :options="sourceOptions" v-model="local.source" id="search-source" label="text"
+            :reduce="src => src.value" placeholder="Select Platform" multiple @input="onSourceChange" />
         </b-col>
 
         <!-- sentiment -->
-        <b-col cols="12" md="4" class="text-left ">
+        <b-col cols="12" md="auto" class="text-left ">
           <b-form-group class="pr-md-3 checkbox-v mt-2">
-            <b-form-checkbox-group
-              v-model="local.sentiment"
-              :options="sentimentOptions"
-              size="sm"
-              @change="emitFilters"
-            />
+            <b-form-checkbox-group v-model="local.sentiment" :options="sentimentOptions" size="sm"
+              @change="emitFilters" />
           </b-form-group>
         </b-col>
 
         <!-- date range -->
         <b-col cols="12" md="4">
           <section id="date-picker" class="mt-2">
-            <date-picker
-              v-model="local.valueDate"
-              type="date"
-              range
-              placeholder="เลือกช่วงเวลา"
-              class="w-100"
-              size="sm"
-              :disabled-date="date => date > new Date()"  
-              value-type="format"
-              format="YYYY-MM-DD"
-              @change="onDateChange"
-              id="date-domain"
-            />
+            <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
+              :disabled-date="date => date > new Date()" value-type="format" format="YYYY-MM-DD" @change="onDateChange"
+              id="date-domain" />
           </section>
         </b-col>
+
+        <!-- <b-col>
+          
+          <b-col cols="12" md="auto">
+            <b-button-group size="sm"  class="mt-2">
+              <b-button :variant="local.search_by === 'face' ? 'info' : 'outline-info'"
+                @click="onSearchByChange('face')">
+                ใบหน้า
+              </b-button>
+              <b-button :variant="local.search_by === 'text' ? 'info' : 'outline-info'"
+                @click="onSearchByChange('text')">
+                ข้อความ
+              </b-button>
+            </b-button-group>
+          </b-col>
+        </b-col> -->
+
 
         <!-- sort -->
         <!-- <b-col cols="12" md="4">
@@ -84,7 +75,7 @@
         </b-col> -->
 
         <!-- ค้นหา -->
-        <b-col cols="12" md="4">
+        <b-col cols="12" md="auto">
           <div class="align-self-end mt-2">
             <b-button type="submit" variant="info" class="px-4" :disabled="loading" @click="emitFilters" size="sm">
               ค้นหา
@@ -121,7 +112,7 @@ export default {
         names: this.value?.names || [],
         source: this.value?.source?.length ? this.value.source : [null],  // All
         _sourcePrev: this.value?.source?.length ? this.value.source : [null],
-        sentiment: (this.value?.sentiment || [-1,0,1]).map(Number),
+        sentiment: (this.value?.sentiment || [-1, 0, 1]).map(Number),
 
         // ปล่อยว่าง => emitFilters จะ default เป็น 7 วันล่าสุด
         valueDate: Array.isArray(this.value?.valueDate) && this.value.valueDate.length === 2
@@ -137,16 +128,16 @@ export default {
         { text: 'Negative', value: -1 }
       ],
       sourceOptions: [
-        { value: null,        text: 'All Platform' },
-        { value: 'facebook',  text: 'Facebook' },
-        { value: 'twitter',   text: 'X' },
-        { value: 'pantip',    text: 'Board' },
-        { value: 'news',      text: 'News' },
-        { value: 'youtube',   text: 'YouTube' },
+        { value: null, text: 'All Platform' },
+        { value: 'facebook', text: 'Facebook' },
+        { value: 'twitter', text: 'X' },
+        { value: 'pantip', text: 'Board' },
+        { value: 'news', text: 'News' },
+        { value: 'youtube', text: 'YouTube' },
         { value: 'instagram', text: 'Instagram' },
-        { value: 'blockdit',  text: 'Blockdit' },
-        { value: 'tiktok',    text: 'Tiktok' },
-        { value: 'threads',   text: 'Threads' }
+        { value: 'blockdit', text: 'Blockdit' },
+        { value: 'tiktok', text: 'Tiktok' },
+        { value: 'threads', text: 'Threads' }
       ]
     }
   },
@@ -159,7 +150,7 @@ export default {
         this.local.names = safe.names || []
         this.local.source = safe.source?.length ? safe.source : [null]
         this.local._sourcePrev = [...this.local.source]
-        this.local.sentiment = (safe.sentiment || [-1,0,1]).map(Number)
+        this.local.sentiment = (safe.sentiment || [-1, 0, 1]).map(Number)
 
         if (safe.from && safe.to) {
           this.local.valueDate = [
@@ -211,10 +202,10 @@ export default {
     getDateRangeLocal() {
       const arr = this.local?.valueDate || []
       const hasStart = Array.isArray(arr) && !!arr[0]
-      const hasEnd   = Array.isArray(arr) && !!arr[1]
+      const hasEnd = Array.isArray(arr) && !!arr[1]
 
       if (!hasStart || !hasEnd) {
-        const endYMD   = moment().format('YYYY-MM-DD')
+        const endYMD = moment().format('YYYY-MM-DD')
         const startYMD = moment(endYMD).subtract(2, 'days').format('YYYY-MM-DD')
         return { from: `${startYMD}T00:00:00`, to: `${endYMD}T23:59:59` }
       }
@@ -277,14 +268,37 @@ export default {
 <style>
 .sl-pp .vs__selected-options {
   overflow: auto;
-  max-height:64px ;
+  max-height: 64px;
 }
 </style>
 <style scoped>
 
-.shadow-sm { border-radius: 20px; }
-button:disabled { opacity: .6; cursor: not-allowed; }
+.box-face {
+  padding: 3px 18px;
+  width: fit-content;
+  border-radius: 8px;
+ background: linear-gradient(to top, #fed16e, #f7deab)
+}
+.shadow-sm {
+  border-radius: 20px;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
 @media only screen and (min-width: 0) and (max-width:1100px) {
-  .checkbox-v { zoom: 85% }
+  .checkbox-v {
+    zoom: 85%
+  }
+
+  .form-group {
+    margin-bottom: 0px;
+  }
+
+  .mx-datepicker-range {
+    width: 100% !important;
+  }
 }
 </style>
