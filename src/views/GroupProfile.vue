@@ -7,6 +7,7 @@
             <div class="d-flex align-items-center mb-3">
                 <b-col @click="toMonitor('MonitorList')" cols="auto pl-0" style="cursor: pointer;" class="m-0">Monitor</b-col>
                 <b-icon icon="chevron-right" class=""/>
+                <b-col cols="auto" class="m-0 font-weight-bold">Group</b-col>
             </div>
             <ProfileGroup />
         </div>

@@ -221,8 +221,8 @@
                 :comments-limit="20" style="right: 5px;" v-if="!loadingTimeline" /> -->
 
                 <ExportExcelButton :posts="postForExport" :filters="formFilters"
-                    :disabled="loading || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
-                    :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loadingTimeline" />
+                    :disabled="loadAllPost || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
+                    :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loadAllPost" />
                     
                 <div data-v-633a0eda="" class="text-right allpost"> 
                     ทั้งหมด <b data-v-633a0eda="">{{total_posts || 0 | numFormat}}</b> โพสต์
@@ -286,6 +286,7 @@ export default {
             lastParamsSnapshot: null, // เก็บ params ล่าสุด
             loading: false,
             loadingTimeline: false,
+            loadAllPost: false,
             groupDetails: {},
             openModal: false,
             search: '',
@@ -526,7 +527,7 @@ export default {
             console.log("get all post");
             
             // try {
-            this.loadingTimeline = true
+            this.loadAllPost = true
             // สร้าง params ใหม่
             // const params = {
             //     group_id: this.$route.query.id,
@@ -584,11 +585,11 @@ export default {
                 //     showAll: false,
                 // }));
                 this.postForExport = response.data.posts
-                this.loadingTimeline = false
+                this.loadAllPost = false
                
             }).catch(error => {
                 console.error('Error fetching posts:', error);
-                this.loadingTimeline = false;
+                this.loadAllPost = false;
             });
         },
         async getGroupDetail() {
@@ -632,7 +633,7 @@ export default {
             handler(newVal, oldVal) {
                 this.apiGetAllPost();
             },
-            immediate: true
+            // immediate: true
         }
     }
 

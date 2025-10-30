@@ -10,7 +10,7 @@
       <!-- <b-col v-for="(domain, k) in getListDomain" :key="k"> -->
         <vue-element-loading v-if="loading" style="top: 50%; left: 50%;" :active="true" size="50" background-color="rgba(255, 255, 255, 0.1)"
         spinner="line-scale" color="#b6ac9a" />
-      <b-col v-else v-for="(domain, k) in getListDomain" :key="k">
+      <b-col v-else v-for="(domain, k) in domainList" :key="k">
         <span id="box-domain" class="mt-3 mb-3 h5" @click="toDomainStat(domain)">
           <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.8)"
             color="#b6ac9a" />

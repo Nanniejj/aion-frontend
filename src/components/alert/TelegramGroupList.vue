@@ -96,7 +96,7 @@
           <div v-else>
                <!-- {{ groupOptions }} -->
            
-            <v-select class="mb-3" :options="groupOptions" v-model="groupSetting.monitorGroupId"
+            <v-select class="mb-3" multiple :options="groupOptions" v-model="groupSetting.monitorGroupId"
               :reduce="g => g.group_id" label="group_name" placeholder="ค้นหา/เลือก Group" 
             />
             <div v-if="groupSetting.monitorGroupId" class="text-muted small">
@@ -192,9 +192,11 @@ import axios from "axios";
 
 export default {
   watch: {
-    'groupSetting.domain_idText'(newVal, oldVal) {
-      this.getSubdomain()
-    }
+        'groupSetting.domain_idText'(newVal, oldVal) {
+            if (this.groupMode !== 'group'&& (!Array.isArray(newVal) || newVal.length > 0)) {
+                this.getSubdomain()
+            }
+        }
   },
   props: {
     domain: Array,
@@ -233,7 +235,7 @@ export default {
         statusAlert: false,
         spikePosts: 10
       },
-
+      oldGroup_id: [],
       // ตัวเลือกรายการ group จาก API
       groupOptions: [],  // { group_id, group_name }[]
       groupSearchTerm: '',
@@ -270,13 +272,13 @@ export default {
         .flatMap(sd => sd.objects || []);
     },
     selectedGroupName() {
-      const found = this.groupOptions.find(g => g.group_id === this.groupSetting.monitorGroupId);
+      const found = this.groupOptions.find(g => g.group_id === this.groupSetting.group_id);
       return found ? found.group_name : this.groupSetting.monitorGroupName || '';
     }
   },
-  mounted() {
-    this.fetchGroups();
-    this.fetchGroupOptions('');
+  async mounted() {
+    await this.fetchGroupOptions('');
+    await this.fetchGroups();
   },
   methods: {
     // ---------- โหมด Domain ----------
@@ -395,15 +397,23 @@ export default {
 
     openSetting(group) {
       this.selectedGroup = group;
-
+        
       axios
         .get(`https://api2.cognizata.com/api/v2/alert_telegram/getgroupsetting/${group._id}`)
         .then(async (res) => {
           // ตรวจว่ามีการตั้งค่าแบบ group ไหม
-          const isGroupMode = !!res.data?.monitorGroupId || !!res.data?.monitorGroupName;
-
+          const isGroupMode =
+            (Array.isArray(res.data?.group_id) ? res.data.group_id.length > 0 : !!res.data?.group_id) ||
+            !!res.data?.monitorGroupName;
+            console.log("isGroupMode === ", isGroupMode);
+            console.log("groupOptions === ", this.groupOptions);
+            
           this.groupMode = isGroupMode ? 'group' : 'domain';
-
+            const validGroupId = (res.data.group_id || []).filter(id =>
+            this.groupOptions.some(opt => opt.group_id === id)
+            );
+            console.log("validGroupId === ", validGroupId);
+            this.oldGroup_id = res.data.group_id || [];
           this.groupSetting = {
             // domain mode fields
             domain_idText: isGroupMode ? null : (res.data.domain_id || null),
@@ -411,7 +421,7 @@ export default {
             object_idText: isGroupMode ? [] : (res.data.object_id || []),
 
             // group mode fields
-            monitorGroupId: res.data.monitorGroupId || null,
+            monitorGroupId: validGroupId,
             monitorGroupName: res.data.monitorGroupName || '',
 
             // common filters
@@ -427,8 +437,8 @@ export default {
           };
 
           // โหลด group options (เพื่อโชว์ label) ถ้าเป็นโหมด group
-          if (this.groupMode === 'group') {
-            await this.fetchGroupOptions('');
+          if (this.groupMode === 'group' && this.groupOptions.length === 0) {
+            // await this.fetchGroupOptions('');
           }
 
           this.showSettingModal = true;
@@ -446,7 +456,15 @@ export default {
         object_id: isDomainMode ? this.groupSetting.object_idText : [],
 
         // โหมด group: ส่งเฉพาะ group ที่เลือก
-        monitorGroupId: !isDomainMode ? this.groupSetting.monitorGroupId : null,
+        // group_id: !isDomainMode ? this.groupSetting.monitorGroupId : null,
+        group_id: !isDomainMode
+            ? Array.from(
+                new Set([
+                    ...(this.groupSetting.monitorGroupId || []),
+                    ...(this.oldGroup_id || [])
+                ])
+                )
+            : null,
         monitorGroupName: !isDomainMode ? this.selectedGroupName : '',
 
         // ฟิลด์ส่วนกลาง
@@ -462,7 +480,7 @@ export default {
         spikePosts: this.groupSetting.spikePosts || null,
         lastSentPostId: null
       };
-
+      console.log('payload === ', payload);
       axios
         .put(`https://api2.cognizata.com/api/v2/alert_telegram/updategroupsetting/${this.selectedGroup._id}`, payload)
         .then(() => {

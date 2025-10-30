@@ -103,7 +103,7 @@
                                 highlightClassName="highlight2"
                                 :searchWords="keywordArray"
                                 :autoEscape="true"
-                                :textToHighlight="item.showAll ? item.full_text : item.full_text.substring(0, 200)"
+                                :textToHighlight="item.showAll ? item.full_text.replace('...___...','') : item.full_text.replace('...___...','').substring(0, 200)"
                                 />
                             </span>
                             <span 

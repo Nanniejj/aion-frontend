@@ -239,15 +239,15 @@ export default {
     numFormat(n) {
       if (!n) return 0;
       if (n < 1e3) return n;
-      if (n < 1e6) return (n / 1e3).toFixed(1) + "K";
-      if (n < 1e9) return (n / 1e6).toFixed(1) + "M";
-      if (n < 1e12) return (n / 1e9).toFixed(1) + "B";
-      return (n / 1e12).toFixed(1) + "T";
+      if (n < 1e6) return (n / 1e3).toFixed(2) + "K";
+      if (n < 1e9) return (n / 1e6).toFixed(2) + "M";
+      if (n < 1e12) return (n / 1e9).toFixed(2) + "B";
+      return (n / 1e12).toFixed(2) + "T";
     },
     pct(n) {
       const total = this.totalPlatformPosts || 0;
       if (!total) return "0%";
-      return ((Number(n) || 0) * 100 / total).toFixed(1) + "%";
+      return ((Number(n) || 0) * 100 / total).toFixed(2) + "%";
     }
   },
 }

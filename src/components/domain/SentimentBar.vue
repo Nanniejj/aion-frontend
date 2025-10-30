@@ -12,7 +12,7 @@
             <span class="lbvp bold">
               <span class="label-text">
                 {{ positive | numFormat }} posts
-                <span class="pct">({{ valpos.toFixed(1) }}%)</span>
+                <span class="pct">({{ valpos.toFixed(2) }}%)</span>
               </span>
             </span>
           </b-progress>
@@ -32,7 +32,7 @@
             <span class="lbv bold">
                <span class="label-text">
               {{ neutral | numFormat }} posts
-              <span class="pct">({{ valneutral.toFixed(1) }}%)</span></span>
+              <span class="pct">({{ valneutral.toFixed(2) }}%)</span></span>
             </span>
           </b-progress>
         </b-col>
@@ -51,7 +51,7 @@
             <span class="lbvn bold">
                <span class="label-text">
               {{ negative | numFormat }} posts
-              <span class="pct">({{ valnag.toFixed(1) }}%)</span></span>
+              <span class="pct">({{ valnag.toFixed(2) }}%)</span></span>
             </span>
           </b-progress>
         </b-col>

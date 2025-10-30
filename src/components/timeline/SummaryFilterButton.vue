@@ -1,5 +1,5 @@
 <template>
-    <div class="d-none">
+    <div class="">
         <!-- <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
                       title="comments analysis" v-if="postDomain.summarize">
                       <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
@@ -16,54 +16,37 @@
                 Analysis
             </span>
         </b-button> -->
-        <b-row>
-            <b-col cols="auto">
-                <button
-                    :variant="open ? 'info' : 'outline-info'"
-                    size="sm"
-                    class="analysis-button"
-                    :class="{ 'is-glowing': analyzing }"
-                    type="button"
-                    @click="summarizePosts()"
-                >
-                    <!-- :disabled="analyzing" -->
-                    <img
-                        width="22"
-                        height="22"
-                        src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
-                        alt="sparkling"
-                        class="spark-icon"
-                        style="filter: brightness(0) invert(1);"
-                    />
-                    <span class="md-font">
-                        {{ analyzing ? 'Analyzing...' : 'Analysis' }}
-                    </span>
-                </button>
-            </b-col>
-            <span v-if="fullSummary && !open" @click="toggle">เปิดบทวิเคราะห์ล่าสุด</span>
-        </b-row>
+        <b-col cols="auto">
+            <button
+                :variant="open ? 'info' : 'outline-info'"
+                size="sm"
+                class="analysis-button"
+                :class="{ 'is-glowing': analyzing }"
+                type="button"
+                @click="summarizePosts()"
+            >
+                <!-- :disabled="analyzing" -->
+                <img
+                    width="22"
+                    height="22"
+                    src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                    alt="sparkling"
+                    class="spark-icon"
+                    style="filter: brightness(0) invert(1);"
+                />
+                <span class="md-font">
+                    {{ analyzing ? 'Analyzing...' : 'วิเคราะห์โพสต์ยอดนิยม' }}
+                </span>
+            </button>
+        </b-col>
 
-        <b-collapse v-model="open" class="my-2">
+        <b-collapse v-model="open" class="mt-2">
             <b-card class="shadow-sm" style="border-radius: 16px;min-height: 100px;max-height: 400px;overflow-y: auto;">
-                <b-row class="m-0">
-                    <b-col cols="12" md="" class="px-0">การวิเคราะห์แนวโน้ม
-                        <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
-                        <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
-                        <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
-                    </b-col>
-                    <b-col cols="" md="auto" class="px-0">
-                        <b-button size="sm" variant="outline-secondary" class="float-right" @click="copyFull"
-                            :disabled="!fullSummary">
-                            คัดลอกสรุป
-                        </b-button>
-                    </b-col>
-                    <b-col cols="auto" class="">
-                        <button @click="toggle" class="btn d-inline-flex align-items-center btn-info btn-sm rounded-pill">
-                            <i class="fas fa-sliders mr-2" aria-hidden="true"></i>
-                            <span class="small">Hide</span>
-                        </button>
-                    </b-col>
-                </b-row>
+                <b-col cols="12" class="px-0">การวิเคราะห์แนวโน้มที่ได้รับความนิยมในช่วงนี้
+                    <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
+                    <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
+                    <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
+                </b-col>
                 <!-- {{ filters }} -->
                 <div v-if="analyzing" class="text-center my-3">
                     <vue-element-loading :active="analyzing" size="60" background-color="rgba(255,255,255,0.5)"
@@ -82,7 +65,7 @@
 import Swal from 'sweetalert2';
 
 export default {
-    name: "SummaryButton",
+    name: "SummaryByFilterButton",
     props: {
         posts: { type: [Array, Object], required: true }, // postsFromApi (flat array หรือ grouped daily)
         filters: { type: Object, required: true },
@@ -96,9 +79,7 @@ export default {
             analyzing: false,
             fullSummary: null,
             commentLimit: 20,
-            postLimit: 10, 
-            postsByEngagement: [], 
-            loadingPost: false,
+            postLimit: 10,    
         };
     },
     computed: {
@@ -354,9 +335,6 @@ export default {
                 });
             }
         }
-    },
-    mounted() {
-       
     },
     watch: {
         posts: {
