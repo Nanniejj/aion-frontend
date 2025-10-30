@@ -5,27 +5,16 @@
         <div class="card md-font">
           <b-row>
             <b-col style="margin-top: 5vw">
-              <!-- Nav tabs -->
-              <!-- <ul class="nav justify-content-center border nav-fill"> -->
-              <!-- <li class="nav-pills nav-fill tab ">
-                        <a class="nav-link" data-toggle="tab" href="#signup">Sign Up</a>
-                      </li> -->
-              <!-- <li class="nav-pills nav-fill tab"> -->
-              <!-- <a class="nav-link active h4" data-toggle="tab" href="#signin">Sign In</a> -->
-              <!-- </li> -->
-              <!-- </ul> -->
+              <!-- เว้นว่างสำหรับ future tabs -->
             </b-col>
           </b-row>
+
           <b-row>
             <b-col>
-              <!-- Tab panes -->
               <div class="tab-content">
-                <!-- Tab signup -->
-
-                <!-- Tab signin -->
                 <div id="signin" class="container tab-pane active">
                   <br />
-                  <form v-on:submit.prevent="login">
+                  <form @submit.prevent="login">
                     <b-row align-h="center">
                       <b-col cols="10" align-self="center">
                         <b-form-group>
@@ -35,10 +24,13 @@
                             name="username"
                             v-model="username"
                             placeholder="Username"
+                            :disabled="isLoading"
+                            autocomplete="username"
                           />
                         </b-form-group>
                       </b-col>
                     </b-row>
+
                     <b-row align-h="center">
                       <b-col cols="10" align-self="center">
                         <b-form-group>
@@ -48,17 +40,21 @@
                             name="password"
                             v-model.trim="password"
                             placeholder="Password"
+                            :disabled="isLoading"
+                            autocomplete="current-password"
                           />
                         </b-form-group>
+
                         <b-alert
-                          show
+                          :show="alertShow"
                           variant="danger"
-                          v-model="alertShow"
                           class="pt-1 pb-1"
-                          >username or password is invalid</b-alert
                         >
+                          username or password is invalid
+                        </b-alert>
                       </b-col>
                     </b-row>
+
                     <b-row align-h="center">
                       <b-col cols="10" align-self="center">
                         <b-row>
@@ -70,6 +66,7 @@
                                 name="checkbox-1"
                                 value="check"
                                 unchecked-value="uncheck"
+                                :disabled="isLoading"
                               >
                                 <strong>Remember me</strong>
                               </b-form-checkbox>
@@ -83,15 +80,24 @@
                         </b-row>
                       </b-col>
                     </b-row>
+
                     <b-row align-h="center">
                       <b-col cols="8" align-self="center">
-                        <button
+                        <b-button
                           type="submit"
-                          class="btn btn-primary submit md-font"
-                          ref="sendLogin"
+                          class="submit md-font"
+                          variant="primary"
+                          block
+                          :disabled="isLoading"
                         >
-                          Login
-                        </button>
+                          <!-- <b-spinner
+                            v-if="isLoading"
+                            small
+                            class="mr-2"
+                            label="Loading"
+                          /> -->
+                          {{ isLoading ? 'Logging in...' : 'Login' }}
+                        </b-button>
                       </b-col>
                     </b-row>
                   </form>
@@ -99,10 +105,12 @@
               </div>
             </b-col>
           </b-row>
+
           <br />
         </div>
       </b-col>
     </b-row>
+
     <b-modal id="my-modal2" class="md-font" v-model="modalShow2">
       <div class="d-block text-center mt-3">
         <i class="fas fa-exclamation-circle fa-3x mb-2"></i>
@@ -114,8 +122,9 @@
         block
         @click="modalShow2 = false"
         style="width: 40%; margin: auto"
-        >Close</b-button
       >
+        Close
+      </b-button>
     </b-modal>
   </b-container>
 </template>
@@ -125,6 +134,7 @@ import axios from "axios";
 import { mapGetters } from "vuex";
 
 export default {
+  name: "Login",
   computed: {
     ...mapGetters(["getToken"]),
   },
@@ -136,15 +146,18 @@ export default {
       username: "",
       password: "",
       result: "",
+      isLoading: false, // สถานะโหลดปุ่ม
     };
   },
   methods: {
-    login() {
-      var _this = this;
-      var config = {
+    async login() {
+      if (this.isLoading) return; // ป้องกันกดซ้ำ
+      this.alertShow = false;
+
+      const config = {
         method: "post",
         url: "https://api2.cognizata.com/api/auth/login",
-        //url: "http://127.0.0.1:3000/api/auth/login",
+        // url: "http://127.0.0.1:3000/api/auth/login",
         headers: {
           "Content-Type": "application/json",
         },
@@ -153,39 +166,40 @@ export default {
           password: this.password.trim(),
         },
       };
-      axios(config)
-        .then(function({ data }) {
-          //commit('setLogin', response.data);
-          // console.log(data)
-          localStorage.setItem("token", data.accessToken);
-          localStorage.setItem("reftoken", data.refreshToken);
-          localStorage.setItem("reftokenOpt", data.reftokenOpt);
-          let objId = data.accessToken.split(".");
-          const decodedData = atob(objId[1]); // decode the string
-          let obj = JSON.parse(decodedData);
-          // console.log(decodedData);
-          localStorage.setItem("objId", obj.id);
-          localStorage.setItem("username", obj.username);
-          localStorage.setItem("roleMion", obj.mion);
-          localStorage.setItem("projectId", obj.projectid);
-          _this.$store.commit("setPushDomainStat", false);
-          let mi =JSON.parse(localStorage.getItem("roleMion"));
-          _this.$store.commit('setRoleMion',mi)
-          // console.log("decodedData", obj.mion);
-          _this.$store.commit('setShowIntro',true)
-          // _this.$emitter.emit('showIntro',true)
-          _this.$router.push({ name: "Domain" });
-          // _this.$router.push({ name: "Section" });
-        })
-        .catch(function(response) {
-          console.log("errrrrrr", response.message);
-          let err = response.message;
-          if (err == "Request failed with status code 422") {
-            _this.alertShow = true;
-          } else {
-            _this.modalShow2 = true;
-          }
-        });
+
+      this.isLoading = true;
+      try {
+        const { data } = await axios(config);
+
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("reftoken", data.refreshToken);
+        localStorage.setItem("reftokenOpt", data.reftokenOpt);
+
+        const objId = data.accessToken.split(".");
+        const decodedData = atob(objId[1]);
+        const obj = JSON.parse(decodedData);
+
+        localStorage.setItem("objId", obj.id);
+        localStorage.setItem("username", obj.username);
+        localStorage.setItem("roleMion", obj.mion);
+        localStorage.setItem("projectId", obj.projectid);
+
+        this.$store.commit("setPushDomainStat", false);
+        const mi = JSON.parse(localStorage.getItem("roleMion"));
+        this.$store.commit("setRoleMion", mi);
+        this.$store.commit("setShowIntro", true);
+
+        this.$router.push({ name: "Domain" });
+      } catch (err) {
+        console.log("errrrrrr", err?.message || err);
+        if (err?.response?.status === 422 || err?.message?.includes("422")) {
+          this.alertShow = true;
+        } else {
+          this.modalShow2 = true;
+        }
+      } finally {
+        this.isLoading = false;
+      }
     },
   },
 };

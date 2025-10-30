@@ -1,13 +1,13 @@
 <!-- TopAccountsCard.vue -->
 <template>
   <div class="py-2 mx-0 box-spot-bg">
-    <vue-element-loading :active="loading" size="80" background-color="rgba(255,255,255,0.5)" color="#b6ac9a" />
+    <vue-element-loading :active="loading" size="0" background-color="rgba(255,255,255,0.5)" color="#b6ac9a" />
 
     <!-- header + controls -->
 
     <b-row>
       <b-col class="text-left" cols="12" md="6">
-        <h5 class="mb-sm-0">Top 10 Users </h5>
+        <h5 class="mb-sm-0 mb-0">Top 10 Users </h5>
         <div class="text-left text-muted">
           <small>บัญชีที่กล่าวถึงมากที่สุด 10 อันดับ </small>
         </div>
@@ -45,15 +45,16 @@
         <div class="slider" ref="slider">
           <div class="d-flex box-flex-small">
             <div v-for="(item, i) in rows" :key="item.uid" class="slider-item px-2">
-              <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0">
+              <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0"
+                @click="onCardClick(item)" style="cursor:pointer">
                 <div class="d-flex justify-content-between p-2">
                   <span class="position-absolute h6 py-2 bold pt-3 px-1 " style="color:#7782bf;">{{ i + 1 }}</span>
-                 
+
                 </div>
                 <div class="ta-hero d-flex flex-column align-items-center justify-content-center">
                   <b-avatar :src="item.profile_image || null"
                     :text="!item.profile_image ? initials(item.name || item.uid) : null" size="72" variant="light"
-                    class="mb-2 avatar-d" />
+                    class="mb-2 avatar-d" style="background-color: #918f8a !important;" />
                   <img v-if="item.source === 'twitter'" :src="imgtw" class="social-img" />
                   <img v-if="item.source === 'facebook'" :src="imgfb" class="social-img" />
                   <img v-if="item.source === 'pantip'" :src="imgpt" class="social-img" />
@@ -64,15 +65,16 @@
                   <img v-if="item.source === 'tiktok'" :src="imgtt" class="social-img" />
                   <img v-if="item.source === 'threads'" :src="imgtd" class="social-img" />
                   <div class="text-center px-3">
-                    <a :href="item.link_crawl" target="_blank">
+                    <a :href="item.link_crawl" target="_blank" @click.stop>
                       <div class="mb-0 text-truncate small">{{ item.name || item.uid }}</div>
                       <!-- <small class="text-muted text-truncate d-block">@{{ item.uid }}</small> -->
                     </a>
                   </div>
-                  <div class="py-0 my-0"><small class="text-muted " >กล่าวถึง</small></div>
+                  <div class="py-0 my-0"><small class="text-muted ">กล่าวถึง</small></div>
                   <div class=" py-0 my-0">
-                    
-                  <span class="bold mx-1"> {{ item.count | numFormat}}</span>   <small class="text-muted" style="font-size: x-small;">โพสต์</small>
+
+                    <span class="bold mx-1"> {{ item.count | numFormat }}</span> <small class="text-muted"
+                      style="font-size: x-small;">โพสต์</small>
                   </div>
                 </div>
                 <div class="px-3 pb-3">
@@ -114,7 +116,7 @@
 
       <TopAccountsProgress :items="chartItems" :limit="chartLimit"
         :order="sortBy.startsWith('count') ? (sortBy === 'count-asc' ? 'asc' : 'desc') : 'desc'"
-        @add-watch="$emit('add-watch', $event)" />
+        @add-watch="onCardClick" />
     </div>
   </div>
 </template>
@@ -124,8 +126,10 @@ import TopAccountsChart from './TopAccountsChart.vue';
 import TopAccountsProgress from './TopAccountsProgress.vue';
 export default {
   name: 'TopAccountsCard',
+  emits: ['filter-account'],
   components: { TopAccountsChart, TopAccountsProgress },
   props: {
+    loading: { type: Boolean, default: false },
     accounts: { type: Array, required: true },
     limit: { type: Number, default: 0 },     // จำกัดจำนวนการ์ดในโหมด Cards
     loading: { type: Boolean, default: false },
@@ -221,6 +225,14 @@ export default {
     }
   },
   methods: {
+    onCardClick(item) {
+      // ส่งค่าที่จำเป็นไปให้หน้า Post
+      this.$emit('filter-account', {
+        uid: item.uid,
+        name: item.name || item.uid,
+        source: item.source || this.guessSource(item.link_crawl || '')
+      });
+    },
     setView(v) {
       this.view = v;
       this.$nextTick(() => this.resetScroll());
@@ -243,12 +255,43 @@ export default {
     },
     guessSource(url = '') {
       if (!url) return 'unknown';
-      if (/twitter\.com|x\.com/i.test(url)) return 'twitter';
-      if (/youtube\.com|youtu\.be/i.test(url)) return 'youtube';
-      if (/facebook\.com/i.test(url)) return 'facebook';
-      if (/instagram\.com/i.test(url)) return 'instagram';
+
+      let host = '';
+      try {
+        const u = new URL(url.startsWith('http') ? url : 'https://' + url);
+        host = (u.hostname || '').toLowerCase();
+      } catch (e) {
+        host = (url || '').toLowerCase();
+      }
+
+      // X / Twitter (รวม t.co)
+      if (/(^|\.)x\.com$|(^|\.)twitter\.com$|(^|\.)t\.co$/.test(host)) return 'twitter';
+
+      // YouTube
+      if (/(^|\.)youtube\.com$|(^|\.)youtu\.be$/.test(host)) return 'youtube';
+
+      // Facebook (รวม m.facebook, fb.me, fb.watch)
+      if (/(^|\.)facebook\.com$|(^|\.)m\.facebook\.com$|(^|\.)fb\.me$|(^|\.)fb\.watch$/.test(host)) return 'facebook';
+
+      // Instagram (รวม ig.me)
+      if (/(^|\.)instagram\.com$|(^|\.)ig\.me$/.test(host)) return 'instagram';
+
+      // Pantip (Board)
+      if (/(^|\.)pantip\.com$/.test(host)) return 'pantip';
+
+      // Blockdit
+      if (/(^|\.)blockdit\.com$/.test(host)) return 'blockdit';
+
+      // TikTok
+      if (/(^|\.)tiktok\.com$/.test(host)) return 'tiktok';
+
+      // Threads
+      if (/(^|\.)threads\.net$/.test(host)) return 'threads';
+
+      // อื่น ๆ ถือเป็นข่าว/เว็บไซต์ทั่วไป
       return 'news';
     },
+
     sourceVariant(s) {
       const m = { twitter: 'info', youtube: 'danger', facebook: 'info', news: 'secondary', instagram: 'warning', unknown: 'dark' };
       return m[(s || 'unknown').toLowerCase()] || 'secondary';
@@ -262,9 +305,18 @@ export default {
   }
 };
 </script>
+<!-- <style>
+.b-avatar-img img {
+    width: 100%;
+    height: unset !important; 
+    /* max-height: auto !important; */
+    border-radius:unset !important;
 
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+</style> -->
 <style scoped>
-
 .social-img {
   width: 35px !important;
   margin-top: -40px !important;
@@ -308,7 +360,7 @@ export default {
 .slider-item {
   flex: 0 0 auto;
   width: 200px;
-  
+
 }
 
 .slider-button {
@@ -333,13 +385,13 @@ export default {
   overflow: hidden;
   transition: transform .15s ease, box-shadow .15s ease;
   background: #fff;
-  
+
 }
 
 .ta-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, .08);
-  
+
 }
 
 .ta-card.ta-top {
@@ -348,19 +400,21 @@ export default {
 
 .ta-hero {
   padding: 20px 16px 8px;
-    border-radius: 20px;
- background: #17A3B8CE; 
- box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
-  background:linear-gradient(to top, #b8d3d3a4, #decff0);
-    /* background: linear-gradient(0deg, #ffe6e6 40%, #FDD071 100%); */
+  border-radius: 20px;
+  background: #17A3B8CE;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  background: linear-gradient(to top, #b8d3d3a4, #decff0);
+  /* background: linear-gradient(0deg, #ffe6e6 40%, #FDD071 100%); */
 }
 
 .text-truncate {
   max-width: 180px;
 }
-a{
+
+a {
   color: #2c3e50;
 }
+
 @media (max-width: 800px) {
   .slider-button.btn-left {
     background: #fed06ebf;
@@ -387,16 +441,19 @@ a{
   .slider-item {
     width: 120px;
   }
-  .avatar-d{
+
+  .avatar-d {
     width: 45px !important;
-    height:45px !important;
+    height: 45px !important;
   }
-  .social-img{
+
+  .social-img {
     width: 25px !important;
-    height: 25px!important;
-      margin-top: -35px !important;
+    height: 25px !important;
+    margin-top: -35px !important;
   }
-  .btn-sw{
+
+  .btn-sw {
     zoom: 75%;
   }
 }

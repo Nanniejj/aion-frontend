@@ -1,21 +1,47 @@
 <template>
-      <div id="overflow-page">
+  <div id="overflow-page">
     <HomeNav id="navHome" />
     <div id="content">
-        <TopRankingPost />
+      <back-to-top bottom="50px" right="50px">
+        <button type="button" class="btn btn-to-top">
+          <i class="fa fa-chevron-up"></i>
+        </button>
+      </back-to-top>
+
+      <TopRankingPost />
     </div>
-    </div>
+  </div>
 </template>
 <script>
 import HomeNav from "@/components/HomeNav.vue";
 import TopRankingPost from "@/components/rankingperson/TopRankingPost.vue";
 export default {
-    components: {
-        HomeNav,TopRankingPost
-    }
+  components: {
+    HomeNav, TopRankingPost
+  }
 }
 </script>
 <style scoped>
+.btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+  background-color: #fed16e;
+  border-color: #fed16e;
+  color: #fff;
+  box-shadow: 2px 1px 4px #888888;
+}
+
+.btn-to-top:hover {
+
+  background-color: #f7c24e;
+  border-color: #f7c24e;
+  color: #fff;
+}
+
 * {
   font-family: "Prompt", "FontAwesome", sans-serif;
 }
@@ -117,6 +143,19 @@ export default {
     margin-top: 20pt;
     margin-left: 11.5rem;
     margin-bottom: 10pt;
+  }
+}
+
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+  .vue-back-to-top {
+    right: 14px !important;
+  }
+
+  .btn-to-top {
+    width: 50px;
+    height: 50px;
+    padding: 10px 13px;
+
   }
 }
 

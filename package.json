@@ -34,6 +34,7 @@
     "form-data": "^4.0.0",
     "fs": "^0.0.1-security",
     "heatmap.js": "^2.0.5",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "image-size": "^1.0.2",
     "jquery": "^3.6.0",

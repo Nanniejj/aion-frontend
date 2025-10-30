@@ -1,28 +1,17 @@
 <template>
   <div>
+    <div class="container">
+    <div class="h2 bold text-left mt-3 mt-md-4">Person Ranking</div>
     <RankingFilter v-model="filters" @input="onFilterReady" />
 
     <template v-if="isReady">
-      <PodiumTop3
-        :from="filters.from"
-        :to="filters.to"
-        :source="filters.source"      
-        :names="filters.names"
-        :sentiment="filters.sentiment"
-        :limit="filters.limit"
-        :refreshSec="0"
-      />
+      <PodiumTop3 :from="filters.from" :to="filters.to" :source="filters.source" :names="filters.names"
+        :sentiment="filters.sentiment" :limit="10" :refreshSec="0" />
 
-      <TopUserRanking
-        :from="filters.from"
-        :to="filters.to"
-        :source="filters.source"      
-        :sentiment="filters.sentiment"
-        :names="filters.names"
-        :limit="filters.limit"
-      />
+      <TopUserRanking :from="filters.from" :to="filters.to" :source="filters.source" :sentiment="filters.sentiment"
+        :names="filters.names" :limit="filters.limit" />
     </template>
-   
+</div>
   </div>
 </template>
 
@@ -49,3 +38,10 @@ export default {
   },
 };
 </script>
+<style scoped>
+@media (max-width: 800px) {
+  .h2 {
+    font-size: 18px
+  }
+}
+</style>

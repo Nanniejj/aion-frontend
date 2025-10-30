@@ -518,7 +518,7 @@ const routes = [
       )
   },
   {
-    path: "/rankingperson",
+    path: "/personranking",
     name: "RankingPerson",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -529,7 +529,7 @@ const routes = [
       )
   },
    {
-    path: "/rankingperson/posts",
+    path: "/personranking/posts",
     name: "RankingPersonPost",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
