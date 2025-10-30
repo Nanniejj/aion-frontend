@@ -189,21 +189,36 @@
 
 <script>
 import axios from "axios";
-
 export default {
   watch: {
         'groupSetting.domain_idText'(newVal, oldVal) {
             if (this.groupMode !== 'group'&& (!Array.isArray(newVal) || newVal.length > 0)) {
                 this.getSubdomain()
             }
-        }
+        },
+        'groupSetting.monitorGroupId'(val) {
+            if (!Array.isArray(val)) return;
+
+            const cleaned = val.filter(v => v != null);
+            // ✅ เขียนกลับเฉพาะถ้าไม่เหมือนของเดิม
+            if (cleaned.length !== val.length) {
+                this.groupSetting.monitorGroupId = cleaned;
+            }
+        },
+        // domain: {
+        //     handler() {
+        //         this.fetchGroups();
+        //     },
+        //         // deep: true
+        // }
   },
   props: {
     domain: Array,
     searchText: String
   },
   data() {
-    return {
+      return {
+        username: "",
       showToggleModal: false,
       showDeleteModal: false,
       groups: [],
@@ -260,7 +275,8 @@ export default {
     };
   },
   computed: {
-    filteredGroups() {
+      filteredGroups() {
+        // let userGroup = this.groups.filter(group => group.isMyGroup === true);
       return this.groups.filter(group =>
         (group.groupTitle || "").toLowerCase().includes(this.searchText.toLowerCase())
       );
@@ -276,7 +292,8 @@ export default {
       return found ? found.group_name : this.groupSetting.monitorGroupName || '';
     }
   },
-  async mounted() {
+    async mounted() {
+    this.username = localStorage.getItem("username");
     await this.fetchGroupOptions('');
     await this.fetchGroups();
   },
@@ -293,7 +310,8 @@ export default {
     // ---------- โหมด Group ----------
    
    
-    async fetchGroupOptions(search = '') {
+      async fetchGroupOptions(search = '') {
+        this.loading = true;
       try {
         const token = localStorage.getItem("token");
         const url = `https://api2.cognizata.com/api/v2/monitor/monitorGroupName?type=grouplist&page=1&limit=500&search=${encodeURIComponent(search)}`;
@@ -301,13 +319,15 @@ export default {
           headers: token ? { Authorization: "Bearer " + token } : {}
         });
         // แมปให้เหลือเฉพาะที่ใช้แสดง
-        console.log('res',res.data);
+        // console.log('res',res.data);
         
         const list = Array.isArray(res.data.data) ? res.data.data : [];
-        this.groupOptions = list
+        this.groupOptions = list;
+        this.loading = false;
       } catch (e) {
         console.error('โหลด Group List ไม่สำเร็จ', e);
         this.groupOptions = [];
+        this.loading = false;
       }
     },
 
@@ -367,14 +387,28 @@ export default {
       this.loading = true;
       try {
         const res = await axios.get("https://api2.cognizata.com/api/v2/alert_telegram/getgrouptelegram");
-        this.groups = res.data || [];
+            let telegram = res.data || [];
+            this.groups = this.checkUserGroup(telegram);
+        // console.log('fetched groups', this.groups);
+        //   this.groups = res.data || [];
       } catch (err) {
         this.error = "ไม่สามารถโหลดข้อมูลกลุ่ม Telegram ได้";
       } finally {
         this.loading = false;
       }
     },
-
+      checkUserGroup(telegram) {
+        if (this.username === 'adminatapy') {
+            return telegram;
+        }
+      let filtered = telegram.filter(group =>
+                (Array.isArray(group.domain_id) &&
+                group.domain_id.some(id => this.domain.some(d => d.id === id))) ||
+                (Array.isArray(group.group_id) &&
+                group.group_id.some(id => this.groupOptions.some(d => d.group_id === id)))
+            );
+      return filtered;
+    },
     cancelToggle() {
       this.selectedGroup = null
       this.showToggleModal = false
@@ -405,14 +439,14 @@ export default {
           const isGroupMode =
             (Array.isArray(res.data?.group_id) ? res.data.group_id.length > 0 : !!res.data?.group_id) ||
             !!res.data?.monitorGroupName;
-            console.log("isGroupMode === ", isGroupMode);
-            console.log("groupOptions === ", this.groupOptions);
+            // console.log("isGroupMode === ", isGroupMode);
+            // console.log("groupOptions === ", this.groupOptions);
             
           this.groupMode = isGroupMode ? 'group' : 'domain';
-            const validGroupId = (res.data.group_id || []).filter(id =>
-            this.groupOptions.some(opt => opt.group_id === id)
-            );
-            console.log("validGroupId === ", validGroupId);
+            // const validGroupId = (res.data.group_id || []).filter(id =>
+            //     this.groupOptions.some(opt => opt.group_id === id)
+            // );
+            // console.log("validGroupId === ", validGroupId);
             this.oldGroup_id = res.data.group_id || [];
           this.groupSetting = {
             // domain mode fields
@@ -421,7 +455,7 @@ export default {
             object_idText: isGroupMode ? [] : (res.data.object_id || []),
 
             // group mode fields
-            monitorGroupId: validGroupId,
+            monitorGroupId: res.data.group_id,
             monitorGroupName: res.data.monitorGroupName || '',
 
             // common filters
@@ -456,15 +490,15 @@ export default {
         object_id: isDomainMode ? this.groupSetting.object_idText : [],
 
         // โหมด group: ส่งเฉพาะ group ที่เลือก
-        // group_id: !isDomainMode ? this.groupSetting.monitorGroupId : null,
-        group_id: !isDomainMode
-            ? Array.from(
-                new Set([
-                    ...(this.groupSetting.monitorGroupId || []),
-                    ...(this.oldGroup_id || [])
-                ])
-                )
-            : null,
+        group_id: !isDomainMode ? this.groupSetting.monitorGroupId : null,
+        // group_id: !isDomainMode
+        //     ? Array.from(
+        //         new Set([
+        //             ...(this.groupSetting.monitorGroupId || []),
+        //             ...(this.oldGroup_id || [])
+        //         ])
+        //         )
+        //     : null,
         monitorGroupName: !isDomainMode ? this.selectedGroupName : '',
 
         // ฟิลด์ส่วนกลาง
@@ -480,7 +514,7 @@ export default {
         spikePosts: this.groupSetting.spikePosts || null,
         lastSentPostId: null
       };
-      console.log('payload === ', payload);
+    //   console.log('payload === ', payload);
       axios
         .put(`https://api2.cognizata.com/api/v2/alert_telegram/updategroupsetting/${this.selectedGroup._id}`, payload)
         .then(() => {
@@ -495,7 +529,7 @@ export default {
       this.showSettingModal = false;
       
     }
-  }
+    },
 };
 </script>
 

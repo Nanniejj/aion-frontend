@@ -217,7 +217,7 @@
       <!-- <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsForAnalysis" :filters="filters" :loading="loading" :topN="5" /> -->
       <!-- <SummaryFilterButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" /> -->
       <SummaryButton
-        v-if="!loading"
+        v-if="!loading && username === 'adminatapy'"
         class="text-left mb-3"
         :posts="filters.keywordInput === '' && filters.hashtags.length === 0 ? postsFromApi : postsForAnalysis"
         :filters="filters"
@@ -292,7 +292,12 @@ function uid() {
 }
 export default {
   components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal, ExportExcelButton,SummaryButton,SummaryFilterButton },
-  watch: {
+    data() {
+        return {
+            username: "",
+        }
+    },
+    watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
       const arr = toArr(val);
@@ -442,7 +447,8 @@ export default {
     }
 
   },
-  mounted() {
+    mounted() {
+    this.username = localStorage.getItem("username");
     if (!this.valueDate[0]) {
       this.filters.startLocal = moment(new Date()).format("YYYY-MM-DD") + "T00:00:00";
       this.filters.endLocal = moment(new Date()).format("YYYY-MM-DD") + "T23:59:59";
@@ -454,7 +460,9 @@ export default {
     this.$store.commit("setDomainArr", domain);
     this.apiTimeline();
     this.$nextTick(() => this.createObserver());
-    this.apiGetPostForAnalysis();
+    if (this.filters.view_mode !== 'daily') {
+        this.apiGetPostForAnalysis();
+    }
   },
   beforeDestroy() {
     if (this.observer) this.observer.disconnect();
@@ -578,11 +586,13 @@ export default {
       
         this.apiTimeline();
         
-        this.apiGetPostForAnalysis();
+       if (this.filters.view_mode !== 'daily') {
+            this.apiGetPostForAnalysis();
+        }
         
     },
     handlePointClick({ seriesName, x, y, localText, isoUtc, isoLocal }) {
-      console.log('Clicked:', seriesName, y, localText, isoLocal.slice(0, 14))
+    //   console.log('Clicked:', seriesName, y, localText, isoLocal.slice(0, 14))
       let date = isoLocal.slice(0, 14)
       const hourStart = date + "00:00";
       const hourEnd = date + "59:59";
@@ -608,7 +618,7 @@ export default {
       // this.applyRangeAndReload(hourStart, hourEnd);
     },
     handleRange({ start, end, startIsoLocal, endIsoLocal }) {
-      console.log('Selected range:', startIsoLocal.slice(0, 16), endIsoLocal.slice(0, 16))
+    //   console.log('Selected range:', startIsoLocal.slice(0, 16), endIsoLocal.slice(0, 16))
       const startIso = startIsoLocal.slice(0, 16)
       const endIso = endIsoLocal.slice(0, 16)
       this.filters = {
@@ -1050,7 +1060,7 @@ export default {
           .filter(Boolean);
 
       next.accounts = [...new Set(accounts.map(s => s.replace(/^@/, "").replace(/\/+$/, "")))]
-      console.log(' next.accounts', next.accounts);
+    //   console.log(' next.accounts', next.accounts);
 
       // ✅ hashtags (ใหม่): รองรับ array / string, ตัด '#', lower-case, dedupe
       const rawTags = next.HashtagsInput;
@@ -1104,7 +1114,9 @@ export default {
       // โหลดใหม่ปกติ
       this.postsFromApi = [];
         this.apiTimeline();
-        this.apiGetPostForAnalysis();
+        if (this.filters.view_mode !== 'daily') {
+            this.apiGetPostForAnalysis();
+        }
         
       this.showFilters = !this.showFilters
     }

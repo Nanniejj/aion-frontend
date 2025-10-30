@@ -274,15 +274,12 @@ export default {
     setAltImg(event) {
       event.target.src = this.default_avatar;
     },
-        getImageSrc(post) {
-            const fallback = require('@/assets/no-image.jpg')
-            const photo = post?.photos?.[0]
-            if (!photo) return fallback
-            return photo
-        },
-        setAltImg(e) {
-            e.target.src = require('@/assets/no-image.jpg')
-        },
+    getImageSrc(post) {
+        const fallback = require('@/assets/no-image.jpg')
+        const photo = post?.photos?.[0]
+        if (!photo) return fallback
+        return photo
+    },
     toggleComments() {
       this.showComments = !this.showComments;
     },

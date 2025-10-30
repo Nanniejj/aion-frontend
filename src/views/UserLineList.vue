@@ -366,11 +366,19 @@ export default {
       }
     }
     ,
-    async getDomain() {
+      async getDomain() {
+        const config = {
+            method: "get",
+            url: "https://api2.cognizata.com/api/v2/domain/getDomainlist",
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+        };
       try {
-        const res = await axios.get('https://api2.cognizata.com/api/v2/domain/getDomain')
-        this.domain = res.data?.results || []
-        // console.log(this.domain);
+        const res = await axios(config)
+        this.domain = res.data?.data || []
+        // console.log(res);
 
       } catch (err) {
         this.error = 'ไม่สามารถโหลดข้อมูลผู้ใช้งานได้'
