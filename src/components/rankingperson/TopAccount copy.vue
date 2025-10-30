@@ -1,11 +1,11 @@
 <!-- TopAccountsCard.vue -->
 <template>
-  <div class="mx-0 box-spot-bg">
+  <div class="py-2 mx-0 box-spot-bg">
     <vue-element-loading :active="loading" size="0" background-color="rgba(255,255,255,0.5)" color="#b6ac9a" />
 
     <!-- header + controls -->
 
-    <b-row class="position-relative">
+    <b-row>
       <b-col class="text-left" cols="12" md="6">
         <h5 class="mb-sm-0 mb-0">Top 10 Users </h5>
         <div class="text-left text-muted">
@@ -417,24 +417,21 @@ a {
 
 @media (max-width: 800px) {
   .slider-button.btn-left {
-        background: #fed06ebf;
-        color: white;
-        border: none;
-        padding: 5px 11px;
-        border-radius: 15px;
-        font-size: 20px;
-        z-index: 999;
-        left: -18px;
-        position: absolute;
-    }
+    background: #fed06ebf;
+    color: white;
+    border: none;
+    padding: 5px 11px;
+    border-radius: 15px;
+    font-size: 20px;
+  }
 
-    .slider-button.btn-right {
-        position: absolute;
-        right: -18px;
-        padding: 5px 11px;
-        background: #fed06ebf;
-        color: white;
-    }
+  .slider-button.btn-right {
+    position: absolute;
+    right: -18px;
+    padding: 5px 11px;
+    background: #fed06ebf;
+    color: white;
+  }
 
   .box-flex-small {
     width: 98vw;
@@ -442,12 +439,8 @@ a {
   }
 
   .slider-item {
-width: 140px;
+    width: 120px;
   }
-
-    .text-truncate{
-        max-width: 100px;
-    }
 
   .avatar-d {
     width: 45px !important;
@@ -462,9 +455,6 @@ width: 140px;
 
   .btn-sw {
     zoom: 75%;
-    position:absolute ;
-    top:-35px;
-    right: 5px;
   }
 }
 </style>

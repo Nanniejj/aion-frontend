@@ -6,7 +6,7 @@
     </div>
 
     <b-row v-if="!loading">
-      <b-col cols="12">
+      <b-col cols="12" class="px-0">
         <StaticTimeline :datachart="datachart" />
       </b-col>
 
