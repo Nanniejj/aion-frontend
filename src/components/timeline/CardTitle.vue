@@ -176,7 +176,7 @@
         <span v-if="c.is_top_fan" class="ml-2 small topfan"> <b-avatar icon="star-fill" size="20"
             class="icon-bg"></b-avatar>
           TOP FAN</span>
-        <span class="ml-2 small text-muted date-label2 d-block d-sm-inline" style="font-size: 12px;">
+        <span class="ml-2 small text-muted date-label2 d-block d-sm-inline" style="font-size: 12px;" v-if="c.time">
           {{ formatDate(c.time) }} {{ formatTime(c.time) }}
         </span>
         <div>

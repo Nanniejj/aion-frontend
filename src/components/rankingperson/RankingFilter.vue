@@ -8,7 +8,7 @@
       <b-row>
         <!-- เลือกบุคคล -->
         <b-col cols="12" md="6">
-          <v-select :options="options" label="text" :reduce="p => p.text" multiple class="sl-pp" v-model="local.names"
+          <v-select :options="options" label="text" :reduce="p => p.text" multiple class="sl-pp mb-2" v-model="local.names"
             :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'" :disabled="loading || options.length === 0"
             @input="emitFilters">
             <template v-slot:option="option">

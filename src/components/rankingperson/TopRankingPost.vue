@@ -1,18 +1,18 @@
 <template>
-    <div class="container my-3">
+    <div class="container my-3 ">
+
         <b-row>
-            <b-col cols="12" md="6">
+            <b-col cols="12" md="12" class="position-relative">
 
                 <div class="mt-2 text-left h6">
-                    <span class="bold" @click="$router.push('/personranking')" style="cursor: pointer;">Person Ranking
+                    <span class="bold" @click="$router.push('/personranking')" style="cursor: pointer;"> Ranking
                     </span> >
                     <span>Posts</span>
                 </div>
                 <div class="text-left">
                     All ({{ count.toLocaleString() || 0 }}) <b> {{ name }}</b>
                 </div>
-            </b-col>
-            <b-col cols="12" md="6" class="text-right">
+
                 <div class="btn-ex">
                     <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print" pill>
                         <b-icon-printer /> Print
@@ -22,72 +22,116 @@
                         :full-export="true" :prefer-single-shot="true" inline-comments="json" :comments-limit="20" />
                 </div>
             </b-col>
+
         </b-row>
 
         <hr />
+        <div class="position-relative">
+            <!-- <b-button size="sm" :variant="showFilters ? 'info' : 'outline-info'" @click="showFilters = !showFilters"
+                pill class="mr-2 filter-btn" v-b-tooltip.hover :title="showFilters ? 'Hide filters' : 'Show filters'">
+                <b-icon icon="sliders" class="mr-2 small"></b-icon>
+                <span class="small" v-if="showFilters">Hide</span>
+                <span class="small" v-else>Show</span>
+            </b-button> -->
+            <!-- Controls -->
+            <div v-if="showFilters">
+                <b-row class="my-1 mb-2">
+                    <!-- sentiment -->
+                    <b-col sm="12" md="auto">
+                        <b-form-radio-group v-model="selected" :options="options" name="radio-inline"
+                            class="mt-1 mb-2 text-left ml-2 rdo" @change="resetAndFetch" size="sm" />
+                    </b-col>
 
-        <!-- Controls -->
-        <div>
-            <b-row class="my-1 mb-2">
-                <!-- sentiment -->
-                <b-col sm="12" md="auto">
-                    <b-form-radio-group v-model="selected" :options="options" name="radio-inline"
-                        class="mt-1 mb-2 text-left ml-2 rdo" @change="resetAndFetch" size="sm" />
-                </b-col>
-
-                <!-- source -->
-                <b-col cols="12" md="">
-                    <!-- {{ select_social }} -->
-                    <v-select :options="itemSocial" v-model="select_social" id="search-source" label="text"
-                        :reduce="o => o.value" class="mb-2 select-sort" placeholder="Select Platform" multiple
-                        @change="resetAndFetch" />
-                    <!-- <b-form-select :options="itemSocial" v-model="select_social" @change="resetAndFetch"
+                    <!-- source -->
+                    <b-col cols="12" md="">
+                        <!-- {{ select_social }} -->
+                        <v-select :options="itemSocial" v-model="select_social" id="search-source" label="text"
+                            :reduce="o => o.value" class="mb-2 select-sort" placeholder="Select Platform" multiple
+                            @change="resetAndFetch" />
+                        <!-- <b-form-select :options="itemSocial" v-model="select_social" @change="resetAndFetch"
                         id="search-input" size="sm" class="mb-2 select-sort" placeholder="Select Platform" /> -->
-                </b-col>
+                    </b-col>
 
-                <!-- sort -->
-                <b-col cols="12" md="" class="text-right">
+                    <!-- sort -->
+                    <b-col cols="12" md="" class="text-right">
 
-                    <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
-                        @change="resetAndFetch" />
-                </b-col>
-            </b-row>
+                        <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
+                            @change="resetAndFetch" />
+                    </b-col>
+                </b-row>
 
-            <!-- keyword & date range -->
-            <b-row class="my-1">
-                <b-col md="4" class="mb-2">
-                    <b-input-group size="sm">
-                        <b-input-group-prepend is-text>keyword</b-input-group-prepend>
-                        <!-- พิมพ์ลง keywordInput ไม่กระทบการค้นหาจนกว่าจะกด -->
-                        <b-form-input v-model.trim="keywordInput" @keyup.enter="applyKeyword"
-                            placeholder="ค้นหา keyword" />
-                        <b-input-group-append>
-                            <b-button size="sm" variant="info" @click="applyKeyword">ค้นหา</b-button>
-                        </b-input-group-append>
-                    </b-input-group>
-                </b-col>
-                <b-col md="4" class="mb-2">
-                    <b-input-group size="sm">
-                        <b-input-group-prepend is-text>บัญชี</b-input-group-prepend>
-                        <b-form-input v-model.trim="accountInput" @keyup.enter="applyAccount"
-                            placeholder="ค้นหาบัญชี" />
-                        <b-input-group-append>
-                            <b-button size="sm" variant="info" @click="applyAccount">ค้นหา</b-button>
-                        </b-input-group-append>
-                    </b-input-group>
-                </b-col>
-                <b-col cols="12" md="4" class="text-right">
-                    <section id="date-picker" class="w-100">
-                        <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา"
-                            class="w-100" size="sm" :disabled-date="d => d > new Date()" value-type="format"
-                            format="YYYY-MM-DD" @change="onDateChange" id="date-domain" />
-                    </section>
-                </b-col>
-            </b-row>
+                <!-- keyword & date range -->
+                <b-row class="my-1">
+                    <b-col md="6" class="mb-2">
+                        <b-input-group size="sm">
+                            <b-input-group-prepend is-text>keyword</b-input-group-prepend>
+                            <!-- พิมพ์ลง keywordInput ไม่กระทบการค้นหาจนกว่าจะกด -->
+                            <b-form-input v-model.trim="keywordInput" @keyup.enter="applyKeyword"
+                                placeholder="ค้นหา keyword" />
+                            <b-input-group-append>
+                                <b-button size="sm" variant="info" @click="applyKeyword">ค้นหา</b-button>
+                            </b-input-group-append>
+                        </b-input-group>
+
+                    </b-col>
+                    <b-col md="6" class="mb-2">
+                        <b-input-group size="sm">
+                            <b-input-group-prepend is-text>บัญชี</b-input-group-prepend>
+                            <b-form-input v-model.trim="accountInput" @keyup.enter="applyAccount"
+                                placeholder="ค้นหาบัญชี" />
+                            <b-input-group-append>
+                                <b-button size="sm" variant="info" @click="applyAccount">ค้นหา</b-button>
+                            </b-input-group-append>
+                        </b-input-group>
+
+
+                    </b-col>
+                    <b-col cols="12" md="4" class="text-right">
+                        <section id="date-picker" class="w-100">
+                            <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา"
+                                class="w-100" size="sm" :disabled-date="d => d > new Date()" value-type="format"
+                                format="YYYY-MM-DD" @change="onDateChange" id="date-domain" />
+                        </section>
+                    </b-col>
+                </b-row>
+            </div>
+            <!-- แถบสรุปฟิลเตอร์แบบย่อ เมื่อซ่อน -->
+            <div class="py-2 px-2 shadow-sm card-hide mb-2 d-none" style="border-radius: 20px;" v-else-if="hasAnyPretty">
+                <div class="d-flex flex-wrap align-items-center">
+                    <!-- คีย์เวิร์ด -->
+                    <div v-if="pretty.keyword" class="mr-2 my-1 bold">
+                        <b-icon icon="search" class="mr-1"></b-icon> {{ pretty.keyword }}
+                    </div>
+
+                    <!-- บัญชี -->
+                    <b-badge v-if="pretty.account" pill variant="light" class="mr-2 my-1 py-2">
+                        <b-icon icon="person" class="mr-1"></b-icon>{{ pretty.account }}
+                    </b-badge>
+
+                    <!-- เซนทิเมนต์ (ถ้าไม่ใช่เลือกครบทั้ง 3) -->
+                    <b-badge v-if="pretty.sentimentsText" pill variant="light" class="mr-2 my-1 py-2">
+                        <b-icon icon="emoji-smile" class="mr-1"></b-icon>{{ pretty.sentimentsText }}
+                    </b-badge>
+
+                    <!-- แพลตฟอร์ม -->
+                    <b-badge v-if="pretty.sourceText" pill variant="light" class="mr-2 my-1 py-2">
+                        <b-icon icon="collection" class="mr-1"></b-icon>{{ pretty.sourceText }}
+                    </b-badge>
+
+                    <!-- จัดเรียง -->
+                    <b-badge v-if="pretty.sortText" pill variant="light" class="mr-2 my-1 py-2">
+                        <b-icon icon="sort-down" class="mr-1"></b-icon>{{ pretty.sortText }}
+                    </b-badge>
+
+                    <!-- ช่วงเวลา -->
+                    <b-badge v-if="pretty.dateRange" pill variant="light" class="mr-2 my-1 py-2">
+                        <b-icon icon="calendar-date" class="mr-1"></b-icon>{{ pretty.dateRange }}
+                    </b-badge>
+                </div>
+            </div>
         </div>
-
         <!-- ChartTime: ใช้ chartFilters (คัดเฉพาะฟิลด์จำเป็น และไม่เปลี่ยน reference ง่าย ๆ) -->
-        <div class="mb-3">
+        <div class="mb-3 ">
             <ChartTime :filters="chartFilters" @range-selected="onChartRangeSelected"
                 @range-cleared="onChartRangeCleared" @point-click="onChartPointClick" />
         </div>
@@ -98,7 +142,7 @@
             <top-accounts :accounts="accountItem" :limit="10" :loading="loading" @filter-account="onFilterAccount" />
         </div>
 
-      
+
 
         <!-- Posts -->
         <div>
@@ -176,6 +220,7 @@ export default {
         const toInit = `${initTo}T23:59`;
 
         return {
+            showFilters: true,
             // filters & state
             name: q.name || this.defaultName,
             keyword: "",        // ค่าที่ใช้ค้นหาจริง (apply แล้ว)
@@ -251,7 +296,46 @@ export default {
                 sort_by: this.sort || "engagement",
                 account: this.$route.query.account || undefined,
             };
+        },
+        pretty() {
+            // sentiment
+            const map = { '1': 'บวก', '0': 'กลาง', '-1': 'ลบ' };
+            const sentiments = String(this.selected || '1,0,-1')
+                .split(',').map(s => s.trim()).filter(Boolean);
+
+            const sentimentsText = (sentiments.length === 3)
+                ? '' : sentiments.map(s => map[s] || s).join(' / ');
+
+            // source labels
+            const dict = (this.itemSocial || []).reduce((acc, o) => {
+                acc[o.value] = o.text;
+                return acc;
+            }, {});
+            const srcArr = Array.isArray(this.select_social) ? this.select_social : [];
+            const sourceText = srcArr
+                .filter(v => v !== '' && v != null)
+                .map(v => dict[v] || v)
+                .join(', ');
+
+            // sort label
+            const sOpt = (this.optionSort || []).find(o => o.value === this.sort);
+            const sortText = sOpt ? sOpt.text : this.sort;
+
+            // keyword/account
+            const keyword = (this.keywordInput || '').trim();
+            const account = (this.accountInput || '').trim();
+
+            // date range
+            const d = this.local && Array.isArray(this.local.valueDate) ? this.local.valueDate : [];
+            const dateRange = (d[0] && d[1]) ? `${d[0]} → ${d[1]}` : '';
+
+            return { sentimentsText, sourceText, sortText, keyword, account, dateRange };
+        },
+        hasAnyPretty() {
+            const p = this.pretty;
+            return !!(p.keyword || p.account || p.sentimentsText || p.sourceText || p.sortText || p.dateRange);
         }
+
 
     },
     methods: {
@@ -281,6 +365,7 @@ export default {
                 sort: this.sort || 'engagement',
                 page: 1,
             }
+
             const routeObj = this.$router.resolve({
                 path: '/personranking/posts',
                 query
@@ -394,9 +479,13 @@ export default {
                 source
             };
             // console.log('params',params);
+            //   if (this.$route.query.account) {
+            //     query.account = this.$route.query.account
+            // }
+
 
             if (this.keyword) params.keyword = this.keyword; // ใช้ค่าที่ apply แล้ว
-            if (this.account) params.account = this.account;
+            if (this.account) params.account = this.$route.query.account
             if (updateFilters) {
                 this.filters = this.filters || {};
                 Object.assign(this.filters, params);
@@ -472,8 +561,6 @@ export default {
             this.fetchUserposts();
         },
         resetAndFetch() {
-            console.log('sgsdgsdgsdgsdgsdgsdgsdg');
-
             this.page = 1;
             this.fetchUserposts();
         },
@@ -533,7 +620,12 @@ export default {
         }
     },
     mounted() {
+        // ให้ช่องพิมพ์เริ่มต้นเท่ากับ keyword ใช้งานจริง (ตอนแรกว่าง)
+        this.keywordInput = this.keyword;
+
+
         if (this.$route?.query) {
+            console.log('this.$route.query.keyword', this.$route.query.keyword);
             if (this.$route.query.name) this.name = this.$route.query.name;
             if (this.$route.query.from)
                 this.from = this.$route.query.from + "T00:00:00";
@@ -550,10 +642,10 @@ export default {
             if (this.$route.query.sort) this.sort = this.$route.query.sort;
             if (this.$route.query.page) this.page = Number(this.$route.query.page) || 1;
             if (this.$route.query.account) this.account = this.$route.query.account;
+            if (this.$route.query.account) this.accountInput = this.$route.query.account;
+            if (this.$route.query.keyword) this.keywordInput = this.$route.query.keyword;
         }
 
-        // ให้ช่องพิมพ์เริ่มต้นเท่ากับ keyword ใช้งานจริง (ตอนแรกว่าง)
-        this.keywordInput = this.keyword;
 
         this.fetchUserposts();
     },
@@ -608,6 +700,23 @@ export default {
 }
 </style>
 <style scoped>
+.filter-btn {
+    top: -40px;
+    right: -1px;
+    z-index: 2;
+    position: absolute;
+}
+
+.card-hide {
+    background-image: linear-gradient(to right, #e2f2f5, #d1ecf1);
+}
+
+.btn-ex {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
 .img-issue {
     width: 24px;
     height: 24px;
@@ -686,11 +795,22 @@ export default {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
+    .filter-btn {
+        top: -6px;
+        right: -1px;
+        z-index: 2;
+    }
+
+    #chart>div>div:nth-child(1) {
+        padding-left: 3px !important;
+        padding-right: 3px !important;
+    }
+
     .btn-ex {
         zoom: 80%;
         right: 0px;
         position: absolute;
-        /* top: 0px; */
+        top: 0px;
         margin-top: 3px;
     }
 
