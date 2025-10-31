@@ -401,11 +401,12 @@ export default {
         if (this.username === 'adminatapy') {
             return telegram;
         }
-      let filtered = telegram.filter(group =>
-                (Array.isArray(group.domain_id) &&
-                group.domain_id.some(id => this.domain.some(d => d.id === id))) ||
-                (Array.isArray(group.group_id) &&
-                group.group_id.some(id => this.groupOptions.some(d => d.group_id === id)))
+          let filtered = telegram.filter(group =>
+                (group.groupTitle === this.username) 
+                // ||(Array.isArray(group.domain_id) &&
+                // group.domain_id.some(id => this.domain.some(d => d.id === id))) ||
+                // (Array.isArray(group.group_id) &&
+                // group.group_id.some(id => this.groupOptions.some(d => d.group_id === id)))
             );
       return filtered;
     },

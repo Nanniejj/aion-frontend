@@ -89,7 +89,7 @@ export default {
             // this.totalRows = resData.pagination?.totalCount || this.data.length;
             this.totalCount = resData.totalCount || this.domainList.length;
             this.loading = false;
-            // this.$emit('updated')
+            this.$emit('updated')
             
         })
         .catch((error) => {
