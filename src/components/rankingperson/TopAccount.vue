@@ -13,11 +13,18 @@
         </div>
       </b-col>
       <b-col class="text-right" cols="12" md="6">
+
+
+
         <b-button-group size="sm" class="ml-1 btn-sw">
-          <b-button :variant="view === 'cards' ? 'info' : 'outline-info'" @click="setView('cards')">
+          <b-button size="sm" @click="onCardClick({ name: '', uid: '', source: '' })" variant="text" >
+            <i class="fa fa-arrows-rotate"></i>
+            reload
+          </b-button>
+          <b-button :variant="view === 'cards' ? 'info' : 'outline-info'" @click="setView('cards')" size="sm">
             <i class="fas fa-th-large mr-1"></i> Cards
           </b-button>
-          <b-button :variant="view === 'chart' ? 'info' : 'outline-info'" @click="setView('chart')">
+          <b-button :variant="view === 'chart' ? 'info' : 'outline-info'" @click="setView('chart')" size="sm">
             <i class="fas fa-chart-bar mr-1"></i> Chart
           </b-button>
         </b-button-group>
@@ -34,7 +41,6 @@
        
       </div>
     </div> -->
-
     <!-- ===== CARDS VIEW (SLIDER) ===== -->
     <div v-if="view === 'cards'">
       <div v-if="rows.length" class="slider-container">
@@ -45,8 +51,9 @@
         <div class="slider" ref="slider">
           <div class="d-flex box-flex-small">
             <div v-for="(item, i) in rows" :key="item.uid" class="slider-item px-2">
+              <!-- {{ item }} -->
               <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0"
-                @click="onCardClick(item)" style="cursor:pointer">
+                @click="onCardClick(item)" style="cursor:pointer" href="#chart">
                 <div class="d-flex justify-content-between p-2">
                   <span class="position-absolute h6 py-2 bold pt-3 px-1 " style="color:#7782bf;">{{ i + 1 }}</span>
 
@@ -65,10 +72,9 @@
                   <img v-if="item.source === 'tiktok'" :src="imgtt" class="social-img" />
                   <img v-if="item.source === 'threads'" :src="imgtd" class="social-img" />
                   <div class="text-center px-3">
-                    <a :href="item.link_crawl" target="_blank" @click.stop>
-                      <div class="mb-0 text-truncate small">{{ item.name || item.uid }}</div>
-                      <!-- <small class="text-muted text-truncate d-block">@{{ item.uid }}</small> -->
-                    </a>
+                    <!-- <a :href="item.link_crawl" target="_blank" @click.stop> -->
+                    <div class="mb-0 text-truncate small">{{ item.name || item.uid }}</div>
+                    <!-- </a> -->
                   </div>
                   <div class="py-0 my-0"><small class="text-muted ">กล่าวถึง</small></div>
                   <div class=" py-0 my-0">
@@ -176,7 +182,7 @@ export default {
         uid: a.uid || '',
         name: a.name || a.uid || '',
         link_crawl: a.link_crawl || '#',
-        source: (a.source || this.guessSource(a.link_crawl || '') || 'unknown').toLowerCase(),
+        source: (a.source || a.source|| 'unknown').toLowerCase(),
         profile_image: a.profile_image || null
       }));
       // dedupe by uid: เก็บตัวที่ count สูงสุด
@@ -225,13 +231,19 @@ export default {
     }
   },
   methods: {
+
+
     onCardClick(item) {
+      console.log(item);
+      
       // ส่งค่าที่จำเป็นไปให้หน้า Post
       this.$emit('filter-account', {
         uid: item.name || item.uid,
         name: item.name || item.uid,
         source: item.source || this.guessSource(item.link_crawl || '')
       });
+       var element = document.querySelector("#chart");
+      element.scrollIntoView({behavior: "smooth"});
     },
     setView(v) {
       this.view = v;
@@ -417,24 +429,24 @@ a {
 
 @media (max-width: 800px) {
   .slider-button.btn-left {
-        background: #fed06ebf;
-        color: white;
-        border: none;
-        padding: 5px 11px;
-        border-radius: 15px;
-        font-size: 20px;
-        z-index: 999;
-        left: -18px;
-        position: absolute;
-    }
+    background: #fed06ebf;
+    color: white;
+    border: none;
+    padding: 5px 11px;
+    border-radius: 15px;
+    font-size: 20px;
+    z-index: 999;
+    left: -18px;
+    position: absolute;
+  }
 
-    .slider-button.btn-right {
-        position: absolute;
-        right: -18px;
-        padding: 5px 11px;
-        background: #fed06ebf;
-        color: white;
-    }
+  .slider-button.btn-right {
+    position: absolute;
+    right: -18px;
+    padding: 5px 11px;
+    background: #fed06ebf;
+    color: white;
+  }
 
   .box-flex-small {
     width: 98vw;
@@ -442,12 +454,12 @@ a {
   }
 
   .slider-item {
-width: 140px;
+    width: 140px;
   }
 
-    .text-truncate{
-        max-width: 100px;
-    }
+  .text-truncate {
+    max-width: 100px;
+  }
 
   .avatar-d {
     width: 45px !important;
@@ -461,10 +473,12 @@ width: 140px;
   }
 
   .btn-sw {
-    zoom: 75%;
-    position:absolute ;
-    top:-35px;
+    position: absolute;
+    top: -45px;
     right: 5px;
+    transform: scale(0.72);
+    transform-origin: top right;
   }
 }
 </style>
+<style></style>

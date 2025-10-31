@@ -428,7 +428,7 @@ export default {
 <style scoped>
 #chart {
   max-width: 100%;
-  margin: 24px auto;
+  margin: 0px auto;
 }
 #chart {
   margin-bottom: 0px;

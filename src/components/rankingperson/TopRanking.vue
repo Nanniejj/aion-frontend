@@ -3,38 +3,59 @@
     <b-row>
       <b-col cols="">
         <div class="py-2">
-          <b-form-input v-model="search" size="sm" placeholder="ค้นหาในผลลัพธ์..." class="w-100 w-sm-50 " />
+          <b-form-input
+            v-model="search"
+            size="sm"
+            placeholder="ค้นหาในผลลัพธ์..."
+            class="w-100 w-sm-50 "
+          />
         </div>
       </b-col>
       <b-col cols="auto">
         <div class="py-2">
-          <b-button variant="outline-info" size="sm" class="mr-2" @click="exportAllCSV"
-            :disabled="items.length === 0 || exporting">
+          <b-button
+            variant="outline-info"
+            size="sm"
+            class="mr-2"
+            @click="exportAllCSV"
+            :disabled="items.length === 0 || exporting"
+          >
             <b-spinner small v-if="exporting" class="mr-2" />
             Export
           </b-button>
-          <!-- <b-button variant="outline-secondary" size="sm" @click="fetchData" :disabled="loading">
-          รีเฟรช
-        </b-button> -->
+          <!-- <b-button variant="outline-secondary" size="sm" @click="fetchData" :disabled="loading">รีเฟรช</b-button> -->
         </div>
       </b-col>
     </b-row>
 
-
-    <!-- ❗️ไม่ paginate ฝั่ง client -->
-    <b-table :items="sortedItems" :fields="fields" :busy="loading" responsive hover :filter="search" stacked="md"
-      @sort-changed="onSort" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" head-variant="light"
-      class="mb-2 tb-person" @row-clicked="onRowClick" :tbody-tr-class="rowClass">
+    <!-- ✅ paginate ฝั่ง client -->
+    <b-table
+      :items="sortedItems"
+      :fields="fields"
+      :busy="loading"
+      responsive
+      hover
+      :filter="search"
+      stacked="md"
+      @sort-changed="onSort"
+      :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc"
+      head-variant="light"
+      class="mb-2 tb-person"
+      @row-clicked="onRowClick"
+      :tbody-tr-class="rowClass"
+      :per-page="perPage"
+      :current-page="currentPage"
+      @filtered="onFiltered"
+    >
       <template #table-busy>
         <div class="text-center my-3">
-          <!-- <b-spinner class="mr-2" /> -->
           กำลังโหลดข้อมูล...
         </div>
       </template>
 
       <template #cell(number)="data">
         <div class="d-flex align-items-center">
-          <!-- <span class="mr-2 font-weight-bold">{{ data.index + 1 + ((currentPage - 1) * perPage) }}</span> -->
           <span class="mr-2 font-weight-bold">{{ data.item.number }} </span>
           <span v-if="data.item.number === 1">🥇</span>
           <span v-else-if="data.item.number === 2">🥈</span>
@@ -46,7 +67,8 @@
         <div class="d-flex align-items-center">
           <b-avatar
             :src="(row.item.image_paths && (row.item.image_paths[0] || row.item.image_paths[1] || row.item.image_paths[2])) || defaultAvatar"
-            class="mr-2" />
+            class="mr-2"
+          />
           <div>
             <div class="text-name">{{ row.item.person_name || '—' }}</div>
           </div>
@@ -56,18 +78,32 @@
       <template #cell(count)="row">
         {{ formatNumber(row.item.count) }}
       </template>
+
       <template #cell(action)="row">
-        <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
-          @click="openPersonInNewTab(row.item)"> </span> </template>
+        <span
+          class="fas fa-list-ul text-info"
+          v-b-tooltip.hover
+          title="ดูรายละเอียด"
+          size="sm"
+          @click="openPersonInNewTab(row.item)"
+        ></span>
+      </template>
     </b-table>
 
     <div class="d-flex justify-content-between align-items-center">
       <small class="text-muted">
-        {{ totalCount }} รายการทั้งหมด • อัปเดตล่าสุด:
+        {{ items.length }} รายการทั้งหมด • อัปเดตล่าสุด:
         <span v-if="updatedAt">{{ formatDate(updatedAt) }}</span><span v-else>—</span>
       </small>
-      <!-- ใช้ pagination ตัวเดียวกับตัวเลขจาก API -->
-      <b-pagination v-model="currentPage" :per-page="perPage" :total-rows="totalCount" size="sm" align="right" />
+
+      <!-- ✅ ใช้ pagination client-side -->
+      <b-pagination
+        v-model="currentPage"
+        :per-page="perPage"
+        :total-rows="totalRows"
+        size="sm"
+        align="right"
+      />
     </div>
   </div>
 </template>
@@ -75,6 +111,7 @@
 <script>
 import axios from 'axios'
 import 'vue-select/dist/vue-select.css'
+
 export default {
   name: 'TopRanking',
   props: {
@@ -96,37 +133,32 @@ export default {
       loading: false,
       error: null,
       updatedAt: null,
-      totalCount: 0,
 
       // UI
       search: '',
-      currentPage: 1,   // คุมหน้าแสดงผลฝั่ง server
-      sortBy: null,     // ใช้ sort ฝั่ง client เพียงเพื่อแสดงผลในหน้านั้น
+      currentPage: 1,      // ใช้กับ client-side pagination
+      sortBy: null,
       sortDesc: true,
 
       fields: [
         { key: 'number', label: 'อันดับ', sortable: false, class: 'w-1' },
         { key: 'user', label: 'ชื่อบุคคล', sortable: false },
-        { key: 'count', label: 'ถูกกล่าวถึง (โพสต์)', class: 'text-right' },//sortable: true,
+        { key: 'count', label: 'ถูกกล่าวถึง (โพสต์)', class: 'text-right' }, // ไม่เปิด sortable โดย table
         { key: 'action', label: '' }
       ],
-
-      // cancelers
-      canceler: null,
 
       // avatar
       defaultAvatar: 'https://ui-avatars.com/api/?background=random&name=?',
 
-      // Export states (cache)
+      // Export
       exporting: false,
-      exportAllItems: [],
-      exportPrepared: false,
-      exportCanceler: null,
-      lastQueryKey: ''
+
+      // สถานะและตัวช่วย client-side pagination + filter
+      totalRows: 0,        // จำนวนรายการหลังกรอง (อัปเดตโดย @filtered)
     }
   },
   computed: {
-    // เรียงเฉพาะข้อมูลในหน้าที่ server ส่งมา (ไม่ตัดหน้า)
+    // จัดเรียง "ทั้งก้อน" ที่โหลดมาแล้ว (ไม่เรียงเฉพาะหน้า)
     sortedItems() {
       if (!this.sortBy) return this.items
       const arr = [...this.items]
@@ -145,54 +177,31 @@ export default {
     }
   },
   watch: {
-    from: { handler() { this.fetchData({ resetPage: true }) } },
-    to: { handler() { this.fetchData({ resetPage: true }) } },
-    source: { handler() { this.fetchData({ resetPage: true }) } },
-    sentiment: { handler() { this.fetchData({ resetPage: true }) }, deep: true },
-    names: { handler() { this.fetchData({ resetPage: true }) }, deep: true },
+    from: { handler() { this.fetchData() } },
+    to: { handler() { this.fetchData() } },
+    source: { handler() { this.fetchData() } },
+    sentiment: { handler() { this.fetchData() }, deep: true },
+    names: { handler() { this.fetchData() }, deep: true },
 
-    // เมื่อเปลี่ยนหน้า ให้ยิง API พร้อม page ใหม่
-    currentPage(newVal, oldVal) {
-      if (newVal !== oldVal) this.fetchData({ resetPage: false })
-    },
-
-    // เมื่อ sort ในตารางเปลี่ยน (client-side) → ให้ prefetch ใหม่เพื่อให้ export ตรงลำดับ
-    sortBy() { this.prefetchExportAll() },
-    sortDesc() { this.prefetchExportAll() }
+    // เปลี่ยนการ sort ฝั่ง client → ไม่ต้องโหลดใหม่
+    sortBy() { /* no-op */ },
+    sortDesc() { /* no-op */ }
   },
   mounted() {
-    this.fetchData({ resetPage: true })
+    this.fetchData()
   },
   methods: {
     // ---------- helpers ----------
     sentimentToQuery(s) {
       if (s == null || s === '') return '1,0,-1'
       if (Array.isArray(s)) return s.join(',')
-      return String(s)
-        .split(',')
-        .map(x => x.trim())
-        .filter(Boolean)
-        .join(',')
+      return String(s).split(',').map(x => x.trim()).filter(Boolean).join(',')
     },
 
     sourcesToQuery(src) {
       if (!src || (Array.isArray(src) && src.length === 0)) return undefined
-      if (Array.isArray(src)) return src.join(',')     // 'twitter,facebook'
+      if (Array.isArray(src)) return src.join(',')
       return String(src)
-    },
-
-    // query key สำหรับ cache export (ผูกกับเงื่อนไข/ตัวกรอง + sort)
-    makeQueryKey() {
-      return JSON.stringify({
-        endpoint: this.endpoint,
-        from: this.from,
-        to: this.to,
-        source: this.sourcesToQuery(this.source),
-        sentiment: this.sentimentToQuery(this.sentiment),
-        names: (this.names || []).slice().sort(),
-        sort_by: this.sortBy || null,
-        sort_dir: this.sortBy ? (this.sortDesc ? 'desc' : 'asc') : null
-      })
     },
 
     // ---------- routing / ui ----------
@@ -227,8 +236,14 @@ export default {
 
     onSort(ctx) { this.sortBy = ctx.sortBy; this.sortDesc = ctx.sortDesc },
 
+    onFiltered(filteredItems) {
+      // อัปเดตจำนวนแถวที่ใช้กับ pagination (หลังกรอง)
+      this.totalRows = filteredItems.length
+      this.currentPage = 1
+    },
+
     // ---------- URL builders ----------
-    buildUrl() {
+    buildBaseUrl() {
       const url = new URL(this.endpoint, this.apiBase)
       if (this.from) url.searchParams.set('from', this.from)
       if (this.to) url.searchParams.set('to', this.to)
@@ -244,134 +259,84 @@ export default {
         url.searchParams.set('name', this.names.join(','))
       }
 
-      url.searchParams.set('page', String(this.currentPage))
-      url.searchParams.set('limit', String(this.perPage))
-      return url.toString()
+      return url
     },
 
-    buildUrlWith(overrides = {}) {
-      const base = new URL(this.buildUrl())
-      if (overrides.page != null) base.searchParams.set('page', String(overrides.page))
-      if (overrides.limit != null) base.searchParams.set('limit', String(overrides.limit))
-      if (overrides.sort_by) base.searchParams.set('sort_by', overrides.sort_by)
-      if (overrides.sort_dir) base.searchParams.set('sort_dir', overrides.sort_dir)
-      return base.toString()
-    },
-
-    // ---------- data fetch ----------
-    async fetchData({ resetPage = false } = {}) {
-      if (resetPage) this.currentPage = 1
+    // ---------- data fetch (โหลดครั้งเดียวให้หมด) ----------
+    async fetchData() {
       this.loading = true
       this.error = null
       this.updatedAt = null
-
-      if (this.canceler) this.canceler.cancel('Canceled due to new request')
-      this.canceler = axios.CancelToken.source()
+      this.currentPage = 1
 
       try {
-        const url = this.buildUrl()
-        const { data } = await axios.get(url, {
-          cancelToken: this.canceler.token,
+        // 1) ยิงรอบแรกเพื่อรู้ total_count (และได้ข้อมูลชุดหนึ่งมาด้วย)
+        const url1 = this.buildBaseUrl()
+        // จะไม่พึ่ง pagination server อีกแล้ว เลยตั้ง limit พอสมควร
+        url1.searchParams.set('page', '1')
+        url1.searchParams.set('limit', '1000')
+
+        const { data: d1 } = await axios.get(url1.toString(), {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
 
-        const payload = Array.isArray(data) ? { items: data, total: data.length } : (data || {})
-        const rows = payload.data || payload.items || []
-        this.items = Array.isArray(rows) ? rows : []
-        this.totalCount =
-          payload.total_count ??
-          payload.total ??
-          payload.pagination?.total ??
-          this.items.length
+        const payload1 = Array.isArray(d1) ? { items: d1, total: d1.length } : (d1 || {})
+        const rows1 = payload1.data || payload1.items || []
+        const totalCount =
+          payload1.total_count ??
+          payload1.total ??
+          payload1.pagination?.total ??
+          rows1.length
 
-        this.updatedAt = new Date().toISOString()
+        // 2) ยิงรอบสอง “ครั้งเดียว” ดึงทั้งหมด (ถ้า totalCount เกินรอบแรก)
+        let fullRows = rows1
+        if (totalCount > rows1.length) {
+          const urlAll = this.buildBaseUrl()
+          urlAll.searchParams.set('page', '1')
+          urlAll.searchParams.set('limit', String(totalCount))
+          // ถ้าอยากให้สอดคล้องกับลำดับ sort บนตารางตอนแรก ให้ส่ง sort_by/dir ได้
+          if (this.sortBy) {
+            urlAll.searchParams.set('sort_by', this.sortBy)
+            urlAll.searchParams.set('sort_dir', this.sortDesc ? 'desc' : 'asc')
+          }
 
-        // ⬇️ เตรียมข้อมูล export ล่วงหน้า (ไม่บล็อก UI)
-        this.prefetchExportAll()
-      } catch (err) {
-        if (!axios.isCancel(err)) {
-          this.error = err?.message || 'ไม่สามารถโหลดข้อมูลได้'
-          this.items = []
-          this.totalCount = 0
-          this.exportPrepared = false
-          this.exportAllItems = []
+          const { data: dAll } = await axios.get(urlAll.toString(), {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          })
+
+          const payloadAll = Array.isArray(dAll) ? { items: dAll, total: dAll.length } : (dAll || {})
+          fullRows = payloadAll.data || payloadAll.items || []
         }
+
+        this.items = Array.isArray(fullRows) ? fullRows : []
+        this.totalRows = this.items.length      // ค่าเริ่มต้นก่อนกรอง
+        this.updatedAt = new Date().toISOString()
+      } catch (err) {
+        this.error = err?.message || 'ไม่สามารถโหลดข้อมูลได้'
+        this.items = []
+        this.totalRows = 0
       } finally {
         this.loading = false
       }
     },
 
-    async prefetchExportAll() {
-      try {
-        // ถ้าจำนวนในหน้าปัจจุบันเท่ากับทั้งหมดอยู่แล้ว ใช้ชุดนี้ได้เลย
-        if (this.totalCount <= this.items.length) {
-          this.exportAllItems = this.items.slice()
-          this.exportPrepared = true
-          this.lastQueryKey = this.makeQueryKey()
-          return
-        }
-
-        const key = this.makeQueryKey()
-        if (this.exportPrepared && this.lastQueryKey === key && this.exportAllItems.length === this.totalCount) {
-          // มี cache ตรงเงื่อนไขแล้ว
-          return
-        }
-
-        // ยกเลิกงาน prefetch เดิมถ้ามี
-        if (this.exportCanceler) this.exportCanceler.cancel('Canceled export prefetch due to new request')
-        this.exportCanceler = axios.CancelToken.source()
-
-        // ดึงทั้งหมดด้วย limit = totalCount, page = 1 (พร้อม sort ถ้าต้องการให้ตรงกับตาราง)
-        const urlAll = this.buildUrlWith({
-          page: 1,
-          limit: this.totalCount,
-          ...(this.sortBy ? { sort_by: this.sortBy, sort_dir: this.sortDesc ? 'desc' : 'asc' } : {})
-        })
-
-        const { data } = await axios.get(urlAll, {
-          cancelToken: this.exportCanceler.token,
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        })
-
-        const payload = Array.isArray(data) ? { items: data, total: data.length } : (data || {})
-        const rows = payload.data || payload.items || []
-        this.exportAllItems = Array.isArray(rows) ? rows : []
-        this.exportPrepared = this.exportAllItems.length > 0
-        this.lastQueryKey = key
-      } catch (e) {
-        // เงียบไว้ ไม่รบกวน UI; ปุ่ม export จะ fallback ไปใช้หน้า current ได้
-        this.exportPrepared = false
-      }
-    },
-
     // ---------- export ----------
     async exportAllCSV() {
-      if (this.exporting) return
+      if (this.exporting || !this.items.length) return
       this.exporting = true
       try {
-        const key = this.makeQueryKey()
-        // ถ้า cache ไม่พร้อม/ไม่ตรงเงื่อนไข ให้พยายามเตรียมตอนนี้
-        if (!(this.exportPrepared && this.lastQueryKey === key && this.exportAllItems.length === this.totalCount)) {
-          await this.fetchData({ resetPage: false })
-          await this.prefetchExportAll()
-        }
-
-        const list = (this.exportPrepared && this.lastQueryKey === key) ? this.exportAllItems : this.items
-        if (!list.length) return
-
         const header = ['อันดับ', 'ชื่อ', 'ถูกกล่าวถึง (โพสต์)']
         const csvRows = [
           header,
-          ...list.map((it, idx) => [
+          ...this.items.map(it => [
             it.number,
             csvSafe(it.person_name || ''),
             it.count ?? 0
           ])
         ]
-
         const csv = csvRows.map(r => r.join(',')).join('\n')
 
-        // ✅ ใส่ BOM เพื่อให้ Excel รู้ว่าไฟล์นี้เป็น UTF-8
+        // ✅ BOM สำหรับ Excel UTF-8
         const BOM = '\uFEFF'
         const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' })
         const a = document.createElement('a')
@@ -403,11 +368,9 @@ export default {
 .tb-person {
   font-size: 15px !important;
 }
-
 .font-weight-600 {
   font-weight: 600;
 }
-
 .w-1 {
   width: 1%;
 }

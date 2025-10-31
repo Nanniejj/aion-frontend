@@ -79,7 +79,7 @@
         <div v-else>
             <b-list-group flush class="chart-box">
                 <b-list-group-item v-for="(item, i) in rows" :key="item.name + i" class="ta-row zoom"
-                    @click="onCardClick(item)" >
+                    @click="onCardClick(item)">
                     <b-row align-v="center">
                         <!-- left: rank + avatar + name -->
                         <b-col cols="4">
@@ -231,54 +231,54 @@ export default {
         view(v) { this.viewMode = v } // หาก parent เปลี่ยน prop view ให้ sync
     },
     mounted() {
-        
+
         this.fetchData()
         if (this.refreshSec > 0) this.timer = setInterval(this.fetchData, this.refreshSec * 1000)
     },
     beforeDestroy() { if (this.timer) clearInterval(this.timer) },
     methods: {
-       sentimentToQuery(s) {
-    if (s == null || s === '') return '1,0,-1'
-    if (Array.isArray(s)) return s.join(',')
-    return String(s)
-      .split(',')
-      .map(x => x.trim())
-      .filter(Boolean)
-      .join(',')
-  },
-  sourcesToQuery(src) {
-    if (!src || (Array.isArray(src) && src.length === 0)) return undefined
-    if (Array.isArray(src)) return src.join(',')
-    return String(src)
-  },
+        sentimentToQuery(s) {
+            if (s == null || s === '') return '1,0,-1'
+            if (Array.isArray(s)) return s.join(',')
+            return String(s)
+                .split(',')
+                .map(x => x.trim())
+                .filter(Boolean)
+                .join(',')
+        },
+        sourcesToQuery(src) {
+            if (!src || (Array.isArray(src) && src.length === 0)) return undefined
+            if (Array.isArray(src)) return src.join(',')
+            return String(src)
+        },
 
-  // === ใหม่: เปิดหน้าโพสต์ของบุคคลในแท็บใหม่ ===
-  openPersonInNewTab(item) {
-    const name = item?.name || ''                            // (FaceTopCards ใช้ field name)
-    const from = (this.from || '').slice(0, 10)
-    const to   = (this.to   || '').slice(0, 10)
+        // === ใหม่: เปิดหน้าโพสต์ของบุคคลในแท็บใหม่ ===
+        openPersonInNewTab(item) {
+            const name = item?.name || ''                            // (FaceTopCards ใช้ field name)
+            const from = (this.from || '').slice(0, 10)
+            const to = (this.to || '').slice(0, 10)
 
-    const source    = this.sourcesToQuery(this.source)
-    const sentiment = this.sentimentToQuery(this.sentiment)
+            const source = this.sourcesToQuery(this.source)
+            const sentiment = this.sentimentToQuery(this.sentiment)
 
-    const query = {
-      name, from, to,
-      ...(source ? { source } : {}),
-      ...(sentiment ? { sentiment } : {}),
-      sort: 'desc',
-      page: '1'
-    }
+            const query = {
+                name, from, to,
+                ...(source ? { source } : {}),
+                ...(sentiment ? { sentiment } : {}),
+                sort: 'desc',
+                page: '1'
+            }
 
-    const routeObj = this.$router.resolve({ path: '/personranking/posts', query })
-    window.open(routeObj.href, '_blank')
-  },
+            const routeObj = this.$router.resolve({ path: '/personranking/posts', query })
+            window.open(routeObj.href, '_blank')
+        },
 
-  // === แก้ของเดิมให้เรียก openPersonInNewTab ===
-  onCardClick(item) {
-    // ถ้ายังอยากส่งอีเวนต์ต่อไปด้วย ก็ emit ไว้เหมือนเดิม
-    this.$emit('filter-account', { name: item.name })
-    this.openPersonInNewTab(item)
-  },
+        // === แก้ของเดิมให้เรียก openPersonInNewTab ===
+        onCardClick(item) {
+            // ถ้ายังอยากส่งอีเวนต์ต่อไปด้วย ก็ emit ไว้เหมือนเดิม
+            this.$emit('filter-account', { name: item.name })
+            this.openPersonInNewTab(item)
+        },
 
         scrollLeft() { const s = this.$refs.slider; if (s) s.scrollLeft -= 300 },
         scrollRight() { const s = this.$refs.slider; if (s) s.scrollLeft += 300 },
@@ -352,7 +352,7 @@ export default {
 
 <style scoped>
 .zoom {
-  /* padding: 50px;
+    /* padding: 50px;
   background-color: green;
   transition: transform .2s;
   width: 200px;
@@ -361,10 +361,13 @@ export default {
 }
 
 .zoom:hover {
-  -ms-transform: scale(1.025); /* IE 9 */
-  -webkit-transform: scale(1.025); /* Safari 3-8 */
-  transform: scale(1.025); 
+    -ms-transform: scale(1.025);
+    /* IE 9 */
+    -webkit-transform: scale(1.025);
+    /* Safari 3-8 */
+    transform: scale(1.025);
 }
+
 .progress-bar {
     background: linear-gradient(70deg, #7ac9d6 40%, #9378bf 100%) !important;
 }
@@ -576,10 +579,10 @@ a {
 
     .tool-btn {
         position: absolute;
-        top: -27px;
-        right: 6px;
-        zoom: 70% !important;
-
+        top: -58px;
+        right: 5px;
+        transform: scale(0.72);
+        transform-origin: top right;
     }
 
     .d-lg {

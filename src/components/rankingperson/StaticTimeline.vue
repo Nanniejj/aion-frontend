@@ -253,7 +253,9 @@ export default {
 }
 </script>
 <style scoped>
-
+  #chart {
+    margin: 0px !important;
+  }
 .small-sub {
   font-size: x-small;
 }
@@ -275,7 +277,7 @@ export default {
   .card-body {
     flex: 1 1 auto;
     min-height: 1px;
-    padding-bottom:0px;
+    padding:12px !important;
 }
   .platform-box{
   position: relative;
@@ -306,8 +308,8 @@ export default {
     zoom: 75%;
   }
   #chart > div > div:nth-child(1) > div > div > div > div > div > div.col-sm-12.col-md-7.col-12{
-    padding-left: 8px;
-     padding-right: 8px;
+    padding-left: 2px;
+     padding-right: 2px;
   }
 }
 </style>
