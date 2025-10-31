@@ -2,15 +2,16 @@
   <div class="mt-1">
     <b-card class="mb-3 shadow-sm">
       <!-- <div>face recognition</div> -->
-      <div class="text-left mb-2 ">  
-        <b-icon  icon="person-bounding-box" scale="1.2" ></b-icon> 
-        ค้นหาบุคคลจากใบหน้า</div>
+      <div class="text-left mb-2 ">
+        <b-icon icon="person-bounding-box" scale="1"></b-icon>
+        ค้นหาบุคคลจากใบหน้า
+      </div>
       <b-row>
         <!-- เลือกบุคคล -->
         <b-col cols="12" md="6">
-          <v-select :options="options" label="text" :reduce="p => p.text" multiple class="sl-pp mb-2" v-model="local.names"
-            :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'" :disabled="loading || options.length === 0"
-            @input="emitFilters">
+          <v-select :options="options" label="text" :reduce="p => p.text" multiple class="sl-pp mb-2"
+            v-model="local.names" :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'"
+            :disabled="loading || options.length === 0">
             <template v-slot:option="option">
               <div class="my-1">
                 <b-avatar :src="option.photo" size="65px"></b-avatar>
@@ -29,8 +30,7 @@
         <!-- sentiment -->
         <b-col cols="12" md="auto" class="text-left ">
           <b-form-group class="pr-md-3 checkbox-v mt-2">
-            <b-form-checkbox-group v-model="local.sentiment" :options="sentimentOptions" size="sm"
-              @change="emitFilters" />
+            <b-form-checkbox-group v-model="local.sentiment" :options="sentimentOptions" size="sm" />
           </b-form-group>
         </b-col>
 
@@ -38,8 +38,7 @@
         <b-col cols="12" md="4">
           <section id="date-picker" class="mt-2">
             <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
-              :disabled-date="date => date > new Date()" value-type="format" format="YYYY-MM-DD" @change="onDateChange"
-              id="date-domain" />
+              :disabled-date="date => date > new Date()" value-type="format" format="YYYY-MM-DD" id="date-domain" />
           </section>
         </b-col>
 
@@ -112,7 +111,7 @@ export default {
         names: this.value?.names || [],
         source: this.value?.source?.length ? this.value.source : [null],  // All
         _sourcePrev: this.value?.source?.length ? this.value.source : [null],
-        sentiment: (this.value?.sentiment || [-1, 0, 1]).map(Number),
+        sentiment: (this.value?.sentiment || [1, 0, -1]).map(Number),
 
         // ปล่อยว่าง => emitFilters จะ default เป็น 7 วันล่าสุด
         valueDate: Array.isArray(this.value?.valueDate) && this.value.valueDate.length === 2
@@ -173,7 +172,7 @@ export default {
       const normalized = this.normalizeSource(newVal, this.local._sourcePrev)
       this.local.source = normalized
       this.local._sourcePrev = [...normalized]
-      this.emitFilters()
+      // this.emitFilters()
     },
 
     // All = null
@@ -206,7 +205,7 @@ export default {
 
       if (!hasStart || !hasEnd) {
         const endYMD = moment().format('YYYY-MM-DD')
-        const startYMD = moment(endYMD).subtract(2, 'days').format('YYYY-MM-DD')
+        const startYMD = moment(endYMD).subtract(1, 'days').format('YYYY-MM-DD')
         return { from: `${startYMD}T00:00:00`, to: `${endYMD}T23:59:59` }
       }
       const [d1, d2] = arr
@@ -272,13 +271,13 @@ export default {
 }
 </style>
 <style scoped>
-
 .box-face {
   padding: 3px 18px;
   width: fit-content;
   border-radius: 8px;
- background: linear-gradient(to top, #fed16e, #f7deab)
+  background: linear-gradient(to top, #fed16e, #f7deab)
 }
+
 .shadow-sm {
   border-radius: 20px;
 }
