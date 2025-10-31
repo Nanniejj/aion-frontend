@@ -158,12 +158,13 @@
       <span class="clickable small" @click="showAllComments = true" size="sm">
         ดูทั้งหมด
       </span>
+      <!-- {{ post.comments }} -->
       <CommentsAllModal v-model="showAllComments" :comments="post.comments || []" :accountName="post.account_name" :post="post"
         :filterMode="filterMode" />
       <li class="station" style="color: rgb(0, 108, 183);"
-        v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.filter(x => x.username !== post.account_name).slice(0, 5))"
+        v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.slice(0, 5))"
         :key="c.id || i" >
-
+      <!-- post.comments.filter(x => x.username !== post.account_name).slice(0, 5)) -->
         <a :href="c.url_comment || c.url" v-if="c.username" target="_blank">
           <b-avatar :src="c.photo" size="38" :class="c.is_top_fan ? 'story-ring' : ''" />
           {{ c.username

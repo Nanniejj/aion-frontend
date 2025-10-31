@@ -137,9 +137,18 @@ export default {
       set(v) { this.$emit("input", v); }
     },
     filteredAll() {
-      const base = (this.comments || []).filter(x => x && x.username !== this.accountName);
-      if (this.filterMode === "topFans") return base.filter(x => x.is_top_fan);
-      return base;
+    //   const base = (this.comments || []).filter(x => x && x.username !== this.accountName);
+    //   if (this.filterMode === "topFans") return base.filter(x => x.is_top_fan);
+
+        //     return base;
+
+    // const base = (this.comments || []).filter(
+    //   x => x && x.username !== this.accountName
+        // )
+    const base = (this.comments || [])
+    return this.filterMode === 'topFans'
+      ? base.filter(x => x.is_top_fan)
+      : base
     },
     // ---- header computed (เลี่ยงการใช้ ?. ใน template) ----
     headerAvatar() {
