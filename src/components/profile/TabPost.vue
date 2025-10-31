@@ -197,8 +197,8 @@
                 padding: '10px',
               }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
                 :textToHighlight="profilePost.read
-                  ? profilePost.full_text.replace('...___...', '').slice(0, 450)
-                  : profilePost.full_text.replace('...___...', '')
+                  ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
+                  : profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
                   " />
               <div v-if="profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
                 id="readmore">
@@ -211,8 +211,8 @@
                 fontSize: '17px',
                 padding: '10px',
               }" highlightClassName="highlight2" :searchWords="highlightText2" :autoEscape="true" :textToHighlight="profilePost.read
-                ? profilePost.full_text.replace('...___...', '').slice(0, 450)
-                : profilePost.full_text.replace('...___...', '')
+                ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
+                : profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
                 " />
               <div v-if="profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
                 id="readmore">

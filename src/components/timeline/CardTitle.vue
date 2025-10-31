@@ -31,21 +31,20 @@
 
           <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
           <!-- Modal แสดงรูปเต็ม -->
-          <b-modal v-model="showImage" size="xl" centered hide-footer>
+          <!-- <b-modal v-model="showImage" size="xl" centered hide-footer>
             <img @error="setAltImg"
               :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) "
               class="w-100" style="max-height: 80vh; object-fit: contain" crossorigin="anonymous" />
-          </b-modal>
+          </b-modal> -->
            
-            <!-- <b-modal v-model="showImage" size="xl" centered hide-footer>
-            
+            <b-modal v-model="showImage" size="xl" centered hide-footer>
                 <img
                     @error="setAltImg"
                     :src="getImageSrc(post)"
                     class="w-100"
                     style="max-height: 80vh; object-fit: contain"
                 />
-            </b-modal> -->
+            </b-modal>
           </b-col>
 
 
@@ -62,7 +61,7 @@
             </div>
 
             <div class="mt-md-2 pb-1" v-if="post.full_text">
-              <ReadMoreBox :text="post.full_text.replace('...___...', '')" :limit="300" :mobileLimit="110"
+              <ReadMoreBox :text="post.full_text.replace('...___...', '').replace('.#.##.', '')" :limit="300" :mobileLimit="110"
                 :breakpoint="800" />
             </div>
             <div v-else> <br> </div>
@@ -163,16 +162,16 @@
         :filterMode="filterMode" />
       <li class="station" style="color: rgb(0, 108, 183);"
         v-for="(c, i) in (filterMode === 'topFans' ? post.comments.filter(x => x.is_top_fan).slice(0, 5) : post.comments.filter(x => x.username !== post.account_name).slice(0, 5))"
-        :key="c.id || i" v-if="c.photo">
+        :key="c.id || i" >
 
         <a :href="c.url_comment || c.url" v-if="c.username" target="_blank">
-          <b-avatar v-if="c.photo" :src="c.photo" size="38" :class="c.is_top_fan ? 'story-ring' : ''" />
+          <b-avatar :src="c.photo" size="38" :class="c.is_top_fan ? 'story-ring' : ''" />
           {{ c.username
           }}
         </a>
 
         <a :href="'https://www.youtube.com' + c.author_link" v-else target="_blank">
-          <b-avatar v-if="c.photo" :src="c.photo" size="38" /> {{ c.author }}</a>
+          <b-avatar :src="c.photo" size="38" /> {{ c.author }}</a>
         <span v-if="c.is_top_fan" class="ml-2 small topfan"> <b-avatar icon="star-fill" size="20"
             class="icon-bg"></b-avatar>
           TOP FAN</span>

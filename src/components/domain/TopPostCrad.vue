@@ -150,8 +150,8 @@
                         padding: '10px',
                       }" highlightClassName="highlight2" :searchWords="highlightText(postDomain.full_text)"
                         :autoEscape="true" :textToHighlight="postDomain.read
-                          ? postDomain.full_text.replace('...___...', '').slice(0, 450)
-                          : postDomain.full_text.replace('...___...', '')
+                          ? postDomain.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
+                          : postDomain.full_text.replace('...___...', '').replace('.#.##.', '')
                           " />
                       <div v-if="postDomain.full_text.length > 450" @click="postDomain.read = !postDomain.read"
                         id="readmore">
