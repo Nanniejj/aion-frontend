@@ -70,20 +70,26 @@
 
           <b-col md="6" class="mb-2">
             <div @keyup.enter="applyAllFilters">
-            <b-input-group size="sm" class="align-items-start">
-              <!-- <b-input-group-prepend is-text>บัญชี</b-input-group-prepend> -->
-              <b-form-group label="" label-for="accounts" class="flex-grow-1 mb-0 pr-md-3" >
-                <b-form-tags id="accounts" v-model="accountsInput" tag-variant="light" tag-pills size="sm"
-                  separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
-                  add-on-change remove-on-delete class="input-tag"   />
-              </b-form-group>
-            </b-input-group></div>
+              <b-input-group size="sm" class="align-items-start">
+                <!-- <b-input-group-prepend is-text>บัญชี</b-input-group-prepend> -->
+                <b-form-group label="" label-for="accounts" class="flex-grow-1 mb-0 pr-md-3">
+                  <b-form-tags id="accounts" v-model="accountsInput" tag-variant="light" tag-pills size="sm"
+                    separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
+                    add-on-change remove-on-delete class="input-tag" />
+                </b-form-group>
+              </b-input-group>
+            </div>
             <!-- <b-input-group size="sm">
               <b-input-group-prepend is-text>บัญชี</b-input-group-prepend>
               <b-form-input v-model.trim="accountInput" placeholder="ค้นหาบัญชี" @keyup.enter="applyAllFilters" />
             </b-input-group> -->
           </b-col>
+          <b-col md="6" class="mb-2">
 
+            <b-form-checkbox v-model="full_text" size="sm" class="mt-2">
+              ค้นหาจากข้อความ
+            </b-form-checkbox>
+          </b-col>
           <b-col cols="12" md="4" class="text-right ">
             <section id="date-picker" class="w-100">
               <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100"
@@ -247,7 +253,7 @@ export default {
       select_social: [""],
       sort: "engagement",
       account: "",
-
+      full_text: q.full_text === 'true' || false,
       // ---- APPLIED Chart filters ----
       appliedChartFilters: initialApplied(),
       chartRefreshKey: 1, // ให้ ChartTime mount ครั้งแรก
@@ -412,22 +418,23 @@ export default {
         source: src,
         keyword: (this.keywordInput || '').trim() || undefined,
         sort_by: this.sort || "engagement",
-        account: accountsJoined,   // <<— เปลี่ยนตรงนี้
+        account: accountsJoined,
+         full_text: this.full_text ? true : undefined, 
       };
     },
 
 
- onFilterAccount({ uid }) {
-  if (!uid) {
-    this.accountsInput = [];
-    this.account = '';
-  } else {
-    if (!Array.isArray(this.accountsInput)) this.accountsInput = [];
-    if (!this.accountsInput.includes(uid)) this.accountsInput.push(uid);
-  }
-  this.applyAllFilters();
-}
-,
+    onFilterAccount({ uid }) {
+      if (!uid) {
+        this.accountsInput = [];
+        this.account = '';
+      } else {
+        if (!Array.isArray(this.accountsInput)) this.accountsInput = [];
+        if (!this.accountsInput.includes(uid)) this.accountsInput.push(uid);
+      }
+      this.applyAllFilters();
+    }
+    ,
 
     startOfDayStr(dateOnly) {
       return `${dateOnly}T00:00:00`;
@@ -493,7 +500,7 @@ export default {
       };
       if (this.keyword) params.keyword = this.keyword;
       if (accountsJoined) params.account = accountsJoined; // <<— ใช้ account เดิม ฝั่งแบ็กเอนด์ไม่ต้องแก้
-
+      if (this.full_text === true) params.full_text = true;
       // if (this.account) params.account = this.$route.query.account;
 
       if (updateFilters) {
@@ -534,6 +541,7 @@ export default {
         page: 1,
         keyword: this.keyword || undefined,
         account: accountsJoined || undefined,   // <<— ใช้คีย์เดิม
+         full_text: this.full_text ? 'true' : undefined, 
       };
 
       await this.safeReplace('/personranking/posts', query);
@@ -550,7 +558,7 @@ export default {
       this.accountsInput = [];  // <<—
       this.keyword = '';
       this.account = '';
-
+  this.full_text = false;  
       const d = this.local && Array.isArray(this.local.valueDate) ? this.local.valueDate : [];
       if (d[0]) this.from = this.startOfDayStr(d[0]);
       if (d[1]) this.to = this.endOfDayStr(d[1] || d[0]);
@@ -722,6 +730,8 @@ export default {
       }
 
       if (this.$route.query.keyword) this.keywordInput = this.$route.query.keyword;
+      if (this.$route.query.full_text) this.full_text = this.$route.query.full_text === 'true'; // ⬅️ เพิ่ม
+
     }
 
     this.fetchUserposts();
@@ -899,8 +909,8 @@ export default {
     top: -10px;
     right: -1px;
     z-index: 2;
-     transform: scale(0.72);
-        transform-origin: top right;
+    transform: scale(0.72);
+    transform-origin: top right;
   }
 
   #chart>div>div:nth-child(1) {
@@ -915,7 +925,7 @@ export default {
     top: 0px;
     margin-top: 3px;
     transform: scale(0.8);
-        transform-origin: top right;
+    transform-origin: top right;
   }
 
   .mx-datepicker-range {
