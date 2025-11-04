@@ -20,7 +20,7 @@
           <b-col cols="12" md="3" v-if="post.photos && post.photos.length" class="img-col">
             <!-- รูป preview -->
             <b-card-img class="img-cover" @error="setAltImg"
-              :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) || require('@/assets/no-image.jpg')"
+              :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) "
               @click="showImage = true" />
 
 
