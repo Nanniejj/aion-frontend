@@ -14,9 +14,9 @@
             <b-form-group label-for="search-input" class="">
                 <b-input-group-append>
                     <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
-                        class="w-100 mr-2"></b-form-input>
+                        class="w-100 mr-2" @keyup.enter="hasSearched = true"></b-form-input>
                         <!-- ปุ่มล้างค่า -->
-                        <b-input-group-append style="position: absolute;right: 96px;" v-if="search">
+                        <b-input-group-append style="position: absolute;right: 96px;">
                             <b-button
                                 variant="link"
                                 @click="resetSearch()"
@@ -24,7 +24,7 @@
                                 class="px-2"
                                 style="color: red; text-decoration: none;"
                             >
-                                <i class="fa fa-times"></i>
+                                <i v-b-tooltip.hover title="ล้างคำค้นหา" class="fa fa-times"></i>
                             </b-button>
                         </b-input-group-append>
                     <b-button variant="warning" style="background-color: #fed16e;" pill :pressed="false" @click="hasSearched = true" class="shadow-r px-4">ค้นหา</b-button>
@@ -46,7 +46,6 @@
       </back-to-top>
       <!-- <FooterHome/> -->
     </div>
-
   </div>
 </template>
 <script>

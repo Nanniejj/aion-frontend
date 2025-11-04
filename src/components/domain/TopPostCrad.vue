@@ -150,8 +150,8 @@
                         padding: '10px',
                       }" highlightClassName="highlight2" :searchWords="highlightText(postDomain.full_text)"
                         :autoEscape="true" :textToHighlight="postDomain.read
-                          ? postDomain.full_text.slice(0, 450)
-                          : postDomain.full_text
+                          ? postDomain.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
+                          : postDomain.full_text.replace('...___...', '').replace('.#.##.', '')
                           " />
                       <div v-if="postDomain.full_text.length > 450" @click="postDomain.read = !postDomain.read"
                         id="readmore">
@@ -875,9 +875,10 @@ export default {
       } else {
         err = "Negative";
       }
-      this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?").then(
+        this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?")
+            .then(
         () => {
-          const encoded = encodeURI(uid);
+          const encoded = encodeURIComponent(uid);
           var _this = this;
           var config = {
             method: "get",
@@ -893,8 +894,7 @@ export default {
           };
           this.axios(config)
             .then(function (response) {
-              console.log(response);
-
+              console.log("change sentiment response:",response);
               if (v == 1) {
                 _this.getTopPostDomain[k].sentiment = 1;
                 _this.getTopPostDomain[k].user_sentiment[_this.objId] = 1;
@@ -906,11 +906,15 @@ export default {
                 _this.getTopPostDomain[k].user_sentiment[_this.objId] = -1;
               }
             })
-            .catch(function (response) {
-              console.log("errrrrrr", response.message);
+            .catch(function (e) {
+                console.error("axios error:", e);
+                // alert("เกิดข้อผิดพลาดในการเปลี่ยน Sentiment");
             });
         }
-      );
+
+      ).catch(function (){
+        //   console.log("errrrrrr", response.message);
+        });
     },
     highlightText(full_text) {
       var word = [];

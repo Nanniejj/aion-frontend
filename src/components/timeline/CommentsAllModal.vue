@@ -64,7 +64,7 @@
     <!-- รายการคอมเมนต์ -->
     <div v-if="filteredAll.length">
       <div v-for="(c, i) in filteredAll" :key="c.id || i" class="d-flex align-items-start mb-3">
-        <b-avatar v-if="c.photo" :src="c.photo" size="38" :class="c.is_top_fan ? 'story-ring' : ''" />
+        <b-avatar :src="c.photo" size="38" :class="c.is_top_fan ? 'story-ring' : ''" />
         <div class="ml-2 flex-grow-1">
           <div class="d-flex align-items-center flex-wrap">
             <a v-if="c.username" :href="c.url_comment || c.url" target="_blank"
@@ -137,9 +137,18 @@ export default {
       set(v) { this.$emit("input", v); }
     },
     filteredAll() {
-      const base = (this.comments || []).filter(x => x && x.username !== this.accountName);
-      if (this.filterMode === "topFans") return base.filter(x => x.is_top_fan);
-      return base;
+    //   const base = (this.comments || []).filter(x => x && x.username !== this.accountName);
+    //   if (this.filterMode === "topFans") return base.filter(x => x.is_top_fan);
+
+        //     return base;
+
+    // const base = (this.comments || []).filter(
+    //   x => x && x.username !== this.accountName
+        // )
+    const base = (this.comments || [])
+    return this.filterMode === 'topFans'
+      ? base.filter(x => x.is_top_fan)
+      : base
     },
     // ---- header computed (เลี่ยงการใช้ ?. ใน template) ----
     headerAvatar() {

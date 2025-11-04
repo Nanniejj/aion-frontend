@@ -16,112 +16,47 @@
                 Analysis
             </span>
         </b-button> -->
-        <b-row>
-            <b-col cols="auto">
-                <button
-                    :variant="open ? 'info' : 'outline-info'"
-                    size="sm"
-                    class="analysis-button"
-                    :class="{ 'is-glowing': analyzing }"
-                    type="button"
-                    @click="summarizePosts()"
-                    :disabled="analyzing"
-                >
-                    <img
-                        width="22"
-                        height="22"
-                        src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
-                        alt="sparkling"
-                        class="spark-icon"
-                        style="filter: brightness(0) invert(1);"
-                    />
-                    <span class="md-font">
-                        {{ analyzing ? 'Analyzing...' : 'Analysis (beta)' }}
-                    </span>
-                </button>
-            </b-col>
-            <b-col v-if="fullSummary && !open" class="text-right">
-                <b-button size="sm" variant="outline-info" 
-                    class="d-inline-flex" 
-                    @click="toggle"
-                    :disabled="analyzing"
-                >
-                    บทวิเคราะห์ล่าสุด
-                </b-button>
-            </b-col>
-        </b-row>
-        <b-col cols="12" class="pt-2 text-danger" style="font-size: small;" v-if="fullSummary && !open">
-            *** หมายเหตุ: หากต้องการบทวิเคราะห์ใหม่ กรุณากดปุ่ม "Analysis" อีกครั้ง
+        <b-col cols="auto">
+            <button
+                :variant="open ? 'info' : 'outline-info'"
+                size="sm"
+                class="analysis-button"
+                :class="{ 'is-glowing': analyzing }"
+                type="button"
+                @click="summarizePosts()"
+            >
+                <!-- :disabled="analyzing" -->
+                <img
+                    width="22"
+                    height="22"
+                    src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                    alt="sparkling"
+                    class="spark-icon"
+                    style="filter: brightness(0) invert(1);"
+                />
+                <span class="md-font">
+                    {{ analyzing ? 'Analyzing...' : 'วิเคราะห์โพสต์ยอดนิยม' }}
+                </span>
+            </button>
         </b-col>
 
-        <b-collapse v-model="open" class="my-2">
-            <!-- <b-card class="shadow-sm" style="border-radius: 16px;min-height: 100px;max-height: 400px;overflow-y: auto;">
-                <b-row class="m-0 align-items-center mb-2">
-                    <b-col cols="12" md="" class="px-0">การวิเคราะห์แนวโน้ม
-                        <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
-                        <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
-                        <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
-                    </b-col>
-                    <b-col cols="auto" md="auto" class="px-0">
-                        <b-button size="sm" variant="outline-secondary" class="d-inline-flex" @click="copyFull"
-                            :disabled="!fullSummary">
-                            คัดลอกสรุป
-                        </b-button>
-                    </b-col>
-                    <b-col cols="auto" class="">
-                        <button @click="toggle" class="btn d-inline-flex align-items-center btn-info btn-sm">
-                            <i class="fas fa-sliders mr-2" aria-hidden="true"></i>
-                            <span class="small">Hide</span>
-                        </button>
-                    </b-col>
-                </b-row>
-               
+        <b-collapse v-model="open" class="mt-2">
+            <b-card class="shadow-sm" style="border-radius: 16px;min-height: 100px;max-height: 400px;overflow-y: auto;">
+                <b-col cols="12" class="px-0">การวิเคราะห์แนวโน้มที่ได้รับความนิยมในช่วงนี้
+                    <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
+                    <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
+                    <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
+                </b-col>
+                <!-- {{ filters }} -->
                 <div v-if="analyzing" class="text-center my-3">
                     <vue-element-loading :active="analyzing" size="60" background-color="rgba(255,255,255,0.5)"
                         color="#17a2b891" />
                 </div>
-                <div v-else class="text-left pb-3">
-                    
+                <div v-else class="text-left">
+                    <!-- {{ fullSummary }} -->
                     <div v-html="formatSummarize(fullSummary)"></div>
                 </div>
-            </b-card> -->
-            <b-card class="shadow-sm" header-class="border-0" body-class="pt-0" style="border-radius: 16px; min-height: 100px;">
-                    <!-- ส่วน header ให้ scroll -->
-                    <template #header>
-                        <b-row class="m-0 align-items-center justify-content-center">
-                            <b-col cols="12" md="" class="px-0">
-                                การวิเคราะห์แนวโน้ม
-                                <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
-                                <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
-                                <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
-                            </b-col>
-                            <b-col cols="auto" md="auto" class="px-0">
-                                <b-button size="sm" variant="outline-secondary" class="d-inline-flex" @click="copyFull"
-                                :disabled="!fullSummary">
-                                คัดลอกสรุป
-                                </b-button>
-                            </b-col>
-                            <b-col cols="auto" class="">
-                                <button @click="toggle" class="btn d-inline-flex align-items-center btn-info btn-sm">
-                                <i class="fas fa-sliders mr-2" aria-hidden="true"></i>
-                                <span class="small">Hide</span>
-                                </button>
-                            </b-col>
-                        </b-row>
-                        
-                    </template>
-
-                    <!-- ส่วนเนื้อหา -->
-                    <b-card-text class="card-body-scroll">
-                        <div v-if="analyzing" class="text-center my-3">
-                        <vue-element-loading :active="analyzing" size="60" background-color="rgba(255,255,255,0.5)" color="#17a2b891" />
-                        </div>
-                        <div v-else class="text-left pb-3">
-                        <div v-html="formatSummarize(fullSummary)"></div>
-                        </div>
-                    </b-card-text>
             </b-card>
-
         </b-collapse>
     </div>
 </template>
@@ -130,7 +65,7 @@
 import Swal from 'sweetalert2';
 
 export default {
-    name: "SummaryButton",
+    name: "SummaryByFilterButton",
     props: {
         posts: { type: [Array, Object], required: true }, // postsFromApi (flat array หรือ grouped daily)
         filters: { type: Object, required: true },
@@ -143,10 +78,8 @@ export default {
             open: false,
             analyzing: false,
             fullSummary: null,
-            commentLimit: 5,
-            postLimit: 5, 
-            postsByEngagement: [], 
-            loadingPost: false,
+            commentLimit: 20,
+            postLimit: 10,    
         };
     },
     computed: {
@@ -234,62 +167,6 @@ export default {
         },
     },
     methods: {
-        parseSentimentStats(text) {
-            if (!text) return [];
-
-            // ดึงเฉพาะส่วนหัวข้อ 2)
-            const match = text.match(/##\s*2\)\s*ภาพรวม\s*Social\s*Sentiment([\s\S]*)/i);
-            if (!match) return [];
-
-            const section = match[1].trim();
-            const hasSubTopics = section.includes('**โครงการ') || section.includes('**การ');
-
-            if (hasSubTopics) {
-                // 🔹 กรณีมีหลายหัวข้อย่อย เช่น โครงการ xxx, การ xxx
-                const topics = section.split(/\n\s*\*\*([^*]+?)\*\*:/).slice(1);
-                const results = [];
-
-                for (let i = 0; i < topics.length; i += 2) {
-                const title = topics[i].trim();
-                const content = topics[i + 1] || '';
-
-                const sentimentLineMatch = content.match(/ภาพรวม[:：]?\s*(.*)/);
-                const sentimentLine = sentimentLineMatch ? sentimentLineMatch[1] : '';
-
-                const negMatch = sentimentLine.match(/ลบ\s*(\d+)%/);
-                const neuMatch = sentimentLine.match(/กลาง\s*(\d+)%/);
-                const posMatch = sentimentLine.match(/บวก\s*(\d+)%/);
-
-                const sentiment = {
-                    ลบ: negMatch ? parseInt(negMatch[1]) : 0,
-                    กลาง: neuMatch ? parseInt(neuMatch[1]) : 0,
-                    บวก: posMatch ? parseInt(posMatch[1]) : 0,
-                };
-
-                results.push({ title, sentiment });
-                }
-
-                return results;
-            } else {
-                // 🔹 กรณีไม่มีหัวข้อย่อย (เช่น “ภาพรวมโดยประมาณ”)
-                // ดึงเปอร์เซ็นต์จากทุกที่ในส่วนนี้
-                const posMatch = section.match(/บวก[:：]?\s*(\d+)%/);
-                const neuMatch = section.match(/กลาง[:：]?\s*(\d+)%/);
-                const negMatch = section.match(/ลบ[:：]?\s*(\d+)%/);
-
-                const sentiment = {
-                ลบ: negMatch ? parseInt(negMatch[1]) : 0,
-                กลาง: neuMatch ? parseInt(neuMatch[1]) : 0,
-                บวก: posMatch ? parseInt(posMatch[1]) : 0,
-                };
-
-                return [{ title: "ภาพรวม Social Sentiment", sentiment }];
-            }
-        },
-        extractSection2(text) {
-            const match = text.match(/##\s*2\)[\s\S]*?(?=##\s*3\)|$)/);
-            return match ? match[0].trim() : "";
-        },
         formatSummarize(text) {
             if (!text) return '';
             // console.log("text === ", text);
@@ -308,7 +185,7 @@ export default {
                 // bold ทั่วไป
                 .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
-                // console.log(html);
+                console.log(html);
                 
             // 2) รวมกลุ่ม <li> ต่อเนื่องเป็น <ul>...</ul>
             // ใช้ flag g และ [\s\S] เพื่อให้จับหลายบรรทัดอย่างถูกต้อง
@@ -391,7 +268,7 @@ export default {
             return trimmed.length > 80 ? trimmed.slice(0, 80) + "…" : trimmed || "(ไม่มีเนื้อหา)";
         },
         sortByEngagement() {
-            // console.log("post in sum === ",this.posts);
+            console.log("post in sum === ",this.posts);
             
             // return posts.slice().sort((a, b) => this.engValue(b) - this.engValue(a));
         },
@@ -406,14 +283,13 @@ export default {
         async summarizePosts() {
             // ตัวอย่างฟังก์ชันวิเคราะห์โพสต์ (จำลองดีเลย์)
             this.analyzing = true;
-            this.open = false;
             const bodyData = {
                 posts: this.filteredPosts.slice(0, this.postLimit),
                 // posts: this.filters.view_mode === "daily"
                 // ? this.filteredPosts.map(post => post.items[0]).filter(Boolean) // เอา items[0] ของทุกสมาชิก และกรองค่า undefined
                 // : this.filteredPosts.slice(0, this.postLimit)  
             };
-            // console.log("Body size:", JSON.stringify(bodyData).length / 1024, "KB");
+            console.log("Body size:", JSON.stringify(bodyData).length / 1024, "KB");
 
             const config = {
                 method: "post",
@@ -431,27 +307,34 @@ export default {
                 this.fullSummary = response.data.final_summary || "ไม่มีสรุปผล";
                 this.analyzing = false;
                 this.open = true;
-                // let section2 = this.extractSection2(this.fullSummary);
-                // console.log("Section 2:", section2);
-                // let sentimentStats = this.parseSentimentStats(section2);
-                // console.log("Sentiment Stats:", sentimentStats);
                 // console.log("Response:", response.data);
             }
             catch (error) {
-                this.analyzing = false;  // ปิด loading เสมอ
+                this.analyzing = false;
+                console.error("Error calling API:", error);
 
-                // แสดง alert ให้ผู้ใช้
+                let statusCode = null;
+                let message = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้";
+
+                if (error.response) {
+                    // มีการตอบกลับจาก server
+                    statusCode = error.response.status;
+                    message = error.response.data?.message || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์";
+                } else if (error.request) {
+                    // ส่ง request แล้วแต่ไม่มีการตอบกลับ
+                    message = "ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์";
+                } else {
+                    // เกิดปัญหาก่อนส่ง request เช่น syntax ผิด
+                    message = error.message;
+                }
+
                 Swal.fire({
                     icon: 'error',
-                    title: `เกิดข้อผิดพลาด`,
-                    text: 'ไม่สามารถวิเคราะห์โพสต์ได้ กรุณาลองใหม่อีกครั้ง',
+                    title: `เกิดข้อผิดพลาด${statusCode ? ' (' + statusCode + ')' : ''}`,
+                    text: message,
                 });
             }
-
         }
-    },
-    mounted() {
-       
     },
     watch: {
         posts: {
@@ -466,21 +349,6 @@ export default {
 </script>
 
 <style scoped>
-/* .card-scroll {
-  max-height: 400px;
-} */
-
-.card-header-scroll {
-  max-height: 120px; /* กำหนดความสูงส่วนหัว */
-  overflow-y: auto; /* ให้ scroll เฉพาะ header */
-  padding: 8px 12px;
-}
-
-.card-body-scroll {
-  max-height: 400px; 
-  overflow-y: auto;
-}
-
 .box-summarize {
     border: 0px;
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
@@ -505,19 +373,7 @@ export default {
     color: #fff;
     text-decoration: none;
 }
-.latest-summary {
-    align-self: center;
-    cursor: pointer;
-    transition: color .15s ease;  /* อนิเมชันเปลี่ยนสี (ไม่จำเป็นแต่สวย) */
-}
 
-/* เมื่อ hover ให้ขีดเส้นใต้และเปลี่ยนสี */
-.latest-summary:hover {
-  text-decoration: underline;
-  text-decoration-thickness: 2px; /* ความหนาของขีด (optional) */
-  text-underline-offset: 3px;     /* ระยะห่างของขีดใต้จากตัวอักษร (optional) */
-  color: #17a2b891;                 /* สีเมื่อ hover */
-}
 .analysis-button {
   position: relative;
   border: none;

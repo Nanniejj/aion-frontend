@@ -19,7 +19,7 @@
         <b-button-group size="sm" class="ml-1 btn-sw">
           <b-button size="sm" @click="onCardClick({ name: '', uid: '', source: '' })" variant="text" >
             <i class="fa fa-arrows-rotate"></i>
-            reload
+            reset
           </b-button>
           <b-button :variant="view === 'cards' ? 'info' : 'outline-info'" @click="setView('cards')" size="sm">
             <i class="fas fa-th-large mr-1"></i> Cards

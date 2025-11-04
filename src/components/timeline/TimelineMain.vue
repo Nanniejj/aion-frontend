@@ -213,8 +213,17 @@
       </b-card>
 
       <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" />
-      <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" />
-
+      <!-- <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" /> -->
+      <!-- <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsForAnalysis" :filters="filters" :loading="loading" :topN="5" /> -->
+      <!-- <SummaryFilterButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" /> -->
+      <SummaryButton
+        v-if="!loading && username === 'adminatapy'"
+        class="text-left mb-3"
+        :posts="filters.keywordInput === '' && filters.hashtags.length === 0 ? postsFromApi : postsForAnalysis"
+        :filters="filters"
+        :loading="loading"
+        :topN="5"
+      />
       <!-- <ExportExcelButton class="mt-md-0 " :posts="postsFromApi" :filters="filters"
         :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
         :comments-limit="20" style="right: 5px;" v-if="!loading" /> -->
@@ -273,6 +282,7 @@ import FilterTemplates from "@/components/timeline/FilterTemplates.vue";
 import SaveTemplateModal from "@/components/timeline/SaveTemplateModal.vue";
 import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
 import SummaryButton from "@/components/timeline/SummaryButton.vue";
+import SummaryFilterButton from "./SummaryFilterButton.vue";
 // import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
@@ -281,8 +291,13 @@ function uid() {
   return 'tpl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
 }
 export default {
-  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal, ExportExcelButton,SummaryButton },
-  watch: {
+  components: { HomeNav, LinkMain2, TimelinePosts, ChartTime, FilterTemplates, SaveTemplateModal, ExportExcelButton,SummaryButton,SummaryFilterButton },
+    data() {
+        return {
+            username: "",
+        }
+    },
+    watch: {
     'formFilters.source'(val, old) {
       const toArr = (x) => Array.isArray(x) ? x : (x == null ? [] : [x]);
       const arr = toArr(val);
@@ -323,6 +338,7 @@ export default {
       loading: false,
       loadingMore: false,
       postsFromApi: [],
+      postsForAnalysis : [],
       count: 0,
       totalPages: 0,
       observer: null,
@@ -431,7 +447,8 @@ export default {
     }
 
   },
-  mounted() {
+    mounted() {
+    this.username = localStorage.getItem("username");
     if (!this.valueDate[0]) {
       this.filters.startLocal = moment(new Date()).format("YYYY-MM-DD") + "T00:00:00";
       this.filters.endLocal = moment(new Date()).format("YYYY-MM-DD") + "T23:59:59";
@@ -443,6 +460,9 @@ export default {
     this.$store.commit("setDomainArr", domain);
     this.apiTimeline();
     this.$nextTick(() => this.createObserver());
+    if (this.filters.view_mode !== 'daily') {
+        this.apiGetPostForAnalysis();
+    }
   },
   beforeDestroy() {
     if (this.observer) this.observer.disconnect();
@@ -563,10 +583,16 @@ export default {
       }
 
       this.postsFromApi = [];
-      this.apiTimeline();
+      
+        this.apiTimeline();
+        
+       if (this.filters.view_mode !== 'daily') {
+            this.apiGetPostForAnalysis();
+        }
+        
     },
     handlePointClick({ seriesName, x, y, localText, isoUtc, isoLocal }) {
-      console.log('Clicked:', seriesName, y, localText, isoLocal.slice(0, 14))
+    //   console.log('Clicked:', seriesName, y, localText, isoLocal.slice(0, 14))
       let date = isoLocal.slice(0, 14)
       const hourStart = date + "00:00";
       const hourEnd = date + "59:59";
@@ -592,7 +618,7 @@ export default {
       // this.applyRangeAndReload(hourStart, hourEnd);
     },
     handleRange({ start, end, startIsoLocal, endIsoLocal }) {
-      console.log('Selected range:', startIsoLocal.slice(0, 16), endIsoLocal.slice(0, 16))
+    //   console.log('Selected range:', startIsoLocal.slice(0, 16), endIsoLocal.slice(0, 16))
       const startIso = startIsoLocal.slice(0, 16)
       const endIso = endIsoLocal.slice(0, 16)
       this.filters = {
@@ -697,6 +723,35 @@ export default {
       return p;
     },
 
+    async apiGetPostForAnalysis() {
+    // console.log('apiGetPostForAnalysis');
+
+    // this.loading = true;
+    try {
+        const params = this.buildParams();
+
+        // ✅ ใส่ params ใน object 'params' ของ axios
+        const { data } = await this.axios.get(
+            "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+            {
+                params: {
+                    ...params,
+                    sort_by: 'engagement',
+                    // limit: 100
+                }
+            }
+        );
+
+        // console.log(data);
+        this.postsForAnalysis = data.data || [];
+
+    } catch (e) {
+        console.error("API error:", e);
+        this.postsForAnalysis = [];
+    } finally {
+        // this.loading = false;
+    }
+},
     async apiTimeline() {
       if (this.filters.view_mode === 'daily') return this.apiTimelineDaily();
       this.loading = true;
@@ -764,6 +819,7 @@ export default {
         }
 
         this.postsFromApi = grouped;
+        this.postsForAnalysis = grouped;
         this.count = grouped.reduce((sum, d) => sum + (d.countTotal || 0), 0);
         this.totalPages = 0;
       } finally {
@@ -946,9 +1002,8 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-
-
+      },
+    
     async loadMorePosts() {
       if (this.filters.page >= this.totalPages) return;
       this.loadingMore = true;
@@ -970,8 +1025,8 @@ export default {
       } finally {
         this.loadingMore = false;
       }
-    }
-    ,
+      },
+    
     createObserver() {
       const options = { root: null, rootMargin: "0px", threshold: 1.0 };
       this.observer = new IntersectionObserver(this.handleIntersect, options);
@@ -1005,7 +1060,7 @@ export default {
           .filter(Boolean);
 
       next.accounts = [...new Set(accounts.map(s => s.replace(/^@/, "").replace(/\/+$/, "")))]
-      console.log(' next.accounts', next.accounts);
+    //   console.log(' next.accounts', next.accounts);
 
       // ✅ hashtags (ใหม่): รองรับ array / string, ตัด '#', lower-case, dedupe
       const rawTags = next.HashtagsInput;
@@ -1058,7 +1113,11 @@ export default {
 
       // โหลดใหม่ปกติ
       this.postsFromApi = [];
-      this.apiTimeline();
+        this.apiTimeline();
+        if (this.filters.view_mode !== 'daily') {
+            this.apiGetPostForAnalysis();
+        }
+        
       this.showFilters = !this.showFilters
     }
 
