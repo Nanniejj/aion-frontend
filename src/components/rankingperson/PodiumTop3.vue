@@ -144,7 +144,7 @@ export default {
         sentiment: { type: [String, Number, Array, null] },
         names: { type: Array },
         limit: { type: Number, default: 10 },
-
+        full_text: { type: Boolean, default: false },
         /* === ใหม่: ควบคุมโหมดแสดงผล === */
         view: { type: String, default: 'cards' }, // 'cards' | 'progress'
         showToggle: { type: Boolean, default: true },
@@ -228,7 +228,8 @@ export default {
         sentiment: { handler: 'fetchData', deep: true },
         names: { handler: 'fetchData', deep: true },
         limit: 'fetchData',
-        view(v) { this.viewMode = v } // หาก parent เปลี่ยน prop view ให้ sync
+        view(v) { this.viewMode = v },// หาก parent เปลี่ยน prop view ให้ sync
+        full_text: 'fetchData',
     },
     mounted() {
 
@@ -265,6 +266,7 @@ export default {
                 name, from, to,
                 ...(source ? { source } : {}),
                 ...(sentiment ? { sentiment } : {}),
+                ...(this.full_text ? { full_text: 'true' } : {}),
                 sort: 'desc',
                 page: '1'
             }
@@ -309,6 +311,10 @@ export default {
             }
             if (this.names && this.names.length) url.searchParams.set('name', this.names.join(','))
             if (this.limit) url.searchParams.set('limit', String(this.limit))
+            if (this.full_text === true) {              // ⬅️ เพิ่ม
+                url.searchParams.set('full_text', 'true') // ⬅️ เพิ่ม
+            }
+
             return url.toString()
         },
 

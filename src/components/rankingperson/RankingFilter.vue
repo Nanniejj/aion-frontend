@@ -9,9 +9,16 @@
       <b-row>
         <!-- เลือกบุคคล -->
         <b-col cols="12" md="6">
-          <v-select :options="options" label="text" :reduce="p => p.text" multiple class="sl-pp mb-2"
-            v-model="local.names" :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'"
-            :disabled="loading || options.length === 0">
+          <v-select
+            :options="options"
+            label="text"
+            :reduce="p => p.text"
+            multiple
+            class="sl-pp mb-2"
+            v-model="local.names"
+            :placeholder="loading ? 'กำลังดึงข้อมูล...' : 'เลือกบุคคล'"
+            :disabled="loading || options.length === 0"
+          >
             <template v-slot:option="option">
               <div class="my-1">
                 <b-avatar :src="option.photo" size="65px"></b-avatar>
@@ -23,60 +30,70 @@
 
         <!-- platform -->
         <b-col cols="12" md="6">
-          <v-select :options="sourceOptions" v-model="local.source" id="search-source" label="text"
-            :reduce="src => src.value" placeholder="Select Platform" multiple @input="onSourceChange" />
+          <v-select
+            :options="sourceOptions"
+            v-model="local.source"
+            id="search-source"
+            label="text"
+            :reduce="src => src.value"
+            placeholder="Select Platform"
+            multiple
+            @input="onSourceChange"
+          />
         </b-col>
 
         <!-- sentiment -->
         <b-col cols="12" md="auto" class="text-left ">
           <b-form-group class="pr-md-3 checkbox-v mt-2">
-            <b-form-checkbox-group v-model="local.sentiment" :options="sentimentOptions" size="sm" />
+            <b-form-checkbox-group
+              v-model="local.sentiment"
+              :options="sentimentOptions"
+              size="sm"
+            />
           </b-form-group>
         </b-col>
 
         <!-- date range -->
         <b-col cols="12" md="4">
           <section id="date-picker" class="mt-2">
-            <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
-              :disabled-date="date => date > new Date()" value-type="format" format="YYYY-MM-DD" id="date-domain" />
+            <date-picker
+              v-model="local.valueDate"
+              type="date"
+              range
+              placeholder="เลือกช่วงเวลา"
+              class="w-100"
+              size="sm"
+              :disabled-date="date => date > new Date()"
+              value-type="format"
+              format="YYYY-MM-DD"
+              id="date-domain"
+            />
           </section>
         </b-col>
 
-        <!-- <b-col>
-          
-          <b-col cols="12" md="auto">
-            <b-button-group size="sm"  class="mt-2">
-              <b-button :variant="local.search_by === 'face' ? 'info' : 'outline-info'"
-                @click="onSearchByChange('face')">
-                ใบหน้า
-              </b-button>
-              <b-button :variant="local.search_by === 'text' ? 'info' : 'outline-info'"
-                @click="onSearchByChange('text')">
-                ข้อความ
-              </b-button>
-            </b-button-group>
-          </b-col>
-        </b-col> -->
-
-
-        <!-- sort -->
-        <!-- <b-col cols="12" md="4">
-          <b-form-select
-            v-model="local.sort_by"
-            class="mb-2"
-            :options="[
-              { value: 'asc', text: 'โพสต์เก่าสุด' },
-              { value: 'desc', text: 'โพสต์ล่าสุด' },
-              { value: 'engagement', text: 'Engagement' },
-            ]"
-            @change="emitFilters"
-          />
+        <!-- ค้นหาจากข้อความ (full_text) -->
+        <!-- <b-col cols="12" md="auto" class="text-left">
+          <b-form-group class="mt-2">
+            <b-form-checkbox
+              v-model="local.full_text"
+              size="sm"
+            >
+              ค้นหาจากข้อความ
+            </b-form-checkbox>
+          </b-form-group>
         </b-col> -->
 
         <!-- ค้นหา -->
         <b-col cols="12" md="auto">
           <div class="align-self-end mt-2">
-            <b-button type="submit" variant="info" class="px-4" :disabled="loading" @click="emitFilters" size="sm">
+            <b-button
+              type="submit"
+              variant="info"
+              class="px-4"
+              :disabled="loading"
+              @click="emitFilters"
+              size="sm"
+            >
               ค้นหา
             </b-button>
           </div>
@@ -113,12 +130,15 @@ export default {
         _sourcePrev: this.value?.source?.length ? this.value.source : [null],
         sentiment: (this.value?.sentiment || [1, 0, -1]).map(Number),
 
-        // ปล่อยว่าง => emitFilters จะ default เป็น 7 วันล่าสุด
+        // ปล่อยว่าง => emitFilters จะ default เป็นช่วงล่าสุด (ดูใน getDateRangeLocal)
         valueDate: Array.isArray(this.value?.valueDate) && this.value.valueDate.length === 2
           ? this.value.valueDate
           : [],
 
-        sort_by: this.value?.sort_by || 'desc'
+        sort_by: this.value?.sort_by || 'desc',
+
+        // NEW: ค้นหาข้อความร่วมด้วย (default = false)
+        full_text: Boolean(this.value?.full_text) || false
       },
 
       sentimentOptions: [
@@ -160,6 +180,7 @@ export default {
           this.local.valueDate = []
         }
         this.local.sort_by = safe.sort_by || 'desc'
+        this.local.full_text = Boolean(safe.full_text) || false
       }
     }
   },
@@ -203,6 +224,7 @@ export default {
       const hasStart = Array.isArray(arr) && !!arr[0]
       const hasEnd = Array.isArray(arr) && !!arr[1]
 
+      // ถ้าไม่เลือกวัน => default เป็นย้อนหลัง 1 วัน (แก้ได้ตามต้องการ)
       if (!hasStart || !hasEnd) {
         const endYMD = moment().format('YYYY-MM-DD')
         const startYMD = moment(endYMD).subtract(1, 'days').format('YYYY-MM-DD')
@@ -230,8 +252,13 @@ export default {
         sentiment: (this.local.sentiment || []).map(Number),
         names: this.local.names || [],
         sort_by: this.local.sort_by,
-        limit: this.value?.limit ?? 20
+        limit: this.value?.limit ?? 20,
+
+        // NEW: ส่ง flag ค้นหาจากข้อความ
+        full_text: !!this.local.full_text
       }
+      console.log('payload',payload,);
+      
       this.$emit('input', payload)
     },
 
@@ -259,11 +286,12 @@ export default {
   },
   mounted() {
     this.fetchOptions()
-    // emit ค่าตั้งต้นรอบแรก: ถ้า valueDate ว่าง จะได้ 7 วันล่าสุด
+    // emit ค่าตั้งต้นรอบแรก
     this.emitFilters()
   }
 }
 </script>
+
 <style>
 .sl-pp .vs__selected-options {
   overflow: auto;

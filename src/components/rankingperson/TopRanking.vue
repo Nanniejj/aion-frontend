@@ -3,23 +3,13 @@
     <b-row>
       <b-col cols="">
         <div class="py-2">
-          <b-form-input
-            v-model="search"
-            size="sm"
-            placeholder="ค้นหาในผลลัพธ์..."
-            class="w-100 w-sm-50 "
-          />
+          <b-form-input v-model="search" size="sm" placeholder="ค้นหาในผลลัพธ์..." class="w-100 w-sm-50 " />
         </div>
       </b-col>
       <b-col cols="auto">
         <div class="py-2">
-          <b-button
-            variant="outline-info"
-            size="sm"
-            class="mr-2"
-            @click="exportAllCSV"
-            :disabled="items.length === 0 || exporting"
-          >
+          <b-button variant="outline-info" size="sm" class="mr-2" @click="exportAllCSV"
+            :disabled="items.length === 0 || exporting">
             <b-spinner small v-if="exporting" class="mr-2" />
             Export
           </b-button>
@@ -29,25 +19,10 @@
     </b-row>
 
     <!-- ✅ paginate ฝั่ง client -->
-    <b-table
-      :items="sortedItems"
-      :fields="fields"
-      :busy="loading"
-      responsive
-      hover
-      :filter="search"
-      stacked="md"
-      @sort-changed="onSort"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      head-variant="light"
-      class="mb-2 tb-person"
-      @row-clicked="onRowClick"
-      :tbody-tr-class="rowClass"
-      :per-page="perPage"
-      :current-page="currentPage"
-      @filtered="onFiltered"
-    >
+    <b-table :items="sortedItems" :fields="fields" :busy="loading" responsive hover :filter="search" stacked="md"
+      @sort-changed="onSort" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" head-variant="light"
+      class="mb-2 tb-person" @row-clicked="onRowClick" :tbody-tr-class="rowClass" :per-page="perPage"
+      :current-page="currentPage" @filtered="onFiltered">
       <template #table-busy>
         <div class="text-center my-3">
           กำลังโหลดข้อมูล...
@@ -67,8 +42,7 @@
         <div class="d-flex align-items-center">
           <b-avatar
             :src="(row.item.image_paths && (row.item.image_paths[0] || row.item.image_paths[1] || row.item.image_paths[2])) || defaultAvatar"
-            class="mr-2"
-          />
+            class="mr-2" />
           <div>
             <div class="text-name">{{ row.item.person_name || '—' }}</div>
           </div>
@@ -80,13 +54,8 @@
       </template>
 
       <template #cell(action)="row">
-        <span
-          class="fas fa-list-ul text-info"
-          v-b-tooltip.hover
-          title="ดูรายละเอียด"
-          size="sm"
-          @click="openPersonInNewTab(row.item)"
-        ></span>
+        <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
+          @click="openPersonInNewTab(row.item)"></span>
       </template>
     </b-table>
 
@@ -97,13 +66,7 @@
       </small>
 
       <!-- ✅ ใช้ pagination client-side -->
-      <b-pagination
-        v-model="currentPage"
-        :per-page="perPage"
-        :total-rows="totalRows"
-        size="sm"
-        align="right"
-      />
+      <b-pagination v-model="currentPage" :per-page="perPage" :total-rows="totalRows" size="sm" align="right" />
     </div>
   </div>
 </template>
@@ -117,7 +80,7 @@ export default {
   props: {
     apiBase: { type: String, default: 'https://api2.cognizata.com' },
     endpoint: { type: String, default: '/api/v2/facerecognition/getFacePersonTop' },
-
+    full_text: { type: Boolean, default: false },
     from: { type: String, required: true },
     to: { type: String, required: true },
     source: { type: Array },
@@ -182,7 +145,8 @@ export default {
     source: { handler() { this.fetchData() } },
     sentiment: { handler() { this.fetchData() }, deep: true },
     names: { handler() { this.fetchData() }, deep: true },
-
+    // full_text() { this.fetchData() },
+    
     // เปลี่ยนการ sort ฝั่ง client → ไม่ต้องโหลดใหม่
     sortBy() { /* no-op */ },
     sortDesc() { /* no-op */ }
@@ -216,6 +180,7 @@ export default {
         name, from, to,
         ...(source ? { source } : {}),
         ...(sentiment ? { sentiment } : {}),
+        ...(this.full_text ? { full_text: 'true' } : {}),
         sort: 'desc',
         page: '1'
       }
@@ -258,6 +223,10 @@ export default {
       if (this.names && this.names.length > 0) {
         url.searchParams.set('name', this.names.join(','))
       }
+      if (this.full_text === true) {
+        url.searchParams.set('full_text', 'true')
+      }
+
 
       return url
     },
@@ -368,9 +337,11 @@ export default {
 .tb-person {
   font-size: 15px !important;
 }
+
 .font-weight-600 {
   font-weight: 600;
 }
+
 .w-1 {
   width: 1%;
 }

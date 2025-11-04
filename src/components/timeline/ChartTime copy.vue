@@ -1,6 +1,6 @@
 <template>
   <div id="chart">
-    <!-- {{ filters }} -->
+    {{ filters }}
     <div class="text-center mt-10 py-4 pb-0" v-if="loading">
       <vue-element-loading :active="loading" size="30" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891"
         spinner="bar-fade-scale" />
@@ -36,32 +36,80 @@
         <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
       </b-col>
 
-    
-      <!-- ✅ ใช้คอมโพเนนต์สรุปแนวโน้ม -->
-      <b-col cols="12" class="mt-3">
-        <TrendSummary
-          :summary="summary"
-          :filters="filters"
-          :dates="dates"
-          :totals-count="totals_count"
-        />
+      <!-- การ์ดสรุปแนวโน้ม -->
+      <b-col cols="12" class="mt-3" v-if="!loading">
+        <b-card>
+          <template #header>
+            <span>📝 สรุปแนวโน้มกราฟสถิติรายชั่วโมง </span>
+          </template>
+
+          <div v-if="summary && summary.text" class="text-left">
+            <div>
+              <span v-if="filters.keyword">
+                ประเด็น <b>{{ filters.keyword.replace('+', ' ').replace('+', ' หรือ ') }}</b>
+              </span>
+              {{ dates }}
+            </div>
+            <p>
+            โพสต์รวม {{ fmtNum((totals_count && totals_count.post) || 0) }}
+            ข้อความรวม {{ fmtNum((totals_count && totals_count.msg) || 0) }}
+            และการมีส่วนร่วมรวม {{ fmtNum((totals_count && totals_count.eng) || 0) }}</p>
+            <ul class="mb-0 pl-4">
+              <li v-for="(b, i) in summary.bullets" :key="'b' + i">{{ b }}</li>
+            </ul>
+                        <p class="my-2" style="white-space: pre-line;">{{ summary.text }}</p>
+
+          </div>
+          <div v-else class="text-muted">ไม่มีข้อมูลสำหรับสรุป</div>
+        </b-card>
       </b-col>
 
-      <!-- ✅ ใช้คอมโพเนนต์สรุปผู้มีส่วนร่วมช่วงพีค -->
+      <!-- 🔥 เฉพาะช่วงพีคสูงสุด: สรุปผู้มีส่วนร่วม (account_name | date | engage | full_text) -->
       <b-col cols="12" class="mt-3">
-        <PeakTopParticipants
-          :top-posts="topPosts"
-          :top-loading="topLoading"
-          :top-error="topError"
-          :top-limit="topLimit"
-          :top-page="topPage"
-          :can-next-top="canNextTop"
-          :peak-only-window="peakOnlyWindow"
-          @change-page="changeTopPage"
-        />
-      </b-col>
-    
+        <b-card>
+          <template #header>
+            <div class="d-flex align-items-center justify-content-between">
+              <span>🔥 สรุปผู้มีส่วนร่วมใน <b>ช่วงพีคสูงสุด</b> (Top {{ topLimit }})</span>
+              <small v-if="peakOnlyWindow" class="text-muted">
+                ช่วงที่ใช้: {{ peakOnlyWindow.startLocalStr }} – {{ peakOnlyWindow.endLocalStr }}
+              </small>
+            </div>
+          </template>
 
+          <div v-if="topLoading" class="text-center py-3">
+            <b-spinner small></b-spinner> กำลังโหลดโพสต์...
+          </div>
+
+          <div v-else-if="topError" class="text-danger">
+            {{ topError }}
+          </div>
+
+          <div v-else-if="!topPosts.length" class="text-muted">
+            ไม่พบโพสต์ในช่วงพีค
+          </div>
+
+          <div v-else>
+            <b-table :items="peakSummaryItems" :fields="peakSummaryFields" small responsive="sm" head-variant="light"
+              class="mb-2">
+              <template #cell(full_text)="row">
+                <div style="white-space: pre-wrap;">{{ row.item.full_text }}</div>
+              </template>
+            </b-table>
+
+            <div class="d-flex justify-content-end align-items-center mt-2">
+              <b-button size="sm" class="mr-2" :disabled="topPage <= 1 || topLoading"
+                @click="changeTopPage(topPage - 1)">
+                ◀ ก่อนหน้า
+              </b-button>
+              <span>หน้า {{ topPage }}</span>
+              <b-button size="sm" class="ml-2" :disabled="topLoading || !canNextTop"
+                @click="changeTopPage(topPage + 1)">
+                ถัดไป ▶
+              </b-button>
+            </div>
+          </div>
+        </b-card>
+      </b-col>
     </b-row>
   </div>
 </template>
@@ -70,11 +118,9 @@
 import VueApexCharts from 'vue-apexcharts'
 import axios from 'axios'
 import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
-import TrendSummary from '@/components/timeline/TrendSummary.vue'
-import PeakTopParticipants from '@/components/timeline/PeakTopParticipants.vue'
+
 export default {
-  components: { apexchart: VueApexCharts, StaticTimeline, TrendSummary,
-    PeakTopParticipants },
+  components: { apexchart: VueApexCharts, StaticTimeline },
   props: { filters: { type: Object, default: () => ({}) } },
   data() {
     return {
@@ -601,202 +647,202 @@ export default {
     //   'FIRST_GE100'              -> เริ่มพีค = ชั่วโมงแรกที่แตะ ≥ 100
     //   'FIRST_GT0_BEFORE_GE100'   -> เริ่มพีค = ชั่วโมงแรกที่ >0 ก่อน "ชั่วโมงแรกที่แตะ ≥100"
     // ====== สรุปแนวโน้ม + เงื่อนไขพีคแรก: >=100 และ > median ======
-    buildSummaryFromSeries({ rows, tz, posts, messages, engagements }) {
-      // --- ปรับค่าคอนฟิกเงื่อนไขพีคแรกที่นี่ ---
-      const FIRST_PEAK_MIN = 10;       // พีคแรกต้องไม่น้อยกว่า 100
-      const USE_POSITIVE_MEDIAN = true; // true = คิด median จากค่า > 0, false = รวมศูนย์ด้วย
-      const REQUIRE_LOCAL_MAX = true;   // true = ต้องเป็น local maxima (≥ เพื่อนบ้าน)
-      // --- เกณฑ์สรุปหลังพีค ---
-      const PRE_HOURS = 3, POST_HOURS = 3;
-      const FOLLOW_MIN_PCT = 15, STRONG_THRESHOLD = 25;
+buildSummaryFromSeries({ rows, tz, posts, messages, engagements }) {
+  // --- ปรับค่าคอนฟิกเงื่อนไขพีคแรกที่นี่ ---
+  const FIRST_PEAK_MIN = 10;       // พีคแรกต้องไม่น้อยกว่า 100
+  const USE_POSITIVE_MEDIAN = true; // true = คิด median จากค่า > 0, false = รวมศูนย์ด้วย
+  const REQUIRE_LOCAL_MAX = true;   // true = ต้องเป็น local maxima (≥ เพื่อนบ้าน)
+  // --- เกณฑ์สรุปหลังพีค ---
+  const PRE_HOURS = 3, POST_HOURS = 3;
+  const FOLLOW_MIN_PCT = 15, STRONG_THRESHOLD = 25;
 
-      // รวมยอด
-      const totals = rows.reduce((acc, r) => {
-        acc.post += Number(r.post_count || 0);
-        acc.msg += Number(r.message_sum || 0);
-        acc.eng += Number(r.engagement_sum || 0);
-        return acc;
-      }, { post: 0, msg: 0, eng: 0 });
+  // รวมยอด
+  const totals = rows.reduce((acc, r) => {
+    acc.post += Number(r.post_count || 0);
+    acc.msg  += Number(r.message_sum || 0);
+    acc.eng  += Number(r.engagement_sum || 0);
+    return acc;
+  }, { post: 0, msg: 0, eng: 0 });
 
-      const fmtLocal = (ms) => new Intl.DateTimeFormat('th-TH', {
-        timeZone: 'Asia/Bangkok', hourCycle: 'h23',
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      }).format(ms);
+  const fmtLocal = (ms) => new Intl.DateTimeFormat('th-TH', {
+    timeZone: 'Asia/Bangkok', hourCycle: 'h23',
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  }).format(ms);
 
-      // ยูทิลคำนวณเฉลี่ยช่วง
-      const avgRange = (arr, s, e) => {
-        const slice = arr.slice(Math.max(0, s), Math.min(arr.length, e));
-        if (!slice.length) return 0;
-        const sum = slice.reduce((acc, it) => acc + Number(it[1] || 0), 0);
-        return sum / slice.length;
-      };
+  // ยูทิลคำนวณเฉลี่ยช่วง
+  const avgRange = (arr, s, e) => {
+    const slice = arr.slice(Math.max(0, s), Math.min(arr.length, e));
+    if (!slice.length) return 0;
+    const sum = slice.reduce((acc, it) => acc + Number(it[1] || 0), 0);
+    return sum / slice.length;
+  };
 
-      // ยูทิล median
-      const median = (nums) => {
-        if (!nums.length) return 0;
-        const a = nums.slice().sort((x, y) => x - y);
-        const mid = Math.floor(a.length / 2);
-        return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
-      };
+  // ยูทิล median
+  const median = (nums) => {
+    if (!nums.length) return 0;
+    const a = nums.slice().sort((x, y) => x - y);
+    const mid = Math.floor(a.length / 2);
+    return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+  };
 
-      // ---------- หา "พีคสูงสุด" ----------
-      let peakEngIdx = -1, peakEngVal = -Infinity;
-      for (let i = 0; i < engagements.length; i++) {
-        const v = Number(engagements[i][1] || 0);
-        if (v > peakEngVal) { peakEngVal = v; peakEngIdx = i; }
-      }
-      const peakEngTs = peakEngIdx >= 0 ? engagements[peakEngIdx][0] : null;
+  // ---------- หา "พีคสูงสุด" ----------
+  let peakEngIdx = -1, peakEngVal = -Infinity;
+  for (let i = 0; i < engagements.length; i++) {
+    const v = Number(engagements[i][1] || 0);
+    if (v > peakEngVal) { peakEngVal = v; peakEngIdx = i; }
+  }
+  const peakEngTs = peakEngIdx >= 0 ? engagements[peakEngIdx][0] : null;
 
-      // ---------- หา "พีคแรก" ด้วยเงื่อนไข ≥100 และ > median ----------
-      const engValsAll = engagements.map(p => Number(p?.[1] || 0));
-      const engValsPos = engValsAll.filter(v => v > 0);
-      const med = median(USE_POSITIVE_MEDIAN ? engValsPos : engValsAll);
+  // ---------- หา "พีคแรก" ด้วยเงื่อนไข ≥100 และ > median ----------
+  const engValsAll = engagements.map(p => Number(p?.[1] || 0));
+  const engValsPos = engValsAll.filter(v => v > 0);
+  const med = median(USE_POSITIVE_MEDIAN ? engValsPos : engValsAll);
 
-      let startPeakIdx = -1;
-      for (let i = 0; i < engagements.length; i++) {
-        const cur = Number(engagements[i][1] || 0);
-        if (cur < FIRST_PEAK_MIN) continue;       // ต้อง ≥ 100
-        if (!(cur > med)) continue;               // ต้อง > median
+  let startPeakIdx = -1;
+  for (let i = 0; i < engagements.length; i++) {
+    const cur = Number(engagements[i][1] || 0);
+    if (cur < FIRST_PEAK_MIN) continue;       // ต้อง ≥ 100
+    if (!(cur > med)) continue;               // ต้อง > median
 
-        if (REQUIRE_LOCAL_MAX) {
-          const prev = i > 0 ? Number(engagements[i - 1][1] || 0) : -Infinity;
-          const next = i + 1 < engagements.length ? Number(engagements[i + 1][1] || 0) : -Infinity;
-          if (cur < prev || cur < next) continue; // ไม่ใช่ local maxima
-        }
-        startPeakIdx = i;                          // เจอตัวแรกตามเกณฑ์
-        break;
-      }
-
-      // ถ้าไม่พบเลย ให้ fallback เป็น “ชั่วโมงแรกที่ ≥100” หรือ “ชั่วโมงแรกที่ >0”
-      if (startPeakIdx === -1) {
-        const idxGE100 = engagements.findIndex(p => Number(p?.[1] || 0) >= FIRST_PEAK_MIN);
-        if (idxGE100 !== -1) startPeakIdx = idxGE100;
-        else {
-          const idxGT0 = engagements.findIndex(p => Number(p?.[1] || 0) > 0);
-          if (idxGT0 !== -1) startPeakIdx = idxGT0;
-        }
-      }
-
-      const startPeakTs = startPeakIdx >= 0 ? engagements[startPeakIdx][0] : null;
-
-      // ---------- สรุปหลัก: เปรียบเทียบ “หลังพีคสูงสุด” ----------
-      let text, surgeDetail = null;
-      if (peakEngIdx >= 0 && posts.length === engagements.length) {
-        const preStart = Math.max(0, peakEngIdx - PRE_HOURS);
-        const preEndEx = peakEngIdx;
-        const postStart = peakEngIdx + 1;
-        const postEndEx = Math.min(posts.length, postStart + POST_HOURS);
-
-        const postAvgBefore = avgRange(posts, preStart, preEndEx);
-        const postAvgAfter = avgRange(posts, postStart, postEndEx);
-        const postLiftPct = postAvgBefore === 0 ? (postAvgAfter > 0 ? 100 : 0)
-          : ((postAvgAfter - postAvgBefore) / postAvgBefore) * 100;
-
-        const enoughWindow = (preEndEx > preStart) && (postEndEx > postStart);
-        this.totals_count = totals;
-
-        if (enoughWindow) {
-          const intensity = postLiftPct >= STRONG_THRESHOLD ? 'เพิ่มสูงมากขึ้น'
-            : (postLiftPct >= FOLLOW_MIN_PCT ? 'เพิ่มขึ้น' : 'ไม่ได้พุ่งตามอย่างมีนัยสำคัญ');
-          if (postLiftPct >= FOLLOW_MIN_PCT) {
-            text = `Engagement มียอดสูงที่สุดช่วง ${fmtLocal(peakEngTs)} และหลังจากนั้นโพสต์${intensity} (${postLiftPct.toFixed(0)}%) เมื่อเทียบกับช่วงก่อนพีค`;
-          } else {
-            text = `แม้ Engagement จะมียอดสูงสุดช่วง ${fmtLocal(peakEngTs)} แต่โพสต์${intensity} (${postLiftPct.toFixed(0)}%)`;
-          }
-          surgeDetail = { peakEngTs, postAvgBefore, postAvgAfter, postLiftPct };
-        } else {
-          text = `พบ Engagement เริ่มพุ่งสูงขึ้นวันที่ ${fmtLocal(peakEngTs)} แต่ข้อมูลก่อน/หลังไม่เพียงพอสำหรับสรุปการดีดตัวของโพสต์`;
-        }
-      } else {
-        // fallback แนวโน้มรวม
-        const takeAvg = (arr, n, fromEnd = false) => {
-          if (!arr.length) return 0;
-          let slice = fromEnd ? arr.slice(-n) : arr.slice(0, n);
-          if (!slice.length) slice = arr;
-          const sum = slice.reduce((s, it) => s + Number(it[1] || 0), 0);
-          return sum / slice.length;
-        };
-        const headN = 6, tailN = 6;
-        const postAvgHead = takeAvg(posts, headN, false);
-        const postAvgTail = takeAvg(posts, tailN, true);
-        const postChange = postAvgHead === 0 ? (postAvgTail > 0 ? 100 : 0)
-          : ((postAvgTail - postAvgHead) / postAvgHead) * 100;
-        const trend = postChange > 10 ? `เพิ่มขึ้น ${postChange.toFixed(0)}%`
-          : postChange < -10 ? `ลดลง ${Math.abs(postChange).toFixed(0)}%` : 'ทรงตัว';
-        text = `ภาพรวมชั่วโมงล่าสุดที่แสดง: โพสต์รวม ${this.fmtNum(totals.post)} ข้อความรวม ${this.fmtNum(totals.msg)} และการมีส่วนร่วมรวม ${this.fmtNum(totals.eng)} โดยแนวโน้มโพสต์โดยรวม${trend}`;
-      }
-
-      // ---------- สรุป “รอบแรก” หลังเริ่มพีคครั้งแรก ----------
-      // กันซ้ำถ้าจุดพีคเริ่ม = จุดพีคสูงสุด (เวลาเดียวกัน)
-      const samePeak = (startPeakIdx >= 0 && peakEngIdx >= 0 && startPeakIdx === peakEngIdx);
-
-      if (startPeakIdx >= 0 && posts.length === engagements.length) {
-        const preStart2 = Math.max(0, startPeakIdx - PRE_HOURS);
-        const preEndEx2 = startPeakIdx;
-        const aftStart2 = startPeakIdx + 1;
-        const aftEndEx2 = Math.min(posts.length, aftStart2 + POST_HOURS);
-        if (preEndEx2 > preStart2 && aftEndEx2 > aftStart2) {
-          const preAvg2 = avgRange(posts, preStart2, preEndEx2);
-          const aftAvg2 = avgRange(posts, aftStart2, aftEndEx2);
-          const pct2 = preAvg2 === 0 ? (aftAvg2 > 0 ? 100 : 0) : ((aftAvg2 - preAvg2) / preAvg2) * 100;
-          const intensity2 = pct2 >= STRONG_THRESHOLD ? 'เพิ่มสูงมากขึ้น'
-            : (pct2 >= FOLLOW_MIN_PCT ? 'เพิ่มขึ้น' : 'ไม่ได้พุ่งตามอย่างมีนัยสำคัญ');
-          const firstRoundText = pct2 >= FOLLOW_MIN_PCT
-            ? `Engagement เริ่มพุ่งสูงขึ้นตั้งแต่ประมาณ ${fmtLocal(startPeakTs)} โพสต์${intensity2} (${pct2.toFixed(0)}%) เมื่อเทียบกับช่วงก่อนหน้า`
-            : `Engagement เริ่มพุ่งสูงขึ้นตั้งแต่ประมาณ ${fmtLocal(startPeakTs)} โพสต์${intensity2} (${pct2.toFixed(0)}%)`;
-
-          // ถ้าเวลาเดียวกัน ให้แสดงแค่ข้อความเดียว ไม่พรีเพนด์ซ้ำ
-          if (!samePeak) {
-            text = text ? `${firstRoundText}\n${text}` : firstRoundText;
-          } else if (!text) {
-            // เผื่อกรณีข้อความหลักไม่ถูกตั้งค่า
-            text = firstRoundText;
-          }
-        }
-      }
-
-      // ---------- bullets ----------
-      const bullets = [];
-      if (startPeakTs != null) {
-        bullets.push(`Engagement เริ่มพุ่งสูงขึ้นช่วง ${fmtLocal(startPeakTs)} `);//(เกณฑ์: ≥${FIRST_PEAK_MIN} และ > ค่ากลาง ≈ ${this.fmtNum(Math.round(med))})
-      }
-      if (peakEngTs != null && Number.isFinite(peakEngVal)) {
-        // ถ้าเวลาเดียวกัน ไม่ต้องเพิ่มบูลเล็ตซ้ำ
-        if (!samePeak) {
-          bullets.push(`Engagement พุ่งสูงสุดช่วง ${fmtLocal(peakEngTs)} (≈ ${this.fmtNum(peakEngVal)})`);
-        }
-      }
-
-      // พีคของโพสต์
-      let peakPostIdx = -1, peakPostVal = -Infinity;
-      for (let i = 0; i < posts.length; i++) {
-        const v = Number(posts[i][1] || 0);
-        if (v > peakPostVal) { peakPostVal = v; peakPostIdx = i; }
-      }
-      if (peakPostIdx >= 0) {
-        bullets.push(`ความถี่ในการโพสต์สูงสุดช่วง ${fmtLocal(posts[peakPostIdx][0])} (${this.fmtNum(peakPostVal)} โพสต์)`);
-      }
-
-      // เฉลี่ย/ช่วงเวลา
-      const hourCount = posts.length || 1;
-      bullets.push(`เฉลี่ยต่อชั่วโมง: โพสต์ ${this.fmtNum(Math.round(totals.post / hourCount))} | ข้อความ ${this.fmtNum(Math.round(totals.msg / hourCount))} | Engagement ${this.fmtNum(Math.round(totals.eng / hourCount))}`);
-      if (posts.length > 1) {
-        const start = posts[0][0], end = posts[posts.length - 1][0];
-        this.dates = `ช่วงเวลา ${fmtLocal(start)} – ${fmtLocal(end)}`;
-      }
-
-      return {
-        text,
-        bullets,
-        stats: {
-          totals,
-          startPeak: { index: startPeakIdx, ts: startPeakTs, medianUsed: med },
-          peakEng: { index: peakEngIdx, ts: peakEngTs, value: peakEngVal },
-          followFromPeak: surgeDetail
-        }
-      };
+    if (REQUIRE_LOCAL_MAX) {
+      const prev = i > 0 ? Number(engagements[i - 1][1] || 0) : -Infinity;
+      const next = i + 1 < engagements.length ? Number(engagements[i + 1][1] || 0) : -Infinity;
+      if (cur < prev || cur < next) continue; // ไม่ใช่ local maxima
     }
+    startPeakIdx = i;                          // เจอตัวแรกตามเกณฑ์
+    break;
+  }
+
+  // ถ้าไม่พบเลย ให้ fallback เป็น “ชั่วโมงแรกที่ ≥100” หรือ “ชั่วโมงแรกที่ >0”
+  if (startPeakIdx === -1) {
+    const idxGE100 = engagements.findIndex(p => Number(p?.[1] || 0) >= FIRST_PEAK_MIN);
+    if (idxGE100 !== -1) startPeakIdx = idxGE100;
+    else {
+      const idxGT0 = engagements.findIndex(p => Number(p?.[1] || 0) > 0);
+      if (idxGT0 !== -1) startPeakIdx = idxGT0;
+    }
+  }
+
+  const startPeakTs = startPeakIdx >= 0 ? engagements[startPeakIdx][0] : null;
+
+  // ---------- สรุปหลัก: เปรียบเทียบ “หลังพีคสูงสุด” ----------
+  let text, surgeDetail = null;
+  if (peakEngIdx >= 0 && posts.length === engagements.length) {
+    const preStart = Math.max(0, peakEngIdx - PRE_HOURS);
+    const preEndEx = peakEngIdx;
+    const postStart = peakEngIdx + 1;
+    const postEndEx = Math.min(posts.length, postStart + POST_HOURS);
+
+    const postAvgBefore = avgRange(posts, preStart, preEndEx);
+    const postAvgAfter  = avgRange(posts, postStart, postEndEx);
+    const postLiftPct   = postAvgBefore === 0 ? (postAvgAfter > 0 ? 100 : 0)
+      : ((postAvgAfter - postAvgBefore) / postAvgBefore) * 100;
+
+    const enoughWindow = (preEndEx > preStart) && (postEndEx > postStart);
+    this.totals_count = totals;
+
+    if (enoughWindow) {
+      const intensity = postLiftPct >= STRONG_THRESHOLD ? 'เพิ่มสูงมากขึ้น'
+        : (postLiftPct >= FOLLOW_MIN_PCT ? 'เพิ่มขึ้น' : 'ไม่ได้พุ่งตามอย่างมีนัยสำคัญ');
+      if (postLiftPct >= FOLLOW_MIN_PCT) {
+        text = `Engagement มียอดสูงที่สุดช่วง ${fmtLocal(peakEngTs)} และหลังจากนั้นโพสต์${intensity} (${postLiftPct.toFixed(0)}%) เมื่อเทียบกับช่วงก่อนพีค`;
+      } else {
+        text = `แม้ Engagement จะมียอดสูงสุดช่วง ${fmtLocal(peakEngTs)} แต่โพสต์${intensity} (${postLiftPct.toFixed(0)}%)`;
+      }
+      surgeDetail = { peakEngTs, postAvgBefore, postAvgAfter, postLiftPct };
+    } else {
+      text = `พบ Engagement เริ่มพุ่งสูงขึ้นวันที่ ${fmtLocal(peakEngTs)} แต่ข้อมูลก่อน/หลังไม่เพียงพอสำหรับสรุปการดีดตัวของโพสต์`;
+    }
+  } else {
+    // fallback แนวโน้มรวม
+    const takeAvg = (arr, n, fromEnd = false) => {
+      if (!arr.length) return 0;
+      let slice = fromEnd ? arr.slice(-n) : arr.slice(0, n);
+      if (!slice.length) slice = arr;
+      const sum = slice.reduce((s, it) => s + Number(it[1] || 0), 0);
+      return sum / slice.length;
+    };
+    const headN = 6, tailN = 6;
+    const postAvgHead = takeAvg(posts, headN, false);
+    const postAvgTail = takeAvg(posts, tailN, true);
+    const postChange = postAvgHead === 0 ? (postAvgTail > 0 ? 100 : 0)
+      : ((postAvgTail - postAvgHead) / postAvgHead) * 100;
+    const trend = postChange > 10 ? `เพิ่มขึ้น ${postChange.toFixed(0)}%`
+      : postChange < -10 ? `ลดลง ${Math.abs(postChange).toFixed(0)}%` : 'ทรงตัว';
+    text = `ภาพรวมชั่วโมงล่าสุดที่แสดง: โพสต์รวม ${this.fmtNum(totals.post)} ข้อความรวม ${this.fmtNum(totals.msg)} และการมีส่วนร่วมรวม ${this.fmtNum(totals.eng)} โดยแนวโน้มโพสต์โดยรวม${trend}`;
+  }
+
+  // ---------- สรุป “รอบแรก” หลังเริ่มพีคครั้งแรก ----------
+  // กันซ้ำถ้าจุดพีคเริ่ม = จุดพีคสูงสุด (เวลาเดียวกัน)
+  const samePeak = (startPeakIdx >= 0 && peakEngIdx >= 0 && startPeakIdx === peakEngIdx);
+
+  if (startPeakIdx >= 0 && posts.length === engagements.length) {
+    const preStart2 = Math.max(0, startPeakIdx - PRE_HOURS);
+    const preEndEx2 = startPeakIdx;
+    const aftStart2 = startPeakIdx + 1;
+    const aftEndEx2 = Math.min(posts.length, aftStart2 + POST_HOURS);
+    if (preEndEx2 > preStart2 && aftEndEx2 > aftStart2) {
+      const preAvg2 = avgRange(posts, preStart2, preEndEx2);
+      const aftAvg2 = avgRange(posts, aftStart2, aftEndEx2);
+      const pct2 = preAvg2 === 0 ? (aftAvg2 > 0 ? 100 : 0) : ((aftAvg2 - preAvg2) / preAvg2) * 100;
+      const intensity2 = pct2 >= STRONG_THRESHOLD ? 'เพิ่มสูงมากขึ้น'
+        : (pct2 >= FOLLOW_MIN_PCT ? 'เพิ่มขึ้น' : 'ไม่ได้พุ่งตามอย่างมีนัยสำคัญ');
+      const firstRoundText = pct2 >= FOLLOW_MIN_PCT
+        ? `Engagement เริ่มพุ่งสูงขึ้นตั้งแต่ประมาณ ${fmtLocal(startPeakTs)} โพสต์${intensity2} (${pct2.toFixed(0)}%) เมื่อเทียบกับช่วงก่อนหน้า`
+        : `Engagement เริ่มพุ่งสูงขึ้นตั้งแต่ประมาณ ${fmtLocal(startPeakTs)} โพสต์${intensity2} (${pct2.toFixed(0)}%)`;
+
+      // ถ้าเวลาเดียวกัน ให้แสดงแค่ข้อความเดียว ไม่พรีเพนด์ซ้ำ
+      if (!samePeak) {
+        text = text ? `${firstRoundText}\n${text}` : firstRoundText;
+      } else if (!text) {
+        // เผื่อกรณีข้อความหลักไม่ถูกตั้งค่า
+        text = firstRoundText;
+      }
+    }
+  }
+
+  // ---------- bullets ----------
+  const bullets = [];
+  if (startPeakTs != null) {
+    bullets.push(`Engagement เริ่มพุ่งสูงขึ้นช่วง ${fmtLocal(startPeakTs)} `);//(เกณฑ์: ≥${FIRST_PEAK_MIN} และ > ค่ากลาง ≈ ${this.fmtNum(Math.round(med))})
+  }
+  if (peakEngTs != null && Number.isFinite(peakEngVal)) {
+    // ถ้าเวลาเดียวกัน ไม่ต้องเพิ่มบูลเล็ตซ้ำ
+    if (!samePeak) {
+      bullets.push(`Engagement พุ่งสูงสุดช่วง ${fmtLocal(peakEngTs)} (≈ ${this.fmtNum(peakEngVal)})`);
+    }
+  }
+
+  // พีคของโพสต์
+  let peakPostIdx = -1, peakPostVal = -Infinity;
+  for (let i = 0; i < posts.length; i++) {
+    const v = Number(posts[i][1] || 0);
+    if (v > peakPostVal) { peakPostVal = v; peakPostIdx = i; }
+  }
+  if (peakPostIdx >= 0) {
+    bullets.push(`ความถี่ในการโพสต์สูงสุดช่วง ${fmtLocal(posts[peakPostIdx][0])} (${this.fmtNum(peakPostVal)} โพสต์)`);
+  }
+
+  // เฉลี่ย/ช่วงเวลา
+  const hourCount = posts.length || 1;
+  bullets.push(`เฉลี่ยต่อชั่วโมง: โพสต์ ${this.fmtNum(Math.round(totals.post / hourCount))} | ข้อความ ${this.fmtNum(Math.round(totals.msg / hourCount))} | Engagement ${this.fmtNum(Math.round(totals.eng / hourCount))}`);
+  if (posts.length > 1) {
+    const start = posts[0][0], end = posts[posts.length - 1][0];
+    this.dates = `ช่วงเวลา ${fmtLocal(start)} – ${fmtLocal(end)}`;
+  }
+
+  return {
+    text,
+    bullets,
+    stats: {
+      totals,
+      startPeak: { index: startPeakIdx, ts: startPeakTs, medianUsed: med },
+      peakEng:   { index: peakEngIdx, ts: peakEngTs, value: peakEngVal },
+      followFromPeak: surgeDetail
+    }
+  };
+}
 
 
 

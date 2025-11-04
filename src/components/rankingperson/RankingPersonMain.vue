@@ -6,10 +6,10 @@
 
     <template v-if="isReady">
       <PodiumTop3 :from="filters.from" :to="filters.to" :source="filters.source" :names="filters.names"
-        :sentiment="filters.sentiment" :limit="10" :refreshSec="0" />
+        :sentiment="filters.sentiment" :limit="10" :refreshSec="0"  :full_text="filters.full_text" />
 
       <TopUserRanking :from="filters.from" :to="filters.to" :source="filters.source" :sentiment="filters.sentiment"
-        :names="filters.names" :limit="filters.limit" />
+        :names="filters.names" :limit="filters.limit" :full_text="filters.full_text" />
     </template>
 </div>
   </div>
