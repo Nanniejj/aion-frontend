@@ -158,6 +158,7 @@
                     src="@/assets/lemon8.png"
                     class="social-img"
                   />
+                  <img v-else-if="datas.platform == 'reddit'" src="@/assets/reddit.png" class="social-img" />
                   <img v-else src="@/assets/Pantip.png" class="social-img" />
                 </span>
                 <img

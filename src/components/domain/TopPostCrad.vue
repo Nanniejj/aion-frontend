@@ -38,6 +38,7 @@
                       <span v-if="postDomain.source == 'pantip'">
                         <img v-if="postDomain.platform == 'dek-d'" src="@/assets/dekd.png" class="social-img" />
                         <img v-else-if="postDomain.platform == 'lemon8'" src="@/assets/lemon8.png" class="social-img" />
+                        <img v-else-if="postDomain.platform == 'reddit'" src="@/assets/reddit.png" class="social-img" />
                         <img v-else src="@/assets/Pantip.png" class="social-img" />
                       </span>
                       <img v-if="postDomain.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
@@ -623,12 +624,12 @@
                             <a :href="'https://www.youtube.com/' + cmt.author_link
                               " target="_blank" v-if="postDomain.source == 'youtube'">
                               <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
-                              <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                              <b-avatar  loading="lazy" v-else style="height: 32px;"></b-avatar>
 
                             </a>
                             <a :href="cmt.url" target="_blank" v-else>
                               <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
-                              <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                              <b-avatar loading="lazy" v-else style="height: 32px;"></b-avatar>
                             </a>
 
                             <!-- <img v-if="postDomain.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
@@ -785,7 +786,7 @@ export default {
             neutral: arr[2]
           };
       }
-      console.log(obj);
+    //   console.log(obj);
       // return array ตามลำดับ [agree, disagree, neutral]
       return [ obj.neutral, obj.agree, obj.disagree];
     },
@@ -881,20 +882,32 @@ export default {
           const encoded = encodeURIComponent(uid);
           var _this = this;
           var config = {
-            method: "get",
-            url:
-              "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
-              encoded +
-              "&sentiment=" +
-              v,
+            method: "put",
+            url: "https://api2.cognizata.com/api/v2/userposts/update_sentiment_word",
+            data: {
+                uid: uid,
+                sentiment: v
+            },
             headers: {
               Authorization: "Bearer " + localStorage.getItem("token"),
               "Content-Type": "application/json",
             },
           };
+        //   var config = {
+        //     method: "get",
+        //     url:
+        //       "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
+        //       encoded +
+        //       "&sentiment=" +
+        //       v,
+        //     headers: {
+        //       Authorization: "Bearer " + localStorage.getItem("token"),
+        //       "Content-Type": "application/json",
+        //     },
+        //   };
           this.axios(config)
             .then(function (response) {
-              console.log("change sentiment response:",response);
+            //   console.log("change sentiment response:",response);
               if (v == 1) {
                 _this.getTopPostDomain[k].sentiment = 1;
                 _this.getTopPostDomain[k].user_sentiment[_this.objId] = 1;
@@ -907,7 +920,7 @@ export default {
               }
             })
             .catch(function (e) {
-                console.error("axios error:", e);
+                // console.error("axios error:", e);
                 // alert("เกิดข้อผิดพลาดในการเปลี่ยน Sentiment");
             });
         }

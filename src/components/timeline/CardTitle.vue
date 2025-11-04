@@ -251,7 +251,7 @@ export default {
   },
   data() {
     return {
-           index: null,
+        //    index: null,
       dataPhoto: [],
  
       visible: false,

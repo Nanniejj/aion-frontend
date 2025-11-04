@@ -126,13 +126,19 @@
 
             <img v-if="it.source === 'twitter'" :src="imgtw" class="social-img" />
             <img v-if="it.source === 'facebook'" :src="imgfb" class="social-img" />
-            <img v-if="it.source === 'pantip'" :src="imgpt" class="social-img" />
+            <!-- <img v-if="it.source === 'pantip'" :src="imgpt" class="social-img" /> -->
             <img v-if="it.source === 'youtube'" :src="imgyt" class="social-img" />
             <img v-if="it.source === 'news'" :src="imgnw" class="social-img" />
             <img v-if="it.source === 'instagram'" :src="imgig" class="social-img" />
             <img v-if="it.source === 'blockdit'" :src="imgbd" class="social-img" />
             <img v-if="it.source === 'tiktok'" :src="imgtt" class="social-img" />
             <img v-if="it.source === 'threads'" :src="imgtd" class="social-img" />
+            <template v-if="it.source === 'pantip'">
+            <img v-if="it.platform === 'dek-d'" src="@/assets/dekd.png" class="social-img" />
+            <img v-else-if="it.platform === 'lemon8'" src="@/assets/lemon8.png" class="social-img" />
+            <img v-else-if="it.platform === 'reddit'" src="@/assets/reddit.png" class="social-img" />
+            <img v-else src="@/assets/Pantip.png" class="social-img" />
+            </template>
             <span class="line"></span>
           </div>
           <!-- การ์ดเดี่ยวตามโพสต์ -->

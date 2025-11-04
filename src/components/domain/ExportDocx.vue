@@ -47,7 +47,7 @@
           <b-col cols="12" md="6">
             <div id="ex-hashcloud" class="export-bg">
               <div class="h5 mt-3 bold text-left">TOP 10 #Hashtag</div>
-              <div v-for="(hash, k) in getHashtag" :key="k" class="pl-3 py-2 text-left">
+              <div v-for="(hash, k) in getHashtag" :key="k + hash.name" class="pl-3 py-2 text-left">
                 {{ k + 1 }} . {{ hash.name }}
               </div>
             </div>
@@ -73,7 +73,7 @@
             <PostPositive :stmpost="1" />
           </div>
           <ExportTopPostCrad v-show="!showPost" class="mt-3 page-break export-bg" :typeStm="'pos'"
-                             id="post-pos" ref="captureDiv" :key="componentKey" />
+                             id="post-pos" ref="captureDiv" />
 
           <div class="text-left d-block h5 py-3 px-4 mt-3"
                style="background:rgb(247 119 106 / 17%); padding:8px 10px; border-radius:10px; color:rgb(247,119,106)">
@@ -92,7 +92,7 @@
           <div v-if="showPostNeg">
             <PostPositive :stmpost="-1" />
           </div>
-          <ExportTopPostCrad v-show="!showPostNeg" :key="componentKeyNeg" class="my-3 export-bg"
+          <ExportTopPostCrad v-show="!showPostNeg" class="my-3 export-bg"
                              :typeStm="'neg'" id="post-neg" />
         </div>
       </div>

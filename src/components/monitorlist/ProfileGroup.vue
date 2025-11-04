@@ -271,7 +271,7 @@ export default {
     },
     data() {
         const today = moment();
-        const past7Days = moment().subtract(6, 'days'); // รวมวันนี้ = 7 วัน
+        const past7Days = moment().subtract(0, 'days'); // รวมวันนี้ = 7 วัน
         return {
             valueDate: [past7Days.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
             selectedSource: null,

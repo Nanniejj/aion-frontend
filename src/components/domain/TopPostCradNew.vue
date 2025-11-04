@@ -71,6 +71,7 @@
                                             class="social-img" />
                                         <img v-else-if="postDomain.platform == 'lemon8'" src="@/assets/lemon8.png"
                                             class="social-img" />
+                                        <img v-else-if="postDomain.platform == 'reddit'" src="@/assets/reddit.png" class="social-img" />
                                         <img v-else src="@/assets/Pantip.png" class="social-img" />
                                     </span>
                                     <img v-if="postDomain.source == 'instagram'" src="@/assets/Instagram.png"

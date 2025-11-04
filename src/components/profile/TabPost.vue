@@ -1,9 +1,9 @@
 <template>
   <div>
     <!-- {{heightword}} -->
-    <vue-element-loading :active="getLoadPostTab" size="80" background-color="rgba(255, 255, 255, 0.3)"
+    <vue-element-loading v-if="getLoadPostTab" :active="getLoadPostTab" size="80" background-color="rgba(255, 255, 255, 0.3)"
       color="#b6ac9a" />
-    <div>
+    <div >
       <!-- {{heightword.data[0].Keywords}} -->
       <div class="h5 text-left bold" v-if="api !== 'location'">
         <div v-if="tabs == 'domainTab'">
@@ -30,7 +30,7 @@
       </b-form-group>
     </div>
     <!-- {{getPostAllMonitor}} -->
-    <div id="profile-page" v-if="getPostAllMonitor.length != 0">
+    <div id="profile-page" v-if="getPostAllMonitor && getPostAllMonitor.length != 0">
       <!-- Highlight -->
       <b-form-checkbox switch size="lg" class="text-right" v-model="checked" v-if="pageCheck == 'Domain'">
         <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
@@ -76,6 +76,7 @@
                 <span v-if="profilePost.source == 'pantip'">
                   <img v-if="profilePost.platform == 'dek-d'" src="@/assets/dekd.png" class="social-img" />
                   <img v-else-if="profilePost.platform == 'lemon8'" src="@/assets/lemon8.png" class="social-img" />
+                  <img v-else-if="profilePost.platform == 'reddit'" src="@/assets/reddit.png" class="social-img" />
                   <img v-else src="@/assets/Pantip.png" class="social-img" />
                 </span>
                 <!-- <img
@@ -94,11 +95,15 @@
               <span id="txt-name">
                 <span><b> {{ profilePost.account_name }} </b></span>
 
-                <a v-if="
+                <!-- <a v-if="
                   profilePost.url_post &&
                   profilePost.url_post.includes('mbasic')
                 " v-bind:href="profilePost.url_post.replace('mbasic.', '')" class="fa fa-external-link"
-                  target="_blank"></a>
+                  target="_blank"></a> -->
+                <a v-if="profilePost && (profilePost.url_post || '').includes('mbasic')"
+                    :href="(profilePost.url_post || '').replace('mbasic.', '')"
+                    class="fa fa-external-link" target="_blank">
+                </a>
                 <a v-else v-bind:href="profilePost.url_post" class="fa fa-external-link" target="_blank"></a>
               </span>
               <div class="font-weight-light small" v-if="profilePost.date">
@@ -191,16 +196,19 @@
               {{ profilePost.title }}
             </div>
             <div v-if="pageCheck == 'Domain'" class="box-contents">
-              <Highlighter class="my-highlight" :style="{
-                textAlign: 'justify',
-                fontSize: '17px',
-                padding: '10px',
-              }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
+              <Highlighter v-if="profilePost.full_text" class="my-highlight" 
+                :style="{
+                    textAlign: 'justify',
+                    fontSize: '17px',
+                    padding: '10px',
+                }" 
+                highlightClassName="highlight2" 
+                :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
                 :textToHighlight="profilePost.read
                   ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
                   : profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
                   " />
-              <div v-if="profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
+              <div v-if="profilePost.full_text && profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
                 id="readmore">
                 <span v-if="profilePost.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
               </div>
@@ -849,7 +857,7 @@ export default {
       this.infiniteScroll();
     },
     crawdash(val) {
-      console.log("crawdash", val);
+    //   console.log("crawdash", val);
       this.crawdash = val;
       this.page = 0;
       this.isInfinite = true;
@@ -857,20 +865,20 @@ export default {
     },
     dh: function (newVal, oldVal) {
       // watch it
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
     statusLocat: function (newVal, oldVal) {
       // watch it
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
     changwats: function (newVal, oldVal) {
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
@@ -881,20 +889,20 @@ export default {
       this.infiniteScroll();
     },
     amphoes: function (newVal, oldVal) {
-      console.log("Prop changed amphoes: ", newVal, " | was: ", oldVal);
+    //   console.log("Prop changed amphoes: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
     },
     users: function (newVal, oldVal) {
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
     },
     getSocialDomain: function (newVal, oldVal) {
       // watch it
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
+    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
@@ -1028,11 +1036,11 @@ export default {
       var word = [];
       let jw = this.changwats.split(",");
       let am = this.amphoes;
-      console.log("this.amphoes", this.amphoes, jw);
+    //   console.log("this.amphoes", this.amphoes, jw);
       if (this.checked) {
         word = jw.concat(am);
       }
-      console.log("wordddd", word);
+    //   console.log("wordddd", word);
       return word;
     },
   },
@@ -1100,10 +1108,13 @@ export default {
             return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
         },
         filterDomain(domain) {
-            let filteredDomain = [];
-            return (filteredDomain = domain.filter((item) =>
-                this.domainArr.includes(item)
-            ));
+            // let filteredDomain = [];
+            // return (filteredDomain = domain.filter((item) =>
+            //     this.domainArr.includes(item)
+            // ));
+            return (domain || []).filter(item =>
+                (this.domainArr || []).includes(item)
+            );
         },
         highlightText(full_text) {
             var word = [];
@@ -1177,7 +1188,7 @@ export default {
                         };
                         this.axios(config)
                             .then(function (response) {
-                                console.log(response);
+                                // console.log(response);
                                 if (_this.selected == "") {
                                     if (v == 1) {
                                         _this.getPostAllMonitor[k].sentiment = 1;
@@ -1243,7 +1254,7 @@ export default {
             event.target.src = this.default_avatar;
         },
         onClick(i, data) {
-            console.log(data);
+            // console.log(data);
             this.index = i;
             this.dataPhoto = data;
         },
@@ -1351,7 +1362,7 @@ export default {
                 // Hahtag
                 if (this.tabs == "domainTab") {
                     if (sentiment != "") {
-                        console.log("sentiment", sentiment);
+                        // console.log("sentiment", sentiment);
                         //  have  sentiment
                         payload = {
                             hashtag: hashtag,
@@ -1373,7 +1384,7 @@ export default {
                             end_date: this.getEDateHt,
                             source: this.getValSource,
                         };
-                        console.log("onsentiment", sentiment);
+                        // console.log("onsentiment", sentiment);
                     }
                 } else {
                     if (sentiment != "") {
@@ -1403,7 +1414,7 @@ export default {
                 if (this.pageMenu == "domain") {
                     let sc, domains, dash;
 
-                    console.log("keyword1", this.domainKeyword, this.getClickDomain);
+                    // console.log("keyword1", this.domainKeyword, this.getClickDomain);
                     if (this.menu == "platform") {
                         sc = this.getSocialPlatform;
                         // domains = "All";
@@ -1413,7 +1424,7 @@ export default {
                         domains = this.getClickDomainId;
                         dash = "";
                     }
-                    console.log("domain");
+                    // console.log("domain");
                     if (this.getSdateDm) {
                         this.sdate = this.getSdateDm;
                         this.edate = this.getEdateDm;
@@ -1452,7 +1463,7 @@ export default {
                         };
                     }
                     if (this.domainKeyword) {
-                        console.log("keyword2", this.domainKeyword);
+                        // console.log("keyword2", this.domainKeyword);
                         payload.querySearch = this.domainKeyword;
                     }
                 } else {
@@ -1470,7 +1481,7 @@ export default {
                                 // end_date:edateLocat
                             };
                             if (this.amphoes.length) {
-                                console.log("this.amphoes", this.amphoes);
+                                // console.log("this.amphoes", this.amphoes);
                                 payload.query = this.amphoes;
                             }
                         } else {
@@ -1485,7 +1496,7 @@ export default {
                                 // end_date:edateLocat
                             };
                             if (this.amphoes.length) {
-                                console.log("this.amphoes", this.amphoes);
+                                // console.log("this.amphoes", this.amphoes);
                                 payload.query = this.amphoes;
                             }
                         }
@@ -1514,7 +1525,7 @@ export default {
             }
             this.page += 10;
             this.infiniteId += 1;
-            console.log(this.page);
+            // console.log(this.page);
         },
         selectSort() {
             this.page = 0;
@@ -1581,7 +1592,7 @@ export default {
                     console.error(error);
                     Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบโพสต์ได้', 'error');
                 });
-            console.log("post id ==== ", config);
+            // console.log("post id ==== ", config);
         },
        
 },
@@ -1600,7 +1611,7 @@ export default {
         if (val) {
           this.domainKeyword = val;
           await this.infiniteScroll();
-          console.log("emitter", val);
+        //   console.log("emitter", val);
         } else {
           this.domainKeyword = val;
           await this.infiniteScroll();
