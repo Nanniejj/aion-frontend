@@ -141,7 +141,7 @@
       <!-- <TopAccountsChart :key="chartKey" :items="chartItems" :limit="chartLimit"
         @add-watch="$emit('add-watch', $event)" /> -->
 
-      <TopAccountsProgress :items="chartItems" :limit="chartLimit"
+      <TopAccountsProgress :items="accounts" :limit="chartLimit"
         :order="sortBy.startsWith('count') ? (sortBy === 'count-asc' ? 'asc' : 'desc') : 'desc'"
         @add-watch="onCardClick" />
     </div>
