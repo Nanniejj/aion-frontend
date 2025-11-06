@@ -75,26 +75,26 @@
             </div>
           </b-col>
 
-          <b-col md="6" class="mb-2">
+          <b-col md="auto" class="mb-2 text-left ">
             <b-form-checkbox v-model="full_text" size="sm" class="mt-2">
-              ค้นหาจากข้อความ
+              ค้นหาบุคคลจากข้อความ
             </b-form-checkbox>
           </b-col>
 
-          <b-col cols="12" md="4" class="text-right ">
+          <b-col cols="12" md="4" class="text-center ">
             <section id="date-picker" class="w-100">
               <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100"
                 size="sm" :disabled-date="d => d > new Date()" value-type="format" format="YYYY-MM-DD"
                 @change="onDateChange" id="date-domain" />
             </section>
           </b-col>
-          <b-col>
+          <b-col cols="12" md="auto">
             <div class="text-right mb-2 mt-2 mt-md-0 ">
               <b-button size="sm" variant="outline-secondary" @click="clearFilters" class="mr-2">
                 ล้างตัวกรอง
               </b-button>
-              <b-button size="sm" variant="info" @click="applyAllFilters">
-                ค้นหา
+              <b-button size="sm" variant="info" @click="applyAllFilters" >
+               <span class="px-3"> ค้นหา </span>
               </b-button>
             </div>
           </b-col>

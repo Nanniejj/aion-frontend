@@ -8,30 +8,17 @@
       color="#b6ac9a"
     />
 
-    <!-- Toolbar -->
-    <!-- <div class="d-flex justify-content-end mb-2">
-      <b-button
-        variant="outline-secondary"
-        size="sm"
-        @click="downloadImage"
-        :disabled="downloading"
-      >
-        <span v-if="!downloading">📷 ดาวน์โหลดรูป</span>
-        <span v-else>กำลังสร้างรูป...</span>
-      </b-button>
-    </div> -->
-
     <b-list-group flush class="chart-box" ref="chartBox">
       <b-list-group-item
         v-for="(item, i) in rows"
-        :key="item.uid"
+        :key="item.uid || i"
         class="ta-row"
         @click="onClick(item)"
       >
-        <!-- left: avatar + name -->
         <b-row align-v="center">
+          <!-- ซ้าย: อวตาร + ชื่อ -->
           <b-col cols="4">
-            <div class="d-flex align-items-center w-100" >
+            <div class="d-flex align-items-center w-100">
               <span
                 class="h5 bold py-0 my-0 rank-no mr-md-3"
                 :class="(i % 2 === 0) ? 'rank-dark' : 'rank-light'"
@@ -65,7 +52,8 @@
             </div>
           </b-col>
 
-          <b-col cols="8">
+          <!-- ขวา: แท่ง stacked + ตัวเลขรวม -->
+          <b-col cols="8 px-0">
             <div class="w-100">
               <div class="text-left d-sm">
                 <a :href="item.link_crawl" target="_blank">
@@ -74,9 +62,59 @@
               </div>
 
               <div class="d-flex align-items-center w-100">
-                <b-progress :max="maxCount" height="15px" class="w-100 mr-2 ta-progress">
-                  <b-progress-bar :value="item.count" variant="info" />
-                </b-progress>
+                <!-- แท่งรวม (สเกลตาม maxCount) + แบ่งสัดส่วนตาม sentiment -->
+                <div
+                  class="stack-bg mr-2"
+                  :style="{ width: containerWidth(item) + '%' }"
+                  :aria-label="ariaLabel(item)"
+                  role="img"
+                >
+                  <!-- Positive -->
+                  <div
+                    class="stack-bar stack-pos"
+                    :style="{ width: seg(item).posPct + '%' }"
+                    v-b-tooltip.hover
+                    :title="'Positive: ' + formatCount(item.pos)"
+                  >
+                    <span
+                      v-if="seg(item).posPct >= labelMinWidthPct"
+                      class="stack-label"
+                    >
+                      {{ labelText(item.pos, seg(item).posPct) }}
+                    </span>
+                  </div>
+
+                  <!-- Neutral -->
+                  <div
+                    class="stack-bar stack-neu"
+                    :style="{ width: seg(item).neuPct + '%' }"
+                    v-b-tooltip.hover
+                    :title="'Neutral: ' + formatCount(item.neu)"
+                  >
+                    <span
+                      v-if="seg(item).neuPct >= labelMinWidthPct"
+                      class="stack-label"
+                    >
+                      {{ labelText(item.neu, seg(item).neuPct) }}
+                    </span>
+                  </div>
+
+                  <!-- Negative -->
+                  <div
+                    class="stack-bar stack-neg"
+                    :style="{ width: seg(item).negPct + '%' }"
+                    v-b-tooltip.hover
+                    :title="'Negative: ' + formatCount(item.neg)"
+                  >
+                    <span
+                      v-if="seg(item).negPct >= labelMinWidthPct"
+                      class="stack-label"
+                    >
+                      {{ labelText(item.neg, seg(item).negPct) }}
+                    </span>
+                  </div>
+                </div>
+
                 <b-badge pill variant="warning" class="flex-shrink-0">
                   {{ formatCount(item.count) }}
                 </b-badge>
@@ -97,15 +135,24 @@
 export default {
   name: 'TopAccountsProgress',
   props: {
-    /** items: [{ uid, name, count, source, profile_image, link_crawl }] */
+    /**
+     * items: [
+     *  {
+     *    uid, name, count|total, source, profile_image, link_crawl,
+     *    positiveSentiment, neutralSentiment, negativeSentiment
+     *  }
+     * ]
+     */
     items: { type: Array, default: () => [] },
     limit: { type: Number, default: 10 },
-    order: { type: String, default: 'desc' } // 'desc' มาก→น้อย, 'asc' น้อย→มาก, 'none' ตามลำดับที่ส่งมา
+    order: { type: String, default: 'desc' }, // 'desc' มาก→น้อย, 'asc' น้อย→มาก, 'none' ตามลำดับที่ส่งมา
+    labelMode: { type: String, default: 'count' }, // 'count' | 'percent' | 'both'
+    labelMinWidthPct: { type: Number, default: 8 } // แสดง label เมื่อกว้าง >= ค่านี้
   },
   data() {
     return {
-      loading: false,        // ใช้กับ overlay ที่มีอยู่เดิม
-      downloading: false,    // สถานะกำลังสร้างรูป
+      loading: false,
+      downloading: false,
 
       imgtw: require('@/assets/Twitter.png'),
       imgfb: require('@/assets/Facebook.png'),
@@ -120,14 +167,25 @@ export default {
   },
   computed: {
     normalized() {
-      return (this.items || []).map(a => ({
-        count: Number(a.count || 0),
-        uid: a.uid || '',
-        name: a.name || a.uid || '',
-        link_crawl: a.link_crawl || '#',
-        source: (a.source || 'unknown').toLowerCase(),
-        profile_image: a.profile_image || null
-      }));
+      // รวม fields ที่จำเป็น + รองรับชื่อ count/total และ sentiments
+      return (this.items || []).map(a => {
+        const count = Number(a.count != null ? a.count : (a.total || 0));
+        const pos = Number(a.positiveSentiment || 0);
+        const neu = Number(a.neutralSentiment || 0);
+        const neg = Number(a.negativeSentiment || 0);
+
+        return {
+          count,
+          pos,
+          neu,
+          neg,
+          uid: a.uid || '',
+          name: a.name || a.uid || '',
+          link_crawl: a.link_crawl || '#',
+          source: (a.source || 'unknown').toLowerCase(),
+          profile_image: a.profile_image || null
+        };
+      });
     },
     sorted() {
       const arr = [...this.normalized];
@@ -159,30 +217,46 @@ export default {
     formatCount(v) {
       return Number(v || 0).toLocaleString();
     },
-    sourceVariant(s) {
-      const m = {
-        twitter: 'info',
-        youtube: 'danger',
-        facebook: 'primary',
-        news: 'secondary',
-        instagram: 'warning',
-        unknown: 'dark'
+    // ความยาวแท่งหลัก (container) เทียบกับอันดับ
+    containerWidth(it) {
+      // ให้แท่งสัดส่วนตาม count / maxCount (0-100)
+      return this.maxCount > 0 ? (Number(it.count || 0) / this.maxCount) * 100 : 0;
+      // ถ้าอยากให้เต็ม 100% เสมอ: return 100;
+    },
+    // แบ่งสัดส่วนสีภายในแท่งตาม sentiment + คืนค่า count ด้วย
+    seg(it) {
+      const p = Number(it.pos || 0);
+      const n = Number(it.neu || 0);
+      const g = Number(it.neg || 0);
+      const t = p + n + g || 1;
+      return {
+        pos: p, neu: n, neg: g,
+        posPct: (p / t) * 100,
+        neuPct: (n / t) * 100,
+        negPct: (g / t) * 100
       };
-      return m[(s || 'unknown').toLowerCase()] || 'secondary';
+    },
+    ariaLabel(it) {
+      return `Total ${this.formatCount(it.count)}, Positive ${this.formatCount(it.pos)}, Neutral ${this.formatCount(it.neu)}, Negative ${this.formatCount(it.neg)}`;
+    },
+    // รูปแบบข้อความบนแท่ง
+    labelText(count, pct) {
+      const pctStr = `${Math.round(pct)}%`;
+      const cntStr = this.formatCount(count);
+      if (this.labelMode === 'percent') return pctStr;
+      if (this.labelMode === 'both') return `${cntStr} • ${pctStr}`;
+      return cntStr; // 'count' (default)
     },
 
-    // === NEW: ดาวน์โหลดรูปของ chart-box ===
+    // === (ออปชัน) ดาวน์โหลดรูปของ chart-box ===
     async downloadImage() {
       if (this.downloading) return;
       try {
         this.downloading = true;
-        // โหลดไลบรารีแบบ dynamic เพื่อลด bundle เริ่มต้น
         const htmlToImage = await import('html-to-image');
-
         const target = this.$refs.chartBox;
         if (!target) throw new Error('ไม่พบ chart-box');
 
-        // scale 2 เพื่อความคมชัด
         const dataUrl = await htmlToImage.toPng(target, {
           backgroundColor: '#ffffff',
           pixelRatio: 2,
@@ -194,8 +268,6 @@ export default {
         a.download = this.buildFilename();
         a.click();
       } catch (err) {
-        // แสดง error แบบง่าย ๆ
-        // คุณอาจเปลี่ยนไปใช้ toast ของ BootstrapVue ก็ได้
         console.error(err);
         alert('ไม่สามารถสร้างรูปได้ กรุณาลองอีกครั้ง');
       } finally {
@@ -220,15 +292,13 @@ export default {
 </script>
 
 <style scoped>
-.d-lg {
-  display: inline;
+.badge-warning{
+    color: #212529;
+    background-color: #fed16e;
 }
-.d-sm {
-  display: none;
-}
-.progress-bar {
-  background: linear-gradient(70deg, #7ac9d6 40%, #9378bf 100%) !important;
-}
+.d-lg { display: inline; }
+.d-sm { display: none; }
+
 .list-group-item {
   position: relative;
   display: block;
@@ -242,15 +312,9 @@ export default {
   height: 25px !important;
   z-index: 99;
 }
-.rank-no {
-  width: 40px;
-}
-.rank-light {
-  color: #56d1e4;
-}
-.rank-dark {
-  color: #19a5bb;
-}
+.rank-no { width: 40px; }
+.rank-light { color: #56d1e4; }
+.rank-dark  { color: #19a5bb; }
 a {
   color: dimgrey;
   text-decoration: none;
@@ -260,25 +324,45 @@ a {
   cursor: pointer;
   transition: background 0.12s ease;
 }
-.ta-row:hover {
-  background: #f9fafb;
+.ta-row:hover { background: #f9fafb; }
+.ta-name { font-weight: 600; font-size: 14px; }
+.minw-0 { min-width: 0; }
+
+/* Stacked progress */
+.stack-bg {
+  position: relative;
+  height: 20px;
+  background: #e9ecef;
+  border-radius: 999px;
+  overflow: hidden;
+  width: 100%;
 }
-.ta-name {
-  font-weight: 600;
-  font-size: 14px;
+.stack-bar {
+  position: relative;         /* ให้ label วางกลาง segment ได้ */
+  height: 100%;
+  display: inline-block;
 }
-.minw-0 {
-  min-width: 0;
+.stack-pos { background: #53b993; } /* Positive */
+.stack-neu { background: #368ab6; } /* Neutral  */
+.stack-neg { background: #f06964; } /* Negative */
+
+/* Label บนแท่ง */
+.stack-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  pointer-events: none;       /* อย่าให้บัง tooltip */
 }
-.ta-progress ::v-deep .progress-bar {
-  transition: width 0.35s ease;
-}
-.ta-actions {
-  visibility: hidden;
-}
-.ta-row:hover .ta-actions {
-  visibility: visible;
-}
+
+.ta-actions { visibility: hidden; }
+.ta-row:hover .ta-actions { visibility: visible; }
 
 /* ให้ภาพออกพื้นขาวสวยเวลาจับภาพ */
 .chart-box {
@@ -288,16 +372,10 @@ a {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
-  .d-lg {
-    display: none;
-  }
-  .d-sm {
-    display: block;
-  }
+  .d-lg { display: none; }
+  .d-sm { display: block; }
 }
 @media (max-width: 576px) {
-  .ta-actions {
-    visibility: visible;
-  }
+  .ta-actions { visibility: visible; }
 }
 </style>
