@@ -53,43 +53,52 @@
             />
         </b-collapse>
         <b-collapse id="top-participants" class="my-2">
+            <!-- <b-card>
+                <template #header>
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>🔥 สรุปผู้มีส่วนร่วมใน <b>ช่วงพีคสูงสุด</b> (Top {{ topLimit }})</span>
+                    <small v-if="peakOnlyWindow" class="text-muted">
+                    ช่วงที่ใช้: {{ peakOnlyWindow.startLocalStr }} – {{ peakOnlyWindow.endLocalStr }}
+                    </small>
+                </div>
+                </template>
+
+                <div v-if="topLoading" class="text-center py-3">
+                <b-spinner small></b-spinner> กำลังโหลดโพสต์...
+                </div>
+
+                <div v-else-if="topError" class="text-danger">
+                {{ topError }}
+                </div>
+
+                <div v-else-if="!topPosts.length && !topLoading" class="text-muted">
+                ไม่พบโพสต์ในช่วงพีค
+                </div>
+
+                <div v-else>
+                    <top-accounts 
+                        :accounts="topPosts" 
+                        :limit="10" 
+                        :loading="topLoading" 
+                        :top-sentiment="filters.sentiment" 
+                        @change-top-sentiment="onChangeTopSentiment" 
+                        @filter-account="onFilterAccount"
+                    />
+                </div>
+            </b-card> -->
             <PeakTopParticipants
-            :top-posts="topPosts"
-            :top-loading="topLoading"
-            :top-error="topError"
-            :top-limit="topLimit"
-            :top-page="topPage"
-            :can-next-top="canNextTop"
-            :peak-only-window="peakOnlyWindow"
-            @change-page="changeTopPage"
+                :filters="filters"
+                :top-posts="topPosts"
+                :top-loading="topLoading"
+                :top-error="topError"
+                :top-limit="topLimit"
+                :top-page="topPage"
+                :can-next-top="canNextTop"
+                :peak-only-window="peakOnlyWindow"
+                @change-page="changeTopPage"
             />
         </b-collapse>
       </b-col>
-      <!-- ✅ ใช้คอมโพเนนต์สรุปแนวโน้ม -->
-      <!-- <b-col cols="12" class="my-3">
-        <TrendSummary
-          :summary="summary"
-          :filters="filters"
-          :dates="dates"
-          :totals-count="totals_count"
-        />
-      </b-col> -->
-
-      <!-- ✅ ใช้คอมโพเนนต์สรุปผู้มีส่วนร่วมช่วงพีค -->
-      <!-- <b-col cols="12" class="mt-3">
-        <PeakTopParticipants
-          :top-posts="topPosts"
-          :top-loading="topLoading"
-          :top-error="topError"
-          :top-limit="topLimit"
-          :top-page="topPage"
-          :can-next-top="canNextTop"
-          :peak-only-window="peakOnlyWindow"
-          @change-page="changeTopPage"
-        />
-      </b-col> -->
-    
-
     </b-row>
   </div>
 </template>
@@ -101,9 +110,11 @@ import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
 import TrendSummary from '@/components/timeline/TrendSummary.vue'
 import PeakTopParticipants from '@/components/timeline/PeakTopParticipants.vue'
 import SummaryButton from "@/components/timeline/SummaryButton.vue";
+import TopAccounts from "@/components/rankingperson/TopAccount.vue";
+
 export default {
   components: { apexchart: VueApexCharts, StaticTimeline, TrendSummary,
-    PeakTopParticipants, SummaryButton },
+    PeakTopParticipants,TopAccounts, SummaryButton },
     props: {
         filters: { type: Object, default: () => ({}) },
         postsForAnalysis: {type: [Array, Object], required: true}
@@ -245,7 +256,7 @@ export default {
     this._flushTimer = setInterval(() => this._flushClickMap(), Math.max(this._dblDelay * 2, 1000))
 
     // โหลดข้อมูลกราฟ
-    this.fetchData()
+    // this.fetchData()
   },
   beforeDestroy() {
     if (this._flushTimer) { clearInterval(this._flushTimer); this._flushTimer = null }
@@ -253,10 +264,13 @@ export default {
   },
   watch: {
     filters: {
-      handler() {
-        this.topPage = 1
-        this.fetchData()
-      },
+          handler(newVal, oldVal) {
+        
+        if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+            this.topPage = 1
+            this.fetchData()
+            }
+        },
       deep: true
     }
   },
@@ -382,8 +396,12 @@ export default {
     //     this.topLoading = false
     //   }
     // },
-    
-    async fetchTopPosts() {
+      async fetchTopPosts() {
+        console.log(
+            "%c CALL → fetchTopPosts from:",
+            "color: yellow; background: red;",
+            new Error().stack.split("\n")[2] // บรรทัดที่เรียก
+        );
       this.topLoading = true
       this.topError = null
       this.topPosts = []
@@ -412,7 +430,8 @@ export default {
             : (data && Array.isArray(data.items)) ? data.items
               : (data && Array.isArray(data.results)) ? data.results
                 : []
-        this.topPosts = raw.slice(0, 10).map((p, idx) => this.normalizePost(p, idx))
+        this.topPosts = raw.slice(0, 10)
+        // this.topPosts = raw.slice(0, 10).map((p, idx) => this.normalizePost(p, idx))
         this.canNextTop = this.topPosts.length >= this.topLimit
       } catch (err) {
         console.error(err)
@@ -455,7 +474,12 @@ export default {
       )
     },
 
-    applyData(payload) {
+      applyData(payload) {
+        console.log(
+            "%c CALL → applyData from:",
+            "color: yellow; background: red;",
+            new Error().stack.split("\n")[2] // บรรทัดที่เรียก
+        );
       this.lastPayload = payload
       const tz = (payload && payload.range && payload.range.timezone) ? payload.range.timezone : '+07:00'
       const rows = (payload && Array.isArray(payload.seriesHourly)) ? payload.seriesHourly : []

@@ -12,7 +12,7 @@
           <small>บัญชีที่กล่าวถึงมากที่สุด 10 อันดับ </small>
         </div>
       </b-col>
-      <b-col cols="12" md="auto">
+      <b-col v-if="showSentimentFilter" cols="12" md="auto">
         
         <b-form-group class="d-inline-block mr-2 align-middle mb-2 g-stm" >
           <b-form-checkbox-group v-model="selectedTop" size="sm" class="align-middle sentiment-group mt-1"
@@ -37,6 +37,7 @@
           </b-form-checkbox-group>
         </b-form-group>
       </b-col>
+
       <b-col class="text-right col-card" cols="12" md="auto">
         <b-button-group size="sm" class="ml-1 btn-sw">
           <b-button size="sm" @click="onCardClick({ name: '', uid: '', source: '' })" variant="text">
@@ -80,7 +81,7 @@
                 <div class="d-flex justify-content-between">
                   <span class="position-absolute h6 py-2 bold pt-3 px-1 " style="color:#7782bf;">{{ i + 1 }}</span>
                 </div>
-                <div class="ta-hero d-flex flex-column align-items-center justify-content-center">
+                <div class="ta-hero avatar-wrapper d-flex flex-column align-items-center justify-content-center">
                   <b-avatar :src="item.profile_image || null"
                     :text="!item.profile_image ? initials(item.name || item.uid) : null" size="72" variant="light"
                     class="mb-2 avatar-d" style="background-color: #918f8a !important;" />
@@ -93,7 +94,12 @@
                   <img v-if="item.source === 'blockdit'" :src="imgbd" class="social-img" />
                   <img v-if="item.source === 'tiktok'" :src="imgtt" class="social-img" />
                   <img v-if="item.source === 'threads'" :src="imgtd" class="social-img" />
-                  <div class="text-center px-3">
+                  
+                  <!-- Donut Chart -->
+                  <div class="donut-overlay">
+                    <SentimentDonutChart :sentimentSeries="[item.positiveSentiment,item.neutralSentiment,item.negativeSentiment]"/>
+                  </div>
+                  <div class="text-center px-3 pt-3">
                     <!-- <a :href="item.link_crawl" target="_blank" @click.stop> -->
                     <div class="mb-0 text-truncate small">{{ item.name || item.uid }}</div>
                     <!-- </a> -->
@@ -151,12 +157,13 @@
 <script>
 import TopAccountsChart from './TopAccountsChart.vue';
 import TopAccountsProgress from './TopAccountsProgress.vue';
+import SentimentDonutChart from './SentimentDonutChart.vue';
 export default {
   name: 'TopAccountsCard',
   emits: ['filter-account'],
-  components: { TopAccountsChart, TopAccountsProgress },
-  props: {
-    loading: { type: Boolean, default: false },
+  components: { TopAccountsChart, TopAccountsProgress, SentimentDonutChart },
+    props: {
+    showSentimentFilter:{type: Boolean, default: true},
     accounts: { type: Array, required: true },
     limit: { type: Number, default: 0 },     // จำกัดจำนวนการ์ดในโหมด Cards
     loading: { type: Boolean, default: false },
@@ -409,6 +416,19 @@ export default {
 }
 </style>
 <style scoped>
+.avatar-wrapper {
+  position: relative;
+  display: inline-block; /* ทำให้ห่อ avatar + chart */
+  text-align: center;
+}
+.donut-overlay {
+  position: absolute;
+  top: 3px;
+  left: 24%;
+  width: 95px;
+  height: 95px;
+  z-index: 0;
+}
 .g-stm{
     transform: scale(0.9);
 }
@@ -436,7 +456,7 @@ export default {
   margin-top: -40px !important;
   margin-left: 40px !important;
   height: 35px !important;
-  z-index: 99;
+  z-index: 10;
 }
 
 /* โครงพื้นฐานจากสไลด์เดิม + การ์ด TopAccounts */
@@ -577,6 +597,7 @@ a {
   .avatar-d {
     width: 45px !important;
     height: 45px !important;
+    z-index: 1;
   }
 
   .social-img {

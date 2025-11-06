@@ -22,67 +22,21 @@
     </div>
 
     <div v-else>
-        <!-- Slider -->
-      <div class="slider-container">
-        <b-button class="slider-button btn-left" @click="scrollLeft"><i class="fa fa-chevron-left"></i></b-button>
-
-        <div class="slider" ref="slider">
-          <b-row>
-            <span class="d-flex box-flex-small">
-              <!-- {{ currentPosts }} -->
-
-              <!-- <CardPost
-                v-for="(post, index) in currentPosts"
-                :key="post._id || index"
-                :post="post"
-                :index="index"
-                :domain="currentDomain"
-                 @click.native="$emit('selectPost', post)"
-                class="mx-2"
-                :loading-card="
-                  dayLoading || selectingId === (post._id || post.url_post)
-                "
-              /> -->
-              <CardPost v-for="(post, index) in peakSummaryItems" :key="post._id || `${post.source}:${post.url_post}`"
-                :post="post" :index="index"  @click.native="$emit('selectPost', post)"
-                class="mx-2" :loading-card="dayLoading || selectingId === (post._id || post.url_post)" />
-            </span>
-          </b-row>
-        </div>
-
-        <b-button class="slider-button btn-right" @click="scrollRight"><i class="fa fa-chevron-right"></i></b-button>
-      </div>
-        <!-- <CardPostSlider :clusters="topPosts" 
-           
-        /> -->
-      <!-- <b-table
-        :items="peakSummaryItems"
-        :fields="peakSummaryFields"
-        small
-        responsive="sm"
-        head-variant="light"
-        class="mb-2"
-      >
-        <template #cell(full_text)="row">
-          <div style="white-space: pre-wrap;">{{ row.item.full_text }}</div>
-        </template>
-      </b-table> -->
-
-      <div class="d-flex justify-content-end align-items-center mt-2">
-        <b-button size="sm" class="mr-2" :disabled="topPage <= 1 || topLoading" @click="$emit('change-page', topPage - 1)">
-          ◀ ก่อนหน้า
-        </b-button>
-        <span>หน้า {{ topPage }}</span>
-        <b-button size="sm" class="ml-2" :disabled="topLoading || !canNextTop" @click="$emit('change-page', topPage + 1)">
-          ถัดไป ▶
-        </b-button>
-      </div>
+       <top-accounts 
+            :showSentimentFilter="false"
+            :accounts="topPosts" 
+            :limit="10" 
+            :loading="loadingStm" 
+            :top-sentiment="topSentiment" 
+            @filter-account="onFilterAccount"
+            @change-top-sentiment="onChangeTopSentiment" 
+        />
     </div>
   </b-card>
 </template>
 
 <script>
-import CardPost from "./CardPost.vue";
+import TopAccounts from "@/components/rankingperson/TopAccount.vue";
 export default {
   name: 'PeakTopParticipants',
   props: {
@@ -92,9 +46,10 @@ export default {
     topLimit: { type: Number, default: 10 },
     topPage: { type: Number, default: 1 },
     canNextTop: { type: Boolean, default: false },
-    peakOnlyWindow: { type: Object, default: null }
+    peakOnlyWindow: { type: Object, default: null },
+    filters: { type: Object, default: () => ({}) },
     },
-  components:{CardPost},
+  components:{TopAccounts},
   data() {
     return {
       peakSummaryFields: [
@@ -102,7 +57,8 @@ export default {
         { key: 'date', label: 'date' },
         { key: 'engage', label: 'engage', class: 'text-right' },
         { key: 'full_text', label: 'full_text' }
-      ]
+        ],
+    //   topPosts:[]
     }
   },
   computed: {
@@ -148,7 +104,47 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       }).format(d)
-    }
+      },
+    // async fetchTopPosts() {
+    //   this.topLoading = true
+    //   this.topError = null
+    //   this.topPosts = []
+
+    //   if (!this.peakOnlyWindow || !this.peakOnlyWindow.startLocalStr || !this.peakOnlyWindow.endLocalStr) {
+    //     this.topLoading = false
+    //     this.topError = 'ยังไม่พบช่วงพีคจากกราฟ'
+    //     return
+    //   }
+
+    //   const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
+    //   const params = {
+    //     sentiment: this.filters.sentiment || '1,0,-1',
+    //     keyword: this.filters.keyword || '',
+    //     sort_by: 'engagement',
+    //     limit: this.topLimit,
+    //     page: this.topPage,
+    //     start: this.peakOnlyWindow.startLocalStr,
+    //     end: this.peakOnlyWindow.endLocalStr
+    //   }
+
+    //   try {
+    //     const { data } = await axios.get(API_URL, { params })
+    //     const raw = Array.isArray(data) ? data
+    //       : (data && Array.isArray(data.data)) ? data.data
+    //         : (data && Array.isArray(data.items)) ? data.items
+    //           : (data && Array.isArray(data.results)) ? data.results
+    //             : []
+    //     this.topPosts = raw.slice(0, 10)
+    //     // this.topPosts = raw.slice(0, 10).map((p, idx) => this.normalizePost(p, idx))
+    //     this.canNextTop = this.topPosts.length >= this.topLimit
+    //   } catch (err) {
+    //     console.error(err)
+    //     this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
+    //     this.canNextTop = false
+    //   } finally {
+    //     this.topLoading = false
+    //   }
+    // },
   }
 }
 </script>
