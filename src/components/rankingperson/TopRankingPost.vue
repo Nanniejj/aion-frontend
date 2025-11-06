@@ -28,13 +28,11 @@
         <b-button size="sm" :variant="showFilters ? 'info' : 'outline-info'" @click="showFilters = !showFilters" pill
           class="d-inline-flex align-items-center ">
           <i class="fas fa-sliders mr-2"></i>
-          <!-- <b-icon icon="sliders" class="mr-1 small"></b-icon> -->
           <span v-if="showFilters" class="small">Hide</span>
           <span v-else class="small">Show</span>
-          <!-- <b-badge v-if="activeFilterCount" variant="light" class="ml-2">{{ activeFilterCount }}</b-badge> -->
         </b-button>
       </div>
-      <!-- Controls -->
+
       <div v-if="showFilters">
         <b-row class="my-1 mb-2">
           <!-- sentiment -->
@@ -42,8 +40,6 @@
             <b-form-group class="checkbox-v ">
               <b-form-checkbox-group v-model="selected" :options="options" size="sm" class="mt-1  text-left ml-2 rdo" />
             </b-form-group>
-
-
           </b-col>
 
           <!-- source -->
@@ -63,7 +59,6 @@
         <b-row class="my-1">
           <b-col md="6" class="mb-2">
             <b-input-group size="sm">
-              <!-- <b-input-group-prepend is-text>keyword</b-input-group-prepend> -->
               <b-form-input v-model.trim="keywordInput" placeholder="ค้นหา keyword" @keyup.enter="applyAllFilters" />
             </b-input-group>
           </b-col>
@@ -71,7 +66,6 @@
           <b-col md="6" class="mb-2">
             <div @keyup.enter="applyAllFilters">
               <b-input-group size="sm" class="align-items-start">
-                <!-- <b-input-group-prepend is-text>บัญชี</b-input-group-prepend> -->
                 <b-form-group label="" label-for="accounts" class="flex-grow-1 mb-0 pr-md-3">
                   <b-form-tags id="accounts" v-model="accountsInput" tag-variant="light" tag-pills size="sm"
                     separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
@@ -79,17 +73,14 @@
                 </b-form-group>
               </b-input-group>
             </div>
-            <!-- <b-input-group size="sm">
-              <b-input-group-prepend is-text>บัญชี</b-input-group-prepend>
-              <b-form-input v-model.trim="accountInput" placeholder="ค้นหาบัญชี" @keyup.enter="applyAllFilters" />
-            </b-input-group> -->
           </b-col>
-          <b-col md="6" class="mb-2">
 
+          <b-col md="6" class="mb-2">
             <b-form-checkbox v-model="full_text" size="sm" class="mt-2">
               ค้นหาจากข้อความ
             </b-form-checkbox>
           </b-col>
+
           <b-col cols="12" md="4" class="text-right ">
             <section id="date-picker" class="w-100">
               <date-picker v-model="local.valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100"
@@ -98,7 +89,6 @@
             </section>
           </b-col>
           <b-col>
-            <!-- ปุ่มรวมกดยิงครั้งเดียว -->
             <div class="text-right mb-2 mt-2 mt-md-0 ">
               <b-button size="sm" variant="outline-secondary" @click="clearFilters" class="mr-2">
                 ล้างตัวกรอง
@@ -106,12 +96,9 @@
               <b-button size="sm" variant="info" @click="applyAllFilters">
                 ค้นหา
               </b-button>
-
             </div>
           </b-col>
         </b-row>
-
-
       </div>
 
       <!-- แถบสรุปฟิลเตอร์แบบย่อ เมื่อซ่อน -->
@@ -139,14 +126,15 @@
       </div>
     </div>
 
-    <!-- ChartTime: ใช้ "applied" เท่านั้น และ refresh ด้วย key -->
+    <!-- ChartTime -->
     <div class="mb-3">
       <ChartTime :key="chartRefreshKey" :filters="appliedChartFilters" @range-selected="onChartRangeSelected"
         @range-cleared="onChartRangeCleared" @point-click="onChartPointClick" />
     </div>
 
     <div>
-      <top-accounts :accounts="accountItem" :limit="10" :loading="loading" @filter-account="onFilterAccount" />
+      <top-accounts :accounts="accountItem" :limit="10" :loading="loadingStm" @filter-account="onFilterAccount"
+        :top-sentiment="topSentiment" @change-top-sentiment="onChangeTopSentiment" />
     </div>
 
     <!-- Posts -->
@@ -191,6 +179,8 @@ import "vue-select/dist/vue-select.css";
 
 const API_ENDPOINT =
   "https://api2.cognizata.com/api/v2/facerecognition/getFacePersonUserposts";
+const TOP_ACCOUNTS_ENDPOINT =
+  "https://api2.cognizata.com/api/v2/facerecognition/getPerosonSentiment"; // ใช้ path ตามที่ให้มา
 
 export default {
   name: "PostBoard",
@@ -225,7 +215,6 @@ export default {
     const fromInit = `${initFrom}T00:00`;
     const toInit = `${initTo}T23:59`;
 
-    // helper to build initial applied filters for chart (no auto refresh yet)
     const initialApplied = () => {
       return {
         name: q.name || this.defaultName,
@@ -241,11 +230,13 @@ export default {
 
     return {
       showFilters: true,
+      topSentiment: '1,0,-1',   // ใช้กับ TOP_ACCOUNTS_ENDPOINT เท่านั้น
+      topAccountsRefreshKey: 1, // key สำหรับ force re-render TopAccounts
 
-      // ---- DRAFT state (แก้ไขได้ ไม่ยิงอะไรจนกดปุ่ม) ----
+      // ---- DRAFT state ----
       name: q.name || this.defaultName,
-      keyword: "",        // applied keyword (จะอัปเดตตอนกดปุ่ม)
-      keywordInput: "",   // draft keyword
+      keyword: "",
+      keywordInput: "",
       from: fromQ ? `${toDateOnly(fromQ)}T00:00:00` : fromInit,
       to: toQ ? `${toDateOnly(toQ)}T23:59:59` : toInit,
       accountsInput: [],
@@ -254,9 +245,10 @@ export default {
       sort: "engagement",
       account: "",
       full_text: q.full_text === 'true' || false,
-      // ---- APPLIED Chart filters ----
+
+      // Chart filters
       appliedChartFilters: initialApplied(),
-      chartRefreshKey: 1, // ให้ ChartTime mount ครั้งแรก
+      chartRefreshKey: 1,
 
       accountItem: [],
 
@@ -267,6 +259,7 @@ export default {
       count: 0,
       loadingPosts: false,
       loadingExport: false,
+      loadingStm: false,
       loading: false,
 
       // selects
@@ -286,7 +279,6 @@ export default {
         { text: "Positive", value: "1" },
         { text: "Neutral", value: "0" },
         { text: "Negative", value: "-1" },
-        // { text: "ทั้งหมด", value: "1,0,-1" }
       ],
       optionSort: [
         { value: "engagement", text: "Engagement" },
@@ -334,7 +326,6 @@ export default {
         : '';
 
       const d = this.local && Array.isArray(this.local.valueDate) ? this.local.valueDate : [];
-      //const dateRange = (d[0] && d[1]) ? `${d[0]} → ${d[1]}` : '';
       let dateRange = '';
       if (d[0] && d[1]) {
         dateRange = this.formatRange(d[0], d[1]);
@@ -349,6 +340,12 @@ export default {
     }
   },
   methods: {
+    onChangeTopSentiment(val) {
+      this.topSentiment = val || '1,0,-1';
+      this.fetchTopAccounts();         // โหลดเฉพาะ Top Accounts ใหม่
+      this.topAccountsRefreshKey += 1; // เปลี่ยน key เพื่อรีเรนเดอร์คอมโพเนนต์
+    }
+    ,
     formatRange(start, end) {
       try {
         const opts = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -419,10 +416,41 @@ export default {
         keyword: (this.keywordInput || '').trim() || undefined,
         sort_by: this.sort || "engagement",
         account: accountsJoined,
-         full_text: this.full_text ? true : undefined, 
+        full_text: this.full_text ? true : undefined,
       };
     },
 
+    // ===== helper: พารามิเตอร์ร่วมทุก API (ไม่รวม page/limit) =====
+    buildCommonParams() {
+      const sentiments = (Array.isArray(this.selected)
+        ? this.selected
+        : String(this.selected || "1,0,-1").split(",")
+      ).map(s => s.trim()).filter(Boolean).join(",");
+
+      const src = Array.isArray(this.select_social) && this.select_social.length
+        ? this.select_social.join(",")
+        : undefined;
+
+      const accountsJoined = (Array.isArray(this.accountsInput) && this.accountsInput.length)
+        ? this.accountsInput.join(",")
+        : undefined;
+
+      const params = {
+        name: this.name,
+        from: this.from,
+        to: this.to,
+        sentiment: sentiments,
+        sort_by: this.sort || "engagement",
+        source: src,
+        top_accounts_limit: this.topAccountsLimit,
+      };
+      if ((this.keyword || this.keywordInput)?.trim()) {
+        params.keyword = (this.keyword || this.keywordInput).trim();
+      }
+      if (accountsJoined) params.account = accountsJoined;
+      if (this.full_text === true) params.full_text = true;
+      return params;
+    },
 
     onFilterAccount({ uid }) {
       if (!uid) {
@@ -433,8 +461,7 @@ export default {
         if (!this.accountsInput.includes(uid)) this.accountsInput.push(uid);
       }
       this.applyAllFilters();
-    }
-    ,
+    },
 
     startOfDayStr(dateOnly) {
       return `${dateOnly}T00:00:00`;
@@ -457,7 +484,6 @@ export default {
     },
 
     onDateChange(val) {
-      // อัปเดต draft date ไว้เฉย ๆ ไม่ fetch และไม่รีเฟรช ChartTime
       const norm = this.normalizeDateRange(val);
       if (!norm) return;
       const [dFrom, dTo] = norm;
@@ -499,9 +525,8 @@ export default {
         source
       };
       if (this.keyword) params.keyword = this.keyword;
-      if (accountsJoined) params.account = accountsJoined; // <<— ใช้ account เดิม ฝั่งแบ็กเอนด์ไม่ต้องแก้
+      if (accountsJoined) params.account = accountsJoined;
       if (this.full_text === true) params.full_text = true;
-      // if (this.account) params.account = this.$route.query.account;
 
       if (updateFilters) {
         this.filters = this.filters || {};
@@ -509,11 +534,11 @@ export default {
       }
       return params;
     },
+
     // ===== ปุ่มรวมใช้ตัวกรอง =====
     async applyAllFilters() {
       this.keyword = (this.keywordInput || '').trim();
 
-      // รวมแท็กเป็นสตริงสำหรับ query และยิง API
       const accountsJoined = (Array.isArray(this.accountsInput) && this.accountsInput.length)
         ? this.accountsInput.join(",")
         : '';
@@ -529,7 +554,7 @@ export default {
         ? this.selected
         : String(this.selected || '1,0,-1').split(',')
       ).map(s => s.trim()).filter(Boolean).join(',');
-
+      this.topSentiment = sentimentStr;
       const query = {
         ...this.$route.query,
         name: this.name,
@@ -540,25 +565,28 @@ export default {
         source: sourceStr,
         page: 1,
         keyword: this.keyword || undefined,
-        account: accountsJoined || undefined,   // <<— ใช้คีย์เดิม
-         full_text: this.full_text ? 'true' : undefined, 
+        account: accountsJoined || undefined,
+        full_text: this.full_text ? 'true' : undefined,
       };
 
       await this.safeReplace('/personranking/posts', query);
       this.showFilters = false;
       this.fetchUserposts();
+      this.fetchTopAccounts(); // อัปเดต Top Accounts ตามตัวกรองปัจจุบัน
       this.appliedChartFilters = this.buildChartDraft();
       this.chartRefreshKey += 1;
     },
+
     async clearFilters() {
       this.selected = ['1', '0', '-1'];
+      this.topSentiment = '1,0,-1';
       this.select_social = [''];
       this.sort = 'desc';
       this.keywordInput = '';
-      this.accountsInput = [];  // <<—
+      this.accountsInput = [];
       this.keyword = '';
       this.account = '';
-  this.full_text = false;  
+      this.full_text = false;
       const d = this.local && Array.isArray(this.local.valueDate) ? this.local.valueDate : [];
       if (d[0]) this.from = this.startOfDayStr(d[0]);
       if (d[1]) this.to = this.endOfDayStr(d[1] || d[0]);
@@ -576,6 +604,7 @@ export default {
 
       await this.safeReplace('/personranking/posts', query);
       this.fetchUserposts();
+      this.fetchTopAccounts();
       this.appliedChartFilters = this.buildChartDraft();
       this.chartRefreshKey += 1;
     },
@@ -591,7 +620,7 @@ export default {
         const { data } = await this.axios.get(API_ENDPOINT, { params, headers });
 
         const rows = Array.isArray(data?.data) ? data.data : [];
-        this.accountItem = data.top_accounts || [];
+        // ยกเลิกการพึ่งพา data.top_accounts ที่นี่
         if (this.page === 1) {
           this.posts = rows;
         } else {
@@ -618,6 +647,32 @@ export default {
         this.totalPages = 0;
       } finally {
         this.loading = false;
+      }
+    },
+
+    // ดึง Top Accounts ด้วย endpoint ใหม่
+    async fetchTopAccounts() {
+      this.loadingStm = true
+      try {
+        const params = this.buildCommonParams();
+        params.sentiment = this.topSentiment || params.sentiment;
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const { data } = await this.axios.get(TOP_ACCOUNTS_ENDPOINT, { params, headers });
+
+        // รองรับได้หลายโครงสร้าง
+        const rows =
+          (Array.isArray(data?.top_accounts) && data.top_accounts) ||
+          (Array.isArray(data?.accounts) && data.accounts) ||
+          (Array.isArray(data?.data) && data.data) ||
+          [];
+        this.accountItem = rows;
+        this.loadingStm = false
+      } catch (e) {
+        console.error(e);
+        this.accountItem = [];
+        this.loadingStm = false
       }
     },
 
@@ -670,7 +725,7 @@ export default {
       });
     },
 
-    // ===== Event จาก ChartTime (ปรับ draft เท่านั้น — ไม่ยิงเอง) =====
+    // ===== Events from ChartTime =====
     onChartRangeSelected(e) {
       const fromLocal = this._toLocalMinute(e?.startIsoLocal);
       const toLocal = this._toLocalMinute(e?.endIsoLocal);
@@ -680,7 +735,6 @@ export default {
         const fDay = fromLocal.slice(0, 10);
         const tDay = toLocal.slice(0, 10);
         this.local.valueDate = [fDay, tDay];
-        // รอปุ่ม "ใช้ตัวกรอง"
       }
     },
     onChartRangeCleared() {
@@ -688,7 +742,6 @@ export default {
       if (initFrom && initTo) {
         this.from = this.startOfDayStr(initFrom);
         this.to = this.endOfDayStr(initTo);
-        // รอปุ่ม "ใช้ตัวกรอง"
       }
     },
     onChartPointClick(e) {
@@ -701,7 +754,6 @@ export default {
       this.from = start.format("YYYY-MM-DDTHH:mm");
       this.to = end.format("YYYY-MM-DDTHH:mm");
       this.local.valueDate = [this.from.slice(0, 10), this.to.slice(0, 10)];
-      // รอปุ่ม "ใช้ตัวกรอง"
     }
   },
   mounted() {
@@ -716,13 +768,17 @@ export default {
         const s = String(this.$route.query.source).split(",").map(x => x.trim()).filter(v => v !== "");
         this.select_social = s;
       }
-      if (this.$route.query.sentiment) {
+      // if (this.$route.query.sentiment) {
+      //   this.selected = String(this.$route.query.sentiment).split(',').map(s => s.trim()).filter(Boolean);
+      // }
+      if (this.$route?.query?.sentiment) {
         this.selected = String(this.$route.query.sentiment).split(',').map(s => s.trim()).filter(Boolean);
       }
+      this.topSentiment = (Array.isArray(this.selected) ? this.selected : ['1', '0', '-1']).join(','); // ✅ ตั้งค่าเริ่มต้นให้การ์ด
+
       if (this.$route.query.sort) this.sort = this.$route.query.sort;
       if (this.$route.query.page) this.page = Number(this.$route.query.page) || 1;
 
-      // รับ account จาก query แล้วแปลงเป็นแท็ก
       if (this.$route.query.account) {
         const arr = String(this.$route.query.account).split(',').map(s => s.trim()).filter(Boolean);
         this.accountsInput = arr;
@@ -730,14 +786,13 @@ export default {
       }
 
       if (this.$route.query.keyword) this.keywordInput = this.$route.query.keyword;
-      if (this.$route.query.full_text) this.full_text = this.$route.query.full_text === 'true'; // ⬅️ เพิ่ม
-
+      if (this.$route.query.full_text) this.full_text = this.$route.query.full_text === 'true';
     }
 
     this.fetchUserposts();
+    this.fetchTopAccounts();
     this.appliedChartFilters = this.buildChartDraft();
-  }
-  ,
+  },
 
   watch: {
     // โหลดข้อมูลทั้งหมดสำหรับ export เมื่อ count เปลี่ยน (ไม่แตะ filters)
@@ -919,7 +974,6 @@ export default {
   }
 
   .btn-ex {
-    /* zoom: 80%; */
     right: 0px;
     position: absolute;
     top: 0px;

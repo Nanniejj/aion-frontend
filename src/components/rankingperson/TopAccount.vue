@@ -6,18 +6,40 @@
     <!-- header + controls -->
 
     <b-row class="position-relative">
-      <b-col class="text-left" cols="12" md="6">
+      <b-col class="text-left" cols="12" md="">
         <h5 class="mb-sm-0 mb-0">Top 10 Users </h5>
         <div class="text-left text-muted">
           <small>บัญชีที่กล่าวถึงมากที่สุด 10 อันดับ </small>
         </div>
       </b-col>
-      <b-col class="text-right" cols="12" md="6">
+      <b-col cols="12" md="auto">
+        
+        <b-form-group class="d-inline-block mr-2 align-middle mb-2 g-stm" >
+          <b-form-checkbox-group v-model="selectedTop" size="sm" class="align-middle sentiment-group mt-1"
+            @change="applyLocalTopSent">
+            <!-- Positive -->
+            <b-form-checkbox value="1" class="mx-1 sentiment-pill positive" size="sm">
+              <i class="far fa-smile fa-lg d-inline" style="color:#53b993;"></i>
+              <span class="ml-1 small">Positive</span>
+            </b-form-checkbox>
 
+            <!-- Neutral -->
+            <b-form-checkbox value="0" class="mx-1 sentiment-pill neutral" size="sm">
+              <i class="far fa-meh fa-lg d-inline" style="color:#368ab6;"></i>
+              <span class="ml-1 small">Neutral</span>
+            </b-form-checkbox>
 
-
+            <!-- Negative -->
+            <b-form-checkbox value="-1" class="mx-1 sentiment-pill negative" size="sm">
+              <i class="far fa-frown-open fa-lg d-inline" style="color:#f06964;"></i>
+              <span class="ml-1 small">Negative</span>
+            </b-form-checkbox>
+          </b-form-checkbox-group>
+        </b-form-group>
+      </b-col>
+      <b-col class="text-right col-card" cols="12" md="auto">
         <b-button-group size="sm" class="ml-1 btn-sw">
-          <b-button size="sm" @click="onCardClick({ name: '', uid: '', source: '' })" variant="text" >
+          <b-button size="sm" @click="onCardClick({ name: '', uid: '', source: '' })" variant="text">
             <i class="fa fa-arrows-rotate"></i>
             reset
           </b-button>
@@ -28,6 +50,7 @@
             <i class="fas fa-chart-bar mr-1"></i> Chart
           </b-button>
         </b-button-group>
+
       </b-col>
     </b-row>
     <!-- <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
@@ -50,13 +73,12 @@
 
         <div class="slider" ref="slider">
           <div class="d-flex box-flex-small">
-            <div v-for="(item, i) in rows" :key="item.uid" class="slider-item px-2">
+            <div v-for="(item, i) in accounts" :key="item.uid" class="slider-item px-2">
               <!-- {{ item }} -->
               <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0"
                 @click="onCardClick(item)" style="cursor:pointer" href="#chart">
-                <div class="d-flex justify-content-between p-2">
+                <div class="d-flex justify-content-between">
                   <span class="position-absolute h6 py-2 bold pt-3 px-1 " style="color:#7782bf;">{{ i + 1 }}</span>
-
                 </div>
                 <div class="ta-hero d-flex flex-column align-items-center justify-content-center">
                   <b-avatar :src="item.profile_image || null"
@@ -78,21 +100,20 @@
                   </div>
                   <div class="py-0 my-0"><small class="text-muted ">กล่าวถึง</small></div>
                   <div class=" py-0 my-0">
-
-                    <span class="bold mx-1"> {{ item.count | numFormat }}</span> <small class="text-muted"
+                    <span class="bold mx-1"> {{ item.total | numFormat }}</span> <small class="text-muted"
                       style="font-size: x-small;">โพสต์</small>
                   </div>
+                  <div class="box-stm px-2">
+                    <i class="far fa-smile fa-2x d-inline" style="color: #53b993;"></i><span class="small mr-2 bold"> {{
+                      item.positiveSentiment | numFormat }}</span>
+                    <i class="far fa-meh fa-2x d-inline" style="color: #368ab6;"></i><span class="small mr-2 bold"> {{
+                      item.neutralSentiment | numFormat }}</span>
+                    <i class="far fa-frown-open fa-2x d-inline" style="color: #f06964;"></i><span class="small bold"> {{
+                      item.negativeSentiment | numFormat }}</span>
+                  </div>
                 </div>
-                <div class="px-3 pb-3">
-                  <!-- <div class="d-flex align-items-center justify-content-between mb-2">
-                    <small class="text-muted">กล่าวถึง</small>
-                    <b-badge pill variant="success">{{ item.count }} โพสต์</b-badge>
-                  </div> -->
-                  <!-- <b-progress :value="progress(item.count)" :max="maxCount" height="6px" class="mb-3" /> -->
+                <div class="px-2 pb-1">
                   <div class="d-flex align-items-center justify-content-between">
-                    <!-- <b-button :href="item.link_crawl" target="_blank" rel="noopener noreferrer" size="sm"
-                      variant="outline-secondary">เปิดลิงก์</b-button> -->
-                    <!-- <b-button size="sm" variant="info" @click="$emit('add-watch', item)">ติดตาม</b-button> -->
                   </div>
                 </div>
               </b-card>
@@ -141,16 +162,19 @@ export default {
     loading: { type: Boolean, default: false },
     hasMore: { type: Boolean, default: false },
     chartLimit: { type: Number, default: 15 },    // จำกัดจำนวนใน Chart
+    topSentiment: { type: String, default: '1,0,-1' },
     defaultView: { type: String, default: 'cards' } // 'cards' | 'chart'
   },
   data() {
     return {
+      selectedTop: [],
       search: '',        // ที่ใช้จริงในการกรอง
       searchInput: '',   // ผูกกับกล่องค้นหา (debounce)
       sourceFilter: 'all',
       sortBy: 'count-desc',
       view: this.defaultView,
       _t: null,
+      topSent: '1,0,-1',
       default_avatar: require("@/assets/no-image.jpg"),
       imgtw: require("@/assets/Twitter.png"),
       imgfb: require("@/assets/Facebook.png"),
@@ -164,7 +188,10 @@ export default {
     };
   },
   watch: {
-    defaultView(v) { this.view = v; }
+    defaultView(v) { this.view = v; },
+    topSentiment(newVal) {
+      this.selectedTop = String(newVal || '1,0,-1').split(',').filter(Boolean);
+    }
   },
   computed: {
     sortOptions() {
@@ -177,18 +204,18 @@ export default {
     },
     normalized() {
       const rows = (this.accounts || []).map(a => ({
-        count: Number(a.count || 0),
+        count: Number(a.total || 0),
         id: a.id || null,
         uid: a.uid || '',
         name: a.name || a.uid || '',
         link_crawl: a.link_crawl || '#',
-        source: (a.source || a.source|| 'unknown').toLowerCase(),
+        source: (a.source || a.source || 'unknown').toLowerCase(),
         profile_image: a.profile_image || null
       }));
       // dedupe by uid: เก็บตัวที่ count สูงสุด
       const byUid = new Map();
       for (const r of rows) {
-        if (!byUid.has(r.uid) || r.count > byUid.get(r.uid).count) byUid.set(r.uid, r);
+        if (!byUid.has(r.uid) || r.total > byUid.get(r.uid).total) byUid.set(r.uid, r);
       }
       return Array.from(byUid.values());
     },
@@ -208,15 +235,15 @@ export default {
     sorted() {
       const arr = [...this.filtered];
       switch (this.sortBy) {
-        case 'count-asc': arr.sort((a, b) => a.count - b.count); break;
+        case 'count-asc': arr.sort((a, b) => a.total - b.total); break;
         case 'name-asc': arr.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'th')); break;
         case 'name-desc': arr.sort((a, b) => (b.name || '').localeCompare(a.name || '', 'th')); break;
-        default: arr.sort((a, b) => b.count - a.count); // count-desc
+        default: arr.sort((a, b) => b.total - a.total); // count-desc
       }
       return arr;
     },
     maxCount() {
-      return Math.max(1, ...this.sorted.map(r => r.count || 0));
+      return Math.max(1, ...this.sorted.map(r => r.total || 0));
     },
     rows() {
       return this.limit > 0 ? this.sorted.slice(0, this.limit) : this.sorted;
@@ -231,19 +258,28 @@ export default {
     }
   },
   methods: {
-
+    applyLocalTopSent() {
+      // ถ้าไม่ติ๊กอะไรเลย ให้ถือว่าเลือก “ทั้งหมด”
+      const val = this.selectedTop.length ? this.selectedTop.join(',') : '1,0,-1';
+      this.$emit('change-top-sentiment', val);   // ✅ พาเรนต์จะ set topSentiment + fetchTopAccounts()
+    },
+    setTopSent(val) {
+      this.topSent = val;
+      // แจ้ง parent ให้โหลด TOP_ACCOUNTS_ENDPOINT ใหม่ โดยไม่แตะโพสต์
+      this.$emit('change-top-sentiment', val);
+    },
 
     onCardClick(item) {
       console.log(item);
-      
+
       // ส่งค่าที่จำเป็นไปให้หน้า Post
       this.$emit('filter-account', {
         uid: item.name || item.uid,
         name: item.name || item.uid,
         source: item.source || this.guessSource(item.link_crawl || '')
       });
-       var element = document.querySelector("#chart");
-      element.scrollIntoView({behavior: "smooth"});
+      var element = document.querySelector("#chart");
+      element.scrollIntoView({ behavior: "smooth" });
     },
     setView(v) {
       this.view = v;
@@ -312,23 +348,89 @@ export default {
       return (Number(count || 0) / this.maxCount) * 100;
     }
   },
+  mounted() {
+    // ✅ ตั้งค่าเริ่มจากพาเรนต์
+    this.selectedTop = String(this.topSentiment || '1,0,-1').split(',').filter(Boolean);
+  },
   beforeDestroy() {
     if (this._t) clearTimeout(this._t);
   }
 };
 </script>
-<!-- <style>
-.b-avatar-img img {
-    width: 100%;
-    height: unset !important; 
-    /* max-height: auto !important; */
-    border-radius:unset !important;
-
-    -o-object-fit: cover;
-    object-fit: cover;
+<style>
+/* ปรับ pill ให้สวยขึ้น */
+.sentiment-group .sentiment-pill .custom-control-label {
+  border-radius: 999px;
+  padding: 2px 10px 3px 8px;
+  cursor: pointer;
+  transition: background-color .15s ease, box-shadow .15s ease;
 }
-</style> -->
+
+.sentiment-group .positive .custom-control-input:checked~.custom-control-label::before {
+  color: #fff;
+  background-color: #53b993;
+  border: #53b993 solid 1px;
+}
+
+.sentiment-group .neutral .custom-control-input:checked~.custom-control-label::before {
+  color: #fff;
+  background-color: #368ab6;
+  border: #368ab6 solid 1px;
+}
+
+.sentiment-group .negative .custom-control-input:checked~.custom-control-label::before {
+  color: #fff;
+  background-color: #f06964;
+  border: #f06964 solid 1px;
+}
+
+/* ขอบอ่อน ๆ ตอน hover */
+.sentiment-group .sentiment-pill .custom-control-label:hover {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05) inset;
+}
+
+/* พื้นหลังตามสถานะเมื่อถูกเลือก */
+.sentiment-group .positive .custom-control-input:checked~.custom-control-label {
+  background: rgba(83, 185, 147, 0.15);
+}
+
+.sentiment-group .neutral .custom-control-input:checked~.custom-control-label {
+  background: rgba(54, 138, 182, 0.15);
+}
+
+.sentiment-group .negative .custom-control-input:checked~.custom-control-label {
+  background: rgba(240, 105, 100, 0.15);
+}
+
+/* ซ่อน checkbox เองให้เหลือแต่ label (bootstrap-vue ใช้ custom-control) */
+.sentiment-group .custom-control-input {
+  top: 0.4rem;
+  /* จัดให้คลิกง่ายขึ้น */
+}
+</style>
 <style scoped>
+.g-stm{
+    transform: scale(0.9);
+}
+.btn-sw {
+  transform: scale(0.8);
+}
+
+.box-stm bold {
+  color: #4e5c6a;
+}
+
+.box-stm {
+  width: 100%;
+  background-color: #ffffff99;
+  border-radius: 20px;
+  padding-top: 3px;
+}
+
+.far {
+  font-size: 16px;
+}
+
 .social-img {
   width: 35px !important;
   margin-top: -40px !important;
@@ -427,7 +529,18 @@ a {
   color: #2c3e50;
 }
 
+@media (max-width: 1000px) {
+  #content > div.container.my-3 > div:nth-child(5) > div > div.row.position-relative > div.text-left.col-md.col-12{
+    width: 100% !important;
+    flex-basis: unset !important;
+  }}
 @media (max-width: 800px) {
+  #content > div.container.my-3 > div:nth-child(5) > div > div.row.position-relative > div.text-left.col-md.col-12{
+    width: 100% !important;
+  }
+  .g-stm{
+    width: max-content !important;
+  }
   .slider-button.btn-left {
     background: #fed06ebf;
     color: white;
@@ -454,7 +567,7 @@ a {
   }
 
   .slider-item {
-    width: 140px;
+    width: 170px;
   }
 
   .text-truncate {
@@ -474,10 +587,13 @@ a {
 
   .btn-sw {
     position: absolute;
-    top: -45px;
+    top: 0px;
     right: 5px;
     transform: scale(0.72);
     transform-origin: top right;
+  }
+  .col-card{
+    position: absolute;
   }
 }
 </style>
