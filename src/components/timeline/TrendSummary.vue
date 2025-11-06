@@ -1,5 +1,5 @@
 <template>
-  <b-card>
+  <b-card header-class="text-left">
     <template #header>
       <span>📝 สรุปแนวโน้มกราฟสถิติรายชั่วโมง </span>
     </template>

@@ -16,8 +16,14 @@
                 Analysis
             </span>
         </b-button> -->
-        <b-row>
-            <b-col cols="auto">
+        <b-row class="m-0">
+            <b-col cols="auto" sm="auto" class="px-0">
+                <b-button variant="outline-secondary" class="mr-2" v-b-toggle href="#trendSummary" @click.prevent><i class='fas fa-chart-line mr-1'></i>Trend Summary</b-button>
+            </b-col>
+            <b-col cols="auto" sm="auto" class="px-0">
+                <b-button variant="outline-secondary" class="mr-2 mt-sm-0" v-b-toggle href="#top-participants" @click.prevent><i class='fas fa-fire mr-1'></i>Top 10 at Peak</b-button>
+            </b-col>
+            <b-col cols="auto" sm="" class="mt-2 text-right px-0">
                 <button
                     :variant="open ? 'info' : 'outline-info'"
                     size="sm"
@@ -39,21 +45,29 @@
                         {{ analyzing ? 'Analyzing...' : 'Analysis (beta)' }}
                     </span>
                 </button>
-            </b-col>
-            <b-col v-if="fullSummary && !open" class="text-right">
-                <b-button size="sm" variant="outline-info" 
+                <a v-b-toggle v-if="fullSummary && !open" @click.prevent="toggle" class="px-2">บทวิเคราะห์ล่าสุด</a>
+                <!-- <b-button v-if="fullSummary && !open" size="sm" variant="outline-info" 
                     class="d-inline-flex" 
                     @click="toggle"
                     :disabled="analyzing"
                 >
                     บทวิเคราะห์ล่าสุด
-                </b-button>
+                </b-button> -->
             </b-col>
         </b-row>
         <b-col cols="12" class="pt-2 text-danger" style="font-size: small;" v-if="fullSummary && !open">
             *** หมายเหตุ: หากต้องการบทวิเคราะห์ใหม่ กรุณากดปุ่ม "Analysis" อีกครั้ง
         </b-col>
-
+        <!-- <b-collapse id="trendSummary" class="my-2">
+            <b-card title="Collapsible card">
+                Hello world!
+            </b-card>
+        </b-collapse>
+        <b-collapse id="top-participants" class="my-2">
+            <b-card title="Collapsible card">
+                Hello world!
+            </b-card>
+        </b-collapse> -->
         <b-collapse v-model="open" class="my-2">
             <!-- <b-card class="shadow-sm" style="border-radius: 16px;min-height: 100px;max-height: 400px;overflow-y: auto;">
                 <b-row class="m-0 align-items-center mb-2">
@@ -123,6 +137,7 @@
             </b-card>
 
         </b-collapse>
+        
     </div>
 </template>
 
@@ -157,8 +172,18 @@ export default {
                     'engagement', 'comments'
                 ];
             const commentKeys = ['username', 'content', 'time'];
-            
-            if (this.filters.view_mode === 'daily' && Array.isArray(this.posts)) {
+            const start = new Date(this.filters.start); // "2025-11-03T00:00:00"
+            const end = new Date(this.filters.end);     // "2025-11-05T23:59:59"
+
+            // ส่วนต่างของเวลา (มิลลิวินาที)
+            const diffTime = Math.abs(end - start);
+
+            // แปลงเป็นจำนวน "วัน" (ปัดขึ้น เพราะ end อาจเกินเที่ยงคืน)
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            console.log(diffDays); // ✅ จะได้ 3 วัน (03, 04, 05)
+
+            if (diffDays > 2 && Array.isArray(this.posts)) {
                 let limit = parseInt(this.postLimit/this.posts.length);
                 let temp = this.posts
                     .map(post => {
@@ -348,8 +373,8 @@ export default {
             this.open = !this.open;
         },
         formatDateRange() {
-            const start = new Date(this.filters.startLocal);
-            const end = new Date(this.filters.endLocal);
+            const start = new Date(this.filters.start);
+            const end = new Date(this.filters.end);
 
             // รีเซ็ตเวลาเพื่อเปรียบเทียบเฉพาะวัน
             const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());

@@ -1,9 +1,9 @@
 <template>
   <div>
     <!-- {{heightword}} -->
-    <vue-element-loading v-if="getLoadPostTab" :active="getLoadPostTab" size="80" background-color="rgba(255, 255, 255, 0.3)"
+    <vue-element-loading :active="getLoadPostTab" size="80" background-color="rgba(255, 255, 255, 0.3)"
       color="#b6ac9a" />
-    <div >
+    <div>
       <!-- {{heightword.data[0].Keywords}} -->
       <div class="h5 text-left bold" v-if="api !== 'location'">
         <div v-if="tabs == 'domainTab'">
@@ -453,10 +453,8 @@
               </span>
             </span>
             <!-- twitter -->
-            <span v-if="
-              profilePost.source !== 'facebook' &&
-              profilePost.source !== 'youtube'
-            ">
+            <span v-if="profilePost.source !== 'facebook'">
+              <!-- && profilePost.source !== 'youtube' -->
               <span v-if="
                 profilePost.retweets_count !== '0' &&
                 profilePost.retweets_count

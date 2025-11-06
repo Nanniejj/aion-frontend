@@ -35,20 +35,48 @@
 
         <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
       </b-col>
-
-    
+      <b-col cols="12" class="">
+          <SummaryButton
+            v-if="!loading && username === 'adminatapy'"
+            class="text-left mb-3"
+            :posts="postsForAnalysis"
+            :filters="filters"
+            :loading="loading"
+            :topN="5"
+          />
+        <b-collapse id="trendSummary" class="my-2">
+            <TrendSummary
+            :summary="summary"
+            :filters="filters"
+            :dates="dates"
+            :totals-count="totals_count"
+            />
+        </b-collapse>
+        <b-collapse id="top-participants" class="my-2">
+            <PeakTopParticipants
+            :top-posts="topPosts"
+            :top-loading="topLoading"
+            :top-error="topError"
+            :top-limit="topLimit"
+            :top-page="topPage"
+            :can-next-top="canNextTop"
+            :peak-only-window="peakOnlyWindow"
+            @change-page="changeTopPage"
+            />
+        </b-collapse>
+      </b-col>
       <!-- ✅ ใช้คอมโพเนนต์สรุปแนวโน้ม -->
-      <b-col cols="12" class="mt-3">
+      <!-- <b-col cols="12" class="my-3">
         <TrendSummary
           :summary="summary"
           :filters="filters"
           :dates="dates"
           :totals-count="totals_count"
         />
-      </b-col>
+      </b-col> -->
 
       <!-- ✅ ใช้คอมโพเนนต์สรุปผู้มีส่วนร่วมช่วงพีค -->
-      <b-col cols="12" class="mt-3">
+      <!-- <b-col cols="12" class="mt-3">
         <PeakTopParticipants
           :top-posts="topPosts"
           :top-loading="topLoading"
@@ -59,7 +87,7 @@
           :peak-only-window="peakOnlyWindow"
           @change-page="changeTopPage"
         />
-      </b-col>
+      </b-col> -->
     
 
     </b-row>
@@ -72,12 +100,17 @@ import axios from 'axios'
 import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
 import TrendSummary from '@/components/timeline/TrendSummary.vue'
 import PeakTopParticipants from '@/components/timeline/PeakTopParticipants.vue'
+import SummaryButton from "@/components/timeline/SummaryButton.vue";
 export default {
   components: { apexchart: VueApexCharts, StaticTimeline, TrendSummary,
-    PeakTopParticipants },
-  props: { filters: { type: Object, default: () => ({}) } },
+    PeakTopParticipants, SummaryButton },
+    props: {
+        filters: { type: Object, default: () => ({}) },
+        postsForAnalysis: {type: [Array, Object], required: true}
+    },
   data() {
     return {
+      username: "",
       dates: null,
       totals_count: null,
       datachart: null,
@@ -179,7 +212,8 @@ export default {
       }))
     }
   },
-  mounted() {
+    mounted() {
+    this.username = localStorage.getItem("username");
     // events & zoom
     this.$nextTick(() => {
       const events = {
@@ -309,6 +343,46 @@ export default {
     },
 
     // ========= ยิง API Fulltext เฉพาะช่วงพีค =========
+    // async fetchTopPosts() {
+    //   this.topLoading = true
+    //   this.topError = null
+    //   this.topPosts = []
+
+    //   if (!this.peakOnlyWindow || !this.peakOnlyWindow.startLocalStr || !this.peakOnlyWindow.endLocalStr) {
+    //     this.topLoading = false
+    //     this.topError = 'ยังไม่พบช่วงพีคจากกราฟ'
+    //     return
+    //   }
+
+    //   const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'
+    //   const params = {
+    //     sentiment: this.filters.sentiment || '1,0,-1',
+    //     keyword: this.filters.keyword || '',
+    //     sort_by: 'engagement',
+    //     limit: this.topLimit,
+    //     page: this.topPage,
+    //     start: this.peakOnlyWindow.startLocalStr,
+    //     end: this.peakOnlyWindow.endLocalStr
+    //   }
+
+    //   try {
+    //     const { data } = await axios.get(API_URL, { params })
+    //     const raw = Array.isArray(data) ? data
+    //       : (data && Array.isArray(data.data)) ? data.data
+    //         : (data && Array.isArray(data.items)) ? data.items
+    //           : (data && Array.isArray(data.results)) ? data.results
+    //             : []
+    //     this.topPosts = raw.map((p, idx) => this.normalizePost(p, idx))
+    //     this.canNextTop = this.topPosts.length >= this.topLimit
+    //   } catch (err) {
+    //     console.error(err)
+    //     this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
+    //     this.canNextTop = false
+    //   } finally {
+    //     this.topLoading = false
+    //   }
+    // },
+    
     async fetchTopPosts() {
       this.topLoading = true
       this.topError = null
@@ -320,7 +394,7 @@ export default {
         return
       }
 
-      const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'
+      const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
       const params = {
         sentiment: this.filters.sentiment || '1,0,-1',
         keyword: this.filters.keyword || '',
@@ -338,7 +412,7 @@ export default {
             : (data && Array.isArray(data.items)) ? data.items
               : (data && Array.isArray(data.results)) ? data.results
                 : []
-        this.topPosts = raw.map((p, idx) => this.normalizePost(p, idx))
+        this.topPosts = raw.slice(0, 10).map((p, idx) => this.normalizePost(p, idx))
         this.canNextTop = this.topPosts.length >= this.topLimit
       } catch (err) {
         console.error(err)
@@ -355,7 +429,9 @@ export default {
       this.fetchTopPosts()
     },
 
-    normalizePost(p, idx) {
+      normalizePost(p, idx) {
+        console.log("post === ",p);
+        
       const id = (p && (p._id || p.id)) ? (p._id || p.id) : ('row-' + idx)
       const text = (p && (p.message || p.content || p.full_text || p.text)) ? (p.message || p.content || p.full_text || p.text) : '-'
       const engagement = Number(
@@ -364,8 +440,11 @@ export default {
       const created_at = (p && (p.created_time || p.createdAt || p.posted_at || p.created_at)) ? (p.created_time || p.createdAt || p.posted_at || p.created_at) : null
       const author = (p && (p.author_name || p.author || p.page_name || p.account_name)) ? (p.author_name || p.author || p.page_name || p.account_name) : null
       const source = (p && (p.source || p.platform)) ? (p.source || p.platform) : null
+      const sentiment = p.sentiment;
       const url = (p && (p.permalink_url || p.url)) ? (p.permalink_url || p.url) : null
-      return { id, text, engagement, created_at, author, source, url, account_name: author }
+      const photos = p.photos;
+      const profile_image = p.profile_image;
+      return { id,photos,profile_image, text, engagement, created_at, author, source, url, account_name: author, sentiment }
     },
 
     isAllZero(rows) {

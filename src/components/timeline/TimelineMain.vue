@@ -212,18 +212,21 @@
         </b-form>
       </b-card>
 
-      <ChartTime :filters="paramTo" @point-click="handlePointClick" @range-selected="handleRange" />
+      <ChartTime 
+      :filters="paramTo"  
+      :postsForAnalysis="filters.keywordInput === '' && filters.hashtags.length === 0 ? postsFromApi : postsForAnalysis"
+      @point-click="handlePointClick" @range-selected="handleRange" />
       <!-- <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" /> -->
       <!-- <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsForAnalysis" :filters="filters" :loading="loading" :topN="5" /> -->
       <!-- <SummaryFilterButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" /> -->
-      <SummaryButton
+      <!-- <SummaryButton
         v-if="!loading && username === 'adminatapy'"
         class="text-left mb-3"
         :posts="filters.keywordInput === '' && filters.hashtags.length === 0 ? postsFromApi : postsForAnalysis"
         :filters="filters"
         :loading="loading"
         :topN="5"
-      />
+      /> -->
       <!-- <ExportExcelButton class="mt-md-0 " :posts="postsFromApi" :filters="filters"
         :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)" inline-comments="json"
         :comments-limit="20" style="right: 5px;" v-if="!loading" /> -->
@@ -586,9 +589,9 @@ export default {
       
         this.apiTimeline();
         
-       if (this.filters.view_mode !== 'daily') {
-            this.apiGetPostForAnalysis();
-        }
+    //    if (this.filters.view_mode !== 'daily') {
+    //         this.apiGetPostForAnalysis();
+    //     }
         
     },
     handlePointClick({ seriesName, x, y, localText, isoUtc, isoLocal }) {
@@ -768,6 +771,11 @@ export default {
         this.totalPages = 0;
       } finally {
         this.loading = false;
+          if (this.filters.view_mode !== 'daily') {
+            console.log('filter ==== ',this.filters);
+            
+            this.apiGetPostForAnalysis();
+        }
       }
     },
     async apiTimelineDaily() {
@@ -1114,9 +1122,9 @@ export default {
       // โหลดใหม่ปกติ
       this.postsFromApi = [];
         this.apiTimeline();
-        if (this.filters.view_mode !== 'daily') {
-            this.apiGetPostForAnalysis();
-        }
+        // if (this.filters.view_mode !== 'daily') {
+        //     this.apiGetPostForAnalysis();
+        // }
         
       this.showFilters = !this.showFilters
     }
