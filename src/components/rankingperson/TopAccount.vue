@@ -427,7 +427,7 @@ export default {
 }
 .donut-overlay {
   position: absolute;
-  /* top: 3px; */
+  top: -16px;
   /* left: 24%; */
   /* width: 95px; */
   /* height: 95px; */
