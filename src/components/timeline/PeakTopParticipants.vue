@@ -2,9 +2,11 @@
   <b-card>
     <template #header>
       <div class="d-flex align-items-center justify-content-between">
-        <span>🔥 สรุปผู้มีส่วนร่วมใน <b>ช่วงพีคสูงสุด</b> (Top {{ topLimit }})</span>
+        <span>🔥 สรุปบัญชีที่กล่าวถึงมาก 
+            <b>ช่วงพีคสูงสุด</b> 
+            (Top {{ topLimit }})</span>
         <small v-if="peakOnlyWindow" class="text-muted">
-          ช่วงที่ใช้: {{ peakOnlyWindow.startLocalStr }} – {{ peakOnlyWindow.endLocalStr }}
+          ช่วงที่ใช้: {{ toThaiDateTimeShort(peakOnlyWindow.startLocalStr) }} – {{ toThaiDateTimeShort(peakOnlyWindow.endLocalStr) }}
         </small>
       </div>
     </template>
@@ -16,7 +18,7 @@
     <div v-else-if="topError" class="text-danger">
       {{ topError }}
     </div>
-
+ 
     <div v-else-if="!safePosts.length" class="text-muted">
       ไม่พบโพสต์ในช่วงพีค
     </div>
@@ -78,7 +80,30 @@ export default {
       }))
     }
   },
-  methods: {
+    methods: {
+    toThaiDateTimeShort(datetimeStr) {
+        if (!datetimeStr) return '-'
+
+        const date = new Date(datetimeStr)
+
+        // ตั้งค่าให้แสดงวัน/เดือนย่อ/ปี/เวลา แบบไทย
+        const options = {
+            year: 'numeric',
+            month: 'short',   // ✅ ใช้ตัวย่อ เช่น พ.ย.
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Bangkok'
+        }
+
+        const formatter = new Intl.DateTimeFormat('th-TH', options)
+        const formatted = formatter.format(date) 
+        // ตัวอย่าง: "06 พ.ย. 2568 07:00"
+
+        const [day, month, year, time] = formatted.split(' ')
+        return `${day} ${month} ${year} เวลา ${time} น.`
+        },
     scrollLeft() {
       const slider = this.$refs.slider;
       if (slider) slider.scrollLeft -= 300;

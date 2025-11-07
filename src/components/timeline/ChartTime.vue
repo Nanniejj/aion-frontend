@@ -35,10 +35,11 @@
 
         <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
       </b-col>
-      <b-col cols="12" class="">
+      <b-col v-if="series.length !== 0" cols="12" class="">
           <SummaryButton
-            v-if="!loading && username === 'adminatapy'"
+            
             class="text-left mb-3"
+            :hideTrandButton="series.length === 0"
             :posts="postsForAnalysis"
             :filters="filters"
             :loading="loading"

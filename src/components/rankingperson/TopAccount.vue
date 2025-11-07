@@ -605,6 +605,9 @@ a {
     height: 25px !important;
     margin-top: -35px !important;
   }
+  .donut-overlay{
+    left: -48%;
+  }
 
   .btn-sw {
     position: absolute;

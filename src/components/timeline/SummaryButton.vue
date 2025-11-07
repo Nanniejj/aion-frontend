@@ -17,13 +17,19 @@
             </span>
         </b-button> -->
         <b-row class="m-0">
-            <b-col cols="auto" sm="auto" class="px-0">
-                <b-button variant="outline-secondary" class="mr-2" v-b-toggle href="#trendSummary" @click.prevent><i class='fas fa-chart-line mr-1'></i>Trend Summary</b-button>
+            <b-col v-if="!hideTrandButton" cols="auto" sm="auto" class="px-0 mt-2">
+                <b-button  size="sm" variant="outline-secondary" 
+                    class="mr-2" v-b-toggle href="#trendSummary" @click.prevent>
+                    <i class='fas fa-chart-line mr-1'></i>Trend Summary
+                </b-button>
             </b-col>
-            <b-col cols="auto" sm="auto" class="px-0">
-                <b-button variant="outline-secondary" class="mr-2 mt-sm-0" v-b-toggle href="#top-participants" @click.prevent><i class='fas fa-fire mr-1'></i>Top 10 at Peak</b-button>
-            </b-col>
-            <b-col cols="auto" sm="" class="mt-2 text-right px-0">
+            <!-- <b-col cols="auto" sm="auto" class="px-0">
+                <b-button size="sm" variant="outline-secondary" 
+                class="mr-2 mt-sm-0" v-b-toggle href="#top-participants" 
+                @click.prevent>
+                <i class='fas fa-fire mr-1'></i>Top 10 User</b-button>
+            </b-col> -->
+            <b-col v-if="!loading && username === 'adminatapy'" cols="auto" sm="" class="mt-2 text-right px-0">
                 <button
                     :variant="open ? 'info' : 'outline-info'"
                     size="sm"
@@ -45,7 +51,7 @@
                         {{ analyzing ? 'Analyzing...' : 'Analysis (beta)' }}
                     </span>
                 </button>
-                <a v-b-toggle v-if="fullSummary && !open" @click.prevent="toggle" class="px-2">บทวิเคราะห์ล่าสุด</a>
+                <a v-b-toggle v-if="fullSummary && !open && !analyzing" @click.prevent="toggle" class="px-2">บทวิเคราะห์ล่าสุด</a>
                 <!-- <b-button v-if="fullSummary && !open" size="sm" variant="outline-info" 
                     class="d-inline-flex" 
                     @click="toggle"
@@ -147,6 +153,7 @@ import Swal from 'sweetalert2';
 export default {
     name: "SummaryButton",
     props: {
+        hideTrandButton:{ type: Boolean, default: false },
         posts: { type: [Array, Object], required: true }, // postsFromApi (flat array หรือ grouped daily)
         filters: { type: Object, required: true },
         loading: { type: Boolean, default: false },
@@ -155,6 +162,7 @@ export default {
     },
     data() {
         return {
+            username: "",
             open: false,
             analyzing: false,
             fullSummary: null,
@@ -476,7 +484,7 @@ export default {
         }
     },
     mounted() {
-       
+       this.username = localStorage.getItem("username");
     },
     watch: {
         posts: {
