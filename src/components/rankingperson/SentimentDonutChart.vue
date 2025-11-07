@@ -1,11 +1,20 @@
 <template>
   <div>
     <apexchart
+        class=""
       type="donut"
       :options="chartOptions"
       :series="series"
       height="130"
-    />
+      width="200" 
+      />
+    <!-- <apexchart
+        class="d-none"
+      type="donut"
+      :options="chartOptions"
+      :series="series"
+      height="130"
+    /> -->
   </div>
 </template>
 
@@ -75,17 +84,31 @@ export default {
         },
         responsive: [
           {
-            breakpoint: 480,
+            breakpoint: 801,
             options: {
               chart: {
-                width: 300
+                    width: 150,
+                height : 100
               },
                 legend: {
                 show: false,
                 position: 'bottom'
               }
             }
-          }
+          },
+        //   {
+        //     breakpoint: 800,
+        //     options: {
+        //       chart: {
+        //             width: 150,
+        //             height : 130
+        //       },
+        //         legend: {
+        //         show: false,
+        //         position: 'bottom'
+        //       }
+        //     }
+        //   }
         ],
         // ตัวอย่างสี (ถ้าต้องการกำหนด)
         colors: ['#53b993', '#368ab6', '#f06964'],

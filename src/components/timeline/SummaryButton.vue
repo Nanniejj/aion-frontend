@@ -17,18 +17,32 @@
             </span>
         </b-button> -->
         <b-row class="m-0">
-            <b-col v-if="!hideTrandButton" cols="auto" sm="auto" class="px-0 mt-2">
-                <b-button  size="sm" variant="outline-secondary" 
-                    class="mr-2" v-b-toggle href="#trendSummary" @click.prevent>
-                    <i class='fas fa-chart-line mr-1'></i>Trend Summary
+            <b-col v-if="!hideTrandButton" cols="auto" sm="auto" class="px-0 mt-2 mr-2">
+                <b-button  size="sm" :variant="openTrendSummary ? 'secondary' : 'outline-secondary'" 
+                    class=" w-100" v-b-toggle href="#trendSummary" @click.prevent>
+                    <span v-if="!openTrendSummary">
+                        <i class='fas fa-chart-line mr-1'></i>
+                        Trend Summary
+                    </span>
+                    <span v-else>
+                        <i class='fas fa-eye-slash mr-1'></i>
+                        Trend Summary
+                    </span>
                 </b-button>
             </b-col>
-            <!-- <b-col cols="auto" sm="auto" class="px-0">
-                <b-button size="sm" variant="outline-secondary" 
-                class="mr-2 mt-sm-0" v-b-toggle href="#top-participants" 
+            <b-col cols="auto" sm="auto" class="mt-2 mr-2 px-0">
+                <b-button size="sm" :variant="openTopUsers ? 'secondary' : 'outline-secondary'"
+                class="w-100" v-b-toggle href="#top-participants" 
                 @click.prevent>
-                <i class='fas fa-fire mr-1'></i>Top 10 User</b-button>
-            </b-col> -->
+                <span v-if="!openTopUsers">
+                    <i class='fas fa-fire mr-1'></i>
+                    Top 10 User</span>
+                <span v-else>
+                    <i class='fas fa-eye-slash mr-1'></i>
+                    Top 10 User
+                </span>
+            </b-button>
+            </b-col>
             <b-col v-if="!loading && username === 'adminatapy'" cols="auto" sm="" class="mt-2 text-right px-0">
                 <button
                     :variant="open ? 'info' : 'outline-info'"
@@ -157,6 +171,8 @@ export default {
         posts: { type: [Array, Object], required: true }, // postsFromApi (flat array หรือ grouped daily)
         filters: { type: Object, required: true },
         loading: { type: Boolean, default: false },
+        openTrendSummary: { type: Boolean, default: false },
+        openTopUsers: { type: Boolean, default: false },
         // จะเอากี่อันดับดี ๆ
         topN: { type: Number, default: 5 },
     },

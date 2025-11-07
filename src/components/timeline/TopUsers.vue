@@ -1,6 +1,6 @@
 <template>
-  <b-card>
-    <template #header>
+  <b-card class="border-0">
+    <!-- <template #header>
       <div class="d-flex align-items-center justify-content-between">
         <span>🔥 สรุปบัญชีที่กล่าวถึงมาก 
             <b>ช่วงพีคสูงสุด</b> 
@@ -9,27 +9,29 @@
           ช่วงที่ใช้: {{ toThaiDateTimeShort(peakOnlyWindow.startLocalStr) }} – {{ toThaiDateTimeShort(peakOnlyWindow.endLocalStr) }}
         </small>
       </div>
-    </template>
+    </template> -->
 
-    <div v-if="topLoading" class="text-center py-3">
+    <!-- <div v-if="loading" class="text-center py-3">
       <b-spinner small></b-spinner> กำลังโหลดโพสต์...
-    </div>
+    </div> -->
 
-    <div v-else-if="topError" class="text-danger">
+    <!-- <div v-else-if="topError" class="text-danger">
       {{ topError }}
     </div>
  
     <div v-else-if="!safePosts.length" class="text-muted">
       ไม่พบโพสต์ในช่วงพีค
-    </div>
+    </div> -->
 
-    <div v-else>
-       <top-accounts 
-            :showSentimentFilter="false"
-            :accounts="topPosts" 
+    <div>
+        <!-- {{ topUsers }} -->
+        <!-- :showSentimentFilter="false" -->
+        <top-accounts 
+            :keyword="filters.keyword"
+            :accounts="topUsers" 
             :limit="10" 
-            :loading="loadingStm" 
-            :top-sentiment="topSentiment" 
+            :loading="loading" 
+            :top-sentiment="sentiment" 
             @filter-account="onFilterAccount"
             @change-top-sentiment="onChangeTopSentiment" 
         />
@@ -38,17 +40,18 @@
 </template>
 
 <script>
+import axios from 'axios'
 import TopAccounts from "@/components/rankingperson/TopAccount.vue";
 export default {
-  name: 'PeakTopParticipants',
+  name: 'TopUser',
   props: {
     topPosts: { type: Array, default: () => [] },
-    topLoading: { type: Boolean, default: false },
-    topError: { type: String, default: null },
-    topLimit: { type: Number, default: 10 },
-    topPage: { type: Number, default: 1 },
-    canNextTop: { type: Boolean, default: false },
-    peakOnlyWindow: { type: Object, default: null },
+    // topLoading: { type: Boolean, default: false },
+    // topError: { type: String, default: null },
+    // topLimit: { type: Number, default: 10 },
+    // topPage: { type: Number, default: 1 },
+    // canNextTop: { type: Boolean, default: false },
+    // peakOnlyWindow: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
     },
   components:{TopAccounts},
@@ -60,25 +63,31 @@ export default {
         { key: 'engage', label: 'engage', class: 'text-right' },
         { key: 'full_text', label: 'full_text' }
         ],
-    //   topPosts:[]
+        topUsers: [],
+        accountsInput : [],
+        account : '',
+        loading: false
     }
   },
-  computed: {
-    safePosts() {
-      return Array.isArray(this.topPosts) ? this.topPosts : []
+    computed: {
+    sentiment() {
+        return this.filters.sentiment || '1,0,-1'
     },
-    peakSummaryItems() {
-      return this.safePosts.map(p => ({
-        account_name: p.author || p.account_name || '-',
-        date: this.fmtLocal(p.created_at),
-        engage: this.fmtNum(p.engagement),
-        full_text: p.text || '-',
-        sentiment: p.sentiment,
-        source: p.source,
-        photos: p.photos,
-        profile_image:p.profile_image
-      }))
-    }
+    // safePosts() {
+    //   return Array.isArray(this.topPosts) ? this.topPosts : []
+    // },
+    // peakSummaryItems() {
+    //   return this.safePosts.map(p => ({
+    //     account_name: p.author || p.account_name || '-',
+    //     date: this.fmtLocal(p.created_at),
+    //     engage: this.fmtNum(p.engagement),
+    //     full_text: p.text || '-',
+    //     sentiment: p.sentiment,
+    //     source: p.source,
+    //     photos: p.photos,
+    //     profile_image:p.profile_image
+    //   }))
+    // }
   },
     methods: {
     toThaiDateTimeShort(datetimeStr) {
@@ -129,48 +138,86 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       }).format(d)
-      },
-    // async fetchTopPosts() {
-    //   this.topLoading = true
-    //   this.topError = null
-    //   this.topPosts = []
+        },
+    onChangeTopSentiment(val) {
+        this.filters.sentiment = val;
+        this.fetchTopUsers();
+        },
+    onFilterAccount({ uid }) {
+      if (!uid) {
+        this.accountsInput = [];
+        this.account = '';
+      } else {
+        if (!Array.isArray(this.accountsInput)) this.accountsInput = [];
+          if (!this.accountsInput.includes(uid)) this.accountsInput.push(uid);
+      } 
+        this.$emit('filterAccount', this.accountsInput)
+        // this.fetchTopUsers();
+    },
+    async fetchTopUsers() {
+      this.loading = true
+      this.topError = null
+    //   this.topUsers = []
 
     //   if (!this.peakOnlyWindow || !this.peakOnlyWindow.startLocalStr || !this.peakOnlyWindow.endLocalStr) {
-    //     this.topLoading = false
+    //     this.loading = false
     //     this.topError = 'ยังไม่พบช่วงพีคจากกราฟ'
     //     return
     //   }
 
-    //   const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
-    //   const params = {
-    //     sentiment: this.filters.sentiment || '1,0,-1',
-    //     keyword: this.filters.keyword || '',
-    //     sort_by: 'engagement',
-    //     limit: this.topLimit,
-    //     page: this.topPage,
-    //     start: this.peakOnlyWindow.startLocalStr,
-    //     end: this.peakOnlyWindow.endLocalStr
-    //   }
+      const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
+      const params = {
+        sentiment: this.sentiment || '1,0,-1',
+        account:this.filters.account,
+        keyword: this.filters.keyword || '',
+        //   sort_by: 'engagement',
+        ...(this.filters.sort_by ? { sort_by: this.filters.sort_by } : {}),
+        top_accounts_limit: 10,
+        page: this.topPage,
+        start: this.filters.start,
+          end: this.filters.end,
+        ...(this.filters.source ? { source: this.filters.source } : {})
+        // start: this.peakOnlyWindow.startLocalStr,
+        // end: this.peakOnlyWindow.endLocalStr
+      }
 
-    //   try {
-    //     const { data } = await axios.get(API_URL, { params })
-    //     const raw = Array.isArray(data) ? data
-    //       : (data && Array.isArray(data.data)) ? data.data
-    //         : (data && Array.isArray(data.items)) ? data.items
-    //           : (data && Array.isArray(data.results)) ? data.results
-    //             : []
-    //     this.topPosts = raw.slice(0, 10)
-    //     // this.topPosts = raw.slice(0, 10).map((p, idx) => this.normalizePost(p, idx))
-    //     this.canNextTop = this.topPosts.length >= this.topLimit
-    //   } catch (err) {
-    //     console.error(err)
-    //     this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
-    //     this.canNextTop = false
-    //   } finally {
-    //     this.topLoading = false
-    //   }
-    // },
-  }
+      try {
+          const { data } = await axios.get(API_URL, { params })
+        
+        const raw =
+          (Array.isArray(data?.top_accounts) && data.top_accounts) ||
+          (Array.isArray(data?.accounts) && data.accounts) ||
+          (Array.isArray(data?.data) && data.data) ||
+          [];
+        this.topUsers = raw
+        console.log("top users === ", this.topUsers);
+        
+        // this.topUsers = raw.slice(0, 10).map((p, idx) => this.normalizePost(p, idx))
+        // this.canNextTop = this.topUsers.length >= this.topLimit
+      } catch (err) {
+        console.error(err)
+        this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
+        // this.canNextTop = false
+      } finally {
+        this.loading = false
+      }
+    },
+    },
+    watch: {
+        filters: {
+            handler(newVal, oldVal) {
+            
+            if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+                // this.topPage = 1
+                this.fetchTopUsers();
+                }
+            },
+        deep: true
+        }
+    },
+    async mounted() {
+        await this.fetchTopUsers();
+    }
 }
 </script>
 

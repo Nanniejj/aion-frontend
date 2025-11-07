@@ -215,7 +215,8 @@
       <ChartTime 
       :filters="paramTo"  
       :postsForAnalysis="filters.keywordInput === '' && filters.hashtags.length === 0 ? postsFromApi : postsForAnalysis"
-      @point-click="handlePointClick" @range-selected="handleRange" />
+      @point-click="handlePointClick" @range-selected="handleRange" 
+      @filter-account="handleSearchAccount"/>
       <!-- <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" /> -->
       <!-- <SummaryButton v-if="!loading" class="text-left mb-3" :posts="postsForAnalysis" :filters="filters" :loading="loading" :topN="5" /> -->
       <!-- <SummaryFilterButton v-if="!loading" class="text-left mb-3" :posts="postsFromApi" :filters="filters" :loading="loading" :topN="5" /> -->
@@ -289,6 +290,8 @@ import SummaryFilterButton from "./SummaryFilterButton.vue";
 // import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
+import { filter } from "jszip";
+import { data } from "jquery";
 const LS_TPL_KEY = 'timelineFilterTemplatesV1';
 function uid() {
   return 'tpl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
@@ -470,7 +473,11 @@ export default {
   beforeDestroy() {
     if (this.observer) this.observer.disconnect();
   },
-  methods: {
+    methods: {
+    handleSearchAccount(val) {
+        this.formFilters.accountsInput = val;
+        this.handleSearch();
+    },
     formatRange(start, end) {
       try {
         const opts = { year: 'numeric', month: 'short', day: 'numeric' };

@@ -37,15 +37,17 @@
       </b-col>
       <b-col v-if="series.length !== 0" cols="12" class="">
           <SummaryButton
-            
             class="text-left mb-3"
             :hideTrandButton="series.length === 0"
             :posts="postsForAnalysis"
             :filters="filters"
             :loading="loading"
             :topN="5"
+            :openTopUsers="openTopUsers"
+            :openTrendSummary="openTrendSummary"
+            
           />
-        <b-collapse id="trendSummary" class="my-2">
+        <b-collapse id="trendSummary" v-model="openTrendSummary" class="my-2">
             <TrendSummary
             :summary="summary"
             :filters="filters"
@@ -53,7 +55,7 @@
             :totals-count="totals_count"
             />
         </b-collapse>
-        <b-collapse id="top-participants" class="my-2">
+        <b-collapse id="top-participants" v-model="openTopUsers" class="my-2">
             <!-- <b-card>
                 <template #header>
                 <div class="d-flex align-items-center justify-content-between">
@@ -87,17 +89,18 @@
                     />
                 </div>
             </b-card> -->
-            <PeakTopParticipants
+            <TopUsers
                 :filters="filters"
-                :top-posts="topPosts"
+                @filterAccount="updateAccount"
+                />
+                <!-- :top-posts="topPosts"
                 :top-loading="topLoading"
                 :top-error="topError"
                 :top-limit="topLimit"
                 :top-page="topPage"
                 :can-next-top="canNextTop"
                 :peak-only-window="peakOnlyWindow"
-                @change-page="changeTopPage"
-            />
+                @change-page="changeTopPage" -->
         </b-collapse>
       </b-col>
     </b-row>
@@ -109,19 +112,21 @@ import VueApexCharts from 'vue-apexcharts'
 import axios from 'axios'
 import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
 import TrendSummary from '@/components/timeline/TrendSummary.vue'
-import PeakTopParticipants from '@/components/timeline/PeakTopParticipants.vue'
+import TopUsers from '@/components/timeline/TopUsers.vue'
 import SummaryButton from "@/components/timeline/SummaryButton.vue";
 import TopAccounts from "@/components/rankingperson/TopAccount.vue";
 
 export default {
   components: { apexchart: VueApexCharts, StaticTimeline, TrendSummary,
-    PeakTopParticipants,TopAccounts, SummaryButton },
+    TopUsers,TopAccounts, SummaryButton },
     props: {
         filters: { type: Object, default: () => ({}) },
         postsForAnalysis: {type: [Array, Object], required: true}
     },
   data() {
-    return {
+      return {
+        openTrendSummary: false,
+        openTopUsers: true,
       username: "",
       dates: null,
       totals_count: null,
@@ -275,7 +280,12 @@ export default {
       deep: true
     }
   },
-  methods: {
+    methods: {
+    updateAccount(val) {
+        this.filters.account = val 
+            this.$emit('filter-account', val)
+            this.fetchData();
+    },
     // ---------- Double-click core ----------
     _pointKey(si, di) { return String(Number(si)) + ':' + String(Number(di)) },
     _flushClickMap() {
@@ -397,7 +407,7 @@ export default {
     //     this.topLoading = false
     //   }
     // },
-      async fetchTopPosts() {
+    async fetchTopPosts() {
         console.log(
             "%c CALL → fetchTopPosts from:",
             "color: yellow; background: red;",
@@ -446,7 +456,7 @@ export default {
     changeTopPage(newPage) {
       if (newPage < 1) return
       this.topPage = newPage
-      this.fetchTopPosts()
+    //   this.fetchTopPosts()
     },
 
       normalizePost(p, idx) {
@@ -569,7 +579,7 @@ export default {
 
       // 🔥 โหลดโพสต์เฉพาะช่วงพีคทันที
       this.topPage = 1
-      this.fetchTopPosts()
+    //   this.fetchTopPosts()
     },
 
     // หาพีคสูงสุดจากคู่ [ts, value]

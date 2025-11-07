@@ -9,7 +9,7 @@
       <b-col class="text-left" cols="12" md="">
         <h5 class="mb-sm-0 mb-0">Top 10 Users </h5>
         <div class="text-left text-muted">
-          <small>บัญชีที่กล่าวถึงมากที่สุด 10 อันดับ </small>
+          <small>บัญชีที่กล่าว<b v-if="keyword"> {{ keyword }} </b>ถึงมากที่สุด 10 อันดับ </small>
         </div>
       </b-col>
       <b-col v-if="showSentimentFilter" cols="12" md="auto">
@@ -81,24 +81,27 @@
                 <div class="d-flex justify-content-between">
                   <span class="position-absolute h6 py-2 bold pt-3 px-1 " style="color:#7782bf;">{{ i + 1 }}</span>
                 </div>
-                <div class="ta-hero avatar-wrapper d-flex flex-column align-items-center justify-content-center">
-                  <b-avatar :src="item.profile_image || null"
-                    :text="!item.profile_image ? initials(item.name || item.uid) : null" size="72" variant="light"
-                    class="mb-2 avatar-d" style="background-color: #918f8a !important;" />
-                  <img v-if="item.source === 'twitter'" :src="imgtw" class="social-img" />
-                  <img v-if="item.source === 'facebook'" :src="imgfb" class="social-img" />
-                  <img v-if="item.source === 'pantip'" :src="imgpt" class="social-img" />
-                  <img v-if="item.source === 'youtube'" :src="imgyt" class="social-img" />
-                  <img v-if="item.source === 'news'" :src="imgnw" class="social-img" />
-                  <img v-if="item.source === 'instagram'" :src="imgig" class="social-img" />
-                  <img v-if="item.source === 'blockdit'" :src="imgbd" class="social-img" />
-                  <img v-if="item.source === 'tiktok'" :src="imgtt" class="social-img" />
-                  <img v-if="item.source === 'threads'" :src="imgtd" class="social-img" />
-                  
-                  <!-- Donut Chart -->
-                  <div class="donut-overlay">
-                    <SentimentDonutChart :sentimentSeries="[item.positiveSentiment,item.neutralSentiment,item.negativeSentiment]"/>
-                  </div>
+                <div class="ta-hero  d-flex flex-column align-items-center justify-content-center">
+                    <div class="avatar-wrapper d-flex flex-column align-items-center justify-content-center">
+                        <b-avatar :src="item.profile_image || null"
+                          :text="!item.profile_image ? initials(item.name || item.uid) : null" size="72" variant="light"
+                          class="mb-2 avatar-d" style="background-color: #918f8a !important;" />
+                        <img v-if="item.source === 'twitter'" :src="imgtw" class="social-img" />
+                        <img v-if="item.source === 'facebook'" :src="imgfb" class="social-img" />
+                        <img v-if="item.source === 'pantip'" :src="imgpt" class="social-img" />
+                        <img v-if="item.source === 'youtube'" :src="imgyt" class="social-img" />
+                        <img v-if="item.source === 'news'" :src="imgnw" class="social-img" />
+                        <img v-if="item.source === 'instagram'" :src="imgig" class="social-img" />
+                        <img v-if="item.source === 'blockdit'" :src="imgbd" class="social-img" />
+                        <img v-if="item.source === 'tiktok'" :src="imgtt" class="social-img" />
+                        <img v-if="item.source === 'threads'" :src="imgtd" class="social-img" />
+                        
+                        <!-- Donut Chart -->
+                        <div class="donut-overlay">
+                          <SentimentDonutChart :sentimentSeries="[item.positiveSentiment,item.neutralSentiment,item.negativeSentiment]"/>
+                        </div>
+
+                    </div>
                   <div class="text-center px-3 pt-3">
                     <!-- <a :href="item.link_crawl" target="_blank" @click.stop> -->
                     <div class="mb-0 text-truncate small">{{ item.name || item.uid }}</div>
@@ -109,7 +112,7 @@
                     <span class="bold mx-1"> {{ item.total | numFormat }}</span> <small class="text-muted"
                       style="font-size: x-small;">โพสต์</small>
                   </div>
-                  <div class="box-stm px-2">
+                  <div class="box-stm px-1">
                     <i class="far fa-smile fa-2x d-inline" style="color: #53b993;"></i><span class="small mr-2 bold"> {{
                       item.positiveSentiment | numFormat }}</span>
                     <i class="far fa-meh fa-2x d-inline" style="color: #368ab6;"></i><span class="small mr-2 bold"> {{
@@ -170,7 +173,8 @@ export default {
     hasMore: { type: Boolean, default: false },
     chartLimit: { type: Number, default: 15 },    // จำกัดจำนวนใน Chart
     topSentiment: { type: String, default: '1,0,-1' },
-    defaultView: { type: String, default: 'cards' } // 'cards' | 'chart'
+    defaultView: { type: String, default: 'cards' }, // 'cards' | 'chart'
+    keyword: { type: String, default: '' } // 'cards' | 'chart'
   },
   data() {
     return {
@@ -423,10 +427,10 @@ export default {
 }
 .donut-overlay {
   position: absolute;
-  top: 3px;
-  left: 24%;
-  width: 95px;
-  height: 95px;
+  /* top: 3px; */
+  /* left: 24%; */
+  /* width: 95px; */
+  /* height: 95px; */
   z-index: 0;
 }
 .g-stm{
@@ -533,6 +537,7 @@ export default {
 }
 
 .ta-hero {
+    height: 100%;
   padding: 20px 16px 8px;
   border-radius: 20px;
   background: #17A3B8CE;
@@ -603,12 +608,8 @@ a {
   .social-img {
     width: 25px !important;
     height: 25px !important;
-    margin-top: -35px !important;
+    margin-top: -30px !important;
   }
-  .donut-overlay{
-    left: -48%;
-  }
-
   .btn-sw {
     position: absolute;
     top: 0px;
