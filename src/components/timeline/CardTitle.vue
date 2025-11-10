@@ -17,8 +17,9 @@
           <b-avatar variant="danger" icon="emoji-frown" v-if="post.sentiment == -1" />
         </div>
         <b-row>
-          <b-col cols="12" md="3" v-if="post.photos && post.photos.length" class="img-col">
+          <b-col cols="12" md="3" v-if="post.photos && post.photos.length && !hidePreview" class="img-col">
             <!-- รูป preview -->
+             <!-- {{ post.photos[0] }} -->
             <b-card-img class="img-cover" @error="setAltImg"
               :src="(post.source === 'tiktok' ? post.photos[0] || require('@/assets/no-image.jpg') : post.photos[0]) "
               @click="showImage = true" />
@@ -257,11 +258,12 @@ export default {
       visible: false,
       readmoreLimit: 120,   // ปรับจำนวนตัวอักษรได้
       expandedMap: {},       // เก็บสถานะขยาย/ย่อ รายการละ field
-      default_avatar: require("@/assets/no-image.jpg"),
+      default_avatar: require("@/assets/no-image-2.png"),
       showImage: false,
       filterMode: "topComments", // 'topComments' | 'topFans'
       showComments: false,
-      showAllComments: false,
+        showAllComments: false,
+        hidePreview: false, // ใช้ควบคุมการซ่อนรูป
     };
   },
   computed: {},
@@ -272,10 +274,14 @@ export default {
       this.dataPhoto = data;
     },
     setAltImg(event) {
-      event.target.src = this.default_avatar;
+        // 
+        this.hidePreview = true;
+        event.target.src = this.default_avatar;
+        console.log("setAltImg hide ==== ", this.hidePreview);
+        
     },
     getImageSrc(post) {
-        const fallback = require('@/assets/no-image.jpg')
+        const fallback = require('@/assets/no-image-2.png')
         const photo = post?.photos?.[0]
         if (!photo) return fallback
         return photo
@@ -315,9 +321,9 @@ export default {
         height: `${size}px`,
       };
     },
-    setAltImg(event) {
-      event.target.src = this.default_avatar;
-    },
+    // setAltImg(event) {
+    //   event.target.src = this.default_avatar;
+    // },
     formatDate(date) {
       let dates = moment(date).subtract(7, "hours");
       let date2 = moment(dates).format("ll");
