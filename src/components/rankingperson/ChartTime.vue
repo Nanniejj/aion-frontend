@@ -7,7 +7,29 @@
 
     <b-row v-if="!loading">
       <b-col cols="12" class="px-0">
+
+        <b-row class="px-4 small" v-if="datachart.totals">
+
+          <span class="text-left mr-1">ค้นหาบุคคลด้วย</span>   
+           <span class="text-left"> ({{ datachart.totals.posts | numFormat }}) </span>
+          <span class="bpx">
+            <span class="text-left tag-img px-3 mx-2" v-if="datachart.totals && datachart.totals.photos_text_count">
+              รูปภาพ
+              <span class="bold">{{ datachart.totals.photos_text_count | numFormat }} </span>posts
+            </span>
+
+
+            <span class="text-left tag-img px-3 " v-if="datachart.totals && datachart.totals.full_text_count">
+              ข้อความ
+              <span class="bold">{{ datachart.totals.full_text_count | numFormat }} </span>posts
+            </span>
+          </span>
+
+        </b-row>
+
+
         <StaticTimeline :datachart="datachart" />
+
       </b-col>
 
       <b-col cols="12">
@@ -426,13 +448,20 @@ export default {
 </script>
 
 <style scoped>
+.tag-img {
+  background-color: #d1ecf1;
+  border-radius: 20px;
+}
+
 #chart {
   max-width: 100%;
   margin: 0px auto;
 }
+
 #chart {
   margin-bottom: 0px;
 }
+
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   #chart>div>div:nth-child(2) {
     padding-left: 0px;
