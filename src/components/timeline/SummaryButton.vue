@@ -50,7 +50,7 @@
                     class="analysis-button"
                     :class="{ 'is-glowing': analyzing }"
                     type="button"
-                    @click="summarizePosts()"
+                    @click="summarizePostsV2()"
                     :disabled="analyzing"
                 >
                     <img
@@ -120,40 +120,39 @@
                 </div>
             </b-card> -->
             <b-card class="shadow-sm" header-class="border-0" body-class="pt-0" style="border-radius: 16px; min-height: 100px;">
-                    <!-- ส่วน header ให้ scroll -->
-                    <template #header>
-                        <b-row class="m-0 align-items-center justify-content-center">
-                            <b-col cols="12" md="" class="px-0">
-                                การวิเคราะห์แนวโน้ม
-                                <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
-                                <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
-                                <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
-                            </b-col>
-                            <b-col cols="auto" md="auto" class="px-0">
-                                <b-button size="sm" variant="outline-secondary" class="d-inline-flex" @click="copyFull"
-                                :disabled="!fullSummary">
-                                คัดลอกสรุป
-                                </b-button>
-                            </b-col>
-                            <b-col cols="auto" class="">
-                                <button @click="toggle" class="btn d-inline-flex align-items-center btn-info btn-sm">
-                                <i class="fas fa-sliders mr-2" aria-hidden="true"></i>
-                                <span class="small">Hide</span>
-                                </button>
-                            </b-col>
-                        </b-row>
-                        
-                    </template>
+                <!-- ส่วน header ให้ scroll -->
+                <template #header>
+                    <b-row class="m-0 align-items-center justify-content-center">
+                        <b-col cols="12" md="" class="px-0">
+                            การวิเคราะห์แนวโน้ม
+                            <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
+                            <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
+                            <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
+                        </b-col>
+                        <b-col cols="auto" md="auto" class="px-0">
+                            <b-button size="sm" variant="outline-secondary" class="d-inline-flex" @click="copyFull"
+                            :disabled="!fullSummary">
+                            คัดลอกสรุป
+                            </b-button>
+                        </b-col>
+                        <b-col cols="auto" class="">
+                            <button @click="toggle" class="btn d-inline-flex align-items-center btn-info btn-sm">
+                            <i class="fas fa-sliders mr-2" aria-hidden="true"></i>
+                            <span class="small">Hide</span>
+                            </button>
+                        </b-col>
+                    </b-row>
+                </template>
 
-                    <!-- ส่วนเนื้อหา -->
-                    <b-card-text class="card-body-scroll">
-                        <div v-if="analyzing" class="text-center my-3">
-                        <vue-element-loading :active="analyzing" size="60" background-color="rgba(255,255,255,0.5)" color="#17a2b891" />
-                        </div>
-                        <div v-else class="text-left pb-3">
-                        <div v-html="formatSummarize(fullSummary)"></div>
-                        </div>
-                    </b-card-text>
+                <!-- ส่วนเนื้อหา -->
+                <b-card-text class="card-body-scroll">
+                    <div v-if="analyzing" class="text-center my-3">
+                    <vue-element-loading :active="analyzing" size="60" background-color="rgba(255,255,255,0.5)" color="#17a2b891" />
+                    </div>
+                    <div v-else class="text-left pb-3">
+                    <div v-html="formatSummarize(fullSummary)"></div>
+                    </div>
+                </b-card-text>
             </b-card>
 
         </b-collapse>
@@ -497,7 +496,77 @@ export default {
                 });
             }
 
-        }
+        },
+        async summarizePostsV2() {
+            this.analyzing = true;
+            this.open = false;
+
+            // --- สร้าง params จาก props.filters ---
+            const f = this.filters || {};
+
+            const params = {
+                sentiment: f.sentiment ?? "1,0,-1",
+                start: f.start,
+                end: f.end,
+                limit: f.limit ?? 10,
+                page: f.page ?? 1,
+                account: f.account,
+                keyword: f.keyword,
+                sort_by: f.sort_by,
+                source: f.source,
+            };
+
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/userposts/summarize-timeline",
+                params,
+                headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json"
+                },
+                // timeout: 120000
+            };
+
+            try {
+                const response = await this.axios(config);
+                const data = response?.data;
+
+                if (!data) {
+                this.fullSummary = "ไม่มีข้อมูลจาก API";
+                } else if (data.final_summary) {
+                this.fullSummary = data.final_summary;
+                } else if (data.summary) {
+                this.fullSummary = data.summary;
+                } else if (data.summary_text) {
+                this.fullSummary = data.summary_text;
+                } else {
+                this.fullSummary = JSON.stringify(data, null, 2);
+                }
+
+                this.analyzing = false;
+                this.open = true;
+
+            } catch (error) {
+                this.analyzing = false;
+
+                console.error("summarizePostsV2 error:", error);
+
+                let msg = "ไม่สามารถวิเคราะห์โพสต์ได้ กรุณาลองใหม่อีกครั้ง";
+
+                if (error.response?.data?.message) {
+                msg = error.response.data.message;
+                } else if (typeof error.response?.data === "string") {
+                msg = error.response.data;
+                }
+
+                Swal.fire({
+                icon: "error",
+                title: "เกิดข้อผิดพลาด",
+                text: msg
+                });
+            }
+        },
+
     },
     mounted() {
        this.username = localStorage.getItem("username");
