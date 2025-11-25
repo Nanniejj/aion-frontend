@@ -92,7 +92,7 @@
             <TopUsers
                 :filters="filters"
                 @filterAccount="updateAccount"
-                />
+            />
                 <!-- :top-posts="topPosts"
                 :top-loading="topLoading"
                 :top-error="topError"
@@ -485,7 +485,7 @@ export default {
       )
     },
 
-      applyData(payload) {
+    applyData(payload) {
         console.log(
             "%c CALL → applyData from:",
             "color: yellow; background: red;",

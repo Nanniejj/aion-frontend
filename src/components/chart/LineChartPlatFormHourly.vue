@@ -9,6 +9,7 @@ import VueApexCharts from "vue-apexcharts";
 import { mapGetters } from "vuex";
 import moment from "moment";
 import 'moment/locale/th'; // ✅ ให้ moment ใช้ภาษาไทย
+import { param } from "jquery";
 
 export default {
   name: "App",
@@ -91,7 +92,7 @@ export default {
       const config = {
         method: "get",
         url:
-          "https://api2.cognizata.com/api/v2/userposts/getChartDataPlatform?source=" +
+          "https://api2.cognizata.com/api/v2/platform/getChartDataPlatformHourly?source=" +
           this.getNamePlatform +
           sdate +
           edate,
@@ -122,7 +123,7 @@ export default {
 
         const data = response.data;
         const array3 = [...daylist, ...data];
-        console.log("res ==== ",data);
+
         // รวมและ dedupe ตาม key = date
         const distinctItems = [
           ...new Map(array3.map((item) => [item["date"], item])).values(),
@@ -155,19 +156,27 @@ export default {
 
     async startChart() {
       const currentTime = new Date();
-      currentTime.setDate(currentTime.getDate() - 14);
+        currentTime.setDate(currentTime.getDate() - 14);
+        let sdate = "", edate = "";
+      if (this.getSdateDm || this.getEdateDm) {
+        sdate = "&start=" + this.getSdateDm;
+        edate = "&end=" + this.getEdateDm;
+      }
       try {
         const config = {
           method: "get",
           url:
-            "https://api2.cognizata.com/api/v2/userposts/getChartDataPlatform?source=" +
-            this.getNamePlatform,
+            "https://api2.cognizata.com/api/v2/platform/getChartDataPlatformHourly?source=" +
+                this.getNamePlatform +
+          sdate +
+          edate,
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
             "Content-Type": "application/json",
           },
         };
-
+        console.log("config === ", config);
+        
         await this.axios(config).then((response) => {
           const _this = this;
 
@@ -185,7 +194,9 @@ export default {
           const ds = moment(currentTime).format('YYYY-MM-DD');      // ✅
           const daylist = getDaysArrays(new Date(ds), new Date(de));
 
-          const data = response.data;
+            const data = response.data;
+          console.log("hr. res ==== ",data);
+          
           const array3 = [...daylist, ...data];
 
           const distinctItems = [
@@ -273,8 +284,11 @@ export default {
       }
     },
   },
-  created: async function () {
-    this.startChart();
-  },
+//   created: async function () {
+//     this.startChart();
+    //   },
+    mounted() {
+        this.startChart();  
+    }   
 };
 </script>

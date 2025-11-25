@@ -4,6 +4,7 @@
 <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
     <StatPlatForm />
     <PlatFormGraph class="mt-1" />
+    <!-- <PlatFormHourlyGraph class="mt-1" /> -->
     
     <PlatFormCloud  />
     <TopUser class="mt-5" />
@@ -17,6 +18,7 @@
 <script>
 import PlatFormBackBar from "@/components/platform/PlatFormBackBar.vue";
 import PlatFormGraph from "@/components/platform/PlatFormGraph.vue";
+import PlatFormHourlyGraph from "@/components/platform/PlatFormHourlyGraph.vue";
 import StatPlatForm from "@/components/platform/StatPlatForm.vue";
 import PlatFormCloud from "@/components/platform/PlatFormCloud.vue";
 import TopUser from "@/components/platform/TopUserPlatform.vue";
@@ -32,7 +34,8 @@ export default {
   },
 components:{
 PlatFormBackBar,
-PlatFormGraph,
+    PlatFormGraph,
+PlatFormHourlyGraph,
 StatPlatForm,
 PlatFormCloud,
 TopUser,

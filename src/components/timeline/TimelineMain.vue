@@ -290,8 +290,8 @@ import SummaryFilterButton from "./SummaryFilterButton.vue";
 // import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
-import { filter } from "jszip";
-import { data } from "jquery";
+// import { filter } from "jszip";
+// import { data } from "jquery";
 const LS_TPL_KEY = 'timelineFilterTemplatesV1';
 function uid() {
   return 'tpl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
