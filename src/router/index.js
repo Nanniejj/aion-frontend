@@ -550,6 +550,28 @@ const routes = [
         /* webpackChunkName: "targetprofile" */ "../views/BotStat.vue"
       )
   },
+   {
+    path: "/botdetail",
+    name: "BotPost",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/BotPost.vue"
+      )
+  },
+   {
+    path: "/botstatus",
+    name: "BotActive",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/BotActive.vue"
+      )
+  },
    // {
   //   path: "/home",
   //   name: "Section",
