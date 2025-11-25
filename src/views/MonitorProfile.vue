@@ -2,7 +2,7 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
     <div id="content">
-        <div class="m-auto" style="width: 85%;">
+        <div class="main-wrapper m-sm-auto" >
             <h1 v-if="type == 'hashtaglist'" class="title m-0">Hashtag</h1>
             <h1 v-else class="title m-0">Profile</h1>
             <div v-if="type == 'hashtaglist'" class="d-flex align-items-center mb-3">
@@ -68,6 +68,15 @@ export default {
 </script>
 
 <style scoped>
+.main-wrapper {
+  width: 100%; /* ค่า default สำหรับมือถือ */
+}
+
+@media (min-width: 576px) {
+  .main-wrapper {
+    width: 85%; /* จอ sm ขึ้นไป */
+  }
+}
 .icon-monitor1,
 .icon-monitor2 {
   cursor: pointer;

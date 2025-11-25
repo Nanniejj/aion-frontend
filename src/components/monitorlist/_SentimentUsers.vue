@@ -155,7 +155,7 @@ export default {
             from: this.filters.from,                         // param ใหม่
             to: this.filters.to,                             // param ใหม่
             page: this.topPage || 1,
-            limit: this.filters.limit || 10,                  // รองรับ limit เช่น 3
+            limit: 10,                  // รองรับ limit เช่น 3
             ...(this.filters.account ? { account: this.filters.account } : {}),
             ...(this.filters.keyword ? { keyword: this.filters.keyword } : {}),
             ...(this.filters.source ? { source: this.filters.source } : {})

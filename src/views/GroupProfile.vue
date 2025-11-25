@@ -2,7 +2,7 @@
   <div id="overflow-page">
     <HomeNav id="navHome" />
     <div id="content">
-        <div class="m-auto" style="width: 85%;">
+        <div class="main-wrapper m-sm-auto" >
             <h1 class="title m-0">Group</h1>
             <div class="d-flex align-items-center mb-3">
                 <b-col @click="toMonitor('MonitorList')" cols="auto pl-0" style="cursor: pointer;" class="m-0">Monitor</b-col>
@@ -62,6 +62,15 @@ export default {
 </script>
 
 <style scoped>
+.main-wrapper {
+  width: 100%; /* ค่า default สำหรับมือถือ */
+}
+
+@media (min-width: 576px) {
+  .main-wrapper {
+    width: 85%; /* จอ sm ขึ้นไป */
+  }
+}
 .icon-monitor1,
 .icon-monitor2 {
   cursor: pointer;

@@ -266,7 +266,7 @@
             </b-col>
             <b-col v-else cols="12" class="px-0">
                 <StaticTimeline :datachart="datachart" />
-                <b-col cols="12">
+                <b-col cols="12" class="px-0">
                     <div class="text-left px-4">
                     <span class="">สถิติรายชั่วโมง </span>
                     <b-icon icon="info-circle" variant="info" role="button" id="popover-button-variant" tabindex="0"
@@ -1176,6 +1176,21 @@ export default {
 </script>
 
 <style scoped>
+    #chart {
+    max-width: 100%;
+    margin: 24px auto;
+    }
+
+    #chart {
+    margin-bottom: 0px;
+    }
+
+    @media only screen and (min-width: 0px) and (max-width: 800px) {
+    #chart>div>div:nth-child(2) {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+    }
     .badge-light {
         color: #35393b;
         background-color: #ffffffa9 !important;

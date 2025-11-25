@@ -1,5 +1,5 @@
 <template>
-    <div class="my-3">
+    <div class="my-3 ml-3 mr-4">
         <div v-if="timelineItems.length" class="timeline-container" >
 
             <!-- เส้นตรงกลาง -->
