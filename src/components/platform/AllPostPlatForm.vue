@@ -49,7 +49,7 @@ export default {
   watch: {
     getCountAllPost: function (newVal, oldVal) {
       // watch it
-      console.log("Prop date: ", newVal, " | was: ", oldVal);
+    //   console.log("Prop date: ", newVal, " | was: ", oldVal);
     },
     getArrDate: function () {
       this.startd = this.getSdateDm.slice(0, 10);
@@ -82,7 +82,7 @@ export default {
      this.$store.commit('setSocialPlatform',this.getNamePlatform)
      this.$emitter.on("crawdash", (val) => {
       this.selected = val;
-      console.log('selected',this.selected);
+    //   console.log('selected',this.selected);
     });
   },
 };

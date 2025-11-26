@@ -3,13 +3,13 @@
 <PlatFormBackBar/>
 <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
     <StatPlatForm />
+    <PlatFormHourlyGraph class="mt-1" />
     <PlatFormGraph class="mt-1" />
-    <!-- <PlatFormHourlyGraph class="mt-1" /> -->
     
     <PlatFormCloud  />
     <TopUser class="mt-5" />
-     <TopPostDomain class="mt-5" />
-      <AllPostPlatForm class="mt-5"/>
+    <TopPostDomain class="mt-5" />
+    <AllPostPlatForm class="mt-5"/>
 </div>
 </div>
   

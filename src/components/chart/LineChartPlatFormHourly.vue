@@ -1,5 +1,6 @@
 <template>
   <div id="chart" class="mt-3">
+    <!-- {{ series }} -->
     <apexchart id="chart-domain" type="line" height="400" :options="chartOptions" :series="series"></apexchart>
   </div>
 </template>
@@ -9,7 +10,7 @@ import VueApexCharts from "vue-apexcharts";
 import { mapGetters } from "vuex";
 import moment from "moment";
 import 'moment/locale/th'; // ✅ ให้ moment ใช้ภาษาไทย
-import { param } from "jquery";
+// import { param } from "jquery";
 
 export default {
   name: "App",
@@ -18,16 +19,17 @@ export default {
   },
   watch: {
     getArrDate: function () {
-      const e = moment(new Date()).format('YYYY-MM-DD'); // ✅ กันปัญหา timezone
-      if (
-        this.getSdateDm.slice(0, 10) == e &&
-        this.getEdateDm.slice(0, 10) == e
-      ) {
+    //   const e = moment(new Date()).format('YYYY-MM-DD'); // ✅ กันปัญหา timezone
+    // //   if (
+    // //     this.getSdateDm.slice(0, 10) == e &&
+    // //     this.getEdateDm.slice(0, 10) == e
+    // //   ) {
+    // //     this.startChart();
+    // //   } else {
+    // //     this.updateChart();
+    //       //   }
         this.startChart();
-      } else {
-        this.updateChart();
-      }
-      this.val = 0;
+    //   this.val = 0;
     },
   },
   data() {
@@ -46,7 +48,7 @@ export default {
         },
         series: [],
         title: {
-          text: "จำนวนโพสต์ในแต่ละวัน",
+          text: "จำนวนโพสต์รายชั่วโมง",
         },
         noData: {
           text: "Loading...",
@@ -85,8 +87,8 @@ export default {
       this.series = [];
       let sdate = "", edate = "";
       if (this.getSdateDm || this.getEdateDm) {
-        sdate = "&start=" + this.getSdateDm;
-        edate = "&end=" + this.getEdateDm;
+        sdate = "&start_date=" + this.getSdateDm;
+        edate = "&end_date=" + this.getEdateDm;
       }
 
       const config = {
@@ -155,138 +157,125 @@ export default {
     },
 
     async startChart() {
-      const currentTime = new Date();
+        const currentTime = new Date();
         currentTime.setDate(currentTime.getDate() - 14);
+
         let sdate = "", edate = "";
-      if (this.getSdateDm || this.getEdateDm) {
-        sdate = "&start=" + this.getSdateDm;
-        edate = "&end=" + this.getEdateDm;
-      }
-      try {
-        const config = {
-          method: "get",
-          url:
-            "https://api2.cognizata.com/api/v2/platform/getChartDataPlatformHourly?source=" +
+        if (this.getSdateDm || this.getEdateDm) {
+            sdate = "&start_date=" + this.getSdateDm;
+            edate = "&end_date=" + this.getEdateDm;
+        }
+
+        try {
+            const config = {
+            method: "get",
+            url:
+                "https://api2.cognizata.com/api/v2/platform/getChartDataPlatformHourly?source=" +
                 this.getNamePlatform +
-          sdate +
-          edate,
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-            "Content-Type": "application/json",
-          },
-        };
-        console.log("config === ", config);
-        
-        await this.axios(config).then((response) => {
-          const _this = this;
+                sdate +
+                edate,
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+            },
+            };
 
-          const getDaysArrays = function (s, e) {
-            for (var a = [], d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
-              a.push({
-                date: moment(d).format('YYYY-MM-DD'), // ✅ ใช้ฟอร์แมตคงที่
-                count: _this.val,
-              });
-            }
-            return a;
-          };
+            // console.log("config === ", config);
 
-          const de = moment(new Date()).format('YYYY-MM-DD');       // ✅
-          const ds = moment(currentTime).format('YYYY-MM-DD');      // ✅
-          const daylist = getDaysArrays(new Date(ds), new Date(de));
+            const response = await this.axios(config);
+            const data = response.data.data;
 
-            const data = response.data;
-          console.log("hr. res ==== ",data);
-          
-          const array3 = [...daylist, ...data];
+            // console.log("hourly response === ", data);
 
-          const distinctItems = [
-            ...new Map(array3.map((item) => [item["date"], item])).values(),
-          ]
-            .sort((a, b) => a.date.localeCompare(b.date)); // ✅ เผื่อคิวเรียงวัน
+            // ⏱ เวลาทั้งหมด เช่น ["00:00", "01:00", ...]
+            const timeList = data.map(item => item.time);
 
-          const datelist = distinctItems.map((item) => item.date);
-          const datelistTH = datelist.map(d => this.formatDateTH(d)); // ✅
-          const countlist = distinctItems.map((item) => item.count);
+            // 📊 ค่าจำนวนโพสต์ เช่น [694, 716, ...]
+            const countList = data.map(item => item.count);
+            // console.log("countList ==== ", countList);
 
-          // ✅ แสดงช่วงวันที่เป็นไทย
-          this.range = `${datelistTH[0]} - ${datelistTH[datelistTH.length - 1]}`;
+            // 🕒 แสดงช่วงเวลา
+            this.range = "ข้อมูลรายชั่วโมง";
 
-          this.series = [
-            { name: "จำนวนโพสต์", data: countlist },
-          ];
-
-          if (this.getNamePlatform == "twitter") {
+            // 📈 Series ของ ApexChart
+            this.series = [
+            { name: "จำนวนโพสต์", data: countList },
+            ];
+            // console.log("series ==== ", this.series);
+            
+            // 🎨 กำหนดสี platform
+            if (this.getNamePlatform == "twitter") {
             this.colorp = ["#919495"];
-          } else if (this.getNamePlatform == "facebook") {
+            } else if (this.getNamePlatform == "facebook") {
             this.colorp = ["#4c77bb"];
-          } else if (this.getNamePlatform == "pantip") {
+            } else if (this.getNamePlatform == "pantip") {
             this.colorp = ["#532d84"];
-          } else if (this.getNamePlatform == "youtube") {
+            } else if (this.getNamePlatform == "youtube") {
             this.colorp = ["#e24246"];
-          } else if (this.getNamePlatform == "news") {
+            } else if (this.getNamePlatform == "news") {
             this.colorp = ["#fdd072"];
-          } else if (this.getNamePlatform == "instagram") {
+            } else if (this.getNamePlatform == "instagram") {
             this.colorp = ["#ff9773"];
-          } else if (this.getNamePlatform == "blockdit") {
+            } else if (this.getNamePlatform == "blockdit") {
             this.colorp = ["#396eb6"];
-          } else if (this.getNamePlatform == "threads") {
+            } else if (this.getNamePlatform == "threads") {
             this.colorp = ["#e75aa1"];
-          } else {
+            } else {
             this.colorp = ["#1f0043"];
-          }
+            }
 
-          this.chartOptions = {
-            yaxis: {
-              labels: {
-                formatter: (value) => {
-                  return value.toLocaleString();
+            // ⚙ ตั้งค่า Chart
+            this.chartOptions = {
+                yaxis: {
+                    labels: {
+                    formatter: (value) => value.toLocaleString(),
+                    },
                 },
-              },
-            },
-            chart: {
-              fontFamily: "Prompt, FontAwesome, sans-serif",
-              type: "line",
-              zoom: { enabled: true },
-              dropShadow: {
-                enabled: true,
-                color: "#000",
-                top: 18,
-                left: 7,
-                blur: 10,
-                opacity: 0.2,
-              },
-            },
-            colors: this.colorp,
-            dataLabels: {
-              enabled: true,
-              style: { colors: ["#4c412b"] },
-              formatter: (value) => value.toLocaleString(),
-            },
-            stroke: { curve: "smooth" },
-            title: {
-              text: "จำนวนโพสต์ วันที่ " + this.range, // ✅ ไทยแล้ว
-              align: "left",
-              fontFamily: "Prompt",
-            },
-            markers: { size: 1 },
-            grid: {
-              row: { colors: ["#ffffff", "transparent"], opacity: 0.5 },
-              padding: { left: 30 },
-            },
-            xaxis: {
-              categories: datelistTH, // ✅ ใช้วันที่ไทยบนแกน X
-            },
-          };
-        });
-      } catch (error) {
-        console.error("Error fetching chart data:", error);
-        // this.$toast.error("ไม่สามารถดึงข้อมูลกราฟได้ในขณะนี้ กรุณาลองใหม่ภายหลัง");
-      }
-    },
+                chart: {
+                    fontFamily: "Prompt, FontAwesome, sans-serif",
+                    type: "line",
+                    zoom: { enabled: true },
+                    dropShadow: {
+                    enabled: true,
+                    color: "#000",
+                    top: 18,
+                    left: 7,
+                    blur: 10,
+                    opacity: 0.2,
+                    },
+                },
+                colors: this.colorp,
+                dataLabels: {
+                    enabled: true,
+                    style: { colors: ["#4c412b"] },
+                    formatter: (value) => value.toLocaleString(),
+                },
+                stroke: { curve: "smooth" },
+                title: {
+                    text: "จำนวนโพสต์รายชั่วโมง",
+                    align: "left",
+                    fontFamily: "Prompt",
+                },
+                markers: { size: 1 },
+                grid: {
+                    row: { colors: ["#ffffff", "transparent"], opacity: 0.5 },
+                    padding: { left: 30 },
+                },
+                xaxis: {
+                    categories: timeList, // ⬅ ใช้เวลาจาก API โดยตรง
+                },
+            };
+
+        } catch (error) {
+            console.error("Error fetching chart data:", error);
+            // this.$toast.error("ไม่สามารถดึงข้อมูลกราฟได้ในขณะนี้ กรุณาลองใหม่ภายหลัง");
+        }
+    }
+
   },
 //   created: async function () {
 //     this.startChart();
-    //   },
+//  },
     mounted() {
         this.startChart();  
     }   

@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-4">
+  <div class="mt-4" :class="{ 'd-none': startd !== endd }">
     <b-row >
       <b-col lg="12" class="text-left" >
         <div>
@@ -54,7 +54,16 @@ export default {
   },
   computed: {
     ...mapGetters(["getClickDomain","getSdateDm", "getEdateDm","getArrDate","getNamePlatform","getLoadStatus"]),
-  },
+    // hideDateBox() {
+    //     if (!this.startd || !this.endd) return true;
+
+    //     const s = moment(this.startd);
+    //     const e = moment(this.endd);
+    //     const diff = e.diff(s, "days");
+
+    //     return diff > 1; // ⬅ ซ่อนถ้ามากกว่า 1 วัน
+    // }
+    },
   data() {
     return {
        startd:"",
