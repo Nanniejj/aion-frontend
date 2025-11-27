@@ -80,7 +80,7 @@
               </div>
             </div>
             <div class="mt-3">
-              <apexchart type="pie" height="150" :options="pieOptions" :series="pieSeries" />
+              <apexchart type="pie" height="170" :options="pieOptions" :series="pieSeries" />
             </div>
           </div>
 

@@ -8,13 +8,22 @@
       </b-col>
       <b-col cols="12" md="3">
         <b-form-group label="วันที่" label-size="sm" label-for="date-input">
-          <b-form-input id="date-input" type="date" size="sm" v-model="selectedDate"></b-form-input>
+          <b-form-input
+            id="date-input"
+            type="date"
+            size="sm"
+            v-model="selectedDate"
+          ></b-form-input>
         </b-form-group>
       </b-col>
       <b-col cols="12" md="3">
         <b-form-group label="Bot Level" label-size="sm" label-for="bot-level-select">
-          <b-form-select id="bot-level-select" size="sm" :options="botLevelOptions"
-            v-model="selectedBotLevel"></b-form-select>
+          <b-form-select
+            id="bot-level-select"
+            size="sm"
+            :options="botLevelOptions"
+            v-model="selectedBotLevel"
+          ></b-form-select>
         </b-form-group>
       </b-col>
       <b-col cols="12" md="auto" class="text-left py-3">
@@ -23,16 +32,28 @@
           <span v-else>submit</span>
         </b-button>
       </b-col>
-
     </b-row>
+
     <div class="text-right my-2">
-       <b-button size="sm" variant="info" :to="{ path: '/botstatus' }" target="_blank" class="mr-2">
+      <b-button
+        size="sm"
+        variant="info"
+        :to="{ path: '/botstatus' }"
+        target="_blank"
+        class="mr-2"
+      >
         รายชื่อบัญชีที่ active / inactive
       </b-button>
-      <b-button size="sm" variant="info" :to="{ path: '/botdetail' }" target="_blank">
+      <b-button
+        size="sm"
+        variant="info"
+        :to="{ path: '/botdetail' }"
+        target="_blank"
+      >
         ดูรายโพสต์
       </b-button>
     </div>
+
     <!-- Summary row -->
     <b-row v-if="overallSummary" class="mb-3">
       <b-col cols="12">
@@ -51,15 +72,21 @@
             <div class="d-flex flex-wrap summary-items">
               <div class="summary-item">
                 <span class="label">รวม Target Bots</span>
-                <span class="value">{{ overallSummary.totalTargetBotsAll | numFormat }}</span>
+                <span class="value">
+                  {{ overallSummary.totalTargetBotsAll | numFormat }}
+                </span>
               </div>
               <div class="summary-item">
                 <span class="label">รวม Posts</span>
-                <span class="value">{{ overallSummary.totalPostsAll | numFormat }}</span>
+                <span class="value">
+                  {{ overallSummary.totalPostsAll | numFormat }}
+                </span>
               </div>
               <div class="summary-item">
                 <span class="label">รวม Accounts</span>
-                <span class="value">{{ overallSummary.totalAccountsAll | numFormat }}</span>
+                <span class="value">
+                  {{ overallSummary.totalAccountsAll | numFormat }}
+                </span>
               </div>
             </div>
           </div>
@@ -69,7 +96,14 @@
 
     <!-- Cards per platform -->
     <b-row>
-      <b-col v-for="src in platformSources" :key="src.value" cols="12" md="6" lg="6" class="mb-3">
+      <b-col
+        v-for="src in platformSources"
+        :key="src.value"
+        cols="12"
+        md="6"
+        lg="6"
+        class="mb-3"
+      >
         <b-card class="h-100">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
@@ -96,7 +130,8 @@
                 <span class="value">
                   {{
                     (getFirstRow(platformData[src.value]) &&
-                      getFirstRow(platformData[src.value]).accounts) || 0 | numFormat
+                      getFirstRow(platformData[src.value]).accounts) ||
+                      0 | numFormat
                   }}
                 </span>
               </div>
@@ -105,33 +140,41 @@
                 <span class="value">
                   {{
                     (getFirstRow(platformData[src.value]) &&
-                      getFirstRow(platformData[src.value]).posts) || 0 | numFormat
+                      getFirstRow(platformData[src.value]).posts) ||
+                      0 | numFormat
                   }}
                 </span>
               </div>
               <div class="stat-item">
-                <span class="label">Avg Latency (ชม.)</span>
+                <span class="label">Avg Latency (เฉลี่ย)</span>
                 <span class="value">
                   {{
-                    formatNumber(
+                    formatLatencyHM(
                       getFirstRow(platformData[src.value]) &&
                       getFirstRow(platformData[src.value]).avgLatency
-                    ) | numFormat
+                    )
                   }}
                 </span>
               </div>
             </div>
 
             <div v-if="getFirstRow(platformData[src.value])">
-              <apexchart type="bar" height="260" :options="latencyChartOptions"
-                :series="buildLatencySeries(getFirstRow(platformData[src.value]))"></apexchart>
+              <apexchart
+                type="bar"
+                height="260"
+                :options="latencyChartOptions"
+                :series="buildLatencySeries(getFirstRow(platformData[src.value]))"
+              ></apexchart>
             </div>
             <div v-else class="text-muted small mt-2">
               ไม่มีข้อมูลในช่วงเวลานี้
             </div>
           </div>
 
-          <div v-else-if="platformData[src.value] && platformData[src.value].error" class="text-danger small mt-2">
+          <div
+            v-else-if="platformData[src.value] && platformData[src.value].error"
+            class="text-danger small mt-2"
+          >
             Error: {{ platformData[src.value].error }}
           </div>
 
@@ -202,7 +245,6 @@ export default {
             colors: ["#000000"]
           },
           formatter: function (val, opts) {
-            // ถ้าค่านี้เป็น 0 ไม่ต้องโชว์ label
             if (!val) return "";
 
             const totals = opts.w.globals.seriesTotals || [];
@@ -312,6 +354,22 @@ export default {
     formatNumber(num, digits = 2) {
       if (num == null || isNaN(num)) return "-";
       return Number(num).toFixed(digits);
+    },
+    // แปลง avgLatency (ชั่วโมง) -> string แบบ "1 ชม 30 นาที"
+    formatLatencyHM(hours) {
+      if (hours == null || isNaN(hours)) return "-";
+
+      const totalMinutes = Math.round(hours * 60); // ปัดเป็นนาทีใกล้สุด
+      const h = Math.floor(totalMinutes / 60);
+      const m = totalMinutes % 60;
+
+      if (h > 0 && m > 0) {
+        return `${h} ชม ${m} นาที`;
+      } else if (h > 0) {
+        return `${h} ชม`;
+      } else {
+        return `${m} นาที`;
+      }
     },
     getFirstRow(resData) {
       return resData && resData.data && resData.data[0] ? resData.data[0] : null;
