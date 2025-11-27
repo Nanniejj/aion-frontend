@@ -42,177 +42,154 @@
 <script>
 import axios from 'axios'
 import TopAccounts from "@/components/rankingperson/TopAccount.vue";
+
 export default {
-  name: 'SentimentUsers',
-  props: {
-    topPosts: { type: Array, default: () => [] },
-    filters: { type: Object, default: () => ({}) },
+    name: 'SentimentUsers',
+
+    props: {
+        topPosts: { type: Array, default: () => [] },
+        filters: { type: Object, default: () => ({}) },
     },
-  components:{TopAccounts},
-  data() {
-    return {
-      peakSummaryFields: [
-        { key: 'account_name', label: 'account_name' },
-        { key: 'date', label: 'date' },
-        { key: 'engage', label: 'engage', class: 'text-right' },
-        { key: 'full_text', label: 'full_text' }
+
+    components: { TopAccounts },
+
+    data() {
+        return {
+        peakSummaryFields: [
+            { key: 'account_name', label: 'account_name' },
+            { key: 'date', label: 'date' },
+            { key: 'engage', label: 'engage', class: 'text-right' },
+            { key: 'full_text', label: 'full_text' }
         ],
+
         topUsers: [],
-        accountsInput : [],
-        account : '',
+        accountsInput: [],
+        account: '',
         loading: false,
-        isMounted: false,
-    }
-  },
-    computed: {
-    sentiment() {
-        return this.filters.sentiment || '1,0,-1'
-    },
-  },
-    methods: {
-    toThaiDateTimeShort(datetimeStr) {
-        if (!datetimeStr) return '-'
 
-        const date = new Date(datetimeStr)
-
-        // ตั้งค่าให้แสดงวัน/เดือนย่อ/ปี/เวลา แบบไทย
-        const options = {
-            year: 'numeric',
-            month: 'short',   // ✅ ใช้ตัวย่อ เช่น พ.ย.
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Bangkok'
+        isInit: true,   // ⭐ ป้องกัน watch ตอน mounted
         }
+    },
 
-        const formatter = new Intl.DateTimeFormat('th-TH', options)
-        const formatted = formatter.format(date) 
-        // ตัวอย่าง: "06 พ.ย. 2568 07:00"
+    computed: {
+        sentiment() {
+        return this.filters.sentiment || '1,0,-1'
+        },
+    },
 
-        const [day, month, year, time] = formatted.split(' ')
-        return `${day} ${month} ${year} เวลา ${time} น.`
+    methods: {
+        onChangeTopSentiment(val) {
+        if (val !== this.filters.sentiment) {
+            this.filters.sentiment = val;
+            this.fetchTopUsers();
+        }
         },
-    scrollLeft() {
-      const slider = this.$refs.slider;
-      if (slider) slider.scrollLeft -= 300;
-    },
-    scrollRight() {
-      const slider = this.$refs.slider;
-      if (slider) slider.scrollLeft += 300;
-    },
-    fmtNum(n) {
-      const v = Number(n || 0)
-      return Number.isFinite(v) ? v.toLocaleString('th-TH') : '0'
-    },
-    fmtLocal(ms) {
-      if (!ms) return '-'
-      const d = new Date(ms)
-      if (isNaN(d)) return '-'
-      return new Intl.DateTimeFormat('th-TH', {
-        timeZone: 'Asia/Bangkok',
-        hourCycle: 'h23',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).format(d)
+
+        onFilterAccount({ uid }) {
+        if (!uid) {
+            this.accountsInput = [];
+            this.account = '';
+        } else {
+            if (!this.accountsInput.includes(uid)) {
+            this.accountsInput.push(uid);
+            }
+        }
+        console.log("this.accountsInput === ", this.accountsInput);
+        
+        // if (this.accountsInput.length !== 0) {
+            this.$emit('filterAccount', this.accountsInput);
+        // }
         },
-    onChangeTopSentiment(val) {
-        this.filters.sentiment = val;
-        this.fetchTopUsers();
-        },
-    onFilterAccount({ uid }) {
-      if (!uid) {
-        this.accountsInput = [];
-        this.account = '';
-      } else {
-        if (!Array.isArray(this.accountsInput)) this.accountsInput = [];
-          if (!this.accountsInput.includes(uid)) this.accountsInput.push(uid);
-      } 
-        this.$emit('filterAccount', this.accountsInput)
-    },
+
         async fetchTopUsers() {
+
         if (!this.filters.from || !this.filters.to || !this.filters.sentiment) {
-            console.warn('fetchTopUsers aborted: missing from/to/sentiment');
+            console.warn("fetchTopUsers aborted: missing filters");
             return;
         }
-        this.loading = true
-        this.topError = null
 
-        const API_URL = 'https://api2.cognizata.com/api/v2/monitor/getGroupSentiment'
+        this.loading = true;
+        this.topError = null;
 
-        // sentiment ต้องเป็น array เพื่อให้ axios ส่งเป็น sentiment[]=1&sentiment[]=0&sentiment[]=-1
-        // const sentimentArr = this.sentiment
-        //     ? this.sentiment.split(',').map(s => s.trim())
-        //     : ['1','0','-1']
+        const API_URL =
+            "https://api2.cognizata.com/api/v2/monitor/getGroupSentiment";
 
         const params = {
-            group_id: this.$route.query.id,            // รองรับ group_id
-            sort_by: this.filters.sort_by || 'desc',          // รองรับ sort_by ใหม่
-            sentiment: this.filters.sentiment,                          // <-- ส่งเป็น array (สำคัญ)
-            from: this.filters.from,                         // param ใหม่
-            to: this.filters.to,                             // param ใหม่
+            group_id: this.$route.query.id,
+            sort_by: this.filters.sort_by || "desc",
+            sentiment: this.filters.sentiment,
+            from: this.filters.from,
+            to: this.filters.to,
             page: this.topPage || 1,
-            limit: 10,                  // รองรับ limit เช่น 3
+            account: this.filters.accountsInput || "",
+            limit: 10,
             ...(this.filters.account ? { account: this.filters.account } : {}),
             ...(this.filters.keyword ? { keyword: this.filters.keyword } : {}),
-            ...(this.filters.source ? { source: this.filters.source } : {})
-        }
-
+            ...(this.filters.source ? { source: this.filters.source } : {}),
+        };
+        console.log("param === ", params);
+        
         try {
             const { data } = await axios.get(API_URL, {
             params,
-            paramsSerializer: params => {
-                // 👉 บังคับให้ axios serialize array เป็น ?sentiment[]=1&sentiment[]=0
-                return new URLSearchParams(params).toString()
-            },
             headers: {
                 Authorization: "Bearer " + localStorage.getItem("token"),
                 "Content-Type": "application/json",
-            }
-            })
-            // console.log("data ==== ", data);
-            
-            const raw =
-            (Array.isArray(data?.top_accounts) && data.top_accounts) ||
-            (Array.isArray(data?.accounts) && data.accounts) ||
-            (Array.isArray(data?.data) && data.data) ||
-            []
-            // console.log("raw === ",raw);
-            
-            this.topUsers = raw
-            this.loading = false
-            // console.log("top users === ", this.topUsers)
+            },
+            });
+
+            const raw = data?.data || [];
+            this.topUsers = raw;
 
         } catch (err) {
-            console.error(err)
-            this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
+            console.error(err);
+            this.topError = "โหลดข้อมูลไม่สำเร็จ";
         } finally {
-            this.loading = false
+            this.loading = false;
         }
-    }
-
+        },
     },
+
     watch: {
         filters: {
-            handler(newVal, oldVal) {
-            if (!this.isMounted) return; // ป้องกันตอน mount
-            if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-                this.fetchTopUsers();
-            }
+            async handler(newVal, oldVal) {
+            console.log(
+                "filters changed: ",
+                newVal,
+                oldVal,
+                JSON.stringify(newVal) === JSON.stringify(oldVal)
+            );
+
+            // ⛔ กันตอน mount
+            if (this.isInit) return;
+
+            // ⛔ กันกรณี oldVal เป็น object ว่าง
+            if (oldVal && Object.keys(oldVal).length === 0) return;
+
+            // ⛔ กันกรณี newVal เป็น object ว่าง
+            if (newVal && Object.keys(newVal).length === 0) return;
+
+            // ⛔ กันกรณีค่าเดิมเหมือนกัน
+            if (JSON.stringify(newVal) === JSON.stringify(oldVal)) return;
+
+            // ✅ ผ่านทุกเงื่อนไขแล้ว ค่อย fetch
+            // this.accountsInput = this.filters.accountsInput || [];
+            await this.fetchTopUsers();
             },
-            deep: true
+            deep: true,
+            immediate: false
         }
     },
-    async mounted() {
-        await this.fetchTopUsers(); // เรียกครั้งแรก
-        this.isMounted = true;      // ตั้ง flag หลังเรียกครั้งแรก
-    }
-}
-</script>
 
+    async mounted() {
+        // ⭐ โหลดครั้งแรกก่อน
+        await this.fetchTopUsers();
+
+        // ⭐ เปิดให้ watch ทำงานหลังจากโหลดครั้งแรก
+        this.isInit = false;
+    },
+};
+</script>
 
 <style scoped>
 .slider {

@@ -145,7 +145,7 @@ export default {
 
         this.chartOptions = {
           title: {
-            text: "จำนวนโพสต์ วันที่ " + this.range, // ✅ ไทยแล้ว
+            text: "จำนวนโพสต์รายชั่วโมง วันที่ " + this.sdate, // ✅ ไทยแล้ว
             align: "left",
             fontFamily: "Prompt",
           },
@@ -252,7 +252,7 @@ export default {
                 },
                 stroke: { curve: "smooth" },
                 title: {
-                    text: "จำนวนโพสต์รายชั่วโมง",
+                    text: "จำนวนโพสต์รายชั่วโมง วันที่ "+ this.formatDateTH(this.getArrDate[0]), // ✅ ไทยแล้ว
                     align: "left",
                     fontFamily: "Prompt",
                 },

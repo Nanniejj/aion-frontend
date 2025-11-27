@@ -67,7 +67,7 @@
 
         <!-- time line -->
         <b-row id="timeline-container" class="m-0">
-            <b-col cols="12" class="px-0">
+            <b-col id="chart" cols="12" class="px-0">
                 <!-- <b-row id="timeline-container" class="align-items-center mb-3 mx-0">
                     <b-col cols="12" xl="auto" class="px-0 text-md-left">
                         <h4 class="mb-0">Posts Timeline</h4>
@@ -135,93 +135,75 @@
                         </small></div>
                     </b-alert>
                     <b-form @submit.prevent="handleSearch">
-                    <b-row>
-                        <b-col cols="12" md="8">
-                        <b-form-group label="" label-for="kw" class="pr-md-3 flex-grow-1">
-                            <b-form-input :disabled="loadingTimeline" id="kw" v-model.trim="formFilters.keyword"
-                            placeholder="เช่น คาเฟ่ บรรยากาศดี,มัทฉะ อร่อย" />
-                        </b-form-group>
-                        </b-col>
+                        <b-row>
+                            <b-col cols="12" md="8" class="pr-md-0">
+                            <b-form-group label="" label-for="kw" class="pr-md-3 flex-grow-1">
+                                <b-form-input :disabled="loadingTimeline" id="kw" v-model.trim="formFilters.keyword"
+                                placeholder="เช่น คาเฟ่ บรรยากาศดี,มัทฉะ อร่อย" />
+                            </b-form-group>
+                            </b-col>
 
-                        <b-col cols="12" md="4">
-                        <!-- Sentiment -->
-                        <b-form-group class="pr-md-3 checkbox-v">
-                            <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
-                        </b-form-group>
-                        </b-col>
-                        <b-col cols="12" md="6" class="d-none">
-                        <b-form-group label="" label-for="accounts" class="pr-md-3">
-                            <b-form-tags id="accounts"  v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
-                            separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete />
-                        </b-form-group>
-                        </b-col>
-                        <b-col cols="12" md="6"  class="d-none">
-                        <!-- Hashtags -->
-                        <b-form-group label="" label-for="accounts" class="pr-md-3">
-                            <b-form-tags id="accounts" v-model="formFilters.accountsInput" tag-variant="light" tag-pills size="md"
-                            separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
-                            add-on-change remove-on-delete />
-                        </b-form-group>
+                            <b-col cols="12" md="4">
+                            <!-- Sentiment -->
+                            <b-form-group class="pr-md-3 checkbox-v">
+                                <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
+                            </b-form-group>
+                            </b-col>
+                            <!-- <b-col cols="12" md="6" class="d-none">
+                            <b-form-group label="" label-for="accounts" class="pr-md-3">
+                                <b-form-tags id="accounts"  v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
+                                separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete />
+                            </b-form-group>
+                            </b-col> -->
+                            <b-col cols="12" md="8"  class="pr-md-0">
+                                <b-form-group label="" label-for="accounts" class="pr-md-3">
+                                    <b-form-tags :disabled="loadingTimeline" id="accounts" v-model="formFilters.accountsInput" tag-variant="light" tag-pills size="md"
+                                    separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
+                                    add-on-change remove-on-delete />
+                                </b-form-group>
+                            </b-col>
 
-                        </b-col>
+                            <b-col cols="12" md="4">
+                                <b-form-select :disabled="loadingTimeline" v-model="formFilters.source" class="mb-2" :options="sourceOptions" />
+                            </b-col>
 
-                        <b-col cols="12" md="4">
-                            <b-form-select :disabled="loadingTimeline" v-model="formFilters.source" class="mb-2" :options="sourceOptions" />
-                        </b-col>
+                            <b-col cols="12" md="4">
 
-                        <b-col cols="12" md="4">
+                            <b-form-select 
+                                v-model="formFilters.sort_by" class="mb-2" 
+                                :disabled="loadingTimeline"
+                                :options="[
+                                { value: 'asc', text: 'โพสต์เก่าสุด' },
+                                { value: 'desc', text: 'โพสต์ล่าสุด' },
+                                { value: 'engagement', text: 'Engagement' },
+                            ]" />
 
-                        <b-form-select 
-                            v-model="formFilters.sort_by" class="mb-2" 
-                            :disabled="loadingTimeline"
-                            :options="[
-                            { value: 'asc', text: 'โพสต์เก่าสุด' },
-                            { value: 'desc', text: 'โพสต์ล่าสุด' },
-                            { value: 'engagement', text: 'Engagement' },
-                        ]" />
-
-                        </b-col>
-                        <b-col cols="12" md="4">
-                        <section id="date-picker">
-                            <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
-                            :disabled-date="(date) => date >= new Date()"
-                            :disabled="loadingTimeline" value-type="format" format="YYYY-MM-DD"
-                             id="date-domain">{{ valueDate }}</date-picker>
-                        </section>
-                        </b-col>                                                                                                                      
-                    </b-row>
-
-                    <b-row align-h="end" class="mt-2" justify="center">
-                        <!-- <b-col cols="auto" md="auto" align="center" justify="center">
-
-                        <b-form-group class="pr-md-3">
-
-                            <b-form-radio-group v-model="formFilters.view_mode" :options="[
-                            { value: 'posts', text: 'ตามเวลา' },
-                            { value: 'daily', text: 'รายวัน' },
-                            ]" buttons button-variant="outline-info" size="md" />
-                            <b-icon icon="info-circle" id="info-date-note" variant="info" role="button" class="flaot-right ml-2"
-                            tabindex="0"></b-icon>
-
-                            <b-tooltip target="info-date-note" placement="right" triggers="hover focus click">
-                            ถ้าเลือกมากกว่า 2 วัน ระบบจะตั้งค่าเริ่มต้นเป็น "รายวัน" และ เรียง "Engagement"
-                            </b-tooltip>
-                        </b-form-group>
-                        </b-col> -->
-                        <b-col cols="auto" md="auto">
-                            <div>
-                                <div class="align-self-end mb-3">
-                                <b-button type="submit" 
-                                variant="info" class="mr-2 px-4" :disabled="loadingTimeline">
-                                    ค้นหา
-                                </b-button>
-                                <b-button variant="outline-secondary" @click="resetFilters" :disabled="loadingTimeline">
-                                    ล้างค่า
-                                </b-button>
-                                </div>
-                            </div>
-                        </b-col>
-                    </b-row>
+                            </b-col>
+                            <b-col cols="12" md="4" class="">
+                            <section id="date-picker">
+                                <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
+                                :disabled-date="(date) => date >= new Date()"
+                                :disabled="loadingTimeline" value-type="format" format="YYYY-MM-DD"
+                                id="date-domain">{{ valueDate }}</date-picker>
+                            </section>
+                            </b-col> 
+                            <b-col cols="12" md="4">
+                                <b-row align-h="end" class=" mt-2 mt-md-0 mx-0" justify="center">
+                                    <b-col cols="auto" md="auto" class="px-0">
+                                        <div class="align-self-end">
+                                        <b-button type="submit"
+                                        size="sm" 
+                                        variant="info" class="mr-2 px-4" :disabled="loadingTimeline">
+                                            ค้นหา
+                                        </b-button>
+                                        <b-button size="sm" variant="outline-secondary" @click="resetFilters" :disabled="loadingTimeline">
+                                            ล้างค่า
+                                        </b-button>
+                                        </div>
+                                    </b-col>
+                                </b-row>
+                            </b-col>                                                                                                                     
+                        </b-row>
                     </b-form>
                 </b-card>
                 <div  v-if="!showFilters" class="py-2 px-2  shadow-sm card-hide" style="border-radius: 20px;">
@@ -261,7 +243,7 @@
                 </div>
             </b-col>
             <b-col cols="12" class="text-center mt-10 py-4 pb-0" v-if="loadingChart">
-            <vue-element-loading :active="loadingChart" size="30" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891"
+                <vue-element-loading :active="loadingChart" size="30" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891"
                 spinner="bar-fade-scale" />
             </b-col>
             <b-col v-else cols="12" class="px-0">
@@ -291,18 +273,20 @@
                     <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
                 </b-col>
                 <b-col>
-                    <SentimentUsers :filters="submittedFilters"/>
+                    <SentimentUsers :filters="submittedFilters" 
+                    @filterAccount="updateAccount"/>
                 </b-col>
             </b-col>
             <b-col cols="12" class="px-0">
                 <!-- <ExportExcelButton class="mt-md-0 " :posts="posts" :filters="formFilters"
                 :disabled="loadingTimeline || (Array.isArray(posts) && posts.length === 0)" inline-comments="json"
                 :comments-limit="20" style="right: 5px;" v-if="!loadingTimeline" /> -->
-
-                <ExportExcelButton  :posts="postForExport" :filters="formFilters"
-                    :disabled="loadAllPost || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
-                    :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loadAllPost" />
-                    
+                <div  v-if="!loadingTimeline && !loadingChart">
+                    <ExportExcelButton  :posts="postForExport" :filters="formFilters"
+                        :disabled="loadAllPost || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
+                        :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loadAllPost" />
+                        
+                </div>
                 <div v-if="!loadingTimeline && !loadingChart" data-v-633a0eda="" class="text-right allpost"> 
                     ทั้งหมด <b data-v-633a0eda="">{{total_posts || 0 | numFormat}}</b> โพสต์
                 </div>
@@ -335,13 +319,13 @@
     
 </template>
 <script>
-import Swal from 'sweetalert2'
-import 'vue-multiselect/dist/vue-multiselect.min.css'
+// import Swal from 'sweetalert2'
+import 'vue-multiselect/dist/vue-multiselect.min.css';
 import moment from "moment";
-import Timeline from "./_Timeline.vue"
+import Timeline from "./_Timeline.vue";
 import GroupMembers from './modals/_GroupMembersModal.vue';
 import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
-import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
+import StaticTimeline from '@/components/timeline/StaticTimeline.vue';
 import SentimentUsers from './_SentimentUsers.vue';
 export default {
     components: {
@@ -400,6 +384,7 @@ export default {
                 sort_by: 'desc',
                 page: 1,
                 hashtags: [],
+                accountsInput: [],
             },
             submittedFilters: {},
             datachart: null,
@@ -512,6 +497,16 @@ export default {
     },
     },
     methods: {
+        async updateAccount(val) {
+            // console.log("filterAccount ==== ", val);
+            this.formFilters.accountsInput = val;
+            this.showFilters = false;
+            if (this.formFilters.accountsInput) {
+                await this.handleSearch();
+            }else {
+                this.resetFilters();
+            }
+        },
         linkToProfile(item) {
             const routeData = this.$router.resolve({
                 name: "MonitorProfile",
@@ -545,10 +540,12 @@ export default {
                 // limit: 50,
                 page: 1,
                 hashtags: [],
+                accountsInput: [],
             }
             this.page = 1; // รีเซ็ตกลับหน้าแรก
             this.posts = []
-            this.apiGetPost();
+            // this.apiGetPost();
+            this.handleSearch();
         },
         async checkSubmittedFilters() {
             return {
@@ -846,101 +843,101 @@ export default {
             return Number.isFinite(v) ? v.toLocaleString('th-TH') : '0'
         },
         applyData(payload) {
-        console.log(
-            "%c CALL → applyData from:",
-            "color: yellow; background: red;",
-            new Error().stack.split("\n")[2] // บรรทัดที่เรียก
-        );
-      this.lastPayload = payload
-      const tz = (payload && payload.range && payload.range.timezone) ? payload.range.timezone : '+07:00'
-      const rows = (payload && Array.isArray(payload.seriesHourly)) ? payload.seriesHourly : []
+            // console.log(
+            //     "%c CALL → applyData from:",
+            //     "color: yellow; background: red;",
+            //     new Error().stack.split("\n")[2] // บรรทัดที่เรียก
+            // );
+            this.lastPayload = payload
+            const tz = (payload && payload.range && payload.range.timezone) ? payload.range.timezone : '+07:00'
+            const rows = (payload && Array.isArray(payload.seriesHourly)) ? payload.seriesHourly : []
 
-      if (!rows.length || this.isAllZero(rows)) {
-        this.series = []
-        this.setNoDataText('ไม่พบข้อมูล')
-        this.summary = { text: 'ไม่พบข้อมูลในช่วงที่เลือก', bullets: [], stats: null }
-        this.peakOnlyWindow = null
-        return
-      }
+            if (!rows.length || this.isAllZero(rows)) {
+                this.series = []
+                this.setNoDataText('ไม่พบข้อมูล')
+                this.summary = { text: 'ไม่พบข้อมูลในช่วงที่เลือก', bullets: [], stats: null }
+                this.peakOnlyWindow = null
+                return
+            }
 
-      this.setNoDataText('')
+            this.setNoDataText('')
 
-      const offsetMs = this.parseOffsetToMs(tz)
-      const keyOf = (d, t) => d + ' ' + String(t).padStart(5, '0')
-      const dataMap = new Map()
+            const offsetMs = this.parseOffsetToMs(tz)
+            const keyOf = (d, t) => d + ' ' + String(t).padStart(5, '0')
+            const dataMap = new Map()
 
-      rows.forEach(r => {
-        const key = keyOf(r.date, r.time)
-        dataMap.set(key, {
-          post: Number(r.post_count || 0),
-          engagement: Number(r.engagement_sum || 0),
-          msg: Number(r.message_sum || 0)
-        })
-      })
+            rows.forEach(r => {
+                const key = keyOf(r.date, r.time)
+                dataMap.set(key, {
+                post: Number(r.post_count || 0),
+                engagement: Number(r.engagement_sum || 0),
+                msg: Number(r.message_sum || 0)
+                })
+            })
 
-      const toUtcMs = (d, t) => Date.parse(d + 'T' + t + ':00' + tz)
-      const localMsFromUtc = (utc) => utc + offsetMs
+            const toUtcMs = (d, t) => Date.parse(d + 'T' + t + ':00' + tz)
+            const localMsFromUtc = (utc) => utc + offsetMs
 
-      let minLocal = Infinity, maxLocal = -Infinity
-      rows.forEach(r => {
-        const utc = toUtcMs(r.date, r.time)
-        const local = localMsFromUtc(utc)
-        if (local < minLocal) minLocal = local
-        if (local > maxLocal) maxLocal = local
-      })
+            let minLocal = Infinity, maxLocal = -Infinity
+            rows.forEach(r => {
+                const utc = toUtcMs(r.date, r.time)
+                const local = localMsFromUtc(utc)
+                if (local < minLocal) minLocal = local
+                if (local > maxLocal) maxLocal = local
+            })
 
-      const HOUR = 3600000
-      const gridStartLocal = Math.floor(minLocal / HOUR) * HOUR
-      const gridEndLocal = Math.floor(maxLocal / HOUR) * HOUR
+            const HOUR = 3600000
+            const gridStartLocal = Math.floor(minLocal / HOUR) * HOUR
+            const gridEndLocal = Math.floor(maxLocal / HOUR) * HOUR
 
-      const posts = []
-      const engagements = []
-      const messages = []
+            const posts = []
+            const engagements = []
+            const messages = []
 
-      for (let lt = gridStartLocal; lt <= gridEndLocal; lt += HOUR) {
-        const iso = new Date(lt).toISOString()
-        const d = iso.slice(0, 10)
-        const t = iso.slice(11, 16)
-        const key = keyOf(d, t)
-        const val = dataMap.get(key) || { post: 0, engagement: 0, msg: 0 }
-        const tsUTC = lt - offsetMs
+            for (let lt = gridStartLocal; lt <= gridEndLocal; lt += HOUR) {
+                const iso = new Date(lt).toISOString()
+                const d = iso.slice(0, 10)
+                const t = iso.slice(11, 16)
+                const key = keyOf(d, t)
+                const val = dataMap.get(key) || { post: 0, engagement: 0, msg: 0 }
+                const tsUTC = lt - offsetMs
 
-        posts.push([tsUTC, val.post])
-        messages.push([tsUTC, val.msg])
-        engagements.push([tsUTC, val.engagement])
-      }
+                posts.push([tsUTC, val.post])
+                messages.push([tsUTC, val.msg])
+                engagements.push([tsUTC, val.engagement])
+            }
 
-      this.series = [
-        { name: 'Posts', data: posts, yAxisIndex: 0 },
-        { name: 'Messages', data: messages, yAxisIndex: 1 },
-        { name: 'Engagement', data: engagements, yAxisIndex: 2 }
-      ]
+            this.series = [
+                { name: 'Posts', data: posts, yAxisIndex: 0 },
+                { name: 'Messages', data: messages, yAxisIndex: 1 },
+                { name: 'Engagement', data: engagements, yAxisIndex: 2 }
+            ]
 
-      // ✅ สร้างสรุปแนวโน้ม (เพิ่ม "เริ่มพีคแรก" + "เริ่มพีคก่อนพีคสุด" + "พีคสุด")
-      this.summary = this.buildSummaryFromSeries({ rows, tz, posts, messages, engagements })
+            // ✅ สร้างสรุปแนวโน้ม (เพิ่ม "เริ่มพีคแรก" + "เริ่มพีคก่อนพีคสุด" + "พีคสุด")
+            this.summary = this.buildSummaryFromSeries({ rows, tz, posts, messages, engagements })
 
-      // ✅ คำนวณ “ช่วงพีคสูงสุด” (เฉพาะ 1 ชั่วโมงของพีค)
-    //   const peak = this.findPeak(engagements) // {ts, value}
-    //   if (peak && peak.ts != null) {
-    //     const peakHourStartUtc = peak.ts
-    //     const peakHourEndUtc = peakHourStartUtc + (59 * 60 * 1000) + (59 * 1000)
-    //     const tzStr = tz || '+07:00'
-    //     const startLocalStr = this.toLocalISOStringNoTZ(peakHourStartUtc, tzStr)
-    //     const endLocalStr = this.toLocalISOStringNoTZ(peakHourEndUtc, tzStr)
-    //     this.peakOnlyWindow = {
-    //       startUtcMs: peakHourStartUtc,
-    //       endUtcMs: peakHourEndUtc,
-    //       startLocalStr,
-    //       endLocalStr
-    //     }
-    //   } else {
-    //     this.peakOnlyWindow = null
-    //   }
+            // ✅ คำนวณ “ช่วงพีคสูงสุด” (เฉพาะ 1 ชั่วโมงของพีค)
+            //   const peak = this.findPeak(engagements) // {ts, value}
+            //   if (peak && peak.ts != null) {
+            //     const peakHourStartUtc = peak.ts
+            //     const peakHourEndUtc = peakHourStartUtc + (59 * 60 * 1000) + (59 * 1000)
+            //     const tzStr = tz || '+07:00'
+            //     const startLocalStr = this.toLocalISOStringNoTZ(peakHourStartUtc, tzStr)
+            //     const endLocalStr = this.toLocalISOStringNoTZ(peakHourEndUtc, tzStr)
+            //     this.peakOnlyWindow = {
+            //       startUtcMs: peakHourStartUtc,
+            //       endUtcMs: peakHourEndUtc,
+            //       startLocalStr,
+            //       endLocalStr
+            //     }
+            //   } else {
+            //     this.peakOnlyWindow = null
+            //   }
 
-      // 🔥 โหลดโพสต์เฉพาะช่วงพีคทันที
-      this.topPage = 1
-    //   this.fetchTopPosts()
-    },
+            // 🔥 โหลดโพสต์เฉพาะช่วงพีคทันที
+            this.topPage = 1
+            //   this.fetchTopPosts()
+        },
         async apiGetPost() {
             // try {
             this.loadingTimeline = true
@@ -954,6 +951,7 @@ export default {
                 sentiment: this.formFilters.sentiment,
                 from: this.valueDate[0],
                 to: this.valueDate[1],
+                account: this.formFilters.accountsInput,
                 // limit:this.limit
             };
             // console.log("params === ",params);
@@ -1101,7 +1099,8 @@ export default {
                     to: this.valueDate?.[1] ?? null,
                     page: this.page,
                     limit: this.limit,
-                    querySearch: this.search || undefined
+                    querySearch: this.search || undefined,
+                    account: this.formFilters.accountsInput || '',
                 },
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
@@ -1184,7 +1183,27 @@ export default {
     #chart {
     margin-bottom: 0px;
     }
-
+    .mx-datepicker-range {
+  width: 100% !important;
+}
+    .mx-input {
+        display: inline-block;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        width: 100%;
+        height: 38.5px !important;
+        ;
+        padding: 6px 30px;
+        padding-left: 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #555;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .0);
+        }
     @media only screen and (min-width: 0px) and (max-width: 800px) {
     #chart>div>div:nth-child(2) {
         padding-left: 0px;
@@ -1229,10 +1248,10 @@ export default {
         margin-bottom: 0px;
     }
 
-    @media only screen and (min-width: 0px) and (max-width: 800px) {
+    /* @media only screen and (min-width: 0px) and (max-width: 800px) {
         #chart>div>div:nth-child(2) {
             padding-left: 0px;
             padding-right: 0px;
         }
-    }
+    } */
 </style>

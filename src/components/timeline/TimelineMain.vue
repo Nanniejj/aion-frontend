@@ -111,7 +111,6 @@
                   separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
                   add-on-change remove-on-delete class="input-tag" />
               </b-form-group>
-
             </b-col>
 
             <b-col cols="12" md="4">
