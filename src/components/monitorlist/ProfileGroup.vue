@@ -1025,6 +1025,7 @@ export default {
                     to: this.valueDate[1],
                     page: this.page,
                     limit: Math.min(this.total_posts, 2000),
+                    account: this.formFilters.accountsInput,
                     //limit: this.total_posts,
                     querySearch: this.search || undefined, // ส่ง search ถ้ามีค่า
                 },
