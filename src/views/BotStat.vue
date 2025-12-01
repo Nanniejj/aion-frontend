@@ -8,22 +8,13 @@
       </b-col>
       <b-col cols="12" md="3">
         <b-form-group label="วันที่" label-size="sm" label-for="date-input">
-          <b-form-input
-            id="date-input"
-            type="date"
-            size="sm"
-            v-model="selectedDate"
-          ></b-form-input>
+          <b-form-input id="date-input" type="date" size="sm" v-model="selectedDate"></b-form-input>
         </b-form-group>
       </b-col>
       <b-col cols="12" md="3">
         <b-form-group label="Bot Level" label-size="sm" label-for="bot-level-select">
-          <b-form-select
-            id="bot-level-select"
-            size="sm"
-            :options="botLevelOptions"
-            v-model="selectedBotLevel"
-          ></b-form-select>
+          <b-form-select id="bot-level-select" size="sm" :options="botLevelOptions"
+            v-model="selectedBotLevel"></b-form-select>
         </b-form-group>
       </b-col>
       <b-col cols="12" md="auto" class="text-left py-3">
@@ -35,21 +26,10 @@
     </b-row>
 
     <div class="text-right my-2">
-      <b-button
-        size="sm"
-        variant="info"
-        :to="{ path: '/botstatus' }"
-        target="_blank"
-        class="mr-2"
-      >
+      <b-button size="sm" variant="info" :to="{ path: '/botstatus' }" target="_blank" class="mr-2">
         รายชื่อบัญชีที่ active / inactive
       </b-button>
-      <b-button
-        size="sm"
-        variant="info"
-        :to="{ path: '/botdetail' }"
-        target="_blank"
-      >
+      <b-button size="sm" variant="info" :to="{ path: '/botdetail' }" target="_blank">
         ดูรายโพสต์
       </b-button>
     </div>
@@ -96,14 +76,7 @@
 
     <!-- Cards per platform -->
     <b-row>
-      <b-col
-        v-for="src in platformSources"
-        :key="src.value"
-        cols="12"
-        md="6"
-        lg="6"
-        class="mb-3"
-      >
+      <b-col v-for="src in platformSources" :key="src.value" cols="12" md="6" lg="6" class="mb-3">
         <b-card class="h-100">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
@@ -131,7 +104,7 @@
                   {{
                     (getFirstRow(platformData[src.value]) &&
                       getFirstRow(platformData[src.value]).accounts) ||
-                      0 | numFormat
+                    0 | numFormat
                   }}
                 </span>
               </div>
@@ -141,7 +114,7 @@
                   {{
                     (getFirstRow(platformData[src.value]) &&
                       getFirstRow(platformData[src.value]).posts) ||
-                      0 | numFormat
+                    0 | numFormat
                   }}
                 </span>
               </div>
@@ -159,22 +132,15 @@
             </div>
 
             <div v-if="getFirstRow(platformData[src.value])">
-              <apexchart
-                type="bar"
-                height="260"
-                :options="latencyChartOptions"
-                :series="buildLatencySeries(getFirstRow(platformData[src.value]))"
-              ></apexchart>
+              <apexchart type="bar" height="260" :options="latencyChartOptions"
+                :series="buildLatencySeries(getFirstRow(platformData[src.value]))"></apexchart>
             </div>
             <div v-else class="text-muted small mt-2">
               ไม่มีข้อมูลในช่วงเวลานี้
             </div>
           </div>
 
-          <div
-            v-else-if="platformData[src.value] && platformData[src.value].error"
-            class="text-danger small mt-2"
-          >
+          <div v-else-if="platformData[src.value] && platformData[src.value].error" class="text-danger small mt-2">
             Error: {{ platformData[src.value].error }}
           </div>
 
@@ -209,13 +175,13 @@ export default {
         { value: null, text: "All Platform" },
         { value: "facebook", text: "Facebook" },
         { value: "twitter", text: "X" },
-        { value: "pantip", text: "Board" },
-        { value: "news", text: "News" },
+                { value: "tiktok", text: "Tiktok" },
         { value: "youtube", text: "YouTube" },
         { value: "instagram", text: "Instagram" },
+        { value: "pantip", text: "Board" },
         { value: "blockdit", text: "Blockdit" },
-        { value: "tiktok", text: "Tiktok" },
-        { value: "threads", text: "Threads" }
+        { value: "threads", text: "Threads" },
+          { value: "news", text: "News" },
       ],
       botLevelOptions: [
         { value: "all", text: "All Level" },
