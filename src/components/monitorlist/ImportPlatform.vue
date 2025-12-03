@@ -1021,6 +1021,7 @@ export default {
         },
         hideModal() {
             this.open = false;
+            this.clear();
             //this.$emit("close");
         },
         extractPageIdFromFacebookUrl(url) {
