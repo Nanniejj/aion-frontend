@@ -594,7 +594,7 @@ export default {
         },
         async apiGetDistrict(id) {
             this.province_name = await this.getProvinceNameById(this.province_id);
-            this.subDistrict_id = null;
+            // this.subDistrict_id = null;
             try {
                 const config = {
                     method: "get",
@@ -754,12 +754,32 @@ export default {
         this.apiGetCountry();
         this.apiGetProvinces();
         this.profile = { ...this.item };
+        this.country_id = this.item.country?.code_num || null;
+
+        // ถ้ามี location array เช่น [10, 1001]
+        if (Array.isArray(this.item.location)) {
+            console.log("Location array === ", this.item.location);
+            
+            this.province_id     = this.item.location[0] ?? null;
+            this.district_id     = this.item.location[1] ?? null;
+            this.subDistrict_id  = this.item.location[2] ?? null;
+        } else {
+            // ถ้าไม่มีข้อมูลเลย
+            this.province_id = null;
+            this.district_id = null;
+            this.subDistrict_id = null;
+        }
+
         console.log("profile edit === ", this.profile);
     },
     watch: {
         province_id(newVal) {
-            this.district_id = null;
+            // this.district_id = null;
             this.apiGetDistrict(newVal);
+        },
+        district_id(newVal) {
+            // this.subDistrict_id = null;
+            this.apiGetSubDistrict(newVal);
         }
     }
 }

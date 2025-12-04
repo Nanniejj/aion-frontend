@@ -49,6 +49,7 @@
                         ref="table" v-if="communities.length !== 0" 
                         show-details :items="communities || []" 
                         :fields="tableFields" hover
+                        class="community-table"
                         responsive :busy="loading" :striped="false"
                         :bordered="false" :borderless="false" :outlined="false" empty-filtered-text="ไม่พบข้อมูล"
                         :small="false" stacked="md">
@@ -57,8 +58,8 @@
                         </template>
 
                         <template #cell(name)="data">
-                            <div class="d-flex justify-content-start align-items-center" >
-                                <b-col cols="auto" class="mr-2">
+                            <b-col cols="12" class="px-0 d-flex justify-content-start align-items-md-center w-100">
+                                <b-col cols="auto" md="auto" class="mr-2 px-0">
                                     <b-avatar :src="data.item.profile_image"
                                         v-if="data && data.item && data.item.profile_image">
                                     </b-avatar>
@@ -83,15 +84,25 @@
                                 <span class="text-truncate d-none d-sm-inline-block d-lg-none" style="max-width: 100px;">
                                     {{ data.item.name || data.item.uid }}
                                 </span> -->
-                                <a :href="data.item.link_original" target="_blank" class="text-truncate d-sm-none d-lg-block w-auto"
-                                    style="color: #2c3e50 !important;">
-                                   {{ data.item.name || data.item.uid }}
-                                </a>
-                                <a :href="data.item.link_original" target="_blank" class="text-truncate d-none d-sm-inline-block d-lg-none"
-                                    style="color: #2c3e50 !important;">
-                                   {{ data.item.name || data.item.uid }}
-                                </a>
-                            </div>
+                                <b-col class="text-left text-truncate px-0">
+                                    <a  :href="data.item.link_original" target="_blank" class="text-truncate d-sm-none d-lg-block"
+                                        style="color: #2c3e50 !important;">
+                                       <span>{{ data.item.name || data.item.uid }}</span>
+                                    </a>
+                                    <a :href="data.item.link_original" target="_blank" class="text-truncate d-none d-sm-inline-block d-lg-none"
+                                        style="color: #2c3e50 !important;">
+                                       {{ data.item.name || data.item.uid }}
+                                    </a>
+                                    <b-col cols="12" class="p-0">
+                                        <b-badge pill 
+                                            :style="data.item.group_type === 'private' 
+                                            ? { backgroundColor: '#fed06ea4', color: '#2c3e50' } 
+                                            : { backgroundColor: '#C0ECF8', color: '#2c3e50' }"
+                                            class="text-capitalize text-truncate">{{ data.item.group_type }}
+                                        </b-badge>
+                                    </b-col>
+                                </b-col>
+                            </b-col>
                         </template>
 
                         <template #cell(followers)="data">
@@ -105,14 +116,14 @@
                             <span v-else class="small"> - </span>
                         </template>
 
-                        <template #cell(group_type)="data">
+                        <!-- <template #cell(group_type)="data">
                             <b-badge pill 
                                 :style="data.item.group_type === 'private' 
                                 ? { backgroundColor: '#fed06ea4', color: '#2c3e50' } 
                                 : { backgroundColor: '#C0ECF8', color: '#2c3e50' }"
                                 class="text-capitalize text-truncate">{{ data.item.group_type }}
                             </b-badge>
-                        </template>
+                        </template> -->
                         <template #cell(status)="data" v-if="username === 'adminatapy'">
                             <!-- v-if="data.item.group_type === 'private'" -->
                             <b-row class="align-items-center justify-content-center text-truncate "
@@ -120,20 +131,20 @@
                             >
                                 <b-icon icon="dot" scale="3" 
                                     :variant="data.item.group_status === 'done'|| data.item.group_type === 'public' ? 'success' : 'danger'"></b-icon>
-                                <span v-if="data.item.group_status === 'done' || data.item.group_type === 'public'">เข้ากลุ่มแล้ว</span>
-                                <span v-else>รอเข้ากลุ่ม</span>
+                                <span v-if="data.item.group_status === 'done' || data.item.group_type === 'public'">เข้ากลุ่ม</span>
+                                <span v-else>รอ</span>
                                 <!-- {{data.item.group_status}} -->
                             </b-row>
                         </template>
 
                         <template #cell(action)="data">
                             <b-row class="m-0 justify-content-end align-items-center">
-                                <span v-if="username == 'adminatapy'" class="fas fa-pen px-3" v-b-tooltip.hover title="แก้ไขข้อมูล"
-                                    @click="data.toggleDetails" size="sm"></span>
-                                <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
-                                    @click="linkToProfile(data.item)"></span>
-                                <span class="fas fa-trash text-danger px-3" v-b-tooltip.hover title="ลบกลุ่ม"
-                                    @click="deleteGroup(data.item)" size="sm"></span>
+                                <b-col cols="auto" md="12" lg="auto" v-if="username == 'adminatapy'" class="px-2 px-lg-2 pb-2 fas fa-pen" v-b-tooltip.hover title="แก้ไขข้อมูล"
+                                    @click="data.toggleDetails" size="sm"></b-col>
+                                <b-col cols="auto" md="12" lg="auto" class="px-2 px-lg-2 pb-2 fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
+                                    @click="linkToProfile(data.item)"></b-col>
+                                <b-col cols="auto" md="12" lg="auto" class="px-2 px-lg-2 pb-2 fas fa-trash text-danger" v-b-tooltip.hover title="ลบกลุ่ม"
+                                    @click="deleteGroup(data.item)" size="sm"></b-col>
                             </b-row>
                         </template>
                         <!-- แถวรายละเอียด -->
@@ -196,12 +207,12 @@ export default {
             ],
             fields: [
                 { key: 'id', label: 'ลำดับ' },
-                { key: 'name', label: 'ชื่อกลุ่ม' },
+                { key: 'name', label: 'ชื่อ' },
                 // { key: 'source', label: 'แหล่งที่มา' },
                 { key: 'followers', label: 'สมาชิก' },
-                { key: 'insert_timestamp', label: 'อัพเดตล่าสุด' },
+                // { key: 'insert_timestamp', label: 'อัพเดตล่าสุด' },
                 { key: 'bot_timestamp', label: 'เก็บล่าสุด' },
-                { key: 'group_type', label: '' },
+                // { key: 'group_type', label: '' },
                 { key: 'status', label: '' },
                 { key: 'action', label: '' }
             ],
@@ -427,7 +438,7 @@ export default {
     position: absolute;
     width: 25px;
     bottom: 0%;
-    left: 20%;
+    left: 0%;
     /* margin-top: 15px; */
     /* left: 9%; */
 }
@@ -437,5 +448,49 @@ export default {
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
     border-radius: 15px;
     min-height: 400px;
+}
+@media (max-width: 767px) {
+    .social-img {
+        bottom: 20%;
+    }
+}
+</style>
+<style>
+.community-table tbody tr td:nth-child(2){
+    max-width: none !important;
+    /* white-space: normal !important;
+    overflow: visible !important; */
+}
+
+@media (max-width: 600px) {
+   /* :deep(.community-table.table.b-table.b-table-stacked-md 
+        > tbody > tr > [data-label] > div) 
+    {
+        width: 100% !important;
+        padding: 0 !important;
+    } */
+    .community-table.table.b-table.b-table-stacked-md > tbody > tr > [aria-colindex="2"] > div {
+        width: 100% !important;
+        padding: 0 !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 992px) {
+  .community-table tbody tr td:nth-child(2) {
+    max-width: 226px !important;
+  }
+ 
+}
+@media (min-width: 993px) and (max-width: 1224px) {
+  .community-table tbody tr td:nth-child(2) {
+    max-width: 380px !important;
+  }
+ 
+}
+@media (min-width: 1225px) {
+  .community-table tbody tr td:nth-child(2) {
+    max-width: 480px !important;
+  }
+ 
 }
 </style>

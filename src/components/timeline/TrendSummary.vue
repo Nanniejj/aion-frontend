@@ -59,7 +59,7 @@
                 <!-- <div class="d-flex flex-wrap"> -->
                     <span class="bold" >ประเด็น : </span>
                     <b-badge 
-                        variant="info" 
+                        variant="warning" 
                         v-for="item in fullSummary.peak_engagement_summary.key_drivers" 
                         :key="item"
                         class="mr-2 mb-2 badge-wrap"
@@ -71,7 +71,7 @@
                 <span>{{ fullSummary.peak_post_count_summary.interpretation }}<br></span>
                 <span class="bold" >ประเด็น : </span>
                 <b-badge 
-                    variant="info" 
+                    variant="warning" 
                     v-for="item in fullSummary.peak_post_count_summary.key_drivers" 
                     :key="'index - '+item"
                     class="mr-2 mb-2 badge-wrap"
