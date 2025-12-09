@@ -99,7 +99,8 @@
     <h5 class="custom-modal-title">เพิ่มช่องทางการติดตาม</h5>
   </template>
   
-  <CreateCandidatesPost @close="showModal = false" />
+  <CreateCandidatesPost @close="showModal = false"
+  @saved="() => { fetchCandidates(); }"/>
 </b-modal>
 
   </div>
