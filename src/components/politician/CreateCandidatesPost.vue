@@ -297,94 +297,105 @@ export default {
         (candidate) => candidate.party_id === party.id
       );
     },
-     async saveData() {
-    if (
-      // !this.selectedCandidate ||
-      !this.position.role ||
-      !this.position.name
-    ) {
-      this.statusMessage = "กรุณากรอกข้อมูลให้ครบถ้วนก่อนบันทึก";
-      this.statusClass = "alert-warning";
-      return;
-    }
+    async saveData() {
+      if (
+        // !this.selectedCandidate ||
+        !this.position.role ||
+        !this.position.name
+      ) {
+        this.statusMessage = "กรุณากรอกข้อมูลให้ครบถ้วนก่อนบันทึก";
+        this.statusClass = "alert-warning";
+        return;
+      }
 
-    const target = this.socialPlatforms
-      .filter((platform) => platform.link.trim())
-      .map((platform) => ({
-        link_crawl: platform.link.trim(),
-        source: platform.name,
-      }));
+      const target = this.socialPlatforms
+        .filter((platform) => platform.link.trim())
+        .map((platform) => ({
+          link_crawl: platform.link.trim(),
+          source: platform.name,
+        }));
 
-    if (target.length === 0) {
-      this.statusMessage = "กรุณากรอกช่องทางการติดตามก่อนบันทึก";
-      this.statusClass = "alert-warning";
-      return;
-    }
+      if (target.length === 0) {
+        this.statusMessage = "กรุณากรอกช่องทางการติดตามก่อนบันทึก";
+        this.statusClass = "alert-warning";
+        return;
+      }
 
-    // เช็คว่ามี location ไหม
-    const hasLocation = this.location && this.location.length > 0;
+      const hasLocation = this.location && this.location.length > 0;
 
-    // ====== payload สำหรับ addPosition ======
-    const payload = {
-      party_id: this.selectedParty.id,
-      id: this.selectedCandidate.id,
-      position: {
-        role: this.position.role.trim(),
-        name: this.position.name.trim(),
-      },
-      // ส่ง location เฉพาะตอนที่มี
-      ...(hasLocation ? { location: this.location } : {}),
-    };
+      const payload = {
+        party_id: this.selectedParty.id,
+        id: this.selectedCandidate.id,
+        position: {
+          role: this.position.role.trim(),
+          name: this.position.name.trim(),
+        },
+        ...(hasLocation ? { location: this.location } : {}),
+      };
 
-    try {
-      const response = await this.axios.put(
-        "https://api2.cognizata.com/api/v2/monitor/addPosition",
-        payload,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      this.statusMessage = "บันทึกข้อมูลสำเร็จ!";
-      this.statusClass = "alert-success";
-      console.log("Data saved successfully (position):", response.data);
-    } catch (error) {
-      this.statusMessage =
-        "เกิดข้อผิดพลาดในการบันทึกข้อมูล Position กรุณาลองใหม่!";
-      this.statusClass = "alert-danger";
-      console.error("Error saving position data:", error);
-    }
+      // ใช้ตัวแปรเช็คว่าบันทึกสำเร็จทั้ง 2 ตัว
+      let isPositionSaved = false;
+      let isTargetSaved = false;
 
-    // ====== payload สำหรับ postTarget ======
-    const targetPayload = {
-      target,
-      candidate_id:this.selectedCandidate.id,
-      // ส่ง location เฉพาะตอนที่มี
-      ...(hasLocation ? { location: this.location } : {}),
-    };
+      // ====== addPosition ======
+      try {
+        const response = await this.axios.put(
+          "https://api2.cognizata.com/api/v2/monitor/addPosition",
+          payload,
+          {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        isPositionSaved = true;
+        this.statusMessage = "บันทึกข้อมูลสำเร็จ!";
+        this.statusClass = "alert-success";
+        console.log("Data saved successfully (position):", response.data);
+      } catch (error) {
+        this.statusMessage =
+          "เกิดข้อผิดพลาดในการบันทึกข้อมูล Position กรุณาลองใหม่!";
+        this.statusClass = "alert-danger";
+        console.error("Error saving position data:", error);
+      }
 
-    try {
-      const response = await this.axios.post(
-        "https://api2.cognizata.com/api/v2/monitor/postTarget",
-        targetPayload,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      );
-      this.statusMessage = "บันทึกข้อมูลสำเร็จ!";
-      this.statusClass = "alert-success";
-      console.log("Data saved successfully (targets):", response.data);
-    } catch (error) {
-      this.statusMessage =
-        "เกิดข้อผิดพลาดในการบันทึกข้อมูล URL กรุณาลองใหม่!";
-      this.statusClass = "alert-danger";
-      console.error("Error saving target data:", error);
-    }
-  },
+      // ====== postTarget ======
+      const targetPayload = {
+        target,
+        candidate_id: this.selectedCandidate.id,
+        ...(hasLocation ? { location: this.location } : {}),
+      };
+
+      try {
+        const response = await this.axios.post(
+          "https://api2.cognizata.com/api/v2/monitor/postTarget",
+          targetPayload,
+          {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+          }
+        );
+        isTargetSaved = true;
+        this.statusMessage = "บันทึกข้อมูลสำเร็จ!";
+        this.statusClass = "alert-success";
+        console.log("Data saved successfully (targets):", response.data);
+      } catch (error) {
+        this.statusMessage =
+          "เกิดข้อผิดพลาดในการบันทึกข้อมูล URL กรุณาลองใหม่!";
+        this.statusClass = "alert-danger";
+        console.error("Error saving target data:", error);
+      }
+
+      // ✅ ถ้าบันทึกสำเร็จทั้ง 2 ส่วนแล้ว ให้ปิด popup
+      if (isPositionSaved && isTargetSaved) {
+        // ถ้าอยากให้ parent reload ตารางด้วยก็ emit event เพิ่มได้ เช่น 'saved'
+        // this.$emit('saved');
+        this.$emit("close");
+      }
+    },
+
 
     // async saveData() {
     //   if (
