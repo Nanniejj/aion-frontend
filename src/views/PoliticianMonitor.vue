@@ -14,7 +14,7 @@
           style="position:relative;margin-left: auto; 
 margin-right: 0;"
         >
-          <div class="mr-3 icon-monitor1" @click="toMonitor('Monitor')">
+          <div class="mr-3 icon-monitor1" @click="$router.push('/monitorlist')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
     
