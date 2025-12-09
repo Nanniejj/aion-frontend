@@ -643,41 +643,37 @@ export default {
         async mapTargetInfoToSelectedData() {
             const location = this.selectedData.location;
 
-            if (location) {
-                const locationStr = location.toString(); // แปลงเลขเป็น string
-                const len = locationStr.length;
-
-                if (len === 2) {
-                this.selectedProvince = locationStr.substring(0, 2);
-                this.selectedDistrict = null;
-                this.selectedSubDistrict = null;
-                } else if (len === 4) {
-                this.selectedProvince = locationStr.substring(0, 2);
-                this.selectedDistrict = locationStr.substring(0, 4);
-                this.selectedSubDistrict = null;
-                } else if (len === 6) {
-                this.selectedProvince = locationStr.substring(0, 2);
-                this.selectedDistrict = locationStr.substring(0, 4);
-                this.selectedSubDistrict = locationStr.substring(0, 6);
-                } else {
-                // รูปแบบไม่ถูกต้อง
+            // ไม่มี location → reset ทั้งหมด
+            if (!Array.isArray(location) || location.length < 3) {
                 this.selectedProvince = null;
                 this.selectedDistrict = null;
                 this.selectedSubDistrict = null;
-                }
+                return;
+            }
 
-                this.oldProvince = this.selectedProvince;
-                this.oldDistrict = this.selectedDistrict;
+            // 1) อ่านค่า province / district / subdistrict ตรง ๆ
+            this.selectedProvince = location[0] || null;
+            this.selectedDistrict = location[1] || null;
+            this.selectedSubDistrict = location[2] || null;
 
-                console.log(this.selectedProvince, '/', this.selectedDistrict, '/', this.selectedSubDistrict);
+            // เก็บค่าเก่าไว้ใช้ check
+            this.oldProvince = this.selectedProvince;
+            this.oldDistrict = this.selectedDistrict;
 
-                if (this.selectedProvince) {
+            console.log(
+                "province:", this.selectedProvince,
+                "district:", this.selectedDistrict,
+                "subdistrict:", this.selectedSubDistrict
+            );
+
+            // 2) Load districts เมื่อมี province
+            if (this.selectedProvince) {
                 this.districts = await this.apiGetDistrict(this.selectedProvince);
-                }
+            }
 
-                if (this.selectedDistrict) {
+            // 3) Load subdistricts เมื่อมี district
+            if (this.selectedDistrict) {
                 this.subDistricts = await this.apiGetSubDistrict(this.selectedDistrict);
-                }
             }
         },
         getSpeciesName(id) {
@@ -747,29 +743,33 @@ export default {
             // this.exportData();
         },
         updateLocation() {
-            if (this.selectedSubDistrict) {
-                this.selectedData.location = this.selectedSubDistrict;
-                this.selectedData.province =  this.provinces.find(item => item.value === this.selectedProvince).text
-                this.selectedData.district =  this.districts.find(item => item.value === this.selectedDistrict).text
-                this.selectedData.sub_district =  this.subDistricts.find(item => item.value === this.selectedSubDistrict).text
-            } else if (this.selectedDistrict) {
-                this.selectedData.location = this.selectedDistrict;
-                this.selectedData.province =  this.provinces.find(item => item.value === this.selectedProvince).text
-                this.selectedData.district =  this.districts.find(item => item.value === this.selectedDistrict).text
-                this.selectedData.sub_district =  null; // ถ้าไม่มีตำบล
-            } else if (this.selectedProvince) {
-                this.selectedData.location = this.selectedProvince;
-                this.selectedData.province =  this.provinces.find(item => item.value === this.selectedProvince).text
-                this.selectedData.district =  null; // ถ้าไม่มีอำเภอ
-                this.selectedData.sub_district =  null; // ถ้าไม่มีตำบล
-            } else {
-                this.selectedData.location = null; // ถ้าไม่มีอะไรเลย
-                this.selectedData.province =  null; // ถ้าไม่มีจังหวัด
-                this.selectedData.district =  null; // ถ้าไม่มีอำเภอ
-                this.selectedData.sub_district =  null; // ถ้าไม่มีตำบล
-            }
-            console.log('selectedData.location', this.selectedData.location);
-            // this.getLocationName();
+            // เก็บ location แบบ array 3 ค่า
+            this.selectedData.location = [
+                this.selectedProvince || null,
+                this.selectedDistrict || null,
+                this.selectedSubDistrict || null
+            ];
+
+            // อัปเดตชื่อจังหวัด
+            this.selectedData.province =
+                this.selectedProvince
+                    ? this.provinces.find(item => item.value === this.selectedProvince)?.text || null
+                    : null;
+
+            // อัปเดตชื่ออำเภอ
+            this.selectedData.district =
+                this.selectedDistrict
+                    ? this.districts.find(item => item.value === this.selectedDistrict)?.text || null
+                    : null;
+
+            // อัปเดตชื่อตำบล
+            this.selectedData.sub_district =
+                this.selectedSubDistrict
+                    ? this.subDistricts.find(item => item.value === this.selectedSubDistrict)?.text || null
+                    : null;
+
+            console.log("selectedData.location =", this.selectedData.location);
+
             this.exportData();
         },
         getGenderTh(gender) {
