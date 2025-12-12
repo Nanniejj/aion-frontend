@@ -193,9 +193,12 @@
         <b-row>
           <b-col md="12"> </b-col>
           <b-col lg="12">
-            <div v-if="profilePost&&profilePost.news_info&&profilePost.news_info.source_news == 'external'" class="info-news text-right my-1 small ">
-              <span v-if="profilePost.news_info.source_news == 'external'">ข่าวต่างประเทศ</span>
-              | <span v-if="profilePost.news_info.nation" class="bold">{{ profilePost.news_info.nation }}</span>
+            <div v-if="profilePost && profilePost.news_info && profilePost.news_info.source_news == 'external'"
+              class="text-right my-1 small ">
+              <div class="info-news">
+                <span v-if="profilePost.news_info.source_news == 'external'">ข่าวต่างประเทศ</span>
+                | <span v-if="profilePost.news_info.nation" class="bold">{{ profilePost.news_info.nation }}</span>
+              </div>
             </div>
             <div v-if="profilePost.title" class="title-news text-left my-2">
               {{ profilePost.title }}
@@ -205,8 +208,8 @@
                 textAlign: 'justify',
                 fontSize: '17px',
                 padding: '10px',
-              }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)"
-                :autoEscape="true" :textToHighlight="profilePost.read
+              }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
+                :textToHighlight="profilePost.read
                   ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
                   : profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
                   " />
@@ -1660,7 +1663,7 @@ export default {
   width: fit-content;
   padding: 3px 6px;
   border-radius: 10px;
-  /* font-size: 11px; */
+  font-size: 11px;
   float: right;
 }
 
@@ -1675,6 +1678,25 @@ iframe body {
 
 iframe html {
   overflow: hidden !important;
+}
+
+@media only screen and (min-width: 0px) and (max-width: 600px) {
+  .title-news {
+    font-size: medium;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .info-news {
+    background-color: #bfebf1;
+    width: fit-content;
+    padding: 3px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    float: right;
+    display: block;
+    text-align: right !important;
+  }
 }
 </style>
 <style scoped>
