@@ -385,6 +385,11 @@
                     <b-col lg="12">
                         <b-card-body>
                             <b-card-text class="box-contents">
+                                <div v-if="datas && datas.news_info && datas.news_info.source_news == 'external'"
+                                    class="info-news text-right my-1 small ">
+                                    <span v-if="datas.news_info.source_news == 'external'">ข่าวต่างประเทศ</span>
+                                    | <span v-if="datas.news_info.nation">{{ datas.news_info.nation }}</span>
+                                </div>
                                 <div v-if="datas && datas.title" class="title-news text-left my-2">
                                     {{ datas.title }}
                                 </div>
@@ -478,8 +483,7 @@
                         </div>
                     </b-col>
                 </b-row>
-                <div class="text-left ai-box mt-2"
-                    v-if="datas && datas.photos_text && datas.photos_text.length"
+                <div class="text-left ai-box my-2 px-2" v-if="datas && datas.photos_text && datas.photos_text.length"
                     style="font-size: 15px;font-weight: 500;">
                     <div v-for="(text, idx) in datas.photos_text">
 
@@ -508,7 +512,7 @@
                     </div>
                 </div>
 
-                <div class="text-left ai-box mt-2" v-if="datas && datas.ocr && username == 'adminatapy'"
+                <div class="text-left ai-box my-2 px-2" v-if="datas && datas.ocr && username == 'adminatapy'"
                     style="font-size: 15px;font-weight: 500;">
                     <div v-for="(text, idx) in datas.ocr">
                         <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
@@ -538,7 +542,8 @@
                     datas &&
                     datas.location &&
                     datas.location.length
-                " class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+                " class="text-left ai-box my-2 px-2 text-small "
+                    style="font-size: 13px;font-weight: 500; color: #2c3e50;">
                     <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
                     <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
     border-radius: 33px;
@@ -570,7 +575,7 @@
                         </span>
                     </span>
                 </div>
-                <div class="text-left ai-box mt-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
+                <div class="text-left ai-box my-2 px-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
                     style="font-size: 15px;font-weight: 500;">
                     <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
                         <span v-for="(face, idx) in datas.person_name">
@@ -2164,8 +2169,9 @@ card-img,
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
     .title-news {
-    font-size: 15px !important;
-}
+        font-size: 15px !important;
+    }
+
     .bv-no-focus-ring {
         zoom: 80% !important;
     }
