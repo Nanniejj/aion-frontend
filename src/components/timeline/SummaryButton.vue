@@ -43,7 +43,7 @@
                 </span>
             </b-button>
             </b-col>
-            <b-col v-if="!loading && username === 'adminatapy'" cols="auto" sm="" class="mt-2 text-right px-0">
+            <b-col v-if="!loading && (username === 'adminatapy'|| username === 'cyberunit02')" cols="auto" sm="" class="mt-2 text-right px-0">
                 <button
                     :variant="open ? 'info' : 'outline-info'"
                     size="sm"

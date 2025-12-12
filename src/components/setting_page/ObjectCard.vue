@@ -79,30 +79,37 @@
             <b-col v-if="selectedObject" cols="12" md="7" lg="8" style="text-align: left;">
                 <div v-if="selectedObject.keywords && selectedObject.keywords.length">
                     <strong class="my-3">Keywords</strong><br />
-                    <div v-for="(keyword, index) in selectedObject.keywords" :key="index"
-                        class="keyword-box my-1 px-3"
-                        :class="{ 'glow-box': searchQuery && keyword.toLowerCase().includes(searchQuery.toLowerCase()) }"
-                    >
-                    <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
-                        :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="keyword"></Highlighter>
+                    <div style="overflow-y: auto; max-height: 200px;">
+                        <div v-for="(keyword, index) in selectedObject.keywords" :key="index"
+                            class="keyword-box my-1 px-3"
+                            
+                            :class="{ 'glow-box': searchQuery && keyword.toLowerCase().includes(searchQuery.toLowerCase()) }"
+                        >
+                        <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
+                            :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="keyword"></Highlighter>
+                        </div>
                     </div>
                 </div>
                 <div v-if="selectedObject.and_keywords && selectedObject.and_keywords.length" style="margin-top: 10px;">
                     <strong class="my-3">Include Keywords</strong><br />
-                    <div v-for="(and_keywords, index) in selectedObject.and_keywords" :key="index" 
-                        :class="{ 'glow-box': searchQuery && and_keywords.toLowerCase().includes(searchQuery.toLowerCase()) }"
-                    class="keyword-box px-3 my-1">
-                    <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
-                        :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="and_keywords"></Highlighter>
+                    <div style="overflow-y: auto; max-height: 200px;">
+                        <div v-for="(and_keywords, index) in selectedObject.and_keywords" :key="index" 
+                            :class="{ 'glow-box': searchQuery && and_keywords.toLowerCase().includes(searchQuery.toLowerCase()) }"
+                        class="keyword-box px-3 my-1">
+                        <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
+                            :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="and_keywords"></Highlighter>
+                        </div>
                     </div>
                 </div>
                 <div v-if="selectedObject.not_keywords && selectedObject.not_keywords.length" style="margin-top: 10px;">
                     <strong class="my-3">Exclude Keywords</strong><br />
-                    <div v-for="(not_keywords, index) in selectedObject.not_keywords" :key="index" 
-                        :class="{ 'glow-box': searchQuery && not_keywords.toLowerCase().includes(searchQuery.toLowerCase()) }"
-                    class="keyword-box px-3 my-1">
-                    <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
-                        :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="not_keywords"></Highlighter>
+                    <div style="overflow-y: auto; max-height: 200px;">
+                        <div v-for="(not_keywords, index) in selectedObject.not_keywords" :key="index" 
+                            :class="{ 'glow-box': searchQuery && not_keywords.toLowerCase().includes(searchQuery.toLowerCase()) }"
+                        class="keyword-box px-3 my-1">
+                        <Highlighter class="my-highlight md-font" highlightClassName="highlight-search"
+                            :searchWords="[searchQuery]" :autoEscape="true" :textToHighlight="not_keywords"></Highlighter>
+                        </div>
                     </div>
                 </div>
                 <div v-if="subdomain">

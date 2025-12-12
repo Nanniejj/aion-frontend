@@ -57,7 +57,7 @@ export default {
   methods: {
     toTemplate() {
       this.$router.push({
-        name: "TemplateSetting",
+        name: "Setting",
       });
     },
     toDomainStat(domain) {

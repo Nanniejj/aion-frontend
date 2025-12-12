@@ -7,9 +7,9 @@
 
     <b-row class="position-relative">
       <b-col class="text-left" cols="12" md="">
-        <h5 class="mb-sm-0 mb-0">Top 10 Users </h5>
+        <h5 class="mb-sm-0 mb-0">{{ title }}</h5>
         <div class="text-left text-muted">
-          <small>บัญชีที่กล่าว<b v-if="keyword"> {{ keyword }} </b>ถึงมากที่สุด 10 อันดับ </small>
+          <small>บัญชีที่กล่าว<b v-if="keyword"> {{ keyword }} </b>ถึงมากที่สุด</small>
         </div>
       </b-col>
       <b-col v-if="showSentimentFilter" cols="12" md="auto">
@@ -74,7 +74,7 @@
 
         <div class="slider" ref="slider">
           <div class="d-flex box-flex-small">
-            <div v-for="(item, i) in accounts" :key="item.uid" class="slider-item px-2">
+            <div v-for="(item, i) in accounts" :key="item.uid + i" class="slider-item px-2">
               <!-- {{ item }} -->
               <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0"
                 @click="onCardClick(item)" style="cursor:pointer" href="#chart">
@@ -166,6 +166,7 @@ export default {
   emits: ['filter-account'],
   components: { TopAccountsChart, TopAccountsProgress, SentimentDonutChart },
     props: {
+        title:{type: String, default: 'Top 10 Users '},
     showSentimentFilter:{type: Boolean, default: true},
     accounts: { type: Array, required: true },
     limit: { type: Number, default: 0 },     // จำกัดจำนวนการ์ดในโหมด Cards

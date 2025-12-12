@@ -122,7 +122,7 @@ export default {
 
         const data = response.data;
         const array3 = [...daylist, ...data];
-
+        console.log("res ==== ",data);
         // รวมและ dedupe ตาม key = date
         const distinctItems = [
           ...new Map(array3.map((item) => [item["date"], item])).values(),

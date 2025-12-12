@@ -552,34 +552,75 @@ export default {
         cleanedText(text) {
            return text.replace(/^(อ\. |ต\. |แขวง |เขต )/,''); // ลบเฉพาะถ้าอยู่ต้นคำ
         },
-        async checkLocation(item) {
-            // console.log("checkLocation === ", item);
-            let province = item.province? (this.provinces.find(p => p.text === item.province)?.value || null): null
-            // console.log("province === ", province);
-            if (province) {
-                let amphure = await this.apiGetDistrict(province);
-                if (item.district) {
-                    let curren_district = this.cleanedText(item.district);
-                    // console.log("item.district === ", item.district);
-                    let district = curren_district ? (amphure.find(d => d.text === curren_district)?.value || null) : null;
-                    // console.log("district === ", district);
-                    let tumbon = await this.apiGetSubDistrict(district);
-                    // console.log("tumbon === ", tumbon);
-                    if (item.sub_district) {
-                        let curren_sub_district = this.cleanedText(item.sub_district);
-                        // console.log("item.sub_district === ", item.sub_district);
-                        let subDistrict = curren_sub_district ? (tumbon.find(s => s.text === curren_sub_district)?.value || null) : null;
-                        // console.log("subDistrict === ", subDistrict);
-                       return subDistrict ? subDistrict : null;
-                    } else {
-                        return district
-                    }
-                }else {
-                    return province
-                }
-            }
+        // async checkLocation(item) {
+        //     // console.log("checkLocation === ", item);
+        //     let province = item.province? (this.provinces.find(p => p.text === item.province)?.value || null): null
+        //     // console.log("province === ", province);
+        //     if (province) {
+        //         let amphure = await this.apiGetDistrict(province);
+        //         if (item.district) {
+        //             let curren_district = this.cleanedText(item.district);
+        //             // console.log("item.district === ", item.district);
+        //             let district = curren_district ? (amphure.find(d => d.text === curren_district)?.value || null) : null;
+        //             // console.log("district === ", district);
+        //             let tumbon = await this.apiGetSubDistrict(district);
+        //             // console.log("tumbon === ", tumbon);
+        //             if (item.sub_district) {
+        //                 let curren_sub_district = this.cleanedText(item.sub_district);
+        //                 // console.log("item.sub_district === ", item.sub_district);
+        //                 let subDistrict = curren_sub_district ? (tumbon.find(s => s.text === curren_sub_district)?.value || null) : null;
+        //                 // console.log("subDistrict === ", subDistrict);
+        //                return subDistrict ? subDistrict : null;
+        //             } else {
+        //                 return district
+        //             }
+        //         }else {
+        //             return province
+        //         }
+        //     }
             
-            return null;
+        //     return null;
+        // },
+        async checkLocation(item) {
+            let provinceId = null;
+            let districtId = null;
+            let subDistrictId = null;
+
+            // 1) Province
+            if (item.province) {
+                const province = this.provinces.find(p => p.text === item.province);
+                provinceId = province ? province.value : null;
+            }
+
+            // ไม่มีจังหวัด → return ทั้งหมดเป็น null
+            if (!provinceId) {
+                return [null, null, null];
+            }
+
+            // 2) District
+            let amphure = await this.apiGetDistrict(provinceId);
+
+            if (item.district) {
+                const cleanDistrict = this.cleanedText(item.district);
+                const district = amphure.find(d => d.text === cleanDistrict);
+                districtId = district ? district.value : null;
+            }
+
+            // ไม่มี district → return แค่ province
+            if (!districtId) {
+                return [provinceId, null, null];
+            }
+
+            // 3) Subdistrict
+            let tumbon = await this.apiGetSubDistrict(districtId);
+
+            if (item.sub_district) {
+                const cleanSubDistrict = this.cleanedText(item.sub_district);
+                const subDistrict = tumbon.find(s => s.text === cleanSubDistrict);
+                subDistrictId = subDistrict ? subDistrict.value : null;
+            }
+
+            return [provinceId, districtId, subDistrictId];
         },
         async addRowTarget() {
             this.loading = true;
@@ -954,7 +995,7 @@ export default {
                         key: 'account',
                         bot_level: 1,
                         name: row.targetname,
-                        url: row.url,
+                        url: url,
                         sex: row.sex,
                         age: row.age ? row.age : null,
                         province: row.province,
@@ -1021,6 +1062,7 @@ export default {
         },
         hideModal() {
             this.open = false;
+            this.clear();
             //this.$emit("close");
         },
         extractPageIdFromFacebookUrl(url) {

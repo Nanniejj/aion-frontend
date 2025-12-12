@@ -52,21 +52,22 @@
         <b-container>
           <b-row style="padding-bottom: 200px" v-if="dataSum">
             <Summary class="mt-2" :dataSum="dataSum" />
-            <Facebook :dataSum="dataSum.summary.platform_data.facebook || {}"
-              :dataPlatform="dataPlatform.facebook || {}" />
-            <Twitter :dataSum="dataSum.summary.platform_data.twitter || {}"
-              :dataPlatform="dataPlatform.twitter || {}" />
-            <Pantip :dataSum="dataSum.summary.platform_data.pantip || {}" :dataPlatform="dataPlatform.pantip || {}" />
-            <News :dataSum="dataSum.summary.platform_data.news || {}" :dataPlatform="dataPlatform.news || {}" />
-            <Youtube :dataSum="dataSum.summary.platform_data.youtube || {}"
-              :dataPlatform="dataPlatform.youtube || {}" />
-            <Instagram :dataSum="dataSum.summary.platform_data.instagram || {}"
-              :dataPlatform="dataPlatform.instagram || {}" />
-            <Blockdit :dataSum="dataSum.summary.platform_data.blockdit || {}"
-              :dataPlatform="dataPlatform.blockdit || {}" />
-            <Tiktok :dataSum="dataSum.summary.platform_data.tiktok || {}" :dataPlatform="dataPlatform.tiktok || {}" />
-            <Threads :dataSum="dataSum.summary.platform_data.threads || {}"
-              :dataPlatform="dataPlatform.threads || {}" />
+            <Facebook 
+                :dataSum="platformSum('facebook')"
+                :dataPlatform="platformStat('facebook')"
+            />
+            <Twitter :dataSum="platformSum('twitter')" :dataPlatform="platformStat('twitter')" />
+            <Pantip :dataSum="platformSum('pantip')" :dataPlatform="platformStat('pantip')" />
+            <News :dataSum="platformSum('news')" :dataPlatform="platformStat('news')" />
+            <Youtube :dataSum="platformSum('youtube')"
+              :dataPlatform="platformStat('youtube')" />
+            <Instagram :dataSum="platformSum('instagram')"
+              :dataPlatform="platformStat('instagram')" />
+            <Blockdit :dataSum="platformSum('blockdit')"
+              :dataPlatform="platformStat('blockdit')" />
+            <Tiktok :dataSum="platformSum('tiktok')" :dataPlatform="platformStat('tiktok')" />
+            <Threads :dataSum="platformSum('threads')"
+              :dataPlatform="platformStat('threads')" />
           </b-row>
         </b-container>
       </div>
@@ -248,7 +249,21 @@ export default {
       }`
     };
   },
-  methods: {
+    methods: {
+    platformSum(name) {
+        return this.dataSum &&
+            this.dataSum.summary &&
+            this.dataSum.summary.platform_data &&
+            this.dataSum.summary.platform_data[name]
+        ? this.dataSum.summary.platform_data[name]
+        : {};
+    },
+
+    platformStat(name) {
+        return this.dataPlatform && this.dataPlatform[name]
+        ? this.dataPlatform[name]
+        : {};
+    },
     apidash() {
       this.$store.commit("setLoadStatus", true);
       // let sdate, edate, today;

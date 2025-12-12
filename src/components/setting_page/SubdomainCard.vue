@@ -74,7 +74,15 @@
             @reset="apiList"
         />
        </div>
-
+       <b-button
+            v-if="!loadWord"
+            variant="warning"
+            class="fab"
+            @click="scrollToTop"
+            style="background-color: #fed06ea4;"
+        >
+            <i class="fas fa-arrow-up"></i>
+        </b-button>
       <!-- edit subdomain -->
       <b-modal v-b-modal.modal-center id="edit-subdomain-modal" ref="editSubdomainModal" @hidden="resetEditModal"
         :ok-only="true" class="custom-modal" centered>
@@ -228,13 +236,32 @@ export default {
       deleteObjectId: null, // ID ของ Object ที่ต้องลบ
       deleteObjectName: "", // ชื่อ Object ที่จะแสดงใน Modal
         suggestionKeywrords: [],
-      subdomainKeywords:[]
+          subdomainKeywords: [],
+      showFabButton: false,
     };
   },
   computed: {
    
-  },
+    },
+  mounted() {
+        window.addEventListener("scroll", this.handleScroll);
+        this.type = this.$route.query.groupType
+    },
+    beforeDestroy() {
+        window.removeEventListener("scroll", this.handleScroll);
+    },
     methods: {
+    handleScroll() {
+        // ถ้า scroll เกิน 700px ค่อยโชว์ปุ่ม
+        this.showFabButton = window.scrollY > 700;
+    },
+    scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+        
+    },
     copyToClipboard(text) {
       if (navigator.clipboard && window.isSecureContext) {
         // วิธีใหม่ (modern browsers)
@@ -986,6 +1013,20 @@ export default {
 }
 </style>
 <style scoped>
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 0px;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 1050;
+  font-size: 20px;
+}
 .bage-keyword{
     background-color: rgb(213, 246, 250);
     /* padding: 10px;

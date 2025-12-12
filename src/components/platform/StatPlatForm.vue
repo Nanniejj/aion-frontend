@@ -338,7 +338,9 @@ getArrDate(){
       this.open = false;
     },
     listNews() {
-      let arrA = this.getNewslt.totalAccount;
+      let arrA = Array.isArray(this.getNewslt?.totalAccount)
+                ? this.getNewslt.totalAccount
+                : [];
           //  console.log('arrA',arrA);
       let arrB = [
         "suratthani",

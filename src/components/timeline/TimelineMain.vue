@@ -111,7 +111,6 @@
                   separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
                   add-on-change remove-on-delete class="input-tag" />
               </b-form-group>
-
             </b-col>
 
             <b-col cols="12" md="4">
@@ -290,8 +289,8 @@ import SummaryFilterButton from "./SummaryFilterButton.vue";
 // import StaticTimeline from "@/components/timeline/StaticTimeline.vue";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
-import { filter } from "jszip";
-import { data } from "jquery";
+// import { filter } from "jszip";
+// import { data } from "jquery";
 const LS_TPL_KEY = 'timelineFilterTemplatesV1';
 function uid() {
   return 'tpl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
