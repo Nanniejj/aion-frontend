@@ -389,7 +389,7 @@ export default {
         const res = await axios.get("https://api2.cognizata.com/api/v2/alert_telegram/getgrouptelegram");
             let telegram = res.data || [];
             this.groups = this.checkUserGroup(telegram);
-        // console.log('fetched groups', this.groups);
+            console.log('fetched groups', telegram);
         //   this.groups = res.data || [];
       } catch (err) {
         this.error = "ไม่สามารถโหลดข้อมูลกลุ่ม Telegram ได้";
@@ -397,18 +397,19 @@ export default {
         this.loading = false;
       }
     },
-      checkUserGroup(telegram) {
+    checkUserGroup(telegram) {
         if (this.username === 'adminatapy') {
             return telegram;
         }
-          let filtered = telegram.filter(group =>
-                (group.groupTitle === this.username) 
-                // ||(Array.isArray(group.domain_id) &&
-                // group.domain_id.some(id => this.domain.some(d => d.id === id))) ||
-                // (Array.isArray(group.group_id) &&
-                // group.group_id.some(id => this.groupOptions.some(d => d.group_id === id)))
-            );
-      return filtered;
+        let filtered = telegram.filter(group =>
+            (group.groupTitle === this.username) 
+            // ||(Array.isArray(group.domain_id) &&
+            //   group.domain_id.some(id => this.domain.some(d => d.id === id)))
+            ||
+            (Array.isArray(group.group_id) &&
+            group.group_id.some(id => this.groupOptions.some(d => d.group_id === id)))
+        );
+        return filtered;
     },
     cancelToggle() {
       this.selectedGroup = null
