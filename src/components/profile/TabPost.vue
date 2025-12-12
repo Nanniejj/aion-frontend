@@ -101,8 +101,8 @@
                 " v-bind:href="profilePost.url_post.replace('mbasic.', '')" class="fa fa-external-link"
                   target="_blank"></a> -->
                 <a v-if="profilePost && (profilePost.url_post || '').includes('mbasic')"
-                    :href="(profilePost.url_post || '').replace('mbasic.', '')"
-                    class="fa fa-external-link" target="_blank">
+                  :href="(profilePost.url_post || '').replace('mbasic.', '')" class="fa fa-external-link"
+                  target="_blank">
                 </a>
                 <a v-else v-bind:href="profilePost.url_post" class="fa fa-external-link" target="_blank"></a>
               </span>
@@ -183,33 +183,38 @@
               </div>
             </b-col>
             <b-col cols="auto">
-                <div class="text-right">
-                    <i v-b-tooltip.hover title="ลบโพสต์" @click="confirmDeletePost(profilePost._id)" class='text-danger fas fa-trash'></i>
-                </div>
+              <div class="text-right">
+                <i v-b-tooltip.hover title="ลบโพสต์" @click="confirmDeletePost(profilePost._id)"
+                  class='text-danger fas fa-trash'></i>
+              </div>
             </b-col>
           </b-row>
         </template>
         <b-row>
           <b-col md="12"> </b-col>
           <b-col lg="12">
+            <div v-if="profilePost && profilePost.news_info && profilePost.news_info.source_news == 'external'"
+              class="text-right my-1 small ">
+              <div class="info-news">
+                <span v-if="profilePost.news_info.source_news == 'external'">ข่าวต่างประเทศ</span>
+                | <span v-if="profilePost.news_info.nation" class="bold">{{ profilePost.news_info.nation }}</span>
+              </div>
+            </div>
             <div v-if="profilePost.title" class="title-news text-left my-2">
               {{ profilePost.title }}
             </div>
             <div v-if="pageCheck == 'Domain'" class="box-contents">
-              <Highlighter v-if="profilePost.full_text" class="my-highlight" 
-                :style="{
-                    textAlign: 'justify',
-                    fontSize: '17px',
-                    padding: '10px',
-                }" 
-                highlightClassName="highlight2" 
-                :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
+              <Highlighter v-if="profilePost.full_text" class="my-highlight" :style="{
+                textAlign: 'justify',
+                fontSize: '17px',
+                padding: '10px',
+              }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
                 :textToHighlight="profilePost.read
                   ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
                   : profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
                   " />
-              <div v-if="profilePost.full_text && profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
-                id="readmore">
+              <div v-if="profilePost.full_text && profilePost.full_text.length > 450"
+                @click="profilePost.read = !profilePost.read" id="readmore">
                 <span v-if="profilePost.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
               </div>
             </div>
@@ -655,51 +660,37 @@
 
           </div>
           <!-- comment content -->
-    <!-- === OCR Result Panel === -->
-<b-collapse
-  :id="'ocr-text' + page + k"
-  class="mt-2"
-  v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length"
->
-  <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
-    <div v-for="(text, idx) in profilePost.photos_text" :key="idx">
-      <div class="bold my-2">
-        <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" />
-        OCR
-      </div>
-      <div class="mt-1 px-2 pb-3">
-        <div
-          v-if="typeof text === 'string'"
-          v-html="formatOCR(text)"
-          class="rich"
-        />
-        <div
-          v-else-if="text && text.text"
-          v-html="formatOCR(text.text)"
-          class="rich"
-        />
-      </div>
-    </div>
-  </b-card>
-</b-collapse>
+          <!-- === OCR Result Panel === -->
+          <b-collapse :id="'ocr-text' + page + k" class="mt-2"
+            v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length">
+            <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+              <div v-for="(text, idx) in profilePost.photos_text" :key="idx">
+                <div class="bold my-2">
+                  <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" />
+                  OCR
+                </div>
+                <div class="mt-1 px-2 pb-3">
+                  <div v-if="typeof text === 'string'" v-html="formatOCR(text)" class="rich" />
+                  <div v-else-if="text && text.text" v-html="formatOCR(text.text)" class="rich" />
+                </div>
+              </div>
+            </b-card>
+          </b-collapse>
 
-<!-- === Comments Analysis Panel === -->
-<b-collapse
-  :id="'summarize' + page + k"
-  class="mt-2"
-  v-if="profilePost && profilePost.summarize && profilePost.summarize.length"
->
-  <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
-    <div>
-      <div class="bold my-2">
-        <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
-        Comments Analysis
-      </div>
-      <div v-html="formatSummarize(profilePost.summarize)"></div>
-    </div>
-  </b-card>
-</b-collapse>
-<!-- === /Panels === -->
+          <!-- === Comments Analysis Panel === -->
+          <b-collapse :id="'summarize' + page + k" class="mt-2"
+            v-if="profilePost && profilePost.summarize && profilePost.summarize.length">
+            <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+              <div>
+                <div class="bold my-2">
+                  <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
+                  Comments Analysis
+                </div>
+                <div v-html="formatSummarize(profilePost.summarize)"></div>
+              </div>
+            </b-card>
+          </b-collapse>
+          <!-- === /Panels === -->
 
 
 
@@ -855,7 +846,7 @@ export default {
       this.infiniteScroll();
     },
     crawdash(val) {
-    //   console.log("crawdash", val);
+      //   console.log("crawdash", val);
       this.crawdash = val;
       this.page = 0;
       this.isInfinite = true;
@@ -863,20 +854,20 @@ export default {
     },
     dh: function (newVal, oldVal) {
       // watch it
-    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
     statusLocat: function (newVal, oldVal) {
       // watch it
-    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
     },
     changwats: function (newVal, oldVal) {
-    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
@@ -887,20 +878,20 @@ export default {
       this.infiniteScroll();
     },
     amphoes: function (newVal, oldVal) {
-    //   console.log("Prop changed amphoes: ", newVal, " | was: ", oldVal);
+      //   console.log("Prop changed amphoes: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
     },
     users: function (newVal, oldVal) {
-    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       // this.page = 0;
       // this.isInfinite = true;
       // this.infiniteScroll();
     },
     getSocialDomain: function (newVal, oldVal) {
       // watch it
-    //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
       this.page = 0;
       this.isInfinite = true;
       this.infiniteScroll();
@@ -998,7 +989,7 @@ export default {
       "getLoadStatus",
       "getClickDomain",
       "getClickDomainId",
-    //   "getPostAllMonitor",
+      //   "getPostAllMonitor",
       "getSocialDomain",
       "getSdateDm",
       "getEdateDm",
@@ -1013,7 +1004,7 @@ export default {
       "getEDateHt",
       "getArrDateHashtag",
       "getValSource",
-      
+
     ]),
     domainName() {
       var d = this.dm;
@@ -1034,566 +1025,566 @@ export default {
       var word = [];
       let jw = this.changwats.split(",");
       let am = this.amphoes;
-    //   console.log("this.amphoes", this.amphoes, jw);
+      //   console.log("this.amphoes", this.amphoes, jw);
       if (this.checked) {
         word = jw.concat(am);
       }
-    //   console.log("wordddd", word);
+      //   console.log("wordddd", word);
       return word;
     },
   },
-    methods: {
+  methods: {
 
-        formatOCR(text) {
-            if (!text) return "";
-            let s = String(text).trim();
-            s = s.replace(/\\r\\n|\\n|\\r/g, "\n");
-            s = s.replace(/\u200B|\uFEFF|\u00A0/g, " ");
-            s = s.replace(/^\s*[•▪●–—-]\s+/gm, "- ");
-            const rawHtml = marked.parse(s, { gfm: true, breaks: true });
-            return DOMPurify.sanitize(rawHtml, {
-                ALLOWED_TAGS: [
-                    "p", "br", "ul", "ol", "li",
-                    "strong", "em", "a", "blockquote",
-                    "code", "pre", "hr", "table", "thead", "tbody", "tr", "th", "td"
-                ],
-                ALLOWED_ATTR: { a: ["href", "title", "target", "rel"] }
-            });
-        },
-        formatSummarize(text) {
-            if (!text) return "";
-            const paragraphs = String(text)
-                .split(/\n\n+/)
-                .map(p => `<p style="margin:0 0 6px; line-height:1.4;">${p.replace(/\n/g, "<br>")}</p>`);
-            return paragraphs.join("");
-        },
-        filterNumbers(numbers) {
-            // Create a copy of the numbers array and sort by length
-            const filtered = [...numbers].sort(
-                (a, b) => a.toString().length - b.toString().length
-            );
+    formatOCR(text) {
+      if (!text) return "";
+      let s = String(text).trim();
+      s = s.replace(/\\r\\n|\\n|\\r/g, "\n");
+      s = s.replace(/\u200B|\uFEFF|\u00A0/g, " ");
+      s = s.replace(/^\s*[•▪●–—-]\s+/gm, "- ");
+      const rawHtml = marked.parse(s, { gfm: true, breaks: true });
+      return DOMPurify.sanitize(rawHtml, {
+        ALLOWED_TAGS: [
+          "p", "br", "ul", "ol", "li",
+          "strong", "em", "a", "blockquote",
+          "code", "pre", "hr", "table", "thead", "tbody", "tr", "th", "td"
+        ],
+        ALLOWED_ATTR: { a: ["href", "title", "target", "rel"] }
+      });
+    },
+    formatSummarize(text) {
+      if (!text) return "";
+      const paragraphs = String(text)
+        .split(/\n\n+/)
+        .map(p => `<p style="margin:0 0 6px; line-height:1.4;">${p.replace(/\n/g, "<br>")}</p>`);
+      return paragraphs.join("");
+    },
+    filterNumbers(numbers) {
+      // Create a copy of the numbers array and sort by length
+      const filtered = [...numbers].sort(
+        (a, b) => a.toString().length - b.toString().length
+      );
 
-            for (let i = 0; i < filtered.length; i++) {
-                for (let j = i + 1; j < filtered.length; j++) {
-                    const num1 = filtered[i].toString();
-                    const num2 = filtered[j].toString();
+      for (let i = 0; i < filtered.length; i++) {
+        for (let j = i + 1; j < filtered.length; j++) {
+          const num1 = filtered[i].toString();
+          const num2 = filtered[j].toString();
 
-                    // If num1 matches the start of num2, remove num1
-                    if (num2.startsWith(num1)) {
-                        filtered.splice(i, 1); // Remove num1
-                        i--; // Adjust index after removal
-                        break; // Restart the inner loop
-                    }
-                }
+          // If num1 matches the start of num2, remove num1
+          if (num2.startsWith(num1)) {
+            filtered.splice(i, 1); // Remove num1
+            i--; // Adjust index after removal
+            break; // Restart the inner loop
+          }
+        }
+      }
+
+      return filtered; // Return filtered array
+    },
+    matchGeocode(geocode) {
+      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+      let found = null;
+
+      // กรองข้อมูลตามความยาว geocode
+      if (geocodeStr.length === 2) {
+        found = provinces[geocodeStr];
+      } else if (geocodeStr.length === 4) {
+        found = districts[geocodeStr];
+      } else if (geocodeStr.length === 6) {
+        found = subdistricts[geocodeStr];
+      }
+
+      // Return the found location or a fallback message
+      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
+    filterDomain(domain) {
+      // let filteredDomain = [];
+      // return (filteredDomain = domain.filter((item) =>
+      //     this.domainArr.includes(item)
+      // ));
+      return (domain || []).filter(item =>
+        (this.domainArr || []).includes(item)
+      );
+    },
+    highlightText(full_text) {
+      var word = [];
+      if (this.checked) {
+        word.push(...this.heightword);
+        if (this.domainKeyword) {
+          word.push(this.domainKeyword);
+        }
+        if (this.andkey.length) {
+          this.andkey.forEach(function (key) {
+            // 
+            if (
+              key.length == 2 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1])
+            ) {
+
+
+              word.push(...key);
             }
 
-            return filtered; // Return filtered array
-        },
-        matchGeocode(geocode) {
-            const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
-            let found = null;
-
-            // กรองข้อมูลตามความยาว geocode
-            if (geocodeStr.length === 2) {
-                found = provinces[geocodeStr];
-            } else if (geocodeStr.length === 4) {
-                found = districts[geocodeStr];
-            } else if (geocodeStr.length === 6) {
-                found = subdistricts[geocodeStr];
+            if (
+              key.length == 3 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2])
+            ) {
+              word.push(...key);
             }
-
-            // Return the found location or a fallback message
-            return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
-        },
-        filterDomain(domain) {
-            // let filteredDomain = [];
-            // return (filteredDomain = domain.filter((item) =>
-            //     this.domainArr.includes(item)
-            // ));
-            return (domain || []).filter(item =>
-                (this.domainArr || []).includes(item)
-            );
-        },
-        highlightText(full_text) {
-            var word = [];
-            if (this.checked) {
-                word.push(...this.heightword);
-                if (this.domainKeyword) {
-                    word.push(this.domainKeyword);
-                }
-                if (this.andkey.length) {
-                    this.andkey.forEach(function (key) {
-                        // 
-                        if (
-                            key.length == 2 &&
-                            full_text.includes(key[0]) &&
-                            full_text.includes(key[1])
-                        ) {
-
-
-                            word.push(...key);
-                        }
-
-                        if (
-                            key.length == 3 &&
-                            full_text.includes(key[0]) &&
-                            full_text.includes(key[1]) &&
-                            full_text.includes(key[2])
-                        ) {
-                            word.push(...key);
-                        }
-                        if (
-                            key.length == 4 &&
-                            full_text.includes(key[0]) &&
-                            full_text.includes(key[1]) &&
-                            full_text.includes(key[2]) &&
-                            full_text.includes(key[3])
-                        ) {
-                            word.push(...key);
-                        }
-                    });
-
-
-                }
+            if (
+              key.length == 4 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2]) &&
+              full_text.includes(key[3])
+            ) {
+              word.push(...key);
             }
-            return word;
-        },
-        getTheSelected(k, v, uid) {
-            var err;
-            if (v == 1) {
-                err = "Positive";
-            } else if (v == 0) {
-                err = "Neutral";
-            } else {
-                err = "Negative";
-            }
-            this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?")
-                .then(
-                    () => {
-                        const encoded = encodeURIComponent(uid);
-                        var _this = this;
-                        var config = {
-                            method: "get",
-                            url:
-                                "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
-                                encoded +
-                                "&sentiment=" +
-                                v,
-                            headers: {
-                                Authorization: "Bearer " + localStorage.getItem("token"),
-                                "Content-Type": "application/json",
-                            },
-                        };
-                        this.axios(config)
-                            .then(function (response) {
-                                // console.log(response);
-                                if (_this.selected == "") {
-                                    if (v == 1) {
-                                        _this.getPostAllMonitor[k].sentiment = 1;
-                                        _this.getPostAllMonitor[k].user_sentiment[_this.objId] = 1;
-                                    } else if (v == 0) {
-                                        _this.getPostAllMonitor[k].sentiment = 0;
-                                        _this.getPostAllMonitor[k].user_sentiment[_this.objId] = 0;
-                                    } else {
-                                        _this.getPostAllMonitor[k].sentiment = -1;
-                                        _this.getPostAllMonitor[k].user_sentiment[_this.objId] = -1;
-                                    }
-                                } else {
-                                    if (v == _this.selected) {
-                                        _this.getPostAllMonitor[k].sentiment = v;
-                                        _this.getPostAllMonitor[k].user_sentiment[_this.objId] = v;
-                                    } else {
-                                        _this.getPostAllMonitor.splice(k, 1);
-                                    }
-                                }
-                            })
-                            .catch(function (response) {
-                                console.log("errrrrrr", response.message);
-                            });
-                        // if (v != this.getPostAllMonitor[k].sentiment) {
-                        //   this.$store.dispatch("editSentimentPost", {
-                        //     sentiment: v,
-                        //     uid: encoded,
-                        //   });
-                        //   if (this.selected == "") {
-                        //     if (v == 1) {
-                        //       this.getPostAllMonitor[k].sentiment = 1;
-                        //     } else if (v == 0) {
-                        //       this.getPostAllMonitor[k].sentiment = 0;
-                        //     } else {
-                        //       this.getPostAllMonitor[k].sentiment = -1;
-                        //     }
-                        //   } else {
-                        //     this.getPostAllMonitor.splice(k, 1);
-                        //   }
-                        //   this.$fire({
-                        //     title: "แก้ไขสำเร็จ",
-                        //     type: "success",
-                        //     showConfirmButton: false,
-                        //     timer: 1000,
-                        //   });
-                        // } else {
-                        //   this.$alert("Sentiment เป็น " + err + " แล้ว!").then(() => {});
-                        // }
-                    }
-                ).catch(e => {
-                    // if (!e) {
-                    //     // confirm cancel
-                    //     alert("ยกเลิกการเปลี่ยน Sentiment แล้ว");
-                    // } else if (e.response) {
-                    //     alert("เกิดข้อผิดพลาด: " + e.response.data.message);
-                    // } else {
-                    //     console.error(e);
-                    //     alert("เกิดข้อผิดพลาดในการเปลี่ยน Sentiment");
-                    // }
-                });
-        },
-        setAltImg(event) {
-            event.target.src = this.default_avatar;
-        },
-        onClick(i, data) {
-            // console.log(data);
-            this.index = i;
-            this.dataPhoto = data;
-        },
-        async infiniteScroll(acc, sort, offset, sentiment) {
-            // acc = this.getProfileData;
-            sort = this.selectedSort;
-            offset = this.page;
-            sentiment = this.selected;
-            if (this.getHashtagData) {
-                var hashtag = this.getHashtagData.replace("#", "");
-            }
-            acc = this.getProfileData;
-            // if (this.getValSource == "youtube") {
-            //   acc = this.getProfileData.replace("@", "");
-            // }
+          });
 
-            var payload;
-            var rt;
 
-            if (this.getValSource == "twitter") {
-                rt = true;
-            } else {
-                rt = "";
-            }
-            if (this.api == "profile") {
-                // Profile
-                if (this.tabs == "domainTab") {
-                    // have not sentiment
-                    if (sentiment != "") {
-                        payload = {
-                            account: acc,
-                            sort_by: sort,
-                            offset: offset,
-                            domain: this.dh,
-                            sentiment: sentiment,
-                            retweet: rt,
-                            start_date: this.getSDateProfile,
-                            end_date: this.getEDateProfile,
-                            source: this.getValSource,
-                        };
-                    } else {
-                        //  have  sentiment
-                        payload = {
-                            account: acc,
-                            sort_by: sort,
-                            offset: offset,
-                            domain: this.dh,
-                            retweet: rt,
-                            start_date: this.getSDateProfile,
-                            end_date: this.getEDateProfile,
-                            source: this.getValSource,
-                        };
-                    }
-                } else if (this.tabs == "hashtagTab") {
-                    if (sentiment != "") {
-                        payload = {
-                            account: acc,
-                            sort_by: sort,
-                            offset: offset,
-                            hashtag: this.dh,
-                            sentiment: sentiment,
-                            retweet: rt,
-                            start_date: this.getSDateProfile,
-                            end_date: this.getEDateProfile,
-                            source: this.getValSource,
-                        };
-                    } else {
-                        payload = {
-                            account: acc,
-                            sort_by: sort,
-                            offset: offset,
-                            hashtag: this.dh,
-                            retweet: rt,
-                            start_date: this.getSDateProfile,
-                            end_date: this.getEDateProfile,
-                            source: this.getValSource,
-                        };
-                    }
-                    //All post
-                } else {
-                    if (sentiment != "") {
-                        //  have  sentiment
-                        payload = {
-                            account: acc,
-                            sort_by: sort,
-                            offset: offset,
-                            sentiment: sentiment,
-                            start_date: this.getSDateProfile,
-                            end_date: this.getEDateProfile,
-                            source: this.getValSource,
-                        };
-                    } else {
-                        //  have not sentiment
-                        payload = {
-                            account: acc,
-                            sort_by: sort,
-                            offset: offset,
-                            start_date: this.getSDateProfile,
-                            end_date: this.getEDateProfile,
-                            source: this.getValSource,
-                        };
-                    }
-                }
-            } else if (this.api == "hashtag") {
-                // Hahtag
-                if (this.tabs == "domainTab") {
-                    if (sentiment != "") {
-                        // console.log("sentiment", sentiment);
-                        //  have  sentiment
-                        payload = {
-                            hashtag: hashtag,
-                            sort_by: sort,
-                            offset: offset,
-                            sentiment: sentiment,
-                            domain: this.dh,
-                            start_date: this.getSDateHt,
-                            end_date: this.getEDateHt,
-                            source: this.getValSource,
-                        };
-                    } else {
-                        payload = {
-                            hashtag: hashtag,
-                            sort_by: sort,
-                            offset: offset,
-                            domain: this.dh,
-                            start_date: this.getSDateHt,
-                            end_date: this.getEDateHt,
-                            source: this.getValSource,
-                        };
-                        // console.log("onsentiment", sentiment);
-                    }
-                } else {
-                    if (sentiment != "") {
-                        payload = {
-                            hashtag: hashtag,
-                            sort_by: sort,
-                            offset: offset,
-                            sentiment: sentiment,
-                            start_date: this.getSDateHt,
-                            end_date: this.getEDateHt,
-                            source: this.getValSource,
-                        };
-                    } else {
-                        //  have  sentiment
-                        payload = {
-                            hashtag: hashtag,
-                            sort_by: sort,
-                            offset: offset,
-                            start_date: this.getSDateHt,
-                            end_date: this.getEDateHt,
-                            source: this.getValSource,
-                        };
-                    }
-                }
-            } else {
-                //Domian Menu
-                if (this.pageMenu == "domain") {
-                    let sc, domains, dash;
-
-                    // console.log("keyword1", this.domainKeyword, this.getClickDomain);
-                    if (this.menu == "platform") {
-                        sc = this.getSocialPlatform;
-                        // domains = "All";
-                        dash = this.crawdash;
-                    } else {
-                        sc = this.getSocialDomain;
-                        domains = this.getClickDomainId;
-                        dash = "";
-                    }
-                    // console.log("domain");
-                    if (this.getSdateDm) {
-                        this.sdate = this.getSdateDm;
-                        this.edate = this.getEdateDm;
-                    } else {
-                        this.sdate =
-                            moment(new Date())
-                                .format()
-                                .slice(0, 10) + "T00:00:00";
-                        this.edate =
-                            moment(new Date())
-                                .format()
-                                .slice(0, 10) + "T23:59:59";
-                    }
-
-                    if (sentiment === "") {
-                        payload = {
-                            start_date: this.sdate,
-                            end_date: this.edate,
-                            source: sc,
-                            sort_by: sort,
-                            domain: domains,
-                            offset: offset,
-                            dashboard: dash,
-                        };
-                    } else {
-                        //  have  sentiment
-                        payload = {
-                            start_date: this.sdate,
-                            end_date: this.edate,
-                            source: sc,
-                            sentiment: sentiment,
-                            sort_by: sort,
-                            domain: domains,
-                            offset: offset,
-                            dashboard: dash,
-                        };
-                    }
-                    if (this.domainKeyword) {
-                        // console.log("keyword2", this.domainKeyword);
-                        payload.querySearch = this.domainKeyword;
-                    }
-                } else {
-                    if (this.statusLocat == true) {
-                        // let sdateLocat =this.dateLocat[0].slice(0, 16);
-                        // let edateLocat =this.dateLocat[1].slice(0, 16);
-                        this.statusLocat == false;
-                        if (sentiment === "") {
-                            payload = {
-                                account: this.users,
-                                sort_by: sort,
-                                offset: offset,
-                                query: this.changwats + "," + this.amphoes,
-                                // start_date:sdateLocat,
-                                // end_date:edateLocat
-                            };
-                            if (this.amphoes.length) {
-                                // console.log("this.amphoes", this.amphoes);
-                                payload.query = this.amphoes;
-                            }
-                        } else {
-                            //  have  sentiment
-                            payload = {
-                                account: this.users,
-                                sort_by: sort,
-                                offset: offset,
-                                sentiment: sentiment,
-                                query: this.changwats,
-                                // start_date:sdateLocat,
-                                // end_date:edateLocat
-                            };
-                            if (this.amphoes.length) {
-                                // console.log("this.amphoes", this.amphoes);
-                                payload.query = this.amphoes;
-                            }
-                        }
-                    }
-                }
-            }
-
-            //  Global Fetch data
-            var checkApi;
-            if (this.api == "location") {
-                if (this.pageMenu == "domain") {
-                    if (this.menu == "platform") {
-                        checkApi = "fetchAllPostDomain";
-                    } else {
-                        checkApi = "fetchAllPostDomainPost";
-                    }
-                } else {
-                    checkApi = "fetchLocation";
-                }
-            } else {
-                checkApi = "fetchPostAll";
-            }
-            let temp = await this.$store.dispatch(checkApi, payload);
-            if (temp && temp.length === 0) {
-                this.isInfinite = false;
-            }
-            this.page += 10;
-            this.infiniteId += 1;
-            // console.log(this.page);
-        },
-        selectSort() {
-            this.page = 0;
-            this.isInfinite = true;
-            this.infiniteScroll();
-        },
-        selectSentiment() {
-            this.page = 0;
-            this.isInfinite = true;
-            this.infiniteScroll();
-        },
-        confirmDeletePost(post_id) {
-            // console.log(data, target_id);
-            let domainName = this.getClickDomain;
-            Swal.fire({
-                title: 'ยืนยันการลบโพสต์',
-                text: `ต้องการลบโพสต์ออกจากหัวเรื่อง "${domainName}" หรือไม่?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'ลบ',
-                cancelButtonText: 'ยกเลิก',
-                didOpen: () => {
-                    const iconContent = document.querySelector('.swal2-icon-content');
-                    if (iconContent) iconContent.style.display = 'none';
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    this.removePost(post_id);
-                    // this.apiDeleteTarget(data.item.group_id, target_id);
-                    // this.toggleDetails(data);
-                }
-            });
-        },
-        async removePost(post_id) {
-            let domain_id = this.getClickDomainId;
-            const config = {
-                method: "put",
-                url: `https://api2.cognizata.com/api/v2/userposts/removeDomain?id=${post_id}&domain_id=${domain_id}`,
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
+        }
+      }
+      return word;
+    },
+    getTheSelected(k, v, uid) {
+      var err;
+      if (v == 1) {
+        err = "Positive";
+      } else if (v == 0) {
+        err = "Neutral";
+      } else {
+        err = "Negative";
+      }
+      this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?")
+        .then(
+          () => {
+            const encoded = encodeURIComponent(uid);
+            var _this = this;
+            var config = {
+              method: "get",
+              url:
+                "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
+                encoded +
+                "&sentiment=" +
+                v,
+              headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+              },
             };
             this.axios(config)
-                .then((response) => {
-                    this.load = false;
-                    // this.$emit('updated');
-                    this.page = 0;
-                    this.isInfinite = true;
-                    this.infiniteScroll();
-                    Swal.fire({
-                        title: 'สำเร็จ',
-                        text: 'ลบกลุ่มเรียบร้อยแล้ว',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                    // this.apiMonitorGroupList();
-                })
-                .catch((error) => {
-                    this.load = false;
-                    console.error(error);
-                    Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบโพสต์ได้', 'error');
-                });
-            // console.log("post id ==== ", config);
+              .then(function (response) {
+                // console.log(response);
+                if (_this.selected == "") {
+                  if (v == 1) {
+                    _this.getPostAllMonitor[k].sentiment = 1;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = 1;
+                  } else if (v == 0) {
+                    _this.getPostAllMonitor[k].sentiment = 0;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = 0;
+                  } else {
+                    _this.getPostAllMonitor[k].sentiment = -1;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = -1;
+                  }
+                } else {
+                  if (v == _this.selected) {
+                    _this.getPostAllMonitor[k].sentiment = v;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = v;
+                  } else {
+                    _this.getPostAllMonitor.splice(k, 1);
+                  }
+                }
+              })
+              .catch(function (response) {
+                console.log("errrrrrr", response.message);
+              });
+            // if (v != this.getPostAllMonitor[k].sentiment) {
+            //   this.$store.dispatch("editSentimentPost", {
+            //     sentiment: v,
+            //     uid: encoded,
+            //   });
+            //   if (this.selected == "") {
+            //     if (v == 1) {
+            //       this.getPostAllMonitor[k].sentiment = 1;
+            //     } else if (v == 0) {
+            //       this.getPostAllMonitor[k].sentiment = 0;
+            //     } else {
+            //       this.getPostAllMonitor[k].sentiment = -1;
+            //     }
+            //   } else {
+            //     this.getPostAllMonitor.splice(k, 1);
+            //   }
+            //   this.$fire({
+            //     title: "แก้ไขสำเร็จ",
+            //     type: "success",
+            //     showConfirmButton: false,
+            //     timer: 1000,
+            //   });
+            // } else {
+            //   this.$alert("Sentiment เป็น " + err + " แล้ว!").then(() => {});
+            // }
+          }
+        ).catch(e => {
+          // if (!e) {
+          //     // confirm cancel
+          //     alert("ยกเลิกการเปลี่ยน Sentiment แล้ว");
+          // } else if (e.response) {
+          //     alert("เกิดข้อผิดพลาด: " + e.response.data.message);
+          // } else {
+          //     console.error(e);
+          //     alert("เกิดข้อผิดพลาดในการเปลี่ยน Sentiment");
+          // }
+        });
+    },
+    setAltImg(event) {
+      event.target.src = this.default_avatar;
+    },
+    onClick(i, data) {
+      // console.log(data);
+      this.index = i;
+      this.dataPhoto = data;
+    },
+    async infiniteScroll(acc, sort, offset, sentiment) {
+      // acc = this.getProfileData;
+      sort = this.selectedSort;
+      offset = this.page;
+      sentiment = this.selected;
+      if (this.getHashtagData) {
+        var hashtag = this.getHashtagData.replace("#", "");
+      }
+      acc = this.getProfileData;
+      // if (this.getValSource == "youtube") {
+      //   acc = this.getProfileData.replace("@", "");
+      // }
+
+      var payload;
+      var rt;
+
+      if (this.getValSource == "twitter") {
+        rt = true;
+      } else {
+        rt = "";
+      }
+      if (this.api == "profile") {
+        // Profile
+        if (this.tabs == "domainTab") {
+          // have not sentiment
+          if (sentiment != "") {
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              domain: this.dh,
+              sentiment: sentiment,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          } else {
+            //  have  sentiment
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              domain: this.dh,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          }
+        } else if (this.tabs == "hashtagTab") {
+          if (sentiment != "") {
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              hashtag: this.dh,
+              sentiment: sentiment,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          } else {
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              hashtag: this.dh,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          }
+          //All post
+        } else {
+          if (sentiment != "") {
+            //  have  sentiment
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              sentiment: sentiment,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          } else {
+            //  have not sentiment
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          }
+        }
+      } else if (this.api == "hashtag") {
+        // Hahtag
+        if (this.tabs == "domainTab") {
+          if (sentiment != "") {
+            // console.log("sentiment", sentiment);
+            //  have  sentiment
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              sentiment: sentiment,
+              domain: this.dh,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+          } else {
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              domain: this.dh,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+            // console.log("onsentiment", sentiment);
+          }
+        } else {
+          if (sentiment != "") {
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              sentiment: sentiment,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+          } else {
+            //  have  sentiment
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+          }
+        }
+      } else {
+        //Domian Menu
+        if (this.pageMenu == "domain") {
+          let sc, domains, dash;
+
+          // console.log("keyword1", this.domainKeyword, this.getClickDomain);
+          if (this.menu == "platform") {
+            sc = this.getSocialPlatform;
+            // domains = "All";
+            dash = this.crawdash;
+          } else {
+            sc = this.getSocialDomain;
+            domains = this.getClickDomainId;
+            dash = "";
+          }
+          // console.log("domain");
+          if (this.getSdateDm) {
+            this.sdate = this.getSdateDm;
+            this.edate = this.getEdateDm;
+          } else {
+            this.sdate =
+              moment(new Date())
+                .format()
+                .slice(0, 10) + "T00:00:00";
+            this.edate =
+              moment(new Date())
+                .format()
+                .slice(0, 10) + "T23:59:59";
+          }
+
+          if (sentiment === "") {
+            payload = {
+              start_date: this.sdate,
+              end_date: this.edate,
+              source: sc,
+              sort_by: sort,
+              domain: domains,
+              offset: offset,
+              dashboard: dash,
+            };
+          } else {
+            //  have  sentiment
+            payload = {
+              start_date: this.sdate,
+              end_date: this.edate,
+              source: sc,
+              sentiment: sentiment,
+              sort_by: sort,
+              domain: domains,
+              offset: offset,
+              dashboard: dash,
+            };
+          }
+          if (this.domainKeyword) {
+            // console.log("keyword2", this.domainKeyword);
+            payload.querySearch = this.domainKeyword;
+          }
+        } else {
+          if (this.statusLocat == true) {
+            // let sdateLocat =this.dateLocat[0].slice(0, 16);
+            // let edateLocat =this.dateLocat[1].slice(0, 16);
+            this.statusLocat == false;
+            if (sentiment === "") {
+              payload = {
+                account: this.users,
+                sort_by: sort,
+                offset: offset,
+                query: this.changwats + "," + this.amphoes,
+                // start_date:sdateLocat,
+                // end_date:edateLocat
+              };
+              if (this.amphoes.length) {
+                // console.log("this.amphoes", this.amphoes);
+                payload.query = this.amphoes;
+              }
+            } else {
+              //  have  sentiment
+              payload = {
+                account: this.users,
+                sort_by: sort,
+                offset: offset,
+                sentiment: sentiment,
+                query: this.changwats,
+                // start_date:sdateLocat,
+                // end_date:edateLocat
+              };
+              if (this.amphoes.length) {
+                // console.log("this.amphoes", this.amphoes);
+                payload.query = this.amphoes;
+              }
+            }
+          }
+        }
+      }
+
+      //  Global Fetch data
+      var checkApi;
+      if (this.api == "location") {
+        if (this.pageMenu == "domain") {
+          if (this.menu == "platform") {
+            checkApi = "fetchAllPostDomain";
+          } else {
+            checkApi = "fetchAllPostDomainPost";
+          }
+        } else {
+          checkApi = "fetchLocation";
+        }
+      } else {
+        checkApi = "fetchPostAll";
+      }
+      let temp = await this.$store.dispatch(checkApi, payload);
+      if (temp && temp.length === 0) {
+        this.isInfinite = false;
+      }
+      this.page += 10;
+      this.infiniteId += 1;
+      // console.log(this.page);
+    },
+    selectSort() {
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    selectSentiment() {
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    confirmDeletePost(post_id) {
+      // console.log(data, target_id);
+      let domainName = this.getClickDomain;
+      Swal.fire({
+        title: 'ยืนยันการลบโพสต์',
+        text: `ต้องการลบโพสต์ออกจากหัวเรื่อง "${domainName}" หรือไม่?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'ลบ',
+        cancelButtonText: 'ยกเลิก',
+        didOpen: () => {
+          const iconContent = document.querySelector('.swal2-icon-content');
+          if (iconContent) iconContent.style.display = 'none';
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.removePost(post_id);
+          // this.apiDeleteTarget(data.item.group_id, target_id);
+          // this.toggleDetails(data);
+        }
+      });
+    },
+    async removePost(post_id) {
+      let domain_id = this.getClickDomainId;
+      const config = {
+        method: "put",
+        url: `https://api2.cognizata.com/api/v2/userposts/removeDomain?id=${post_id}&domain_id=${domain_id}`,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
         },
-       
-},
+      };
+      this.axios(config)
+        .then((response) => {
+          this.load = false;
+          // this.$emit('updated');
+          this.page = 0;
+          this.isInfinite = true;
+          this.infiniteScroll();
+          Swal.fire({
+            title: 'สำเร็จ',
+            text: 'ลบกลุ่มเรียบร้อยแล้ว',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 2000
+          });
+          // this.apiMonitorGroupList();
+        })
+        .catch((error) => {
+          this.load = false;
+          console.error(error);
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบโพสต์ได้', 'error');
+        });
+      // console.log("post id ==== ", config);
+    },
+
+  },
   mounted() {
     const script = document.createElement("script");
     script.async = true;
@@ -1609,7 +1600,7 @@ export default {
         if (val) {
           this.domainKeyword = val;
           await this.infiniteScroll();
-        //   console.log("emitter", val);
+          //   console.log("emitter", val);
         } else {
           this.domainKeyword = val;
           await this.infiniteScroll();
@@ -1667,6 +1658,15 @@ export default {
 };
 </script>
 <style>
+.info-news {
+  background-color: #bfebf1;
+  width: fit-content;
+  padding: 3px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  float: right;
+}
+
 .title-news {
   font-size: large;
   font-weight: 600;
@@ -1678,6 +1678,25 @@ iframe body {
 
 iframe html {
   overflow: hidden !important;
+}
+
+@media only screen and (min-width: 0px) and (max-width: 600px) {
+  .title-news {
+    font-size: medium;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .info-news {
+    background-color: #bfebf1;
+    width: fit-content;
+    padding: 3px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    float: right;
+    display: block;
+    text-align: right !important;
+  }
 }
 </style>
 <style scoped>
@@ -2026,6 +2045,7 @@ a {
     /* border: 2px solid #fff; */
     box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset;
   }
+
   .box-hl {
     font-size: 16px;
     font-weight: 600;
