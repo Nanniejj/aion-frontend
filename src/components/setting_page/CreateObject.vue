@@ -151,7 +151,7 @@ export default {
 
       } catch (error) {
         console.error("Error creating object:", error.response?.data || error);
-        alert("เกิดข้อผิดพลาดในการเพิ่ม Object");
+        alert(error.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     },
     logAndKeywords() {
