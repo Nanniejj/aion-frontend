@@ -917,9 +917,9 @@ export default {
                     } else {
                         this.selectedData.name = this.extractName(previews.title);
                     }
-                    this.selectedData.followers =  previews.description
-                        ? this.extractFollowers(previews.description)
-                        : null;
+                    // this.selectedData.followers =  previews.description
+                    //     ? this.extractFollowers(previews.description)
+                    //     : null;
                 } else {
                     this.img = fallbackImage;
                     this.selectedData.profile_image = null

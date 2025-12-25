@@ -132,7 +132,7 @@
                                 :class="{'avatar-gradient-border':data.item.influencer_condition}"
                                 v-if="data && data.item && data.item.profile_image">
                             </b-avatar>
-                            <b-avatar :src="data.item.profile_image" v-else> </b-avatar>
+                            <b-avatar :class="{'avatar-gradient-border':data.item.influencer_condition}" :src="data.item.profile_image" v-else> </b-avatar>
                         </span>
                         <span class="text-truncate d-sm-none d-lg-block w-auto">
                             {{ data.item.name || data.item.uid }}
@@ -192,7 +192,7 @@
                             </b-button>
                         </b-col>
                         <b-col v-if="username === 'adminatapy'" cols="auto" class="p-0">
-                            <span v-if="type === 'targetlist' && (data.item.followers < 100000 || data.item.followers === null || data.item.influencer_condition)" class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขข้อมูล"
+                            <span v-if="type === 'targetlist' && (data.item.followers < 100000 || !data.item.followers || data.item.influencer_condition)" class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขข้อมูล"
                             @click="openEditProfile(data.item)" size="sm"></span>
                         </b-col>
                         <b-col cols="auto" class="p-0">
