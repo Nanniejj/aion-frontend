@@ -1,7 +1,6 @@
 <template lang="">
     <b-card 
-        :img-src="influencer.profile_image" 
-        img-alt="ไม่มีข้อมูลรูปภาพ" 
+        :img-src="influencer.profile_image || default_avatar"
         img-top
         body-class="text-left p-0"
         img-top-class="rounded-top"
@@ -98,6 +97,7 @@ export default {
     },
     data() {
         return {
+            default_avatar: require("@/assets/no-image-2.png"),
             provinceName: null,
             districtName: null,
             subDistrictName: null,

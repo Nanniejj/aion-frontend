@@ -205,8 +205,14 @@
                             <i class="fa fa-birthday-cake mr-1"/>
                             อายุ :
                         </b-col>
-                        
-                        <b-form-spinbutton id="demo-sb" size="sm" v-model="profile.age" min="0" max="100"></b-form-spinbutton>
+                        <b-form-input
+                            v-model.number="profile.age"
+                            type="number"
+                            size="sm"
+                            min="0"
+                            max="100"
+                        />
+                        <!-- <b-form-spinbutton id="demo-sb" size="sm" v-model="profile.age" min="0" max="100"></b-form-spinbutton> -->
                     </b-row>
                 </b-col>
                 <b-col class="px-0 px-md-1 mb-2">
