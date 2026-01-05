@@ -97,17 +97,17 @@
       @reset="apiList"
     />
     <!-- {{ isPaging }} {{ currentPage }} -->
-   <b-progress
+  
+    <!-- Pagination -->
+<div v-if="totalSubdomains > perPage" class="d-flex flex-column align-items-center my-3">
+
+ <b-progress
     v-if="isPaging"
     :value="100"
     height="10px"
     class="w-100 mb-2"
     variant="info"
   />
-    <!-- Pagination -->
-<div v-if="totalSubdomains > perPage" class="d-flex flex-column align-items-center my-3">
-
-
   <b-pagination
     :value="currentPage"
     @input="onPageChange"
