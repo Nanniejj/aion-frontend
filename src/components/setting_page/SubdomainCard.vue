@@ -21,6 +21,7 @@
               v-model="searchQuery"
               @input="checkSearch"
               placeholder="ค้นหา"
+                @keyup.enter="filterSubdomains"
               class="input-group-text text-left"
             />
 
@@ -389,17 +390,23 @@ filterSubdomains() {
   const first = objs.length ? objs[0] : null;
 
   // ✅ cache: รวม object_name ทั้งหมดของ subdomain นี้ (ทำครั้งเดียว)
-  const searchBlob = objs
-    .map(o => String(o.object_name || "").toLowerCase())
-    .join(" ");
+const searchBlob = objs
+  .map(o => {
+    const parts = [];
+    if (o.object_name) parts.push(o.object_name);
+    if (Array.isArray(o.keywords)) parts.push(o.keywords.join(" "));
+    if (Array.isArray(o.and_keywords)) parts.push(o.and_keywords.join(" "));
+    return parts.join(" ");
+  })
+  .join(" ")
+  .toLowerCase();
+
 
   return {
     ...s,
-    display: s.display !== false,
-    activeObjectId: first ? first.object_id : null,
-
-    // ✅ เพิ่ม field นี้
-    _searchBlob: searchBlob,
+  display: s.display !== false,
+  activeObjectId: first ? first.object_id : null,
+  _searchBlob: searchBlob,
   };
 });
 
