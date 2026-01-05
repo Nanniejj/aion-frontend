@@ -1,6 +1,6 @@
 <template>
   <span>
-    <b-button size="md" class="w-md-auto" pill style="background-color: #fdd071;color: #2c3e50;" @click="open = true;">
+    <b-button size="md" class="w-md-auto btn-addobj" pill style="background-color: #fdd071;color: #2c3e50;" @click="open = true;">
       <i class="fa fa-plus" style="font-size: 18px; line-height: 1;"></i> เพิ่มประเด็น
     </b-button>
     <vue-modaltor :visible="open" @hide="open = false;" :animation-panel="'modal-slide-top'"
@@ -227,4 +227,8 @@ export default {
   font-size: 16px;
   padding: 10px;
 }
+@media only screen and (min-width: 0px) and (max-width: 767px) {
+.btn-addobj{
+    font-size: 12px !important;
+}}
 </style>

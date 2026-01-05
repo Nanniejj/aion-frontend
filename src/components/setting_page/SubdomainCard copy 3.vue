@@ -5,7 +5,7 @@
       <!-- Search Input with Icon -->
       <b-row class="justify-content-md-end">
         <b-col>
-          <div class="h4 text-left"> {{ $route.params.domain }}</div>
+          <div class="h4 text-left bold">เรื่อง {{ $route.params.domain }}</div>
         </b-col>
         <!-- Input Field with Search Icon -->
         <b-col cols="12" sm="12" md="4" lg="4" class="mt-2 mt-md-0 pr-md-0 mr-md-2">
@@ -20,214 +20,75 @@
                 <i class="fa fa-search"></i>
               </span>
             </b-input-group-prepend>
-            <b-form-input ref="searchInput" placeholder="ค้นหา" class="input-group-text text-left"></b-form-input>
+            <b-form-input ref="searchInput" @input="checkSearch()" v-model="searchQuery" placeholder="ค้นหา" class="input-group-text text-left"></b-form-input>
             <b-input-group-append>
               <b-button @click="filterSubdomains" pill style="position: relative;right: 15px;background-color: #777676">
                 ค้นหา
-              </b-button> <!-- ✅ ปุ่มค้นหา -->
+              </b-button> <!-- ✅ ปุ่มค้นหา  -->
             </b-input-group-append>
           </b-input-group>
         </b-col>
 
         <!-- Button +subdomain -->
+
         <b-col cols="12" md="auto" class="mt-4 mt-md-0 pl-md-0">
-          <b-button pill class="w-100 w-md-auto" style="background-color: #7cd1dc; color: black; border:#7cd1dc;"
+          <AddSubDomain :domainId="domainId" />
+          <!-- <b-button pill class="w-100 w-md-auto" style="background-color: #7cd1dc; color: black; border:#7cd1dc;"
             @click="openAddSubdomainModal">
             <i class="fa fa-plus"></i> เพิ่ม Subdomain
-          </b-button>
+          </b-button> -->
         </b-col>
       </b-row>
 
+      <!-- suggestionKeywords -->
+      <b-row v-if="suggestionKeywrords.length !== 0" class="m-0 py-2 mt-2">
+        <b-col cols="12" class="text-left px-0">
+            <h5>keyword ที่แนะนำ</h5>
+        </b-col>
+        <b-col cols="12" class="px-0">
+            <b-row class="m-0">
+                <b-col cols="auto" class="pl-0 px-1 mb-2" v-for="(keyword,index) in suggestionKeywrords" :key="index + keyword">
+                    <div @click="copyToClipboard(keyword)" class="bage-keyword" v-b-tooltip.hover title="คลิกเพื่อ 'คัดลอก' ">
+                        {{ keyword }}
+                    </div>
+                </b-col>
+            </b-row>
+        </b-col>
+      </b-row>
       <br />
-      <div>
+      <div v-if="loadWord">
         <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
           spinner="line-scale" color="#7cd1dc" />
       </div>
       <!-- ก้อน subdomain สีฟ้า -->
-      <div v-for="(subdomain, subIndex) in filteredSubdomains" :key="subdomain.subdomain_id" class="mb-4">
-        <!-- ชื่อ Subdomain -->
-        <b-col sm="12" md="4" lg="4" class="d-flex justify-content-between align-items-center"
-          style="background-color: #7cd1dc; color: #000; border-radius: 10px; padding: 10px; margin-bottom: 0px;">
-          <span class="text-center subdomain-name" style="flex: 1;">
-            {{ subdomain.subdomain_name }}
-            <!-- {{ subdomain.subdomain_id }} -->
-          </span>
-
-          <div class="d-flex justify-content-end">
-            <b-button size="sm" class="rounded-circle"
-              style="background-color: white;  color: #2c3e50; width: 30px; height: 30px;"
-              @click="editSubdomain(subIndex)">
-              <i class="fa fa-pencil"></i>
-            </b-button>
-
-            <b-button size="sm" class="rounded-circle ml-2"
-              style="background-color: white;  color: #2c3e50; width: 30px; height: 30px;"
-              @click="openDeleteSubdomainModal(subIndex, subdomain)">
-              <i class="fa fa-trash-alt"></i>
-            </b-button>
-            <!-- <b-button size="sm" class="rounded-circle ml-2"
-              style="background-color: white;  color: #2c3e50; width: 30px; height: 30px;"
-              @click="toTableWord(subdomain)">
-              <i class="fa fa-table"></i>
-            </b-button> -->
-          </div>
+      <div v-else class="mb-4">
+        <b-col class="px-0 pb-3">
+          <div class="h5 text-left bold">หมวดหมู่</div>
         </b-col>
-
-        <!-- Objects ใน Card -->
-        <b-card class="custom-card">
-          <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
-            color="#b6ac9a" />
-          <b-row class="mb-3">
-            <b-col cols="12" sm="4" style="margin-bottom: 10px; padding-left: 10px; text-align: left;">
-              <div class="text-h5"><strong>Objects </strong>
-                <!-- <span class="small">( Object )</span> -->
-              </div>
-            </b-col>
-            <div class="card-actions"
-              style="border: 1px solid #ffff; border-radius: 10px; padding: 2px; margin-top: 15px; cursor: pointer;">
-              <!-- ก้อนเพิ่ม object -->
-              <CreateObject :objectData="subdomain" />
-              
-            </div>
-          </b-row>
-
-          <!--ก้อนคำว่า object -->
-          <b-row v-if="subdomain && subdomain.objects && subdomain.objects.length">
-            <b-col >
-              <div class="scroll-obj">
-                <div v-for="(object, objIndex) in subdomain.objects" :key="objIndex"
-                  class="object-item d-flex align-items-center justify-content-between py-2 px-3 " :class="{
-                    'active-item':
-                      subdomain.activeObjectId === object.object_id,
-                    'inactive-item':
-                      subdomain.activeObjectId !== object.object_id,
-                  }" @click="setActive(subIndex, object.object_id, object)"
-                  style="border: 0px solid #ccc; border-radius: 15px; margin-bottom: 20px; cursor: pointer;">
-                  <span class="text-center object-name" style="flex: 1;">
-                    {{ object.object_name }}
-                  </span>
-<!-- {{ subdomain.activeObjectId }} {{ object.object_id }} -->
-                  <div class="d-flex justify-content-end">
-                    <EditObjectKeyword :objectData="{ subdomain_id: subdomain.subdomain_id, ...subdomain.datakeyword }"
-                      :btn="'edit'" />
-
-                  
-
-                    <b-button size="sm" class="rounded-circle"
-                      style="background-color: white; color: #2c3e50; width: 30px; height: 30px; margin-right: 3px;"
-                      @click="openDeleteObjectModal(subIndex, objIndex, object)">
-                      <i class="fa fa-trash-alt icon-hover"></i>
-                    </b-button>
-                  </div>
-                </div>
-              </div>
-            </b-col>
-
-            <!-- Keywords -->
-            <b-col cols="12" md="8" style="text-align: left;">
-              <div v-if="
-                subdomain && subdomain.datakeyword && subdomain.datakeyword.keywords &&
-                subdomain.datakeyword.keywords.length
-              ">
-                <strong class="my-3">Keywords</strong><br />
-                <div v-for="(keyword, index) in subdomain.datakeyword.keywords" :key="index"
-                  class="keyword-box my-1 px-3">
-                  <!-- {{ keyword }} -->
-                  <Highlighter
-                    class="my-highlight md-font"
-                    highlightClassName="highlight-search"
-                    :searchWords="[searchQuery]"
-                    :autoEscape="true"
-                    :textToHighlight="keyword"
-                  ></Highlighter> 
-                </div>
-
-              </div>
-
-              <!-- Include Keywords -->
-              <div v-if="
-                subdomain && subdomain.datakeyword && subdomain.datakeyword.and_keywords &&
-                subdomain.datakeyword.and_keywords.length
-              " style="margin-top: 10px;">
-                <strong class="my-3">Include Keywords</strong><br />
-                <div v-for="(and_keywords, index) in subdomain.datakeyword
-                  .and_keywords" :key="index" class="keyword-box px-3 my-1">
-                 <Highlighter
-                    class="my-highlight md-font"
-                    highlightClassName="highlight-search"
-                    :searchWords="[searchQuery]"
-                    :autoEscape="true"
-                    :textToHighlight="and_keywords"
-                  ></Highlighter> 
-                </div>
-              </div>
-
-              <!-- Exclude Keywords -->
-              <div v-if="
-                subdomain && subdomain.datakeyword && subdomain.datakeyword.not_keywords &&
-                subdomain.datakeyword.not_keywords.length
-              " style="margin-top: 10px;">
-                <strong class="my-3">Exclude Keywords</strong><br />
-                <div v-for="(not_keywords, index) in subdomain.datakeyword
-                  .not_keywords" :key="index" class="keyword-box px-3 my-1">
-                <Highlighter
-                    class="my-highlight md-font"
-                    highlightClassName="highlight-search"
-                    :searchWords="[searchQuery]"
-                    :autoEscape="true"
-                    :textToHighlight="not_keywords"
-                  ></Highlighter> 
-                  <!-- <i
-                    class="bi bi-x"
-                    @click="deleteKeyword(subIndex, 'not_keywords', index)"
-                  ></i> -->
-                </div>
-              </div>
-
-              <div v-if="subdomain && subdomain.datakeyword">
-               
-                <EditObjectKeyword :objectData="{ subdomain_id: subdomain.subdomain_id, ...subdomain.datakeyword }"
-                  :btn="'icon'" />
-              </div>
-            </b-col>
-          </b-row>
-          <div v-else class="my-3 gray">
-            ไม่พบข้อมูล
-          </div>
-        </b-card>
-      </div>
-
-      <!--เพิ่ม AddSubdomain -->
-      <b-modal id="add-subdomain-modal" centered @hidden="resetAddSubdomainModal" hide-footer class="modal-header">
-        <b-form @submit.prevent="handleAddSubdomain" class="custom-form">
-          <!-- <b-form-group label="Domain ID">
-            <b-form-input
-              v-model="newDomainId"
-              type="number"
-              required
-            ></b-form-input>
-          </b-form-group> -->
-
-          <b-form-group>
-            <h5><b>เพิ่ม SubDomain</b></h5>
-            <hr>
-            <div class="my-2">คำแนะนำ : กรุณาใส่ชื่อ SubDomain ที่ต้องการ</div>
-            <b-form-input v-model="newSubdomainName" maxlength="50" required></b-form-input>
-          </b-form-group>
-          <small class="text-muted">{{ newSubdomainName.length || 0 }} / 50 ตัวอักษร</small>
-          <div class="d-flex justify-content-end mt-3">
-            <b-button class="btn-submit" @click="handleAddSubdomain"
-              :disabled="newSubdomainName.length == 0">บันทึก</b-button>
-          </div>
-        </b-form>
-      </b-modal>
-
+        <ObjectCard 
+            v-for="(subdomain, subIndex) in filteredSubdomains" :key="subdomain.subdomain_id" 
+            :subdomain="subdomain"
+            :searchQuery="keyword"
+            @edit-subDomain="editSubdomain(subIndex)"
+            @delete-subDomain="openDeleteSubdomainModal(subIndex, subdomain)"
+            @reset="apiList"
+        />
+       </div>
+       <b-button
+            v-if="!loadWord"
+            variant="warning"
+            class="fab"
+            @click="scrollToTop"
+            style="background-color: #fed06ea4;"
+        >
+            <i class="fas fa-arrow-up"></i>
+        </b-button>
       <!-- edit subdomain -->
       <b-modal v-b-modal.modal-center id="edit-subdomain-modal" ref="editSubdomainModal" @hidden="resetEditModal"
         :ok-only="true" class="custom-modal" centered>
         <!-- Form for Editing Subdomain -->
         <b-form ref="editForm" @submit.prevent="handleEditSubdomain" class="custom-form">
-          <h5><b>แก้ไข Subdomain</b></h5>
+          <h5><b>แก้ไขหมวดหมู่</b></h5>
           <hr>
           <b-form-group label-for="edit-subdomain">
             <b-form-input id="edit-subdomain" v-model="editSubdomainName" required class="subdomain-input"
@@ -246,21 +107,6 @@
       <!-- Modal สำหรับลบ subdomain -->
       <b-modal id="confirm-delete-subdomain-modal" title="ยืนยันการลบ Subdomain" hide-footer>
         <b-form @submit.prevent="handleDeleteSubdomain" centered>
-          <!-- <b-form-group label="Domain ID">
-            <b-form-input
-              v-model="newDomainId"
-              type="number"
-              disabled
-            ></b-form-input>
-          </b-form-group>
-
-          <b-form-group label="Subdomain ID">
-            <b-form-input
-              v-model="newSubdomainId"
-              type="text"
-              disabled
-            ></b-form-input>
-          </b-form-group> -->
 
           <p>
             คุณต้องการลบ <strong>{{ deleteSubdomainName }}</strong> หรือไม่?
@@ -277,7 +123,7 @@
       <b-modal id="add-object-modal" v-model="showObjectModal" size="lg" hide-footer
         content-class="custom-modal-content" centered>
         <template #modal-title>
-          <h5 class="custom-modal-title font-weight-bold">เพิ่ม Object</h5>
+          <h5 class="custom-modal-title font-weight-bold">เพิ่มประเด็น</h5>
         </template>
 
         <CreateObject @close="showObjectModal = false" :objectData="clickAddObj" v-if="clickAddObj" />
@@ -318,8 +164,6 @@
           </div>
         </b-form>
       </b-modal>
-
-   
       <b-modal id="edit-object-keyword-modal" v-model="showEditModal" size="lg" hide-footer
         content-class="custom-modal-content" centered>
         <template #modal-title>
@@ -335,16 +179,18 @@
 
 <script>
 import Highlighter from "vue-highlight-words";
-import _ from "lodash";
 import CreateObject from "./CreateObject.vue";
 import EditObjectKeyword from "./EditObjectKeyword.vue";
-// import _ from "lodash";
+import AddSubDomain from "./AddSubDomain.vue";
+import ObjectCard from "./ObjectCard.vue";
 export default {
   name: "SubdomainCard",
   components: {
     CreateObject,
     EditObjectKeyword,
-    Highlighter,
+      Highlighter,
+    ObjectCard,
+    AddSubDomain
   },
   // watch: {
   //   searchQuery: _.debounce(function (newQuery) {
@@ -353,7 +199,8 @@ export default {
   // },
 
   data() {
-    return {
+      return {
+        keyword : '',
       filteredSubdomains: [],
       loadWord: false,
       clickEditObj: "",
@@ -388,47 +235,105 @@ export default {
       deleteSubdomainIndex: null, // index ของ Subdomain ที่มี Object นี้
       deleteObjectId: null, // ID ของ Object ที่ต้องลบ
       deleteObjectName: "", // ชื่อ Object ที่จะแสดงใน Modal
+        suggestionKeywrords: [],
+          subdomainKeywords: [],
+      showFabButton: false,
     };
   },
   computed: {
-    // filteredSubdomains() {
-    //   if(this.subdomains&&this.subdomains.length){
-    //   if (!this.searchQuery) {
-    //     return this.subdomains.filter(
-    //       (subdomain) =>
-    //         subdomain.display !== false || subdomain.display === undefined
-    //     );
-    //   }
-    //   const query = this.searchQuery.toLowerCase();
-    //   return this.subdomains.filter(
-    //     (subdomain) =>
-    //       (subdomain.display !== false || subdomain.display === undefined) &&
-    //       (subdomain.subdomain_name.toLowerCase().includes(query) ||
-    //         subdomain.objects.some((object) =>
-    //           object.object_name.toLowerCase().includes(query)
-    //         ))
-    //   );
-    // }},
-  },
-  methods: {
-    filterSubdomains() {
-      this.searchQuery = this.$refs.searchInput.$el.value.trim().toLowerCase(); // ✅ ดึงค่าจาก ref แทน v-model
-      console.log('this.searchQuery', this.searchQuery, this.$refs.searchInput.value.trim().toLowerCase());
-
-      const query = this.searchQuery;
-      if (!query) {
-        this.filteredSubdomains = this.subdomains.filter(sub => sub.display !== false);
-        return;
+   
+    },
+  mounted() {
+        window.addEventListener("scroll", this.handleScroll);
+        this.type = this.$route.query.groupType
+    },
+    beforeDestroy() {
+        window.removeEventListener("scroll", this.handleScroll);
+    },
+    methods: {
+    handleScroll() {
+        // ถ้า scroll เกิน 700px ค่อยโชว์ปุ่ม
+        this.showFabButton = window.scrollY > 700;
+    },
+    scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+        
+    },
+    copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        // วิธีใหม่ (modern browsers)
+        navigator.clipboard.writeText(text).then(() => {
+          this.$bvToast.toast("คัดลอกแล้ว: " + text, {
+            title: "สำเร็จ",
+            variant: "success",
+            solid: true,
+            autoHideDelay: 1000 
+          });
+        });
+      } else {
+        // วิธี fallback
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = 0;
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+          document.execCommand("copy");
+          this.$bvToast.toast("คัดลอกแล้ว: " + text, {
+            title: "สำเร็จ",
+            variant: "success",
+            solid: true,
+            autoHideDelay: 1000 
+          });
+        } catch (err) {
+          console.error("ไม่สามารถคัดลอก", err);
+        }
+        document.body.removeChild(textarea);
       }
+    },
+    checkSearch() {
+        if (!this.searchQuery) {
+            this.keyword = ''
+            // this.filterSubdomains();
+            // this.apiList();
+        }
+    },
+    filterSubdomains() {
+        // this.loadWord = true
+        const query = (this.searchQuery || '').trim().toLowerCase();
+            console.log("query === ",query,this.subdomains);
+            
+        if (!query) {
+            // this.filteredSubdomains = this.subdomains.filter(sub => sub.display !== false);
+            // this.loadWord = false
+            this.keyword = ''
+            return;
+        } else {
+            this.keyword = query
+            console.log('keyword ==== ',this.keyword);
+            
+        }
+        // else {
+        //     this.filteredSubdomains = this.subdomains.filter(subdomain =>
+        //         subdomain.subdomain_name &&
+        //         subdomain.subdomain_name.toLowerCase().includes(query)
+        //     );
+        //     this.loadWord = false
+        // }
 
-      this.filteredSubdomains = this.subdomains.filter(subdomain => {
-        if (subdomain.display === false) return false;
-
-        const filterableData = JSON.stringify(this.extractSearchableFields(subdomain)).toLowerCase();
-        return filterableData.includes(query);
-      });
-
-      console.log("Filtered Results:", this.filteredSubdomains);
+    //   this.filteredSubdomains = this.subdomains.filter(subdomain => {
+    //     if (subdomain.display === false) return false;
+    //     const filterableData = JSON.stringify(this.extractSearchableFields(subdomain)).toLowerCase();
+    //     return filterableData.includes(query);
+    //       });
+    //     this.loadWord = false
+      console.log("serch === ", this.filteredSubdomains);
+      
     },
 
     extractSearchableFields(obj) {
@@ -499,12 +404,10 @@ export default {
         };
         const response = await this.axios(config);
 
-        console.log("ดึงข้อมูลสำเร็จ:", response.data);
+        console.log("ดึงข้อมูลสำเร็จ apiList:", response.data);
 
         if (response.data.domain_id) {
           this.domainId = response.data.domain_id; //เซ็ตค่า domain_id ที่ได้จาก API
-
-
           //แปลงข้อมูล Subdomains โดยตั้งค่า display เป็น true ถ้าไม่มีค่า
           this.subdomains = response.data.subdomains.map((subdomain) => {
             const firstObject =
@@ -517,65 +420,46 @@ export default {
               datakeyword: firstObject || {},
             };
           });
-          this.filteredSubdomains = this.subdomains
+            this.filteredSubdomains = this.subdomains
+            this.loadWord = false
         }
-        // localStorage.getItem("active_subIndex");
-        // localStorage.getItem("active_objectId");
-        // const storedSubdomainId = localStorage.getItem("activeSubdomainId");
-        // const storedObjectId = localStorage.getItem("activeObjectId");
-
-        this.loadWord = false
+        this.subdomainKeywords = this.collectKeywords(this.subdomains)
+        
         console.log("ดึงข้อมูลสำเร็จ2:", this.subdomains);
       } catch (error) {
         this.loadWord = false
         console.error("Error fetching API:", error);
       }
     },
-
-
-    async handleAddSubdomain() {
-      if (!this.newSubdomainName.trim() || !this.newDomainId) {
-        alert("กรุณากรอกชื่อ Subdomain");
-        return;
-      }
-
-      const newSubdomainData = {
-        name: this.newSubdomainName.trim(),
-        domain_id: this.newDomainId,
-      };
-
-      try {
-        const response = await this.axios.post(
-          "https://api2.cognizata.com/api/v2/setting/postSubdomain",
-          newSubdomainData,
-          {
-            headers: {
-              Authorization: "Bearer " + localStorage.getItem("token"),
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.data) {
-          console.log("Subdomain created successfully:", response.data);
-
-          // เพิ่ม Subdomain ใหม่เข้าไปในรายการ
-          // this.subdomains.push(response.data);
-
-          // ปิด Modal
-          this.$bvModal.hide("add-subdomain-modal");
-          this.apiList()
-          this.$fire({
-            title: "บันทึกข้อมูลสำเร็จ",
-            type: "success",
-            showConfirmButton: false,
-            timer: 1000,
-          });
+    async apiGetSuggestionKeywrords() {
+        // this.loadWord = true
+        try {
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/aiservice/getSuggestionKewrords",
+                params: { domain_id: this.$route.query.id },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+            const response = await this.axios(config);
+            // this.loadWord = false;
+            if (response && response.data && response.data.length > 0) {
+                console.log("res === ", response);
+                let data = response.data[0];
+                this.suggestionKeywrords = data.keywords;
+                console.log(data);
+            } else {
+                console.log("No data found");
+                this.suggestionKeywrords = []
+            }
+            
+        } catch (error) {
+            // this.loadWord = false
+            this.suggestionKeywrords = []
+            console.error("Error fetching API:", error);
         }
-      } catch (error) {
-        console.error("Error creating subdomain:", error);
-        alert("เกิดข้อผิดพลาดในการเพิ่ม Subdomain");
-      }
     },
 
     async handleEditSubdomain() {
@@ -584,7 +468,7 @@ export default {
 
       const subdomain = this.subdomains[this.editSubdomainIndex];
       const updatedSubdomainData = {
-        domain_id: 1, // ค่าที่ต้องส่ง
+        domain_id: this.$route.query.id, // ค่าที่ต้องส่ง
         name: this.editSubdomainName.trim(),
       };
 
@@ -605,7 +489,7 @@ export default {
           // this.subdomains[
           //   this.editSubdomainIndex
           // ].subdomain_name = this.editSubdomainName;
-         // console.log(
+          // console.log(
           //   "แก้ไขชื่อ Subdomain updated successfully:",
           //   response.data
           // );
@@ -648,15 +532,15 @@ export default {
         if (response.data) {
           // อัปเดต `subdomains` ให้ Object ใหม่แสดงผล
           subdomain.objects.push(response.data);
-         // console.log("Object added successfully:", response.data);
+          // console.log("Object added successfully:", response.data);
         }
       } catch (error) {
-       // console.error("Error adding object:", error);
+        // console.error("Error adding object:", error);
       }
     },
 
     async handleEditObject() {
-     // console.log("handleEditObject() ถูกเรียก");
+      // console.log("handleEditObject() ถูกเรียก");
 
       if (this.editObjectIndex === null || !this.editObjectName.trim()) {
         console.error("editObjectIndex หรือ editObjectName ว่าง!");
@@ -796,52 +680,46 @@ export default {
       }
     },
     setActive(subIndex, objectId, object) {
-      console.log("setActive() ถูกเรียก: subdomainIndex =", subIndex, "objectId =", objectId,object);
+      console.log("setActive() ถูกเรียก: subdomainIndex =", subIndex, "objectId =", objectId);
 
       //หา index จริงของ subdomain ใน subdomains[]
-      const realSubIndex = this.subdomains.findIndex(
-        (sub) =>
-          sub.subdomain_id === this.filteredSubdomains[subIndex].subdomain_id
-      );
+    //   const realSubIndex = this.subdomains.findIndex(
+    //     (sub) =>
+    //       sub.subdomain_id === this.filteredSubdomains[subIndex].subdomain_id
+    //   );
 
-      if (realSubIndex === -1) return;
+    //   if (realSubIndex === -1) return;
 
-      const subdomain = this.subdomains[realSubIndex];
+      const subdomain = this.subdomains[subIndex];
 
-      //หา index จริงของ object ใน subdomain
-      const realObjIndex = subdomain.objects.findIndex(
-        (obj) => obj.object_id === objectId
-      );
+    //   //หา index จริงของ object ใน subdomain
+    //   const realObjIndex = subdomain.objects.findIndex(
+    //     (obj) => obj.object_id === objectId
+    //   );
 
-      if (realObjIndex === -1) return;
+    //   if (realObjIndex === -1) return;
 
       subdomain.activeObjectId = objectId;
-      subdomain.datakeyword = subdomain.objects[realObjIndex];
-      subdomain.activeObjectIndex = realObjIndex;
+      subdomain.datakeyword = object;
+      subdomain.activeObjectIndex = objectId;
 
-      this.activeSubdomainIndex = realSubIndex;
-      this.activeObjectIndex = realObjIndex;
-      this.activeSubdomainId = this.subdomains[realSubIndex].subdomain_id;
+      this.activeSubdomainIndex = subIndex;
+      this.activeObjectIndex = objectId;
+      this.activeSubdomainId = subdomain.subdomain_id;
       this.activeObjectId = objectId;
-      this.dataKeyword = { ...object };
-      
+    //   this.dataKeyword = { ...object };
 
-      console.log("activeSubdomainId:", this.activeSubdomainId);
-      console.log("activeObjectId:", this.activeObjectId);
-      console.log("dataKeyword:", this.dataKeyword);
-      // **บันทึกค่า Active Object ลงใน LocalStorage**
-      localStorage.setItem("active_subIndex", subIndex);
-      localStorage.setItem("active_objectId", objectId);
-      localStorage.setItem("active_object", JSON.stringify(object));
-      console.log("Active Subdomain ID:", this.activeSubdomainId);
-      console.log("Active Object ID:", this.activeObjectId);
-    }
-    ,
-    openAddSubdomainModal() {
-      this.newSubdomainName = "";
-      this.newDomainId = this.$route.query.id;
-      this.$bvModal.show("add-subdomain-modal"); //ใช้ id ของ b-modal
+    //   console.log("activeSubdomainId:", this.activeSubdomainId);
+    //   console.log("activeObjectId:", this.activeObjectId);
+    //   console.log("dataKeyword:", this.dataKeyword);
+    //   // **บันทึกค่า Active Object ลงใน LocalStorage**
+    //   localStorage.setItem("active_subIndex", subIndex);
+    //   localStorage.setItem("active_objectId", objectId);
+    //   localStorage.setItem("active_object", JSON.stringify(object));
+    //   console.log("Active Subdomain ID:", this.activeSubdomainId);
+    //   console.log("Active Object ID:", this.activeObjectId);
     },
+
 
     resetAddSubdomainModal() {
       this.newSubdomainName = "";
@@ -984,7 +862,7 @@ export default {
         "item", item
       );
 
-     
+
       this.deleteObjectName = item.object_name;
       this.deleteObjectId = item.object_id;
 
@@ -1064,7 +942,7 @@ export default {
     },
 
     AddKeywordModal(subIndex, objIndex) {
-     
+
       this.activeSubdomainIndex = subIndex;
       this.activeObjectIndex = objIndex;
       this.newKeyword = ""; // รีเซ็ตค่า
@@ -1104,18 +982,28 @@ export default {
       }
       this.closeModal();
     },
+    collectKeywords(data) {
+        return [
+            ...new Set(
+            data.flatMap(subdomain => subdomain.datakeyword.keywords)
+            )
+        ];
+    }
   },
   async mounted() {
     await this.apiList();
+    await this.apiGetSuggestionKeywrords();
     await this.$emitter.on("callApiListSubdomain", async () => {
       await this.apiList()
-      await this.filterSubdomains()
+      this.$nextTick(() => {
+        this.filterSubdomains()
+      });
       // this.filterSubdomains()
     });
     // this.filteredSubdomains = [...this.subdomains];
     // this.filterSubdomains(this.searchQuery)
 
-  },
+    },
 };
 </script>
 <style>
@@ -1125,10 +1013,90 @@ export default {
 }
 </style>
 <style scoped>
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 0px;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 1050;
+  font-size: 20px;
+}
+.bage-keyword{
+    background-color: rgb(213, 246, 250);
+    /* padding: 10px;
+    padding-right: 20px;
+    padding-left: 20px;
+    border-radius: 10px;
+    cursor: pointer; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 12px;
+    /* background: #2c3e50;
+    color: #bef7fe; */
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+/* เอฟเฟกต์ข้อความ */
+.bage-keyword span {
+  position: relative;
+  z-index: 2;
+}
+
+/* เลเยอร์ไฟ holographic */
+.bage-keyword::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    0deg,
+    transparent,
+    transparent 30%,
+    rgba(0, 255, 255, 0.3)
+  );
+  transform: rotate(-45deg);
+  transition: all 0.5s ease;
+  opacity: 0;
+}
+
+/* hover effect */
+.bage-keyword:hover {
+  transform: scale(1.05);
+  background: #2c3e50;
+  color: #bef7fe;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.bage-keyword:hover::before {
+  opacity: 1;
+  transform: rotate(-45deg) translateY(100%);
+}
+
+/* กดคัดลอกแล้ว */
+.bage-keyword.copied {
+  background: #0ff !important;
+  color: #000 !important;
+  box-shadow: 0 0 20px #0ff;
+}
+
 .highlight-search {
   background-color: #fdd071ab;
   padding: 0 2px;
 }
+
 .input-group-text {
   box-sizing: border-box;
   background-image: url("@/assets/search_icon.png");
@@ -1165,18 +1133,23 @@ export default {
 }
 
 .scroll-obj {
-  padding: 10px;
-  max-height: 300px;
-  overflow: auto;
+    /* flex: 1; */
+    padding: 10px;
+    /* max-height: calc(50vh - 200px);*/
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .custom-card {
-  border-radius: 15px;
-  padding: 15px;
-  margin-bottom: 20px;
-  position: relative;
-  border: 0px solid rgba(0, 0, 0, .125);
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background: linear-gradient(90deg,rgb(190, 247, 254) 0%, rgba(255, 255, 255, 1) 35%);
+    border-radius: 15px;
+    border-top-left-radius: unset;
+    padding: 15px;
+    margin-bottom: 20px;
+    position: relative;
+    border: 0px solid rgba(0, 0, 0, .125);
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .card-actions {
@@ -1205,6 +1178,8 @@ export default {
   color: #2c3e50;
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
+
+
 
 .inactive-item {
   background-color: white;
@@ -1335,5 +1310,12 @@ export default {
 .icon-hover:active {
   transform: none;
   /* ไม่เปลี่ยนขนาด */
+}
+
+@media only screen and (min-width: 0px) and (max-width: 991px) {
+    .custom-card {
+        background: linear-gradient(180deg,#bef7fe 0%, #ffffff 24%);
+        border-top-right-radius: unset;
+    }
 }
 </style>
