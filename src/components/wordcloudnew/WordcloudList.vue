@@ -1,119 +1,219 @@
 <template>
     <div class="px-1 px-lg-5">
-        <div class="my-3">
-            <div class="text-left">
-                <span class="h5 mr-3 d-inline-block">TOP 10 <span class="h6 d-none">Wordcloud /
-                        Hashtagcloud</span></span>
-                <span class="small text-grey">(จำนวนครั้งที่พบ)</span>
+        <b-toast id="my-toast2" no-close-button auto-hide-delay="1500">
+            <div class="text-center">
+                <i class="fa fa-arrow-down" /> เลื่อนลงเพื่อดูข้อมูล
+            </div>
+        </b-toast>
+
+        <div class="my-3 box-spot-bg py-3">
+            <b-row class="align-items-center px-3">
+                <b-col cols="12" md>
+                    <div class="text-left">
+                        <span class="h4 mr-3 d-inline-block bold mb-0">
+                            TOP 10
+                        </span>
+                        <span class="small text-grey">(จำนวนครั้งที่พบ)</span>
+                    </div>
+                </b-col>
+            </b-row>
+
+            <!-- ================= MOBILE (single by tab) ================= -->
+            <div class="d-lg-none px-3">
+                <!-- WORD TAB -->
+                <div v-if="activeTab === 'word'">
+                    <div class="h6 text-left mt-2">Words</div>
+
+                    <SentimentTopChart v-if="view === 'chart' && wordTop10.length" :items="wordChartItems" :limit="10"
+                        order="desc" labelMode="count" @select-word2="clickWordFromChart" />
+
+                    <div v-else-if="wordTop10.length">
+                        <div v-for="(word, k) in wordTop10" :key="'mw-' + k" class="my-2">
+                            <b-button block pill variant="warning" :pressed="keyword === word.name"
+                                @click="clickWord(word.name, wordTop10)">
+                                <span class="label-clip">{{ word.name }}</span>
+                                <span class="small"> ({{ word.total | numFormat }})</span>
+                            </b-button>
+                        </div>
+                    </div>
+
+                    <div v-else class="py-3 text-center text-muted small">ไม่พบข้อมูล Wordcloud</div>
+                </div>
+
+                <!-- HASH TAB -->
+                <div v-else>
+                    <div class="h6 text-left mt-2">Hashtags</div>
+
+                    <SentimentTopChart v-if="view === 'chart' && hashTop10.length" :items="hashChartItems" :limit="10"
+                        order="desc" labelMode="count" @select-word2="clickWordFromChart" />
+
+                    <div v-else-if="hashTop10.length">
+                        <div v-for="(word, k) in hashTop10" :key="'mh-' + k" class="my-2">
+                            <b-button block pill variant="warning" :pressed="keyword === word.name"
+                                @click="clickWord(word.name, hashTop10)">
+                                <span class="label-clip">{{ word.name }}</span>
+                                <span class="small"> ({{ word.total | numFormat }})</span>
+                            </b-button>
+                        </div>
+                    </div>
+
+                    <div v-else class="py-3 text-center text-muted small">ไม่พบข้อมูล Hashtagcloud</div>
+                </div>
             </div>
 
-            <b-row class="px-3">
-                <b-col cols="12" md="6">
-                     <div class="h6 text-left mt-2">Wordcloud</div>
-                    <SentimentTopChart :chartData="getWordCloud.data.wordcloud.data.slice(0, 10)"
-                        v-if="getWordCloud.data && getWordCloud.data.wordcloud && getWordCloud.data.wordcloud.data" />
-                    <!-- <div class="h6 text-left mt-2">Wordcloud</div> -->
-                    <div v-if="getWordCloud.data && getWordCloud.data.wordcloud && getWordCloud.data.wordcloud.data">
-                        <div v-for="(word, k) in getWordCloud.data.wordcloud.data.slice(0, 10)" :key="'w-' + k"
-                            class="my-2">
-                            <b-button block pill variant="warning" :pressed="keyword === word.name" size=""
-                                @click="clickWord(word, getWordCloud.data.wordcloud.data.slice(0, 10))">
-                                <span class="label-clip"> {{ word.name }} </span>
-                                <span class="small"> ({{ word.total | numFormat }})</span>
-                            </b-button>
-                        </div>
-                    </div>
-                </b-col>
+            <!-- ================= DESKTOP (two columns) ================= -->
+            <b-row class="px-3 d-none d-lg-flex">
+                <b-col cols="12" lg="6">
+                    <div class="h6 text-left mt-2">Words</div>
 
-                <b-col cols="12" md="6">
-                    <div class="h6 text-left mt-2">Hashtagcloud</div>
-                    <SentimentTopChart :chartData="getWordCloud.data.hashtag.data.slice(0, 10)"
-                        v-if="getWordCloud.data && getWordCloud.data.hashtag && getWordCloud.data.hashtag.data" />
+                    <SentimentTopChart v-if="view === 'chart' && wordTop10.length" :items="wordChartItems" :limit="10"
+                        order="desc" labelMode="count" @select-word2="clickWordFromChart" />
 
-                    <div v-if="getWordCloud.data && getWordCloud.data.hashtag && getWordCloud.data.hashtag.data">
-                        <div v-for="(word, k) in getWordCloud.data.hashtag.data.slice(0, 10)" :key="'h-' + k"
-                            class="my-2">
+                    <div v-else-if="wordTop10.length">
+                        <div v-for="(word, k) in wordTop10" :key="'w-' + k" class="my-2">
                             <b-button block pill variant="warning" :pressed="keyword === word.name"
-                                @click="clickWord(word, getWordCloud.data.hashtag.data.slice(0, 10))">
-                                <span class="label-clip"> {{ word.name }}</span>
+                                @click="clickWord(word.name, wordTop10)">
+                                <span class="label-clip">{{ word.name }}</span>
                                 <span class="small"> ({{ word.total | numFormat }})</span>
                             </b-button>
                         </div>
                     </div>
-                </b-col>
-                <b-col cols="12" md="4">
 
+                    <div v-else class="py-3 text-center text-muted small">ไม่พบข้อมูล Wordcloud</div>
+                </b-col>
+
+                <b-col cols="12" lg="6">
+                    <div class="h6 text-left mt-2">Hashtags</div>
+
+                    <SentimentTopChart v-if="view === 'chart' && hashTop10.length" :items="hashChartItems" :limit="10"
+                        order="desc" labelMode="count" @select-word2="clickWordFromChart" />
+
+                    <div v-else-if="hashTop10.length">
+                        <div v-for="(word, k) in hashTop10" :key="'h-' + k" class="my-2">
+                            <b-button block pill variant="warning" :pressed="keyword === word.name"
+                                @click="clickWord(word.name, hashTop10)">
+                                <span class="label-clip">{{ word.name }}</span>
+                                <span class="small"> ({{ word.total | numFormat }})</span>
+                            </b-button>
+                        </div>
+                    </div>
+
+                    <div v-else class="py-3 text-center text-muted small">ไม่พบข้อมูล Hashtagcloud</div>
                 </b-col>
             </b-row>
         </div>
-
-        <WordcloudStat :words="keyword" v-if="keyword" />
-
-
     </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
-import WordcloudStat from "./WordcloudStat";
-import SentimentTopChart from "./SentimentTopChart";
+import SentimentTopChart from "./SentimentTopChart.vue";
 
 export default {
-    components: {
-        WordcloudStat,
-        SentimentTopChart
+    components: { SentimentTopChart },
+    props: {
+        activeTab: { type: String, default: "word" }, // ✅ รับจากแม่
     },
     computed: {
-        ...mapGetters([
-            "getClickDomain",
-            "getWordCloud",
-            "getWordCloudImg",
-            "getWordCloudHash",
-            "getLoadWordCloud",
-            "getSdateDm",
-            "getEdateDm",
-            "getArrDate",
-            "getClickDomainId",
-            "getWordCloudStartDate",
-            "getWordCloudEndDate",
-            "getSelectedMonitor"
-        ]),
+        ...mapGetters(["getWordCloud"]),
+
+        wordTop10() {
+            const arr = this.getWordCloud?.data?.wordcloud?.data || [];
+            return Array.isArray(arr) ? arr.slice(0, 10) : [];
+        },
+        hashTop10() {
+            const arr = this.getWordCloud?.data?.hashtag?.data || [];
+            return Array.isArray(arr) ? arr.slice(0, 10) : [];
+        },
+
+        wordChartItems() {
+            return (this.wordTop10 || []).map(w => {
+                const { pos, neu, neg, total } = this.pickSentimentCounts(w);
+                return {
+                    uid: w.name,
+                    name: w.name,
+                    count: total,
+                    positiveSentiment: pos,
+                    neutralSentiment: neu,
+                    negativeSentiment: neg,
+                    source: "wordcloud",
+                };
+            });
+        },
+        hashChartItems() {
+            return (this.hashTop10 || []).map(w => {
+                const { pos, neu, neg, total } = this.pickSentimentCounts(w);
+                return {
+                    uid: w.name,
+                    name: w.name,
+                    count: total,
+                    positiveSentiment: pos,
+                    neutralSentiment: neu,
+                    negativeSentiment: neg,
+                    source: "hashtag",
+                };
+            });
+        },
     },
     data() {
         return {
             keyword: "",
-            dataFromAPI: ""
-        }
+            dataFromAPI: "",
+            view: "chart",
+        };
     },
     methods: {
-        clickWord(word, data) {
-             this.$emitter.emit("sendKeyword", word.name);
-            this.keyword = (this.keyword === word.name) ? "" : word.name;
-            this.dataFromAPI = data
-            // this.$store.dispatch("fetchSentiment2", {
-            //     start_date: this.getWordCloudStartDate,
-            //     end_date: this.getWordCloudEndDate,
-            //     //keywords: this.getKeywords,
-            //     // domain: domainarr,
-            //     querySearch: word.name,
-            //     monitor: this.getSelectedMonitor,
-            //     //social: x,
-            //     // social:this.socialname
-            // });
-        }
-    }
-}
+        pickSentimentCounts(w) {
+            const arr = Array.isArray(w?.count) ? w.count : [];
+            let pos = 0, neu = 0, neg = 0;
+            for (const x of arr) {
+                const s = Number(x?.sentiment);
+                const c = Number(x?.count || 0);
+                if (s === 1) pos += c;
+                else if (s === 0) neu += c;
+                else if (s === -1) neg += c;
+            }
+            const totalFromArr = pos + neu + neg;
+            const total = Number(w?.total ?? totalFromArr ?? 0);
+            return { pos, neu, neg, total };
+        },
+
+        // ✅ จาก chart จะส่งเป็น string name มา
+        clickWordFromChart(name) {
+            this.clickWord(name, this.activeTab === "word" ? this.wordTop10 : this.hashTop10);
+        },
+
+        // ✅ unify: รับ "string name"
+        clickWord(name, data) {
+            this.dataFromAPI = data;
+            this.keyword = name;
+            this.$emit("select-word", name); // ✅ ส่ง name ขึ้น parent
+            this.$bvToast.show("my-toast2");
+        },
+    },
+};
 </script>
+
 <style scoped>
+.box-spot-bg {
+    background: linear-gradient(to top, #b8d3d3a4, #eadff8);
+    border-radius: 11px;
+    border: 0px;
+    margin-bottom: 10px;
+    min-height: 75px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
 .label-clip {
     display: inline-block;
     max-width: 90%;
-    /* ปรับตามดีไซน์ */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: bottom;
 }
+
+
 
 .btn-warning {
     color: #3b3838;
@@ -134,14 +234,18 @@ export default {
     border-color: #fed16e;
 }
 
-.box-domain {
-    width: 100%;
-    height: auto;
-    padding: 20px 0px;
-    border-radius: 7px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* scale ปุ่มเหมือน TopAccountsCard */
+.btn-sw {
+    transform: scale(0.85);
+    transform-origin: top right;
+}
+
+@media (max-width: 800px) {
+   
+
+    .btn-sw {
+        transform: scale(0.78);
+        transform-origin: top right;
+    }
 }
 </style>

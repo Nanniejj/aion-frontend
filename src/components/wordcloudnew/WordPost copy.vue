@@ -1,12 +1,10 @@
 <template>
   <div id="wordcloud">
-    <vue-element-loading
-      :active="getLoadPostCloud"
-      size="80"
-      background-color="rgba(255, 255, 255, 0.5)"
-      color="#b6ac9a"
-    />
-    <div class="container" id="tab-all" v-if="getSentimentDetail">
+    <vue-element-loading :active="getLoadPostCloud" size="80" background-color="rgba(255, 255, 255, 0.5)"
+      color="#b6ac9a" />
+    {{ getPostsAll }}
+    <!-- {{ getPostsAll }}dfgdfgdfgdf -->
+    <div class="container" id="tab-all" v-if="getPostsAll">
       <b-row v-if="getQuerySearch" class="mb-1">
         <b-col md="8" lg="8" class="m-auto my-1">
           <h5 class="bold text-lg-left text-md-left">{{ getQuerySearch }}</h5>
@@ -16,10 +14,8 @@
             <i class="far fa-paper-plane" />
 
             <b>
-              <span v-if="getSentimentDetail.count !== 0">
-                {{ getSentimentDetail.count | numFormat }} </span
-              ><span v-else> 0 </span></b
-            >
+              <span v-if="getPostsAll.count !== 0">
+                {{ getPostsAll.count | numFormat }} </span><span v-else> 0 </span></b>
             โพสต์
           </span>
         </b-col>
@@ -29,14 +25,9 @@
           <b-form-group label="" v-slot="{ ariaDescribedby }">
             <b-row>
               <b-col sm="12">
-                <b-form-radio-group
-                  v-model="selected"
-                  :options="optionsstm"
-                  :aria-describedby="ariaDescribedby"
-                  name="radio-inline"
-                  class="mt-2 text-lg-left ml-2 text-md-center text-sm-center"
-                  @change="selectSentiment"
-                ></b-form-radio-group>
+                <b-form-radio-group v-model="selected" :options="optionsstm" :aria-describedby="ariaDescribedby"
+                  name="radio-inline" class="mt-2 text-lg-left ml-2 text-md-center text-sm-center"
+                  @change="selectSentiment"></b-form-radio-group>
               </b-col>
             </b-row>
           </b-form-group>
@@ -44,50 +35,39 @@
         <b-col sm="12" md="12" lg="6" id="tab-post" v-if="!checkpost">
           <b-row>
             <b-col cols="12">
-              <span
-                v-if="
-                  getWordCloudSocial ===
-                    'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
-                "
-              >
+              <span v-if="
+                getWordCloudSocial ===
+                'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
+              ">
                 <a> <a class="all">ALL</a> </a>
               </span>
-              <span v-if="getWordCloudSocial === 'facebook'"
-                ><img src="@/assets/Facebook.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'facebook'"><img src="@/assets/Facebook.png" width="50px"
+                  id="img-title" />
               </span>
-              <span v-if="getWordCloudSocial === 'twitter'"
-                ><img src="@/assets/Twitter.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'twitter'"><img src="@/assets/Twitter.png" width="50px"
+                  id="img-title" />
               </span>
-              <span v-if="getWordCloudSocial === 'pantip'"
-                ><img src="@/assets/Pantip.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'pantip'"><img src="@/assets/Pantip.png" width="50px" id="img-title" />
               </span>
-              <span v-if="getWordCloudSocial === 'youtube'"
-                ><img src="@/assets/Youtube.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'youtube'"><img src="@/assets/Youtube.png" width="50px"
+                  id="img-title" />
               </span>
-              <span v-if="getWordCloudSocial === 'news'"
-                ><img src="@/assets/News.png" width="50px" id="img-title" />
+              <span v-if="getWordCloudSocial === 'news'"><img src="@/assets/News.png" width="50px" id="img-title" />
               </span>
-              <span v-if="getWordCloudSocial === 'instagram'"
-                ><img
-                  src="@/assets/Instagram.png"
-                  width="50px"
-                  id="img-title"
-                />
+              <span v-if="getWordCloudSocial === 'instagram'"><img src="@/assets/Instagram.png" width="50px"
+                  id="img-title" />
               </span>
               <span id="post-comment">
                 <i class="far fa-paper-plane" />
-                <b> {{ getSentimentDetail.count | numFormat }} </b> posts |
+                <b> {{ getPostsAll.count | numFormat }} </b> posts |
                 <i class="far fa-comments" />
-                <b> {{ getSentimentDetail.total_comment | numFormat }} </b>
-                comments</span
-              >
+                <b> {{ getPostsAll.total_comment | numFormat }} </b>
+                comments</span>
             </b-col>
           </b-row>
         </b-col>
         <b-col sm="12" md="12" lg="6" id="tab-view">
-          <span id="title-tab"
-            ><i class="fas fa-sort-amount-down-alt"></i
-          ></span>
+          <span id="title-tab"><i class="fas fa-sort-amount-down-alt"></i></span>
           <span id="all-eltab">
             <a id="eltab1" tabindex="0" @click="tabactive()">
               <i class="fa fa-clock-o" /> โพสต์ล่าสุด
@@ -103,346 +83,121 @@
       </div>
     </div>
 
-    <div v-if="getSentimentDetail">
+    <div v-if="getPostsAll">
       <!-- Highlight -->
-      <b-form-checkbox
-        switch
-        size="lg"
-        class="text-right mb-2"
-        v-model="checked"
-      >
-        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2"
-          >Highlight</span
-        >
+      <b-form-checkbox switch size="lg" class="text-right mb-2" v-model="checked">
+        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
         <span v-else class="box-hl pl-2 pr-2">Highlight</span>
       </b-form-checkbox>
 
-      <div v-if="getDetailPost.length == 0" class="md-font">
+      <div v-if="getPostsAll.length == 0" class="md-font">
         <b-card>
           <div class="mt-3">ไม่พบข้อมูล</div>
         </b-card>
       </div>
-      <b-card
-        no-body
-        class="overflow-hidden"
-        header-tag="header"
-        footer-tag="footer"
-        style="max-width: 100%; margin-bottom: 30px"
-        v-for="(datas, k) in paginate"
-        :key="k"
-      >
+      <b-card no-body class="overflow-hidden" header-tag="header" footer-tag="footer"
+        style="max-width: 100%; margin-bottom: 30px" v-for="(datas, k) in paginate" :key="k">
         <template #header>
           <b-row>
             <b-col style="text-align: initial; display: contents">
               <span v-if="datas.profile_image">
-                <b-avatar
-                  @error="user"
-                  size="47px"
-                  :src="datas.profile_image"
-                  loading="lazy"
-                  class="imgpro"
-                  v-if="datas.source != 'blockdit'"
-                ></b-avatar>
-                <b-avatar
-                  @error="user"
-                  size="47px"
-                  :src="datas.profile_image"
-                  loading="lazy"
-                  v-else
-                ></b-avatar>
+                <b-avatar @error="user" size="47px" :src="datas.profile_image" loading="lazy" class="imgpro"
+                  v-if="datas.source != 'blockdit'"></b-avatar>
+                <b-avatar @error="user" size="47px" :src="datas.profile_image" loading="lazy" v-else></b-avatar>
               </span>
               <span v-else> <b-avatar size="45px"></b-avatar></span>
 
-              <img
-                v-if="datas.source === 'twitter'"
-                :src="imgtw"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'facebook'"
-                :src="imgfb"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'pantip'"
-                :src="imgpt"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'youtube'"
-                :src="imgyt"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'news'"
-                :src="imgnw"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'instagram'"
-                :src="imgig"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'blockdit'"
-                :src="imgbd"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'tiktok'"
-                :src="imgtt"
-                class="social-img"
-              />
-              <img
-                v-if="datas.source === 'threads'"
-                :src="imgtd"
-                class="social-img"
-              />
+              <img v-if="datas.source === 'twitter'" :src="imgtw" class="social-img" />
+              <img v-if="datas.source === 'facebook'" :src="imgfb" class="social-img" />
+              <img v-if="datas.source === 'pantip'" :src="imgpt" class="social-img" />
+              <img v-if="datas.source === 'youtube'" :src="imgyt" class="social-img" />
+              <img v-if="datas.source === 'news'" :src="imgnw" class="social-img" />
+              <img v-if="datas.source === 'instagram'" :src="imgig" class="social-img" />
+              <img v-if="datas.source === 'blockdit'" :src="imgbd" class="social-img" />
+              <img v-if="datas.source === 'tiktok'" :src="imgtt" class="social-img" />
+              <img v-if="datas.source === 'threads'" :src="imgtd" class="social-img" />
             </b-col>
             <b-col style="text-align: initial">
               <span id="txt-name">
-                <span
-                  ><b> {{ datas.account_name }} </b></span
-                >
+                <span><b> {{ datas.account_name }} </b></span>
 
-                <a
-                  v-if="datas.url_post && datas.url_post.includes('mbasic')"
-                  v-bind:href="datas.url_post.replace('mbasic.', '')"
-                  class="fa fa-external-link"
-                  target="_blank"
-                ></a>
-                <a
-                  v-else
-                  v-bind:href="datas.url_post"
-                  class="fa fa-external-link"
-                  target="_blank"
-                ></a>
+                <a v-if="datas.url_post && datas.url_post.includes('mbasic')"
+                  v-bind:href="datas.url_post.replace('mbasic.', '')" class="fa fa-external-link" target="_blank"></a>
+                <a v-else v-bind:href="datas.url_post" class="fa fa-external-link" target="_blank"></a>
               </span>
               <!-- Time -->
               <div id="text-date" style="text-align: start" class="md-font">
-                <span v-if="datas.date"
-                  >{{ datas.date.split("T")[0] }} |
-                  {{ datas.date.split("T")[1] }}</span
-                >
+                <span v-if="datas.date">{{ datas.date.split("T")[0] }} |
+                  {{ datas.date.split("T")[1] }}</span>
               </div>
             </b-col>
             <b-col sm="12" md="4">
               <div>
                 <img class="images1 d-none" :src="datas.snapshot" />
-                <i
-                  v-if="datas.snapshot"
-                  class="fas fa-camera mr-2"
-                  @click="onClick(0, [datas.snapshot])"
-                />
+                <i v-if="datas.snapshot" class="fas fa-camera mr-2" @click="onClick(0, [datas.snapshot])" />
                 <span v-if="datas.user_sentiment">
-                  <span
-                    v-if="
-                      datas.user_sentiment[objId] == 0 ||
-                        datas.user_sentiment[objId]
-                    "
-                  >
-                    <b-button-group
-                      size="sm"
-                      id="btn-group"
-                      v-if="datas.user_sentiment[objId] == 1"
-                    >
-                      <b-button
-                        id="btn-pos"
-                        :style="btnPosStyle"
-                        @click="getTheSelected(k, 1, datas.uid)"
-                        >Positive</b-button
-                      >
-                      <b-button
-                        id="btn-nue"
-                        @click="getTheSelected(k, 0, datas.uid)"
-                        >Neutral</b-button
-                      >
-                      <b-button
-                        id="btn-neg"
-                        @click="getTheSelected(k, -1, datas.uid)"
-                        >Negative</b-button
-                      >
+                  <span v-if="
+                    datas.user_sentiment[objId] == 0 ||
+                    datas.user_sentiment[objId]
+                  ">
+                    <b-button-group size="sm" id="btn-group" v-if="datas.user_sentiment[objId] == 1">
+                      <b-button id="btn-pos" :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                     </b-button-group>
-                    <b-button-group
-                      size="sm"
-                      id="btn-group"
-                      v-if="datas.user_sentiment[objId] == 0"
-                    >
-                      <b-button
-                        id="btn-pos"
-                        @click="getTheSelected(k, 1, datas.uid)"
-                        >Positive</b-button
-                      >
-                      <b-button
-                        id="btn-nue"
-                        :style="btnNeuStyle"
-                        @click="getTheSelected(k, 0, datas.uid)"
-                        >Neutral</b-button
-                      >
-                      <b-button
-                        id="btn-neg"
-                        @click="getTheSelected(k, -1, datas.uid)"
-                        >Negative</b-button
-                      >
+                    <b-button-group size="sm" id="btn-group" v-if="datas.user_sentiment[objId] == 0">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                     </b-button-group>
-                    <b-button-group
-                      size="sm"
-                      id="btn-group"
-                      v-if="datas.user_sentiment[objId] == -1"
-                    >
-                      <b-button
-                        id="btn-pos"
-                        @click="getTheSelected(k, 1, datas.uid)"
-                        >Positive</b-button
-                      >
-                      <b-button
-                        id="btn-nue"
-                        @click="getTheSelected(k, 0, datas.uid)"
-                        >Neutral</b-button
-                      >
-                      <b-button
-                        id="btn-neg"
-                        :style="btnNegStyle"
-                        @click="getTheSelected(k, -1, datas.uid)"
-                        >Negative</b-button
-                      >
+                    <b-button-group size="sm" id="btn-group" v-if="datas.user_sentiment[objId] == -1">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                     </b-button-group>
                   </span>
                   <span v-else>
-                    <b-button-group
-                      size="sm"
-                      id="btn-group"
-                      v-if="datas.sentiment == 1"
-                    >
-                      <b-button
-                        id="btn-pos"
-                        :style="btnPosStyle"
-                        @click="getTheSelected(k, 1, datas.uid)"
-                        >Positive</b-button
-                      >
-                      <b-button
-                        id="btn-nue"
-                        @click="getTheSelected(k, 0, datas.uid)"
-                        >Neutral</b-button
-                      >
-                      <b-button
-                        id="btn-neg"
-                        @click="getTheSelected(k, -1, datas.uid)"
-                        >Negative</b-button
-                      >
+                    <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 1">
+                      <b-button id="btn-pos" :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                     </b-button-group>
-                    <b-button-group
-                      size="sm"
-                      id="btn-group"
-                      v-if="datas.sentiment == 0"
-                    >
-                      <b-button
-                        id="btn-pos"
-                        @click="getTheSelected(k, 1, datas.uid)"
-                        >Positive</b-button
-                      >
-                      <b-button
-                        id="btn-nue"
-                        :style="btnNeuStyle"
-                        @click="getTheSelected(k, 0, datas.uid)"
-                        >Neutral</b-button
-                      >
-                      <b-button
-                        id="btn-neg"
-                        @click="getTheSelected(k, -1, datas.uid)"
-                        >Negative</b-button
-                      >
+                    <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 0">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                     </b-button-group>
-                    <b-button-group
-                      size="sm"
-                      id="btn-group"
-                      v-if="datas.sentiment == -1"
-                    >
-                      <b-button
-                        id="btn-pos"
-                        @click="getTheSelected(k, 1, datas.uid)"
-                        >Positive</b-button
-                      >
-                      <b-button
-                        id="btn-nue"
-                        @click="getTheSelected(k, 0, datas.uid)"
-                        >Neutral</b-button
-                      >
-                      <b-button
-                        id="btn-neg"
-                        :style="btnNegStyle"
-                        @click="getTheSelected(k, -1, datas.uid)"
-                        >Negative</b-button
-                      >
+                    <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == -1">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                     </b-button-group>
                   </span>
                 </span>
                 <span v-else>
-                  <b-button-group
-                    size="sm"
-                    id="btn-group"
-                    v-if="datas.sentiment == 1"
-                  >
-                    <b-button
-                      id="btn-pos"
-                      :style="btnPosStyle"
-                      @click="getTheSelected(k, 1, datas.uid)"
-                      >Positive</b-button
-                    >
-                    <b-button
-                      id="btn-nue"
-                      @click="getTheSelected(k, 0, datas.uid)"
-                      >Neutral</b-button
-                    >
-                    <b-button
-                      id="btn-neg"
-                      @click="getTheSelected(k, -1, datas.uid)"
-                      >Negative</b-button
-                    >
+                  <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 1">
+                    <b-button id="btn-pos" :style="btnPosStyle"
+                      @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                    <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                   </b-button-group>
-                  <b-button-group
-                    size="sm"
-                    id="btn-group"
-                    v-if="datas.sentiment == 0"
-                  >
-                    <b-button
-                      id="btn-pos"
-                      @click="getTheSelected(k, 1, datas.uid)"
-                      >Positive</b-button
-                    >
-                    <b-button
-                      id="btn-nue"
-                      :style="btnNeuStyle"
-                      @click="getTheSelected(k, 0, datas.uid)"
-                      >Neutral</b-button
-                    >
-                    <b-button
-                      id="btn-neg"
-                      @click="getTheSelected(k, -1, datas.uid)"
-                      >Negative</b-button
-                    >
+                  <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == 0">
+                    <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                    <b-button id="btn-nue" :style="btnNeuStyle"
+                      @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                   </b-button-group>
-                  <b-button-group
-                    size="sm"
-                    id="btn-group"
-                    v-if="datas.sentiment == -1"
-                  >
-                    <b-button
-                      id="btn-pos"
-                      @click="getTheSelected(k, 1, datas.uid)"
-                      >Positive</b-button
-                    >
-                    <b-button
-                      id="btn-nue"
-                      @click="getTheSelected(k, 0, datas.uid)"
-                      >Neutral</b-button
-                    >
-                    <b-button
-                      id="btn-neg"
-                      :style="btnNegStyle"
-                      @click="getTheSelected(k, -1, datas.uid)"
-                      >Negative</b-button
-                    >
+                  <b-button-group size="sm" id="btn-group" v-if="datas.sentiment == -1">
+                    <b-button id="btn-pos" @click="getTheSelected(k, 1, datas.uid)">Positive</b-button>
+                    <b-button id="btn-nue" @click="getTheSelected(k, 0, datas.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" :style="btnNegStyle"
+                      @click="getTheSelected(k, -1, datas.uid)">Negative</b-button>
                   </b-button-group>
                 </span>
               </div>
@@ -453,34 +208,19 @@
           <b-col lg="12">
             <b-card-body>
               <b-card-text class="box-contents">
-                <div
-                  v-if="datas && datas.title"
-                  class="title-news text-left my-2"
-                >
+                <div v-if="datas && datas.title" class="title-news text-left my-2">
                   {{ datas.title }}
                 </div>
-                <Highlighter
-                  class="my-highlight md-font"
-                  :style="{
-                    textAlign: 'left',
-                    fontSize: '17px',
-                    padding: '10px',
-                  }"
-                  highlightClassName="highlight4"
-                  :searchWords="highlightText(datas.full_text)"
-                  :autoEscape="true"
-                  :textToHighlight="
-                    datas.read ? datas.full_text.slice(0, 450) : datas.full_text
-                  "
-                ></Highlighter>
+                <!-- <Highlighter class="my-highlight md-font" :style="{
+                  textAlign: 'left',
+                  fontSize: '17px',
+                  padding: '10px',
+                }" highlightClassName="highlight4" :searchWords="Array.isArray(querySearch) ? querySearch.map(String) : [String(querySearch ?? '')]"
+  :textToHighlight="String(item.message ?? '')"
+                    "></Highlighter> -->
 
-                <div
-                  v-if="datas.full_text.length > 450"
-                  @click="datas.read = !datas.read"
-                  id="readmore"
-                >
-                  <span v-if="datas.read == true">... อ่านต่อ</span
-                  ><span v-else>ย่อบทความ</span>
+                <div v-if="datas.full_text.length > 450" @click="datas.read = !datas.read" id="readmore">
+                  <span v-if="datas.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
                 </div>
                 <!-- </read-more> -->
               </b-card-text>
@@ -490,13 +230,13 @@
             <div v-if="datas.source == 'tiktok' && datas.uid">
               <a v-bind:href="datas.url_post" target="_blank">
                 <img :src="datas.photos && datas.photos[0]" onerror="this.style.display='none'"
-                style="height:450px;border-radius: 10px;" class="my-3" />
+                  style="height:450px;border-radius: 10px;" class="my-3" />
                 <!-- <lite-tiktok
                   :videoid="datas.uid"
                   style=" pointer-events: none; "
                 ></lite-tiktok
               > -->
-            </a>
+              </a>
               <!-- <iframe
                 width="auto"
                 height="750"
@@ -504,95 +244,49 @@
                 allowfullscreen
               ></iframe> -->
             </div>
-            <div
-              id="photo-grid"
-              v-if="
-                datas.photos !== null &&
-                  datas.photos &&
-                  datas.photos != '' &&
-                  datas.source !== 'tiktok'
-              "
-              class="mb-4"
-            >
+            <div id="photo-grid" v-if="
+              datas.photos !== null &&
+              datas.photos &&
+              datas.photos != '' &&
+              datas.source !== 'tiktok'
+            " class="mb-4">
               <div v-if="typeof datas.photos == 'string'">
-                <img
-                  class="images1"
-                  :src="datas.photos"
-                  @click="onClick(0, [datas.photos])"
-                  onerror="this.style.display='none'"
-                />
+                <img class="images1" :src="datas.photos" @click="onClick(0, [datas.photos])"
+                  onerror="this.style.display='none'" />
               </div>
               <div v-else>
                 <div v-if="datas.photos.length == 1" class="p-20">
-                  <img
-                    class="d-none images1"
-                    v-for="(image, i) in datas.photos"
-                    :src="datas.photos"
-                    @click="onClick(i, datas.photos)"
-                    :key="i"
-                  />
-                  <img
-                    class="images1"
-                    v-for="(image, i) in datas.photos"
-                    :src="datas.photos"
-                    @click="onClick(i, datas.photos)"
-                    :key="`A-${i}`"
-                    onerror="this.style.display='none'"
-                  />
+                  <img class="d-none images1" v-for="(image, i) in datas.photos" :src="datas.photos"
+                    @click="onClick(i, datas.photos)" :key="i" />
+                  <img class="images1" v-for="(image, i) in datas.photos" :src="datas.photos"
+                    @click="onClick(i, datas.photos)" :key="`A-${i}`" onerror="this.style.display='none'" />
                 </div>
                 <div v-else-if="datas.photos.length == 2" class="p-20">
-                  <img
-                    class="images2"
-                    v-for="(image, i) in datas.photos"
-                    :src="image"
-                    @click="onClick(i, datas.photos)"
-                    :key="`B-${i}`"
-                    onerror="this.style.display='none'"
-                  />
+                  <img class="images2" v-for="(image, i) in datas.photos" :src="image" @click="onClick(i, datas.photos)"
+                    :key="`B-${i}`" onerror="this.style.display='none'" />
                 </div>
                 <div v-else-if="datas.photos.length == 3" class="p-20">
-                  <img
-                    class="images3"
-                    v-for="(image, i) in datas.photos"
-                    :src="image"
-                    @click="onClick(i, datas.photos)"
-                    :key="`C-${i}`"
-                    onerror="this.style.display='none'"
-                  />
+                  <img class="images3" v-for="(image, i) in datas.photos" :src="image" @click="onClick(i, datas.photos)"
+                    :key="`C-${i}`" onerror="this.style.display='none'" />
                 </div>
                 <div v-else class="p-20 col2">
-                  <img
-                    class="images4"
-                    v-for="(image, i) in datas.photos.slice(0, 4)"
-                    :src="image"
-                    @click="onClick(i, datas.photos)"
-                    :key="`D-${i}`"
-                    onerror="this.style.display='none'"
-                  />
-                  <div
-                    v-if="datas.photos.length > 4"
-                    id="picmore"
-                    @click="onClick(3, datas.photos)"
-                    onerror="this.style.display='none'"
-                  >
+                  <img class="images4" v-for="(image, i) in datas.photos.slice(0, 4)" :src="image"
+                    @click="onClick(i, datas.photos)" :key="`D-${i}`" onerror="this.style.display='none'" />
+                  <div v-if="datas.photos.length > 4" id="picmore" @click="onClick(3, datas.photos)"
+                    onerror="this.style.display='none'">
                     +{{ datas.photos.length - 4 }}
                   </div>
                 </div>
               </div>
-              <vue-gallery-slideshow
-                :images="dataPhoto"
-                :index="index"
-                @close="index = null"
-              ></vue-gallery-slideshow>
+              <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
             </div>
           </b-col>
         </b-row>
-                <div class="text-left ai-box mt-2 px-2"
-          v-if="datas && datas.photos_text && datas.photos_text.length"
+        <div class="text-left ai-box mt-2" v-if="datas && datas.photos_text && datas.photos_text.length"
           style="font-size: 15px;font-weight: 500;">
-          <div v-for="(text, idx) in datas.photos_text" >
-           
-            <div v-if="text&&text.length">
+          <div v-for="(text, idx) in datas.photos_text">
+
+            <div v-if="text && text.length">
               <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
               </b-avatar>
               <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
@@ -600,14 +294,14 @@
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text }}
             </div>
-            <div v-if="text.face" >
+            <div v-if="text.face">
               <span v-for="(face, idx) in text.face">
                 <span v-if="face.person_name" class="mr-2 mt-1">
                   <span style="background: #e5e5e5;
                     padding: 0px 6px;
                     border-radius: 13px;">
                     <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                    {{ face.person_name}}
+                    {{ face.person_name }}
                     <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
                       parseFloat((face.confidence * 100).toFixed(2))
                     }}%)</span></span></span>
@@ -615,19 +309,12 @@
             </div>
           </div>
         </div>
-        <div
-          class="text-left ai-box mt-2"
-          v-if="datas && datas.ocr && username == 'adminatapy'"
-          style="font-size: 15px;font-weight: 500;"
-        >
+        <div class="text-left ai-box mt-2" v-if="datas && datas.ocr && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.ocr">
             <!-- {{ datas.ocr.face[].person_name /datas.ocr.face[].confidence >) }} -->
             <div v-if="text.text_sort && text.text_sort.length">
-              <b-avatar
-                size="18px"
-                style="font-size: 12px;background-color:#8b8787;"
-                class="mr-1"
-                >{{ idx + 1 }}
+              <b-avatar size="18px" style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx + 1 }}
               </b-avatar>
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text.text_sort[0] }}
@@ -635,49 +322,27 @@
             <div v-if="text.face">
               <span v-for="(face, idx) in text.face">
                 <span v-if="face.confidence > 0.8" class="mr-2 mt-1">
-                  <span
-                    style="background: #e5e5e5;
+                  <span style="background: #e5e5e5;
     padding: 0px 6px;
-    border-radius: 13px;"
-                  >
+    border-radius: 13px;">
                     <b-icon icon="person-bounding-box" scale="1"></b-icon>
                     {{ face.person_name.replace("_", " ") }}
-                    <span
-                      v-b-tooltip.hover
-                      :title="'ค่า confidence'"
-                      class="small"
-                      >({{
-                        parseFloat((face.confidence * 100).toFixed(2))
-                      }}%)</span
-                    ></span
-                  ></span
-                >
+                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
+                      parseFloat((face.confidence * 100).toFixed(2))
+                    }}%)</span></span></span>
               </span>
             </div>
           </div>
         </div>
-        <div
-          v-if="
-            datas &&
-              datas.location &&
-              datas.location.length
-          "
-          class="text-left ai-box my-3 mx-3 text-small "
-          style="font-size: 13px;font-weight: 500; color: #2c3e50;"
-        >
-          <i
-            class="fa fa-map-marker mr-1"
-            aria-hidden="true"
-            style="font-size: 15px;"
-          ></i>
-          <span
-            v-for="(geo, k) in filterNumbers(datas.location)"
-            :key="k"
-            class="mr-1"
-            style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+        <div v-if="
+          datas &&
+          datas.location &&
+          datas.location.length
+        " class="text-left ai-box my-3 mx-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
+          <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
     border-radius: 33px;
-"
-          >
+">
             <!-- {{ geo.toString() }} -->
             <span v-if="geo.toString() && geo.toString().length == 2">
               {{ matchGeocode(geo).name_th }}
@@ -705,52 +370,37 @@
             </span>
           </span>
         </div>
-        <div
-          class="text-left ai-box mt-2"
-          v-if="datas && datas.face_detect && username == 'adminatapy'"
-          style="font-size: 15px;font-weight: 500;"
-        >
-          <div v-if="datas.face_detect && datas.person_name&& datas.person_name.length">
+        <div class="text-left ai-box mt-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
+          style="font-size: 15px;font-weight: 500;">
+          <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
             <span v-for="(face, idx) in datas.person_name">
               <span class="mr-2 mt-1" v-if="face">
-                <span
-                  style="background: #e5e5e5;
+                <span style="background: #e5e5e5;
     padding: 0px 6px;
-    border-radius: 13px;"
-                >
+    border-radius: 13px;">
                   <b-icon icon="person-bounding-box" scale="1"></b-icon>
                   {{ face }}
-                </span></span
-              >
+                </span></span>
             </span>
           </div>
         </div>
         <template #footer>
           <div class="comment-img text-left md-font">
             <!------------- engages-------------- -->
-            <span
-              v-b-tooltip.hover
-              title="Engagement"
-              v-if="datas.source == 'pantip'"
-            >
+            <span v-b-tooltip.hover title="Engagement" v-if="datas.source == 'pantip'">
               <span style="font-size:14px;">Engages </span>
               {{ (datas.engagement + datas.comments_count) | numFormat }}
             </span>
 
             <span v-b-tooltip.hover title="Engagement" v-else>
-              <span style="font-size:14px;">Engages </span
-              >{{ datas.engagement | numFormat }}
+              <span style="font-size:14px;">Engages </span>{{ datas.engagement | numFormat }}
             </span>
             <!-- popover user comment -->
-            <popover
-              :name="'foo' + k"
-              id="foo"
-              v-if="
-                datas.source !== 'facebook' &&
-                  datas.source !== 'youtube' &&
-                  datas.source !== 'twitter'
-              "
-            >
+            <popover :name="'foo' + k" id="foo" v-if="
+              datas.source !== 'facebook' &&
+              datas.source !== 'youtube' &&
+              datas.source !== 'twitter'
+            ">
               <div class="text-center">
                 <i class="fa fa-user-circle" aria-hidden="true"></i>
                 <div id="bg-user">account name</div>
@@ -770,43 +420,26 @@
                         | <i class="fal fa-retweet"></i> retweet</div>   -->
                   <div v-for="comment in datas.comment" :key="comment">
                     <!-- fb -->
-                    <a
-                      id="user-link"
-                      v-if="datas.source === 'facebook'"
-                      v-bind:href="'https://facebook.com//' + comment.id"
-                      target="_blank"
-                    >
+                    <a id="user-link" v-if="datas.source === 'facebook'"
+                      v-bind:href="'https://facebook.com//' + comment.id" target="_blank">
                       <i class="fa fa-user-circle-o" />
-                      {{ comment.display_name }}</a
-                    >
+                      {{ comment.display_name }}</a>
 
                     <!-- tw -->
                     <span v-if="datas.source === 'twitter'">
                       <span v-if="comment.post_type == 'reply'">
-                        <a
-                          id="user-link"
-                          v-bind:href="
-                            'https://twitter.com/' + comment.account_name
-                          "
-                          target="_blank"
-                        >
+                        <a id="user-link" v-bind:href="'https://twitter.com/' + comment.account_name
+                          " target="_blank">
                           <i class="fas fa-comment"></i>
                           <img v-bind:src="comment.photo" id="img-user" />
-                          {{ comment.account_name }}</a
-                        >
+                          {{ comment.account_name }}</a>
                       </span>
                       <span v-if="comment.post_type == 'retweet'">
-                        <a
-                          id="user-link"
-                          v-bind:href="
-                            'https://twitter.com/' + comment.account_name
-                          "
-                          target="_blank"
-                        >
+                        <a id="user-link" v-bind:href="'https://twitter.com/' + comment.account_name
+                          " target="_blank">
                           <i class="fal fa-retweet"></i>
                           <img v-bind:src="comment.photo" id="img-user" />
-                          {{ comment.account_name }}</a
-                        >
+                          {{ comment.account_name }}</a>
                       </span>
                     </span>
                     <!-- news -->
@@ -814,136 +447,73 @@
                       <i class="fa fa-user-circle-o"/> {{comment.account_name}}</a> -->
 
                     <!-- IG -->
-                    <a
-                      id="user-link"
-                      v-if="datas.source === 'instagram'"
-                      v-bind:href="
-                        'https://www.instagram.com//' + comment.owner.id
-                      "
-                      target="_blank"
-                    >
-                      <img
-                        v-bind:src="comment.owner.profile_pic_url"
-                        id="img-user"
-                      />
-                      {{ comment.owner.username }}</a
-                    >
+                    <a id="user-link" v-if="datas.source === 'instagram'" v-bind:href="'https://www.instagram.com//' + comment.owner.id
+                      " target="_blank">
+                      <img v-bind:src="comment.owner.profile_pic_url" id="img-user" />
+                      {{ comment.owner.username }}</a>
 
                     <!-- pt -->
-                    <a
-                      id="user-link"
-                      v-if="datas.source === 'pantip'"
-                      v-bind:href="
-                        'https://pantip.com//profile/' + comment.username
-                      "
-                      target="_blank"
-                    >
+                    <a id="user-link" v-if="datas.source === 'pantip'" v-bind:href="'https://pantip.com//profile/' + comment.username
+                      " target="_blank">
                       <img v-bind:src="comment.photo" id="img-user" />
-                      {{ comment.username }}</a
-                    >
+                      {{ comment.username }}</a>
                     <!-- yt -->
-                    <a
-                      id="user-link"
-                      v-if="datas.source === 'youtube'"
-                      v-bind:href="
-                        'https://www.youtube.com/' + comment.author_link
-                      "
-                      target="_blank"
-                    >
+                    <a id="user-link" v-if="datas.source === 'youtube'" v-bind:href="'https://www.youtube.com/' + comment.author_link
+                      " target="_blank">
                       <img v-bind:src="comment.photo" id="img-user" />
-                      {{ comment.author }}</a
-                    >
+                      {{ comment.author }}</a>
                   </div>
                 </div>
 
                 <!-- <div v-if="datas.comment==''" class="text-center">ไม่มีลิสต์รายชื่อ account</div> -->
               </div>
             </popover>
-            <span
-              id="box-reaction"
-              v-b-tooltip.hover
-              title="Comments"
-              v-b-toggle="'btn' + offset + k"
-              :aria-expanded="visible ? 'true' : 'false'"
-              style="cursor: pointer"
-            >
+            <span id="box-reaction" v-b-tooltip.hover title="Comments" v-b-toggle="'btn' + offset + k"
+              :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer">
               <i class="fas fa-comment"> </i>
-              <span
-                class="md-font"
-                v-if="datas.comments_count && datas.source == 'news'"
-              >
+              <span class="md-font" v-if="datas.comments_count && datas.source == 'news'">
                 {{ datas.comments.comments.length | numFormat }}&nbsp;
               </span>
               <span v-else class="md-font">
-                {{ datas.comments_count | numFormat }}&nbsp;</span
-              >
+                {{ datas.comments_count | numFormat }}&nbsp;</span>
               <!-- <span  class="md-font" v-if="datas.comments_count==''&&datas.source == 'twitter'"> 0 </span> -->
             </span>
             <!------------- engages-------------- -->
-            <span
-              id="box-reaction"
-              v-b-tooltip.hover
-              title="Engagement"
-              v-if="datas.source == 'pantip'"
-              style="float:right;"
-            >
-              <span style="font-size:14px;"
-                >Engages
+            <span id="box-reaction" v-b-tooltip.hover title="Engagement" v-if="datas.source == 'pantip'"
+              style="float:right;">
+              <span style="font-size:14px;">Engages
                 {{
                   (datas.engagement + datas.comments_count) | numFormat
-                }}</span
-              >
+                }}</span>
             </span>
 
             <!-- twitter -->
-            <span
-              v-if="datas.source !== 'facebook' && datas.source !== 'youtube'"
-            >
-              <span
-                v-if="datas.retweets_count !== '0' && datas.retweets_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="Retweet"
-              >
+            <span v-if="datas.source !== 'facebook' && datas.source !== 'youtube'">
+              <span v-if="datas.retweets_count !== '0' && datas.retweets_count" id="box-reaction" v-b-tooltip.hover
+                title="Retweet">
                 <i class="fal fa-retweet"></i>
                 {{ datas.retweets_count | numFormat }}
               </span>
-              <span
-                v-if="datas.likes_count !== '0' && datas.likes_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="Like"
-              >
+              <span v-if="datas.likes_count !== '0' && datas.likes_count" id="box-reaction" v-b-tooltip.hover
+                title="Like">
                 <i class="fa fa-heart"></i>
                 {{ datas.likes_count | numFormat }}
               </span>
-              <span
-                v-if="datas.shares_count !== '0' && datas.shares_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="Share"
-              >
+              <span v-if="datas.shares_count !== '0' && datas.shares_count" id="box-reaction" v-b-tooltip.hover
+                title="Share">
                 <i class="fa fa-share"></i>
                 {{ datas.shares_count | numFormat }}
               </span>
-              <span
-                v-if="datas.views_count !== '0' && datas.views_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="View"
-              >
+              <span v-if="datas.views_count !== '0' && datas.views_count" id="box-reaction" v-b-tooltip.hover
+                title="View">
                 <i class="fas fa-eye"></i>
                 {{ datas.views_count | numFormat }}
               </span>
             </span>
 
             <span v-if="datas.source == 'facebook'">
-              <span
-                v-if="datas.likes_count !== '0' && datas.likes_count"
-                id="box-reaction"
-                v-b-tooltip.hover
-                title="Like"
-              >
+              <span v-if="datas.likes_count !== '0' && datas.likes_count" id="box-reaction" v-b-tooltip.hover
+                title="Like">
                 <i class="far fa-thumbs-up" />
                 {{ datas.likes_count | numFormat }}
               </span>
@@ -962,12 +532,7 @@
               <span v-if="datas.reaction != ''">
                 <!-- pt -->
                 <span v-if="datas.reaction.Good">
-                  <span
-                    v-if="datas.reaction.Good !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Good Content"
-                  >
+                  <span v-if="datas.reaction.Good !== '0'" id="box-reaction" v-b-tooltip.hover title="Good Content">
                     <i class="fa fa-plus"></i>
                     <span class="md-font">
                       {{ datas.reaction.Good | numFormat }}
@@ -975,17 +540,8 @@
                   </span>
                 </span>
                 <span v-if="datas.reaction.Horror">
-                  <span
-                    v-if="datas.reaction.Horror !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Horror"
-                  >
-                    <img
-                      v-if="datas.reaction.Horror !== '0'"
-                      src="@/assets/horror.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Horror !== '0'" id="box-reaction" v-b-tooltip.hover title="Horror">
+                    <img v-if="datas.reaction.Horror !== '0'" src="@/assets/horror.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Horror !== '0'">
                       {{ datas.reaction.Horror | numFormat }}
                     </span>
@@ -994,17 +550,8 @@
                 <!-- pt -->
                 <!-- fb -->
                 <span v-if="datas.reaction.Likes">
-                  <span
-                    v-if="datas.reaction.Likes !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Like"
-                  >
-                    <img
-                      v-if="datas.reaction.Likes !== '0'"
-                      src="@/assets/fb_like.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                    <img v-if="datas.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Likes !== '0'">
                       {{ datas.reaction.Likes | numFormat }}
                     </span>
@@ -1012,34 +559,16 @@
                 </span>
 
                 <span v-if="datas.reaction.like">
-                  <span
-                    v-if="datas.reaction.like !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Like"
-                  >
-                    <img
-                      v-if="datas.reaction.like !== '0'"
-                      src="@/assets/fb_like.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.like !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                    <img v-if="datas.reaction.like !== '0'" src="@/assets/fb_like.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.like !== '0'">
                       {{ datas.reaction.like | numFormat }}
                     </span>
-                  </span></span
-                >
+                  </span></span>
 
                 <span v-if="datas.reaction.share">
-                  <span
-                    v-if="datas.reaction.share !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Share"
-                  >
-                    <i
-                      class="fa fa-share"
-                      v-if="datas.reaction.share !== '0'"
-                    ></i>
+                  <span v-if="datas.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                    <i class="fa fa-share" v-if="datas.reaction.share !== '0'"></i>
                     <span class="md-font" v-if="datas.reaction.share !== '0'">
                       {{ datas.reaction.share | numFormat }}
                     </span>
@@ -1047,16 +576,8 @@
                 </span>
 
                 <span v-if="datas.reaction.shares">
-                  <span
-                    v-if="datas.reaction.shares !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Share"
-                  >
-                    <i
-                      class="fa fa-share"
-                      v-if="datas.reaction.shares !== '0'"
-                    ></i>
+                  <span v-if="datas.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                    <i class="fa fa-share" v-if="datas.reaction.shares !== '0'"></i>
                     <span class="md-font" v-if="datas.reaction.shares !== '0'">
                       {{ datas.reaction.shares | numFormat }}
                     </span>
@@ -1064,17 +585,8 @@
                 </span>
 
                 <span v-if="datas.reaction.Love">
-                  <span
-                    v-if="datas.reaction.Love !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Love"
-                  >
-                    <img
-                      v-if="datas.reaction.Love !== '0'"
-                      src="@/assets/love.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Love !== '0'" id="box-reaction" v-b-tooltip.hover title="Love">
+                    <img v-if="datas.reaction.Love !== '0'" src="@/assets/love.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Love !== '0'">
                       {{ datas.reaction.Love | numFormat }}
                     </span>
@@ -1082,17 +594,8 @@
                 </span>
 
                 <span v-if="datas.reaction.Wow">
-                  <span
-                    v-if="datas.reaction.Wow !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Wow"
-                  >
-                    <img
-                      v-if="datas.reaction.Wow !== '0'"
-                      src="@/assets/wow.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Wow !== '0'" id="box-reaction" v-b-tooltip.hover title="Wow">
+                    <img v-if="datas.reaction.Wow !== '0'" src="@/assets/wow.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Wow !== '0'">
                       {{ datas.reaction.Wow | numFormat }}
                     </span>
@@ -1100,17 +603,8 @@
                 </span>
 
                 <span v-if="datas.reaction.Haha">
-                  <span
-                    v-if="datas.reaction.Haha !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Haha"
-                  >
-                    <img
-                      v-if="datas.reaction.Haha !== '0'"
-                      src="@/assets/haha.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Haha !== '0'" id="box-reaction" v-b-tooltip.hover title="Haha">
+                    <img v-if="datas.reaction.Haha !== '0'" src="@/assets/haha.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Haha !== '0'">
                       {{ datas.reaction.Haha | numFormat }}
                     </span>
@@ -1118,17 +612,8 @@
                 </span>
 
                 <span v-if="datas.reaction.Sad">
-                  <span
-                    v-if="datas.reaction.Sad !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Sad"
-                  >
-                    <img
-                      v-if="datas.reaction.Sad !== '0'"
-                      src="@/assets/sad.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Sad !== '0'" id="box-reaction" v-b-tooltip.hover title="Sad">
+                    <img v-if="datas.reaction.Sad !== '0'" src="@/assets/sad.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Sad !== '0'">
                       {{ datas.reaction.Sad | numFormat }}
                     </span>
@@ -1136,34 +621,16 @@
                 </span>
 
                 <span v-if="datas.reaction.Angry">
-                  <span
-                    v-if="datas.reaction.Angry !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Angry"
-                  >
-                    <img
-                      v-if="datas.reaction.Angry !== '0'"
-                      src="@/assets/angry.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Angry !== '0'" id="box-reaction" v-b-tooltip.hover title="Angry">
+                    <img v-if="datas.reaction.Angry !== '0'" src="@/assets/angry.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Angry !== '0'">
                       {{ datas.reaction.Angry | numFormat }}
                     </span>
                   </span>
                 </span>
                 <span v-if="datas.reaction.Hug">
-                  <span
-                    v-if="datas.reaction.Hug !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Hug"
-                  >
-                    <img
-                      v-if="datas.reaction.Hug !== '0'"
-                      src="@/assets/hug.png"
-                      id="emoji"
-                    />
+                  <span v-if="datas.reaction.Hug !== '0'" id="box-reaction" v-b-tooltip.hover title="Hug">
+                    <img v-if="datas.reaction.Hug !== '0'" src="@/assets/hug.png" id="emoji" />
                     <span class="md-font" v-if="datas.reaction.Hug !== '0'">
                       {{ datas.reaction.Hug | numFormat }}
                     </span>
@@ -1171,33 +638,16 @@
                 </span>
 
                 <!-- yt -->
-                <span
-                  v-if="datas.reaction.view_count"
-                  v-b-tooltip.hover
-                  title="Views"
-                >
-                  <span
-                    v-if="datas.reaction.view_count !== ''"
-                    id="box-reaction"
-                    ><i class="fas fa-eye"></i>
-                    <span
-                      class="md-font"
-                      v-if="datas.reaction.view_count !== ''"
-                    >
+                <span v-if="datas.reaction.view_count" v-b-tooltip.hover title="Views">
+                  <span v-if="datas.reaction.view_count !== ''" id="box-reaction"><i class="fas fa-eye"></i>
+                    <span class="md-font" v-if="datas.reaction.view_count !== ''">
                       {{ datas.reaction.view_count | numFormat }}
                     </span>
                   </span>
                 </span>
                 <span v-if="datas.reaction.likes">
-                  <span
-                    v-if="datas.reaction.likes !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Like"
-                  >
-                    <img v-if="datas.reaction.likes !== '0'" /><i
-                      class="far fa-thumbs-up"
-                    ></i>
+                  <span v-if="datas.reaction.likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                    <img v-if="datas.reaction.likes !== '0'" /><i class="far fa-thumbs-up"></i>
                     <span class="md-font" v-if="datas.reaction.likes !== '0'">
                       {{ datas.reaction.likes | numFormat }}
                     </span>
@@ -1205,12 +655,7 @@
                 </span>
 
                 <span v-if="datas.reaction.dislikes">
-                  <span
-                    v-if="datas.reaction.dislikes !== '0'"
-                    id="box-reaction"
-                    v-b-tooltip.hover
-                    title="Dislike"
-                  >
+                  <span v-if="datas.reaction.dislikes !== '0'" id="box-reaction" v-b-tooltip.hover title="Dislike">
                     <i class="far fa-thumbs-down"></i>
                     <span class="md-font">
                       {{ datas.reaction.dislikes | numFormat }}
@@ -1221,24 +666,13 @@
               </span>
             </span>
             <!-- comment content -->
-            <b-collapse
-              :id="'btn' + page + k"
-              class="mt-2"
-              v-if="datas.comments && datas.comments.length"
-            >
+            <b-collapse :id="'btn' + page + k" class="mt-2" v-if="datas.comments && datas.comments.length">
               <b-card id="cmt-card" class="text-left">
                 <span v-if="datas.source == 'news' && datas.comments">
-                  <div
-                    v-for="(cmtn, inx) in datas.comments.comments"
-                    :key="inx"
-                  >
+                  <div v-for="(cmtn, inx) in datas.comments.comments" :key="inx">
                     <b-row>
                       <b-col lg="1">
-                        <img
-                          :src="cmtn.pictureUrl"
-                          id="img-cmt"
-                          @error="setAltImg"
-                        />
+                        <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                       </b-col>
                       <b-col lg="11">
                         <div>
@@ -1260,56 +694,30 @@
                   <div v-for="(cmt, i) in datas.comments" :key="i">
                     <b-row>
                       <b-col lg="1">
-                        <a
-                          :href="'https://www.youtube.com/' + cmt.author_link"
-                          target="_blank"
-                          v-if="datas.source == 'youtube'"
-                        >
-                          <img :src="cmt.photo" id="img-cmt"
-                        /></a>
+                        <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                          v-if="datas.source == 'youtube'">
+                          <img :src="cmt.photo" id="img-cmt" /></a>
                         <a :href="cmt.url" target="_blank" v-else>
-                          <img
-                            :src="cmt.photo"
-                            id="img-cmt"
-                            v-bind:href="cmt.url"
-                        /></a>
+                          <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" /></a>
 
                         <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                         <span> </span>
                       </b-col>
                       <b-col lg="11">
                         <div>
-                          <a
-                            :href="'https://www.youtube.com/' + cmt.author_link"
-                            target="_blank"
-                            v-if="datas.source == 'youtube'"
-                          >
+                          <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                            v-if="datas.source == 'youtube'">
                             <span v-if="datas.source == 'youtube'" class="bold">
-                              {{ cmt.author }}</span
-                            ></a
-                          >
+                              {{ cmt.author }}</span></a>
                           <a :href="cmt.url" target="_blank" v-else>
-                            <span class="bold"> {{ cmt.username }}</span></a
-                          >
-                          <span
-                            v-if="datas.source == 'youtube' && cmt.time"
-                            class="font-weight-light"
-                            id="cmt-time"
-                            >{{ cmt.time.split("T")[0] }} |
-                            {{ cmt.time.split("T")[1] }}</span
-                          >
-                          <span
-                            v-else
-                            class="font-weight-light"
-                            id="cmt-time"
-                            >{{ cmt.time }}</span
-                          >
+                            <span class="bold"> {{ cmt.username }}</span></a>
+                          <span v-if="datas.source == 'youtube' && cmt.time" class="font-weight-light" id="cmt-time">{{
+                            cmt.time.split("T")[0] }} |
+                            {{ cmt.time.split("T")[1] }}</span>
+                          <span v-else class="font-weight-light" id="cmt-time">{{ cmt.time }}</span>
                         </div>
 
-                        <div
-                          v-if="datas.source == 'youtube'"
-                          class="font-weight-light"
-                        >
+                        <div v-if="datas.source == 'youtube'" class="font-weight-light">
                           {{ cmt.text }}
                         </div>
                         <div v-else class="font-weight-light">
@@ -1326,42 +734,26 @@
         </template>
       </b-card>
     </div>
-    <ul class="pagination" v-if="getDetailPost.length != 0">
+    <ul class="pagination" v-if="getPostsAll.length != 0">
       <li class="page-item" v-for="pageNumber in totalPages" :key="pageNumber">
-        <span
-          v-if="
-            Math.abs(pageNumber - currentPage) < 3 ||
-              pageNumber == totalPages ||
-              pageNumber == 1
-          "
-        >
-          <a
-            class="page-link md-font"
-            v-bind:key="pageNumber"
-            href="#wordcloud"
-            @click="setPage(pageNumber)"
-            :class="{
-              current: currentPage === pageNumber,
-              last:
-                pageNumber == totalPages &&
-                Math.abs(pageNumber - currentPage) > 3,
-              first: pageNumber == 1 && Math.abs(pageNumber - currentPage) > 3,
-            }"
-            >{{ pageNumber }}</a
-          ></span
-        >
+        <span v-if="
+          Math.abs(pageNumber - currentPage) < 3 ||
+          pageNumber == totalPages ||
+          pageNumber == 1
+        ">
+          <a class="page-link md-font" v-bind:key="pageNumber" href="#wordcloud" @click="setPage(pageNumber)" :class="{
+            current: currentPage === pageNumber,
+            last:
+              pageNumber == totalPages &&
+              Math.abs(pageNumber - currentPage) > 3,
+            first: pageNumber == 1 && Math.abs(pageNumber - currentPage) > 3,
+          }">{{ pageNumber }}</a></span>
       </li>
     </ul>
-    <input
-      type="number"
-      class="form-control md-font"
-      v-model="gotopage"
-      id="setpage"
-      style="width: 150px"
-      v-if="getDetailPost.length != 0"
-    />
+    <input type="number" class="form-control md-font" v-model="gotopage" id="setpage" style="width: 150px"
+      v-if="getPostsAll.length != 0" />
 
-    <span v-if="getDetailPost.length != 0">
+    <span v-if="getPostsAll.length != 0">
       <button type="button" class="btn btn-default" @click="page()">
         <span id="submit" class="md-font">Go to Page</span>
       </button>
@@ -1488,7 +880,6 @@ export default {
     ...mapGetters([
       "getDomainArr",
       "getWordCloudDomain",
-      "getSentimentDetail",
       "getWordCloudStartDate",
       "getWordCloudEndDate",
       "getWordCloudSocial",
@@ -1496,13 +887,14 @@ export default {
       "getKeywords",
       "getEditSentiment",
       "getSelectedMonitor",
-      "getDetailPost",
+      "getPostsAll",
       "getLoadPostCloud",
+      "getPostsAll"
     ]),
 
     paginate() {
-      var data = this.getDetailPost;
-      var count = this.getSentimentDetail.count;
+      var data = this.getPostsAll;
+      var count = this.getPostsAll.count;
       var currentPage = this.currentPage;
       var totalPages = this.totalPages;
       //var resultCount = this.resultCount;
@@ -1516,9 +908,9 @@ export default {
       }
       return data;
     },
-    totalPages: function() {
+    totalPages: function () {
       var itemsPerPage = this.itemsPerPage;
-      var count = this.getSentimentDetail.count;
+      var count = this.getPostsAll.count;
       var length;
       if (count < 10) {
         length = 10;
@@ -1526,7 +918,6 @@ export default {
         length = count;
       }
       var xs = Math.ceil(length / itemsPerPage);
-  
       return xs;
     },
   },
@@ -1581,15 +972,15 @@ export default {
       if (this.checked) {
         word.push(...this.heightword, this.getQuerySearch);
         if (this.andkey.length) {
-          this.andkey.forEach(function(key) {
+          this.andkey.forEach(function (key) {
             //
             if (
               key.length == 2 &&
               full_text.includes(key[0]) &&
               full_text.includes(key[1])
             ) {
-              
-              
+
+
               word.push(...key);
             }
 
@@ -1610,7 +1001,7 @@ export default {
             ) {
               word.push(...key);
             }
-          });   
+          });
         }
         return word;
       } else {
@@ -1642,7 +1033,7 @@ export default {
         .format()
         .slice(0, 10);
       console.log(this.start_date);
-      this.$store.dispatch("fetchSentimentDetail", {
+      this.$store.dispatch("fetchPosts", {
         start_date: this.start_date,
         end_date: this.end_date,
         keywords: this.getKeywords,
@@ -1655,28 +1046,55 @@ export default {
         monitor: this.getSelectedMonitor,
       });
     },
-    pageApi(sort, offset, querySearch) {
+    async pageApi(sort, offset, querySearch) {
+      const arrdomain = localStorage.getItem("domainArr");
+      let domain = this.getWordCloudDomain
+      if (domain == "All" || domain == "") {
+        // console.log('เข้าDomain',arrdomain);
+        domain = arrdomain;
+      }
+      if (domain) {
+        await this.axios
+          .get(
+            "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
+            domain
+          )
+          .then((response) => (this.arrword = response.data[0]));
+    
+      var k = this.arrword.Keywords;
+      var ka = this.arrword.and_keywords;
+      let result = ka.map((key) => {
+        return key.split("+");
+      });
+      this.andkey = result;
+      this.heightword = k;  }
       offset = this.offset;
       sort = this.sort;
-      querySearch = this.getQuerySearch;
-      this.$store.dispatch("fetchSentimentDetail", {
+
+      let params = {
         start_date: this.getWordCloudStartDate,
         end_date: this.getWordCloudEndDate,
-        keywords: this.getKeywords,
-        domain: this.getWordCloudDomain,
+       // domain: this.getWordCloudDomain,
         sentiment: this.selected,
         offset: offset,
         sort_by: sort,
         querySearch: querySearch,
         source: this.getWordCloudSocial,
         monitor: this.getSelectedMonitor,
-      });
+      }
+
+      if (this.getWordCloudDomain) {
+        params.domain_id = this.getWordCloudDomain
+      }
+console.log('params',params);
+
+      this.$store.dispatch("fetchPosts", params);
     },
     page() {
       var pageNumber;
       if (
         parseInt(this.gotopage) >
-          Math.ceil(this.getSentimentDetail.count / 10) ||
+        Math.ceil(this.getPostsAll.count / 10) ||
         this.gotopage.includes("-")
       ) {
         alert("Wrong number");
@@ -1688,10 +1106,10 @@ export default {
       this.gotopage = "";
       console.log(pageNumber);
     },
-    setPage: function(pageNumber) {
+    setPage: function (pageNumber) {
       this.currentPage = pageNumber;
       console.log(this.currentPage);
-      console.log("page num:",typeof(pageNumber));
+      console.log("page num:", typeof (pageNumber));
       //Call new data from api here
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
@@ -1704,7 +1122,7 @@ export default {
       } else {
         console.log("setPage else");
         this.pageApi(this.sort, this.offset);
-        
+
       }
       console.log("#box-domain");
     },
@@ -1767,51 +1185,51 @@ export default {
             },
           };
           this.axios(config)
-            .then(function(response) {
+            .then(function (response) {
               console.log(response);
               if (_this.selected == "") {
                 if (v == 1) {
-                  _this.getDetailPost[k].sentiment = 1;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = 1;
+                  _this.getPostsAll[k].sentiment = 1;
+                  _this.getPostsAll[k].user_sentiment[_this.objId] = 1;
                 } else if (v == 0) {
-                  _this.getDetailPost[k].sentiment = 0;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = 0;
+                  _this.getPostsAll[k].sentiment = 0;
+                  _this.getPostsAll[k].user_sentiment[_this.objId] = 0;
                 } else {
-                  _this.getDetailPost[k].sentiment = -1;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = -1;
+                  _this.getPostsAll[k].sentiment = -1;
+                  _this.getPostsAll[k].user_sentiment[_this.objId] = -1;
                 }
               } else {
                 console.log("in 1");
                 if (v == _this.selected) {
                   console.log("in 11");
-                  _this.getDetailPost[k].sentiment = v;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = v;
+                  _this.getPostsAll[k].sentiment = v;
+                  _this.getPostsAll[k].user_sentiment[_this.objId] = v;
                 } else {
                   console.log("in 12");
-                  _this.getDetailPost.splice(k, 1);
+                  _this.getPostsAll.splice(k, 1);
                 }
               }
             })
-            .catch(function(response) {
+            .catch(function (response) {
               console.log("errrrrrr", response.message);
             });
-          // if (v !== this.getDetailPost[k].sentiment) {
+          // if (v !== this.getPostsAll[k].sentiment) {
           //   this.$store.dispatch("editSentimentPost", {
           //     sentiment: v,
           //     uid: uid,
           //   });
           //   if (this.selected == "") {
           //     if (v == 1) {
-          //       this.getDetailPost[k].sentiment = 1;
+          //       this.getPostsAll[k].sentiment = 1;
           //     } else if (v == 0) {
-          //       this.getDetailPost[k].sentiment = 0;
+          //       this.getPostsAll[k].sentiment = 0;
           //     } else {
-          //       this.getDetailPost[k].sentiment = -1;
+          //       this.getPostsAll[k].sentiment = -1;
           //     }
           //   } else {
-          //     this.getDetailPost.splice(k, 1);
+          //     this.getPostsAll.splice(k, 1);
           //   }
-          //   // this.getDetailPost.splice(k, 1);
+          //   // this.getPostsAll.splice(k, 1);
           //   this.$fire({
           //     title: "แก้ไขสำเร็จ",
           //     type: "success",
@@ -1825,8 +1243,11 @@ export default {
       );
     },
   },
-  mounted() {},
-  async created(sort, offset) {
+  async mounted(sort, offset) {
+    this.$emitter.on("sendKeyword", (val) => {
+      console.log('val', val);
+      this.pageApi(this.sort, this.offset, val);
+    });
     this.username = localStorage.getItem("username");
     this.objId = localStorage.getItem("objId");
     offset = this.offset;
@@ -1836,27 +1257,54 @@ export default {
     this.$store.dispatch("fetchDomain");
     let domain = this.getWordCloudDomain.toString();
     if (domain == "All" || domain == "") {
-      console.log('เข้าDomain',arrdomain);
+      // console.log('เข้าDomain',arrdomain);
       domain = arrdomain;
     }
-    await this.axios
-      .get(
-        "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-          domain
-      )
-      .then((response) => (this.arrword = response.data[0]));
-    var k = this.arrword.Keywords;
-    var ka = this.arrword.and_keywords;
-    let result = ka.map((key) => {
-      return key.split("+");
-    });
-    this.andkey = result;
-    this.heightword = k;
-  
-    // let temp = result.join();
-    // temp = temp.split(",");
-    // this.heightword = k.concat(temp);
-  },
+    //   await this.axios
+    //     .get(
+    //       "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
+    //         domain
+    //     )
+    //     .then((response) => (this.arrword = response.data[0]));
+    //   var k = this.arrword.Keywords;
+    //   var ka = this.arrword.and_keywords;
+    //   let result = ka.map((key) => {
+    //     return key.split("+");
+    //   });
+    //   this.andkey = result;
+    //   this.heightword = k;
+  }
+  // async created(sort, offset) {
+  //   this.username = localStorage.getItem("username");
+  //   this.objId = localStorage.getItem("objId");
+  //   offset = this.offset;
+  //   sort = this.sort;
+  //   console.log(offset, sort);
+  //   const arrdomain = localStorage.getItem("domainArr");
+  //   this.$store.dispatch("fetchDomain");
+  //   let domain = this.getWordCloudDomain.toString();
+  //   if (domain == "All" || domain == "") {
+  //     console.log('เข้าDomain',arrdomain);
+  //     domain = arrdomain;
+  //   }
+  //   await this.axios
+  //     .get(
+  //       "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
+  //         domain
+  //     )
+  //     .then((response) => (this.arrword = response.data[0]));
+  //   var k = this.arrword.Keywords;
+  //   var ka = this.arrword.and_keywords;
+  //   let result = ka.map((key) => {
+  //     return key.split("+");
+  //   });
+  //   this.andkey = result;
+  //   this.heightword = k;
+
+  //   // let temp = result.join();
+  //   // temp = temp.split(",");
+  //   // this.heightword = k.concat(temp);
+  // },
 };
 </script>
 
@@ -1864,19 +1312,23 @@ export default {
 .box-hl {
   border-radius: 10px;
 }
+
 .highlight4 {
   background-color: #f7dca2;
   padding: 0 2px;
 }
+
 .all {
   background-color: #fed16e;
   color: white;
   width: 80px;
   padding: 7px;
 }
+
 p {
   margin-bottom: 0rem;
 }
+
 #picmore {
   background: #000000c7;
   color: white;
@@ -1889,16 +1341,19 @@ p {
   float: right;
   cursor: pointer;
 }
+
 .col2 {
   column-count: 2;
   width: 504px;
   margin: auto;
 }
+
 .img-grid {
   width: 100%;
   height: 350px;
   object-fit: cover;
 }
+
 .images1 {
   width: 504px;
   height: 283.5px;
@@ -1909,6 +1364,7 @@ p {
   border-radius: 16px;
   border: 1px solid #eaeff3;
 }
+
 .images2 {
   width: 253.5px;
   height: 283.5px;
@@ -1919,6 +1375,7 @@ p {
   border-radius: 16px;
   border: 1px solid #eaeff3;
 }
+
 .images3 {
   width: 253.5px;
   height: 283.5px;
@@ -1929,16 +1386,19 @@ p {
   border-radius: 16px;
   border: 1px solid #eaeff3;
 }
+
 .images3:nth-child(2) {
   height: 141.5px;
   position: absolute;
 }
+
 .images3:nth-child(3) {
   height: 141.5px;
   bottom: 23px;
   position: relative;
   bottom: -72px;
 }
+
 .images4 {
   width: 253.5px;
   height: 142px;
@@ -1949,6 +1409,7 @@ p {
   border-radius: 16px;
   border: 1px solid #eaeff3;
 }
+
 .fa-external-link {
   margin-left: 5px;
   text-decoration: none;
@@ -1956,11 +1417,13 @@ p {
   border-radius: 20px;
   color: #2c3e50;
 }
+
 .fa-external-link:hover {
   background: #ccc;
   color: #696d71;
   cursor: pointer;
 }
+
 #export-btn {
   margin: 0px 20px;
   color: #495057;
@@ -1969,15 +1432,18 @@ p {
   border-radius: 9px;
   box-shadow: 0 2px 5px 0 rgb(0 0 0 / 20%);
 }
+
 #export-btn:hover {
   color: white;
   background-color: #495057;
   border-color: #495057;
 }
+
 .highlight-search {
   background-color: #fed16e;
   padding: 0 2px;
 }
+
 .highlight1 {
   background-color: #f7776a;
   padding: 0 2px;
@@ -1992,10 +1458,12 @@ p {
   background-color: #3a86ad;
   padding: 0 2px;
 }
+
 .form-control {
   background-color: #ede7dd;
   display: inline;
 }
+
 .pagination {
   margin-top: 30px;
   -webkit-box-pack: center;
@@ -2006,6 +1474,7 @@ p {
   color: white;
   background-color: #fed16e;
 }
+
 /* ul {
   padding: 0;
   list-style-type: none;
@@ -2030,27 +1499,32 @@ a.last::before {
   background-color: #dddddd;
   border-color: #dddddd;
 }
+
 #btn-pos:hover {
   background-color: #cbc9c9;
   border-color: #cbc9c9;
   color: #636465;
 }
+
 #btn-neg:hover {
   background-color: #cbc9c9;
   border-color: #cbc9c9;
   color: #636465;
 }
+
 #btn-nue:hover {
   background-color: #cbc9c9;
   border-color: #cbc9c9;
   color: #636465;
 }
+
 .img-thumbnail {
   height: 240px;
   object-fit: cover;
   width: fit-content;
   cursor: pointer;
 }
+
 #box-reaction {
   background: #ddddddad;
   color: #2c3e50;
@@ -2061,15 +1535,19 @@ a.last::before {
   padding-bottom: 3px;
   margin-left: 4px;
 }
+
 #post-comment {
   margin-left: 12px;
 }
+
 .modal {
   background-color: #ffffff00 !important;
 }
+
 .modal-header {
   border-bottom: none;
 }
+
 .modal-dialog {
   position: relative;
   width: auto;
@@ -2077,11 +1555,13 @@ a.last::before {
   pointer-events: none;
   padding-top: 30px;
 }
+
 #img-popup {
   max-width: 90vw;
   height: auto;
   max-height: 90vh;
 }
+
 .close {
   float: right;
   font-size: 1.5rem;
@@ -2093,39 +1573,47 @@ a.last::before {
   opacity: 1;
   padding: 20px 0px;
 }
+
 .close span {
   background: #5453538c;
   padding: 5px 14px;
   border-radius: 50px;
 }
+
 .close span :hover {
   background: #545353c4;
 }
+
 .modal-dialog {
   max-width: none;
 }
+
 .modal-content {
   width: 100vw;
   margin: 0;
   background: transparent;
   border: none;
 }
+
 #img-user {
   width: 28px;
   border-radius: 50%;
   margin-bottom: 3px;
 }
+
 #scroll {
   min-height: auto;
   max-height: 200px;
   overflow: auto;
   overflow-x: hidden;
 }
+
 #user-link {
   color: #2c3e5a;
   margin-left: 45px;
   white-space: nowrap;
 }
+
 #user-link:hover {
   color: #2c3e50;
   background: #efebeb;
@@ -2135,9 +1623,11 @@ a.last::before {
   text-decoration: none;
   font-weight: bold;
 }
+
 #user-link:hover .fa-user-circle-o {
   font-weight: 900;
 }
+
 #bg-user {
   background: #ffffff;
   color: #2c3e5a;
@@ -2150,15 +1640,19 @@ a.last::before {
   border: 1.5px solid;
   margin-bottom: 8px;
 }
+
 .fa-user-circle {
   font-size: 30px;
 }
+
 .fa-comment {
   font-size: 17px;
 }
+
 .fa-comment:hover {
   color: #fed16e;
 }
+
 .vue-popover.dropdown-position-top:before {
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
@@ -2167,6 +1661,7 @@ a.last::before {
   left: calc(50% - 136px);
   filter: drop-shadow(0px 2px 2px rgba(52, 73, 94, 0.1));
 }
+
 #foo {
   width: 300px !important;
   z-index: 2 !important;
@@ -2175,6 +1670,7 @@ a.last::before {
   bottom: 45px;
   max-height: 300px;
 }
+
 #bg-user {
   background: #ffffff;
   color: #2c3e5a;
@@ -2187,27 +1683,34 @@ a.last::before {
   border: 1.5px solid;
   margin-bottom: 8px;
 }
+
 #emoji {
   width: 27px;
 }
+
 .comment-img {
   text-align: start;
 }
+
 .card-body {
   min-height: 6rem;
 }
+
 .card-text {
   text-align: justify;
   padding: 0px 10px;
 }
+
 .card-text:last-child {
   margin-top: 10px;
 }
+
 #tab-post {
   text-align: initial;
   padding-right: 50px;
   margin: auto;
 }
+
 .fa-facebook-official,
 .fa-facebook-square {
   font-size: 42px;
@@ -2219,6 +1722,7 @@ a.last::before {
 .card-img {
   padding: 10px;
 }
+
 .card-footer {
   text-align: initial;
 }
@@ -2233,29 +1737,35 @@ a.last::before {
   display: inline-block;
   margin-left: 10px;
 }
+
 .social-img {
   width: 35px;
   margin-top: 6px;
   margin-left: -7px;
   height: 35px;
 }
+
 card-img,
 .card-img-bottom,
 .card-img-top {
   width: 100%;
   object-fit: cover;
 }
+
 .fa-sort-amount-down-alt {
   font-size: 28px;
   color: #4c412b;
 }
+
 .fa-sort-amount-down-alt:before {
   position: relative;
   bottom: -14px;
 }
+
 #all-eltab {
   border-bottom: 10px solid #4c412b;
 }
+
 #eltab1,
 #eltab2,
 #eltab3 {
@@ -2263,6 +1773,7 @@ card-img,
   text-align: center;
   padding-right: 10px;
 }
+
 #eltab1 {
   outline-style: none;
   -webkit-box-shadow: none;
@@ -2270,6 +1781,7 @@ card-img,
   border-color: transparent;
   border-bottom: 10px solid #fed16e;
 }
+
 #eltab2,
 #eltab3 {
   outline-style: none;
@@ -2278,6 +1790,7 @@ card-img,
   border-color: transparent;
   border-bottom: 10px solid #4c412b;
 }
+
 #title-tab {
   padding-right: 5px;
 }
@@ -2286,169 +1799,200 @@ card-img,
   text-align: end;
   /* padding-left: 50px; */
 }
+
 #tab-all {
   margin-top: 30px;
   margin-bottom: 30px;
 }
+
 @media only screen and (min-width: 0px) and (max-width: 1050px) {
   .col-sm-7 {
     flex: 0 0 100%;
     max-width: 100%;
   }
+
   .col-sm-5 {
     flex: 0 0 100%;
     max-width: 100%;
   }
+
   #tab-post {
     text-align: center;
     padding-right: 15px;
     margin-top: 20px;
   }
+
   #tab-view {
     text-align: center;
     padding-left: 0px;
   }
+
   #overflow-page {
     overflow: hidden;
   }
-  #btn-sentiment > div {
+
+  #btn-sentiment>div {
     white-space: nowrap !important;
   }
+
   #btn-sentiment[data-v-1037f9aa] {
     right: -16%;
     position: relative;
     z-index: 1;
   }
+
   #text-date {
     white-space: nowrap;
   }
 }
+
 @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
   .all {
     padding: 10px !important;
   }
 }
+
 @media only screen and (min-width: 375px) and (max-width: 815px) {
   .card-text {
     font-size: 2vw;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 760px) {
   .box-hl {
     font-size: 16px;
     font-weight: 600;
   }
+
   #picmore {
     margin: -42px;
     margin-right: -1px;
   }
+
   .col2 {
     column-count: 2;
     width: 92%;
     margin: auto;
     column-gap: 4px;
   }
+
   .images4 {
     width: 100%;
   }
+
   .images3 {
     width: 46%;
   }
+
   .images2 {
     width: 46%;
   }
+
   .images1 {
     width: 92%;
     height: 283.5px;
   }
 }
+
 @media only screen and (min-width: 0px) and (max-width: 600px) {
   .card-text {
     font-size: 4vw;
   }
+
   .card-body {
     min-height: 8rem;
   }
+
   .card-text {
     padding: 0px 0px;
   }
+
   .social-img {
     width: 31px;
     margin-top: 6px;
     margin-left: -9px;
     height: 31px;
   }
+
   .user-img {
     width: 38px;
     height: 38px;
     margin-left: 10px;
   }
+
   .modal-body {
     padding: 0rem;
   }
+
   .close {
     padding: 20px 0px;
     margin-left: 84%;
   }
+
   #emoji {
     width: 20px;
   }
+
   #tab-view {
     padding-left: 0;
     text-align: center;
     margin-bottom: 31px;
   }
+
   #eltab1,
   #eltab2,
   #eltab3 {
     padding-right: 0px;
   }
+
   #all-eltab {
     font-size: 3.6vw;
   }
+
   .fa-sort-amount-down-alt:before {
     display: none;
   }
+
   #tab-post {
     margin-top: 25px;
     font-size: 3.6vw;
   }
+
   #tab-post {
     text-align: center;
     padding-right: 15px;
   }
+
   #tab-all {
     margin-top: 0px;
     margin-bottom: 0px;
   }
+
   #btn-sentiment {
     margin-top: 5px;
   }
+
   h1,
   .h1 {
     font-size: 1.5rem;
   }
 
-  #content
-    > div.container
-    > div:nth-child(3)
-    > div
-    > header
-    > div
-    > div.btn-edit.col-sm
-    > button {
+  #content>div.container>div:nth-child(3)>div>header>div>div.btn-edit.col-sm>button {
     font-size: 3.5vw !important;
     font-weight: bold;
   }
+
   .social[data-v-00911447] {
     font-size: x-large;
   }
+
   #img-title {
     width: 50px;
     display: block;
     margin: auto;
     margin-bottom: 5px;
   }
+
   .all {
     width: 50px;
     display: block;

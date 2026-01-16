@@ -1,102 +1,286 @@
 <template>
-  <div id="wordcloud">
-    <vue-element-loading :active="getLoadPostCloud" size="80" background-color="rgba(255, 255, 255, 0.5)"
-      color="#b6ac9a" />
-    {{ getPostsAll }}
-    <!-- {{ getPostsAll }}dfgdfgdfgdf -->
-    <div class="container" id="tab-all" v-if="getPostsAll">
-      <b-row v-if="getQuerySearch" class="mb-1">
-        <b-col md="8" lg="8" class="m-auto my-1">
-          <h5 class="bold text-lg-left text-md-left">{{ getQuerySearch }}</h5>
+  <div>
+    <div class="mt-md-1 ">
+      <!-- <div class="my-4 text-left">
+        <h4 class="bold text-lg-left text-md-left">All Posts</h4>
+      </div> -->
+      <div class="mt-1  text-left">
+        <span class="h5 bold">
+          <i class="fa fa-tag mr-2" aria-hidden="true"></i>{{ querySearch }}
+        </span>
+      </div>
+      <b-card class="card-platform">
+        <!-- {{ datachart }} -->
+        <div class="text-left text-tt mb-2 h6 " style="letter-spacing: 1.5px;">Total <span class="h6 bold">{{
+          datachart.count
+          | numFormat }}</span>
+          Posts</div>
+        <b-row>
+          <b-col cols="12" lg="5">
+            <div>
+              <b-row md="5" style="font-size:16px">
+                <b-col>
+                  <i class="fa fa-users mr-1" aria-hidden="true"></i>
+                  <div v-b-tooltip.hover :title="platform.Accounts + ' accounts'">
+                    {{ platform.Accounts | shortNumber }}
+                  </div>
+                </b-col>
+
+                <b-col>
+                  <i class="fa fa-paper-plane mr-1" />
+                  <div v-b-tooltip.hover :title="platform.totalPost + ' posts'">
+                    {{ platform.totalPost | shortNumber }}
+                  </div>
+                </b-col>
+
+                <b-col>
+                  <i class="fa fa-comments mr-1" aria-hidden="true"></i>
+                  <div v-b-tooltip.hover :title="platform.comments_count + ' comments'">
+                    {{ platform.comments_count | shortNumber }}
+                  </div>
+                </b-col>
+
+                <b-col>
+                  <i class="fa fa-thumbs-o-up mr-1" aria-hidden="true"></i>
+                  <div v-b-tooltip.hover :title="platform.likes_count + ' likes'">
+                    {{ platform.likes_count | shortNumber }}
+                  </div>
+                </b-col>
+
+                <b-col>
+                  <i class="fa fa-retweet mr-1" aria-hidden="true"></i>
+                  <div v-b-tooltip.hover :title="platform.retweets_count + ' reposts'">
+                    {{ platform.retweets_count | shortNumber }}
+                  </div>
+                </b-col>
+
+              </b-row>
+            </div>
+            <!-- {{ platform }} -->
+            <!-- {{ datachart.total }} -->
+            <SentimentBar :positive="datachart.positive || 0" :neutral="datachart.neutral || 0"
+              :negative="datachart.negative || 0" class="py-2" />
+          </b-col>
+          <b-col cols="">
+            <b-row cols="5" class="mx-auto " v-if="platform && Object.keys(platform).length">
+              <!-- Facebook -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/cfb.png" class="img-issue" />
+                        <!-- {{ platform.facebook | numFormat}} -->
+                      </div>
+                      <div class="h6l">
+                        {{ platform.facebook | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- Twitter -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/ctw.png" class="img-issue" />
+                        <!-- {{ platform.facebook | numFormat}} -->
+                      </div>
+                      <div class="h6">
+                        {{ platform.twitter | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- Instagram -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/cig.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.instagram | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- Pantip -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/cpt.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.pantip | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- YouTube -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/cyt.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.youtube | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- News -->
+              <b-col class="my-2">
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/cn.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.news | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- TikTok -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/tt.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.tiktok | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- Blockdit -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/Block.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.blockdit | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+
+              <!-- Threads -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/ctd.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.threads | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
+            </b-row>
+
+          </b-col>
+        </b-row>
+        <PlatformBarChart :platform="platform" v-if="platform && Object.keys(platform).length" class="py-0 " />
+
+      </b-card>
+
+      <!-- <PlatformBarChart :platform="platform" v-if="platform" /> -->
+
+      <b-row class="mb-1 w-100 ">
+        <b-col cols="7" md="6" lg="6" class="my-1 m-auto">
+          <div class="bold text-lg-left text-md-left h6">
+            All Posts | {{ querySearch }}
+          </div>
         </b-col>
-        <b-col md="4" lg="4" class="text-lg-right my-1">
+        <b-col cols="5" md="6" lg="6" class="m-auto my-1 text-right">
           <span id="post-comment">
             <i class="far fa-paper-plane" />
 
             <b>
-              <span v-if="getPostsAll.count !== 0">
-                {{ getPostsAll.count | numFormat }} </span><span v-else> 0 </span></b>
+              <span v-if="datacount !== 0"> {{ datacount | numFormat }} </span><span v-else> 0 </span></b>
             โพสต์
           </span>
         </b-col>
       </b-row>
-      <div class="row">
-        <b-col sm="12" md="12" lg="" v-if="checkpost">
-          <b-form-group label="" v-slot="{ ariaDescribedby }">
-            <b-row>
-              <b-col sm="12">
-                <b-form-radio-group v-model="selected" :options="optionsstm" :aria-describedby="ariaDescribedby"
-                  name="radio-inline" class="mt-2 text-lg-left ml-2 text-md-center text-sm-center"
-                  @change="selectSentiment"></b-form-radio-group>
-              </b-col>
-            </b-row>
-          </b-form-group>
+
+      <b-row class="">
+        <b-col sm="12" md="auto">
+          <b-form-radio-group v-model="selected" :options="options" name="radio-inline" class="mt-1 mb-2 text-left ml-2"
+            @change="selectSentiment"></b-form-radio-group>
         </b-col>
-        <b-col sm="12" md="12" lg="6" id="tab-post" v-if="!checkpost">
-          <b-row>
-            <b-col cols="12">
-              <span v-if="
-                getWordCloudSocial ===
-                'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
-              ">
-                <a> <a class="all">ALL</a> </a>
-              </span>
-              <span v-if="getWordCloudSocial === 'facebook'"><img src="@/assets/Facebook.png" width="50px"
-                  id="img-title" />
-              </span>
-              <span v-if="getWordCloudSocial === 'twitter'"><img src="@/assets/Twitter.png" width="50px"
-                  id="img-title" />
-              </span>
-              <span v-if="getWordCloudSocial === 'pantip'"><img src="@/assets/Pantip.png" width="50px" id="img-title" />
-              </span>
-              <span v-if="getWordCloudSocial === 'youtube'"><img src="@/assets/Youtube.png" width="50px"
-                  id="img-title" />
-              </span>
-              <span v-if="getWordCloudSocial === 'news'"><img src="@/assets/News.png" width="50px" id="img-title" />
-              </span>
-              <span v-if="getWordCloudSocial === 'instagram'"><img src="@/assets/Instagram.png" width="50px"
-                  id="img-title" />
-              </span>
-              <span id="post-comment">
-                <i class="far fa-paper-plane" />
-                <b> {{ getPostsAll.count | numFormat }} </b> posts |
-                <i class="far fa-comments" />
-                <b> {{ getPostsAll.total_comment | numFormat }} </b>
-                comments</span>
-            </b-col>
-          </b-row>
+        <b-col md="">
+          <b-form-select :options="itemSocial" v-model="select_social" @change="selectSort" id="search-input" size="sm"
+            class="mb-2 select-sort" placeholder="Select Platform"></b-form-select>
         </b-col>
-        <b-col sm="12" md="12" lg="6" id="tab-view">
-          <span id="title-tab"><i class="fas fa-sort-amount-down-alt"></i></span>
-          <span id="all-eltab">
-            <a id="eltab1" tabindex="0" @click="tabactive()">
-              <i class="fa fa-clock-o" /> โพสต์ล่าสุด
-            </a>
-            <a id="eltab2" tabindex="0" @click="tab2()">
-              <i class="fa fa-repeat" /> โพสต์เริ่มต้น
-            </a>
-            <a id="eltab3" tabindex="0" @click="tab3()">
-              <i class="fa fa-chart-line" /> Engagement
-            </a>
-          </span>
+        <b-col sm="12" md="" class="text-right">
+
+          <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
+            @change="selectSort"></b-form-select>
         </b-col>
-      </div>
+      </b-row>
     </div>
 
-    <div v-if="getPostsAll">
+    <div>
+      <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.5)" color="#b6ac9a" />
       <!-- Highlight -->
       <b-form-checkbox switch size="lg" class="text-right mb-2" v-model="checked">
         <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
         <span v-else class="box-hl pl-2 pr-2">Highlight</span>
       </b-form-checkbox>
-
-      <div v-if="getDetailPost.length == 0" class="md-font">
+      <div v-if="this.dataIssue == ''" class="md-font">
         <b-card>
           <div class="mt-3">ไม่พบข้อมูล</div>
         </b-card>
       </div>
       <b-card no-body class="overflow-hidden" header-tag="header" footer-tag="footer"
-        style="max-width: 100%; margin-bottom: 30px" v-for="(datas, k) in paginate" :key="k">
+        style="max-width: 100%; margin-bottom: 30px" v-for="(datas, k) in dataIssue" :key="k">
         <template #header>
           <b-row>
             <b-col style="text-align: initial; display: contents">
@@ -106,32 +290,36 @@
                 <b-avatar @error="user" size="47px" :src="datas.profile_image" loading="lazy" v-else></b-avatar>
               </span>
               <span v-else> <b-avatar size="45px"></b-avatar></span>
-
               <img v-if="datas.source === 'twitter'" :src="imgtw" class="social-img" />
               <img v-if="datas.source === 'facebook'" :src="imgfb" class="social-img" />
-              <img v-if="datas.source === 'pantip'" :src="imgpt" class="social-img" />
+              <span v-if="datas.source == 'pantip'">
+                <img v-if="datas.platform == 'dek-d'" src="@/assets/dekd.png" class="social-img" />
+                <img v-else-if="datas.platform == 'lemon8'" src="@/assets/lemon8.png" class="social-img" />
+                <img v-else src="@/assets/Pantip.png" class="social-img" />
+              </span>
               <img v-if="datas.source === 'youtube'" :src="imgyt" class="social-img" />
               <img v-if="datas.source === 'news'" :src="imgnw" class="social-img" />
               <img v-if="datas.source === 'instagram'" :src="imgig" class="social-img" />
               <img v-if="datas.source === 'blockdit'" :src="imgbd" class="social-img" />
-              <img v-if="datas.source === 'tiktok'" :src="imgtt" class="social-img" />
-              <img v-if="datas.source === 'threads'" :src="imgtd" class="social-img" />
+              <img v-if="datas.source === 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
+              <img v-if="datas.source === 'threads'" src="@/assets/Threads.png" class="social-img" />
             </b-col>
             <b-col style="text-align: initial">
-              <span id="txt-name">
-                <span><b> {{ datas.account_name }} </b></span>
-
+              <!-- {{username(datas.account_name)}} -->
+              <span id="user-name">
+                <b>{{ datas.account_name }}</b>
                 <a v-if="datas.url_post && datas.url_post.includes('mbasic')"
                   v-bind:href="datas.url_post.replace('mbasic.', '')" class="fa fa-external-link" target="_blank"></a>
                 <a v-else v-bind:href="datas.url_post" class="fa fa-external-link" target="_blank"></a>
               </span>
+
               <!-- Time -->
               <div id="text-date" style="text-align: start" class="md-font">
                 <span v-if="datas.date">{{ datas.date.split("T")[0] }} |
                   {{ datas.date.split("T")[1] }}</span>
               </div>
             </b-col>
-            <b-col sm="12" md="4">
+            <b-col sm="12" md="4" class="text-md-right mr-2">
               <div>
                 <img class="images1 d-none" :src="datas.snapshot" />
                 <i v-if="datas.snapshot" class="fas fa-camera mr-2" @click="onClick(0, [datas.snapshot])" />
@@ -208,9 +396,29 @@
           <b-col lg="12">
             <b-card-body>
               <b-card-text class="box-contents">
+                <div v-if="datas && datas.news_info && datas.news_info.source_news == 'external'"
+                  class="info-news text-right my-1 small ">
+                  <span v-if="datas.news_info.source_news == 'external'">ข่าวต่างประเทศ</span>
+                  | <span v-if="datas.news_info.nation">{{ datas.news_info.nation }}</span>
+                </div>
                 <div v-if="datas && datas.title" class="title-news text-left my-2">
                   {{ datas.title }}
                 </div>
+
+                <!-- <Highlighter
+                  class="my-highlight md-font"
+                  :style="{
+                    textAlign: 'left',
+                    fontSize: '17px',
+                    padding: '10px',
+                  }"
+                  highlightClassName="highlight4"
+                  :searchWords="highlightText(datas.hottopic_docs.keywords)"
+                  :autoEscape="true"
+                  :textToHighlight="
+                    datas.read ? datas.full_text.slice(0, 450) : datas.full_text
+                  "
+                ></Highlighter> -->
                 <Highlighter class="my-highlight md-font" :style="{
                   textAlign: 'left',
                   fontSize: '17px',
@@ -231,12 +439,9 @@
               <a v-bind:href="datas.url_post" target="_blank">
                 <img :src="datas.photos && datas.photos[0]" onerror="this.style.display='none'"
                   style="height:450px;border-radius: 10px;" class="my-3" />
-                <!-- <lite-tiktok
-                  :videoid="datas.uid"
-                  style=" pointer-events: none; "
-                ></lite-tiktok
-              > -->
+                <!-- <lite-tiktok :videoid="datas.uid" style=" pointer-events: none; "></lite-tiktok> -->
               </a>
+
               <!-- <iframe
                 width="auto"
                 height="750"
@@ -247,6 +452,7 @@
             <div id="photo-grid" v-if="
               datas.photos !== null &&
               datas.photos &&
+              datas.photos != '' &&
               datas.photos != '' &&
               datas.source !== 'tiktok'
             " class="mb-4">
@@ -282,13 +488,13 @@
             </div>
           </b-col>
         </b-row>
-        <div class="text-left ai-box mt-2"
-          v-if="datas && datas.photos_text && datas.photos_text.length"
+        <div class="text-left ai-box my-2 px-2" v-if="datas && datas.photos_text && datas.photos_text.length"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.photos_text">
 
             <div v-if="text && text.length">
-              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
+              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx
+                + 1 }}
               </b-avatar>
               <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
               </span>
@@ -310,12 +516,14 @@
             </div>
           </div>
         </div>
-        <div class="text-left ai-box mt-2" v-if="datas && datas.ocr && username == 'adminatapy'"
+
+        <div class="text-left ai-box my-2 px-2" v-if="datas && datas.ocr && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.ocr">
-            <!-- {{ datas.ocr.face[].person_name /datas.ocr.face[].confidence >) }} -->
+            <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
             <div v-if="text.text_sort && text.text_sort.length">
-              <b-avatar size="18px" style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx + 1 }}
+              <b-avatar size="18px" style="font-size: 12px;background-color:#8b8787;" class="mr-1">{{ idx
+                + 1 }}
               </b-avatar>
               <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
               {{ text.text_sort[0] }}
@@ -339,7 +547,7 @@
           datas &&
           datas.location &&
           datas.location.length
-        " class="text-left ai-box my-3 mx-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+        " class="text-left ai-box my-2 px-2 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
           <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
           <span v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
     border-radius: 33px;
@@ -371,7 +579,7 @@
             </span>
           </span>
         </div>
-        <div class="text-left ai-box mt-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
+        <div class="text-left ai-box my-2 px-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
           style="font-size: 15px;font-weight: 500;">
           <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
             <span v-for="(face, idx) in datas.person_name">
@@ -396,6 +604,7 @@
             <span v-b-tooltip.hover title="Engagement" v-else>
               <span style="font-size:14px;">Engages </span>{{ datas.engagement | numFormat }}
             </span>
+
             <!-- popover user comment -->
             <popover :name="'foo' + k" id="foo" v-if="
               datas.source !== 'facebook' &&
@@ -469,8 +678,8 @@
                 <!-- <div v-if="datas.comment==''" class="text-center">ไม่มีลิสต์รายชื่อ account</div> -->
               </div>
             </popover>
-            <span id="box-reaction" v-b-tooltip.hover title="Comments" v-b-toggle="'btn' + offset + k"
-              :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer">
+            <span id="box-reaction" v-b-tooltip.hover title="Comments" :aria-expanded="visible ? 'true' : 'false'"
+              style="cursor: pointer" v-b-toggle="'btn' + offset + k">
               <i class="fas fa-comment"> </i>
               <span class="md-font" v-if="datas.comments_count && datas.source == 'news'">
                 {{ datas.comments.comments.length | numFormat }}&nbsp;
@@ -478,14 +687,6 @@
               <span v-else class="md-font">
                 {{ datas.comments_count | numFormat }}&nbsp;</span>
               <!-- <span  class="md-font" v-if="datas.comments_count==''&&datas.source == 'twitter'"> 0 </span> -->
-            </span>
-            <!------------- engages-------------- -->
-            <span id="box-reaction" v-b-tooltip.hover title="Engagement" v-if="datas.source == 'pantip'"
-              style="float:right;">
-              <span style="font-size:14px;">Engages
-                {{
-                  (datas.engagement + datas.comments_count) | numFormat
-                }}</span>
             </span>
 
             <!-- twitter -->
@@ -511,23 +712,15 @@
                 {{ datas.views_count | numFormat }}
               </span>
             </span>
-
-            <span v-if="datas.source == 'facebook'">
-              <span v-if="datas.likes_count !== '0' && datas.likes_count" id="box-reaction" v-b-tooltip.hover
-                title="Like">
-                <i class="far fa-thumbs-up" />
-                {{ datas.likes_count | numFormat }}
-              </span>
-            </span>
             <!-- share blockdit -->
-            <!-- <span v-if="datas.source == 'blockdit' && datas.engagement">
+            <span v-if="datas.source == 'blockdit' && datas.engagement">
               <span id="box-reaction" v-b-tooltip.hover title="Share">
                 <i class="fa fa-share"></i>
                 <span class="md-font">
                   {{ datas.engagement | numFormat }}
                 </span>
               </span>
-            </span> -->
+            </span>
             <!-- reaction-->
             <span v-if="datas.reaction">
               <span v-if="datas.reaction != ''">
@@ -566,21 +759,20 @@
                       {{ datas.reaction.like | numFormat }}
                     </span>
                   </span></span>
+                <span v-if="datas.reaction.shares">
+                  <span v-if="datas.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                    <i class="fa fa-share" v-if="datas.reaction.shares !== '0'"></i>
+                    <span class="md-font" v-if="datas.reaction.shares !== '0'">
+                      {{ datas.reaction.shares | numFormat }}
+                    </span>
+                  </span>
+                </span>
 
                 <span v-if="datas.reaction.share">
                   <span v-if="datas.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
                     <i class="fa fa-share" v-if="datas.reaction.share !== '0'"></i>
                     <span class="md-font" v-if="datas.reaction.share !== '0'">
                       {{ datas.reaction.share | numFormat }}
-                    </span>
-                  </span>
-                </span>
-
-                <span v-if="datas.reaction.shares">
-                  <span v-if="datas.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
-                    <i class="fa fa-share" v-if="datas.reaction.shares !== '0'"></i>
-                    <span class="md-font" v-if="datas.reaction.shares !== '0'">
-                      {{ datas.reaction.shares | numFormat }}
                     </span>
                   </span>
                 </span>
@@ -666,8 +858,9 @@
                 <!-- end yt -->
               </span>
             </span>
+
             <!-- comment content -->
-            <b-collapse :id="'btn' + page + k" class="mt-2" v-if="datas.comments && datas.comments.length">
+            <b-collapse :id="'btn' + offset + k" class="mt-2" v-if="datas.comments && datas.comments.length">
               <b-card id="cmt-card" class="text-left">
                 <span v-if="datas.source == 'news' && datas.comments">
                   <div v-for="(cmtn, inx) in datas.comments.comments" :key="inx">
@@ -697,9 +890,13 @@
                       <b-col lg="1">
                         <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
                           v-if="datas.source == 'youtube'">
-                          <img :src="cmt.photo" id="img-cmt" /></a>
+                          <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                          <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                        </a>
                         <a :href="cmt.url" target="_blank" v-else>
-                          <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" /></a>
+                          <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
+                          <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                        </a>
 
                         <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                         <span> </span>
@@ -715,7 +912,9 @@
                           <span v-if="datas.source == 'youtube' && cmt.time" class="font-weight-light" id="cmt-time">{{
                             cmt.time.split("T")[0] }} |
                             {{ cmt.time.split("T")[1] }}</span>
-                          <span v-else class="font-weight-light" id="cmt-time">{{ cmt.time }}</span>
+                          <span v-else class="font-weight-light" id="cmt-time">{{
+                            cmt.time
+                          }}</span>
                         </div>
 
                         <div v-if="datas.source == 'youtube'" class="font-weight-light">
@@ -735,14 +934,14 @@
         </template>
       </b-card>
     </div>
-    <ul class="pagination" v-if="getDetailPost.length != 0">
+    <ul class="pagination" v-if="datacount != 0">
       <li class="page-item" v-for="pageNumber in totalPages" :key="pageNumber">
         <span v-if="
           Math.abs(pageNumber - currentPage) < 3 ||
           pageNumber == totalPages ||
           pageNumber == 1
         ">
-          <a class="page-link md-font" v-bind:key="pageNumber" href="#wordcloud" @click="setPage(pageNumber)" :class="{
+          <a class="page-link md-font" v-bind:key="pageNumber" href="#allpost" @click="setPage(pageNumber)" :class="{
             current: currentPage === pageNumber,
             last:
               pageNumber == totalPages &&
@@ -752,9 +951,9 @@
       </li>
     </ul>
     <input type="number" class="form-control md-font" v-model="gotopage" id="setpage" style="width: 150px"
-      v-if="getDetailPost.length != 0" />
+      v-if="datacount != 0" />
 
-    <span v-if="getDetailPost.length != 0">
+    <span v-if="datacount != 0">
       <button type="button" class="btn btn-default" @click="page()">
         <span id="submit" class="md-font">Go to Page</span>
       </button>
@@ -768,18 +967,47 @@ import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
 import "@justinribeiro/lite-tiktok";
+import { API_V2_URL } from "@/common/config";
 import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
+import SentimentBar from "@/components/wordcloudnew/SentimentBar.vue";
+import PlatformBarChart from "@/components/chart/PlatformBarChart.vue";
+import Vue from "vue";
+
+Vue.filter("shortNumber", function (value, digits = 1) {
+  const n = Number(value);
+  if (!isFinite(n)) return "0";
+
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+
+  const fmt = (x) => {
+    // ตัด .0 ทิ้ง เช่น 1.0k => 1k
+    const s = x.toFixed(digits);
+    return s.replace(/\.0+$|(\.\d*[1-9])0+$/, "$1");
+  };
+
+  if (abs < 1000) return sign + abs.toLocaleString("en-US");
+  if (abs < 1e6) return sign + fmt(abs / 1e3) + "k";
+  if (abs < 1e9) return sign + fmt(abs / 1e6) + "M";
+  if (abs < 1e12) return sign + fmt(abs / 1e9) + "B";
+  return sign + fmt(abs / 1e12) + "T";
+});
+
+// ใช้สำหรับ tooltip (จำนวนเต็มพร้อม comma)
+Vue.filter("intFormat", function (value) {
+  const n = Number(value);
+  if (!isFinite(n)) return "0";
+  return Math.round(n).toLocaleString("en-US");
+});
+
 export default {
   props: {
     checkpost: {
       type: Boolean,
     },
-    querySearch: {
-      type: String,
-      default: "",
-    },
+    querySearch: { type: String, default: "" },
     social: {
       type: String,
       default:
@@ -794,16 +1022,35 @@ export default {
     },
   },
   watch: {
-    getQuerySearch() {
-      this.currentPage = 1;
-    },
-    getWordCloudSocial() {
-      this.currentPage = 1;
-      this.selectSentiment();
-    },
+    querySearch: {
+      immediate: true,
+      handler(val) {
+        // ✅ ยิงครั้งแรกแน่นอนตอน component ถูกสร้าง
+        this.localQuery = (val || "").trim();
+        this.offset = 0;
+        this.currentPage = 1;
+
+        // ถ้าไม่มีคำ ไม่ต้องยิง
+        if (!this.localQuery) return;
+
+        this.apiSpotNewsPost(0);
+      }
+    }
   },
   data() {
     return {
+      datacountchart: 0,
+      localQuery: "",
+      showFull: false,
+      topics: "",
+      datachart: {},
+      sliding: null,
+      slide: 0,
+      selectIndex: 0,
+      platform: null,
+      load: true,
+      datacount: 0,
+      dataIssue: [],
       objId: "",
       arrword: [],
       myStyle: {
@@ -844,7 +1091,7 @@ export default {
       length: 5,
       //length:5, //change this for items per page too
       sort: "",
-      count: "",
+      count: 0,
       has_next: "",
       gotopage: "",
       img: "",
@@ -855,96 +1102,199 @@ export default {
       imgnw: require("@/assets/News.png"),
       imgyt: require("@/assets/Youtube.png"),
       imgbd: require("@/assets/Blockdit.png"),
-      imgtt: require("@/assets/Tiktok.png"),
-      imgtd: require("@/assets/Threads.png"),
       user: require("@/assets/user.svg"),
       selectedStm: this.status,
-      options: [
-        { text: "Positive", value: 1 },
-        { text: "Neutral", value: 0 },
-        { text: "Negative", value: -1 },
+      selected: [1, 0, -1],
+      selectedSort: "",
+      select_social:
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+      itemSocial: [
+        {
+          text: "All Platform",
+          value:
+            "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+        },
+        { text: "facebook", value: "facebook" },
+        { text: "X", value: "twitter" },
+        { text: "board", value: "pantip" },
+        // { text: "news", value: "news" },
+        { text: "youtube", value: "youtube" },
+        { text: "instagram", value: "instagram" },
+        { text: "blockdit", value: "blockdit" },
+        { text: "tiktok", value: "tiktok" },
+        { text: "threads", value: "threads" },
       ],
-      selected: "",
-      optionsstm: [
+
+      options: [
         { text: "Positive", value: "1" },
         { text: "Neutral", value: "0" },
         { text: "Negative", value: "-1" },
-        { text: "ทั้งหมด", value: "" },
+        { text: "ทั้งหมด", value: [1, 0, -1] },
+      ],
+      optionSort: [
+        { value: "", text: " โพสต์ล่าสุด" },
+        { value: "descend", text: "โพสต์เริ่มต้น" },
+        { value: "engagement", text: "Engagement" },
       ],
     };
   },
   components: {
     Highlighter,
     VueGallerySlideshow,
+    SentimentBar,
+    PlatformBarChart,
+
   },
   computed: {
-    ...mapGetters([
-      "getDomainArr",
-      "getWordCloudDomain",
-      "getWordCloudStartDate",
-      "getWordCloudEndDate",
-      "getWordCloudSocial",
-      "getQuerySearch",
-      "getKeywords",
-      "getEditSentiment",
-      "getSelectedMonitor",
-      "getDetailPost",
-      "getLoadPostCloud",
-      "getPostsAll"
-    ]),
+    ...mapGetters(["getClickDomain", "getClickDomainId", "getSdateDm", "getEdateDm", "getArrDate"]),
 
     paginate() {
-      var data = this.getPostsAll;
-      var count = this.getPostsAll.count;
-      var currentPage = this.currentPage;
-      var totalPages = this.totalPages;
-      //var resultCount = this.resultCount;
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
 
-      if (!data || count != count) {
-        return;
-      }
-      //resultCount = count
-      if (currentPage >= totalPages) {
-        currentPage = totalPages;
-      }
-      return data;
+      return Array.isArray(this.dataIssue)
+        ? this.dataIssue.slice(start, end)
+        : [];
     },
-    totalPages: function () {
-      var itemsPerPage = this.itemsPerPage;
-      var count = this.getPostsAll.count;
-      var length;
-      if (count < 10) {
-        length = 10;
-      } else {
-        length = count;
-      }
-      var xs = Math.ceil(length / itemsPerPage);
-      return xs;
+    totalPages() {
+      return Math.ceil(this.datacount / this.itemsPerPage); // คำนวณจำนวนหน้าทั้งหมด
     },
   },
   methods: {
-    filterNumbers(numbers) {
-      // Create a copy of the numbers array and sort by length
-      const filtered = [...numbers].sort(
-        (a, b) => a.toString().length - b.toString().length
+    setDateRange() {
+      if (!this.startd || !this.endd) {
+        const today = moment(new Date()).format().slice(0, 10);
+
+        this.start_date = today + "T00:00:00";
+        this.end_date = today + "T23:59:59";
+      } else {
+        this.start_date = this.startd + "T00:00:00";
+        this.end_date = this.endd + "T23:59:59";
+      }
+    },
+    fetchObjectCount() {
+      this.$store.commit('setshowStatWC', true)
+      // ---- route query ----
+      const startQ = this.$route.query.start;
+      const endQ = this.$route.query.end;
+
+      // fallback วันปัจจุบัน
+      const today = moment(new Date()).format("YYYY-MM-DD");
+      const start = (startQ && String(startQ).trim()
+        ? String(startQ).trim()
+        : `${today}T00:00:00`
+      );
+      const end = (endQ && String(endQ).trim()
+        ? String(endQ).trim()
+        : `${today}T23:59:59`
       );
 
+      // source: ใช้ตัวที่เลือกอยู่ หรือ default
+      // (API ตัวอย่างใช้ source=threads)
+      const source = this.select_social || "threads";
+
+      // keyword / hashtag แบบเดียวกับ apiSpotNewsPost
+      const rawKeyword = (this.localQuery || "").trim();
+      const isHashtag = rawKeyword.startsWith("#") && rawKeyword.length > 1;
+      const keyword = isHashtag ? "" : rawKeyword;
+      const hashtag = isHashtag ? rawKeyword.replace(/^#/, "") : "";
+
+      // domain: ถ้าคุณมี "ชื่อโดเมน" เก็บไว้ใน query (เช่น this.$route.query.domain)
+      // ไม่งั้นอาจ fallback เป็น domain_id (แต่ API นี้น่าจะอยากได้ชื่อ)
+      const domain = this.$route.query.domain_id || ""; // ✅ แนะนำให้ส่ง "ชื่อ domain"
+      const monitor = this.$route.query.monitor || "";
+
+      // ---- call API ----
+      const url = "https://api2.cognizata.com/api/v2/userposts/getSentimentStat";
+
+      const params = {
+        source,
+        start,
+        end,
+      };
+
+      if (domain) params.domain_id = domain;
+      if (monitor) params.monitor = monitor;
+      // ✅ เลือกส่ง param ให้ถูก
+      if (hashtag) params.hashtags = hashtag;
+      else if (keyword) params.querySearch = keyword;
+
+      this.axios
+        .get(url, {
+          params,
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          // ---- normalize output ----
+          const d = response.data?.data || response.data[0];
+          // ทำให้ datachart มีหน้าตาเหมือนเดิม (มี name, count, positive, neutral, negative)
+          this.datachart = {
+            name: rawKeyword || d?.name || "",      // หรือจะใช้ domain ก็ได้
+            count: d?.totalPost ?? 0,
+            positive: d?.positiveSentiment ?? 0,
+            neutral: d?.neutralSentiment ?? 0,
+            negative: d?.negativeSentiment ?? 0,
+          };
+
+          // datacount ที่เอาไปทำ pagination
+          this.datacountchart = this.datachart.count || 0;
+
+          // platform (ถ้า API ส่ง breakdown มา)
+          this.platform = d?.platform || d || {};
+          this.$store.commit('setshowStatWC', false)
+
+        })
+        .catch((error) => {
+          this.$store.commit('setshowStatWC', false)
+          console.error("Error fetching sentiment stat:", error);
+        });
+    },
+    onSlideStart(slide) {
+      this.sliding = true;
+    },
+    onSlideEnd(slide) {
+      this.sliding = false;
+    },
+    scrollLeft() {
+      const slider = this.$refs.slider;
+      slider.scrollLeft -= 300; // เลื่อนซ้าย 300px
+    },
+    scrollRight() {
+      const slider = this.$refs.slider;
+      slider.scrollLeft += 300; // เลื่อนขวา 300px
+    },
+    filterNumbers(numbers) {
+      // ✅ PRE-PROCESS
+      const filtered = [
+        ...new Set(
+          (numbers || [])
+            .map(n => String(n).trim())
+            // ❌ ตัด 7 หลักทิ้ง
+            .filter(s => /^\d+$/.test(s) && s.length !== 7)
+        )
+      ].sort((a, b) => a.length - b.length);
+
+      // ✅ LOGIC เดิม
       for (let i = 0; i < filtered.length; i++) {
         for (let j = i + 1; j < filtered.length; j++) {
-          const num1 = filtered[i].toString();
-          const num2 = filtered[j].toString();
+          const num1 = filtered[i];
+          const num2 = filtered[j];
 
           // If num1 matches the start of num2, remove num1
           if (num2.startsWith(num1)) {
-            filtered.splice(i, 1); // Remove num1
-            i--; // Adjust index after removal
-            break; // Restart the inner loop
+            filtered.splice(i, 1);
+            i--;
+            break;
           }
         }
       }
 
-      return filtered; // Return filtered array
+      return filtered;
     },
+
     matchGeocode(geocode) {
       const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
       let found = null;
@@ -962,12 +1312,14 @@ export default {
       return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
     },
     highlightText(full_text) {
+
+
       var word = [];
       if (this.checked) {
-        word.push(...this.heightword, this.getQuerySearch);
+        word.push(...[this.localQuery]);
         if (this.andkey.length) {
           this.andkey.forEach(function (key) {
-            //
+
             if (
               key.length == 2 &&
               full_text.includes(key[0]) &&
@@ -996,20 +1348,37 @@ export default {
               word.push(...key);
             }
           });
+
+
         }
-        return word;
-      } else {
-        word.push(this.getQuerySearch);
       }
       return word;
     },
+    selectSort() {
+      this.offset = 0;
+      this.currentPage = 1;
+      this.page = 0;
+      this.apiSpotNewsPost();
+    },
     selectSentiment() {
       this.offset = 0;
-      this.pageApi(this.sort, this.offset);
       this.currentPage = 1;
+      this.page = 0;
+      this.apiSpotNewsPost();
     },
+
+    // highlightText(key) {
+    //   var word = [];
+    //   if (this.checked) {
+    //     word = key;
+    //   } else {
+    //     word = [];
+    //   }
+    //   return word;
+    // },
+
     onClick(i, data) {
-      console.log(data);
+      // console.log(data);
       this.index = i;
       this.dataPhoto = data;
     },
@@ -1017,68 +1386,20 @@ export default {
       this.currentImageFather = index;
       this.overlayActiveFather = true;
     },
-    selectData(sort, offset) {
+
+    pageApi(sort, offset, querySearch) {
       offset = this.offset;
+      // console.log('offset',offset);
+
       sort = this.sort;
-      this.start_date = moment(this.valueDate[0])
-        .format()
-        .slice(0, 10);
-      this.end_date = moment(this.valueDate[1])
-        .format()
-        .slice(0, 10);
-      console.log(this.start_date);
-      this.$store.dispatch("fetchPosts", {
-        start_date: this.start_date,
-        end_date: this.end_date,
-        keywords: this.getKeywords,
-        domain: this.getWordCloudDomain,
-        sentiment: this.selected,
-        offset: offset,
-        sort_by: sort,
-        querySearch: this.getQuerySearch,
-        source: this.getWordCloudSocial,
-        monitor: this.getSelectedMonitor,
-      });
-    },
-    async pageApi(sort, offset, querySearch) {
-      const arrdomain = localStorage.getItem("domainArr");
-      let domain = this.getWordCloudDomain.toString();
-      if (domain == "All" || domain == "") {
-        // console.log('เข้าDomain',arrdomain);
-        domain = arrdomain;
-      }
-      await this.axios
-        .get(
-          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-          domain
-        )
-        .then((response) => (this.arrword = response.data[0]));
-      var k = this.arrword.Keywords;
-      var ka = this.arrword.and_keywords;
-      let result = ka.map((key) => {
-        return key.split("+");
-      });
-      this.andkey = result;
-      this.heightword = k;
-      offset = this.offset;
-      sort = this.sort;
-      this.$store.dispatch("fetchPosts", {
-        start_date: this.getWordCloudStartDate,
-        end_date: this.getWordCloudEndDate,
-        domain: this.getWordCloudDomain,
-        sentiment: this.selected,
-        offset: offset,
-        sort_by: sort,
-        querySearch: querySearch,
-        source: this.getWordCloudSocial,
-        monitor: this.getSelectedMonitor,
-      });
+      // querySearch = this.getQuerySearch;
+      this.apiSpotNewsPost(offset);
+
     },
     page() {
       var pageNumber;
       if (
-        parseInt(this.gotopage) >
-        Math.ceil(this.getPostsAll.count / 10) ||
+        parseInt(this.gotopage) > Math.ceil(this.datacount / 10) ||
         this.gotopage.includes("-")
       ) {
         alert("Wrong number");
@@ -1088,28 +1409,14 @@ export default {
       }
       this.setPage(pageNumber);
       this.gotopage = "";
-      console.log(pageNumber);
+      // console.log(pageNumber);
     },
-    setPage: function (pageNumber) {
-      this.currentPage = pageNumber;
-      console.log(this.currentPage);
-      console.log("page num:", typeof (pageNumber));
-      //Call new data from api here
-      if (this.currentPage > 1) {
-        this.offset = 10 * (this.currentPage - 1);
-        console.log("offset : ", this.offset);
-      } else {
-        this.offset = 0;
-      }
-      if (this.querySearch != "") {
-        this.pageApi(this.sort, 0, this.querySearch);
-      } else {
-        console.log("setPage else");
-        this.pageApi(this.sort, this.offset);
-
-      }
-      console.log("#box-domain");
-    },
+    setPage(page) {
+      this.currentPage = page;
+      this.offset = (page - 1) * this.itemsPerPage; // ✅ คำนวณ offset จากหน้า
+      this.pageApi(); // เรียก API ใหม่หลังเปลี่ยนหน้า
+    }
+    ,
     tabactive() {
       document.getElementById("eltab1").style.borderColor = "#fed16e";
       document.getElementById("eltab2").style.borderColor = "#4c412b";
@@ -1171,49 +1478,50 @@ export default {
           this.axios(config)
             .then(function (response) {
               console.log(response);
-              if (_this.selected == "") {
+              let se = _this.selected.toLocaleString();
+              if (se == "1,0,-1") {
                 if (v == 1) {
-                  _this.getDetailPost[k].sentiment = 1;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = 1;
+                  _this.dataIssue[k].sentiment = 1;
+                  _this.dataIssue[k].user_sentiment[_this.objId] = 1;
                 } else if (v == 0) {
-                  _this.getDetailPost[k].sentiment = 0;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = 0;
+                  _this.dataIssue[k].sentiment = 0;
+                  _this.dataIssue[k].user_sentiment[_this.objId] = 0;
                 } else {
-                  _this.getDetailPost[k].sentiment = -1;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = -1;
+                  _this.dataIssue[k].sentiment = -1;
+                  _this.dataIssue[k].user_sentiment[_this.objId] = -1;
                 }
               } else {
                 console.log("in 1");
                 if (v == _this.selected) {
                   console.log("in 11");
-                  _this.getDetailPost[k].sentiment = v;
-                  _this.getDetailPost[k].user_sentiment[_this.objId] = v;
+                  _this.dataIssue[k].sentiment = v;
+                  _this.dataIssue[k].user_sentiment[_this.objId] = v;
                 } else {
                   console.log("in 12");
-                  _this.getDetailPost.splice(k, 1);
+                  _this.dataIssue.splice(k, 1);
                 }
               }
             })
             .catch(function (response) {
               console.log("errrrrrr", response.message);
             });
-          // if (v !== this.getDetailPost[k].sentiment) {
+          // if (v !== this.dataIssue[k].sentiment) {
           //   this.$store.dispatch("editSentimentPost", {
           //     sentiment: v,
           //     uid: uid,
           //   });
           //   if (this.selected == "") {
           //     if (v == 1) {
-          //       this.getDetailPost[k].sentiment = 1;
+          //       this.dataIssue[k].sentiment = 1;
           //     } else if (v == 0) {
-          //       this.getDetailPost[k].sentiment = 0;
+          //       this.dataIssue[k].sentiment = 0;
           //     } else {
-          //       this.getDetailPost[k].sentiment = -1;
+          //       this.dataIssue[k].sentiment = -1;
           //     }
           //   } else {
-          //     this.getDetailPost.splice(k, 1);
+          //     this.dataIssue.splice(k, 1);
           //   }
-          //   // this.getDetailPost.splice(k, 1);
+          //   // this.dataIssue.splice(k, 1);
           //   this.$fire({
           //     title: "แก้ไขสำเร็จ",
           //     type: "success",
@@ -1226,73 +1534,190 @@ export default {
         }
       );
     },
-  },
-  async mounted(sort, offset) {
-    this.$emitter.on("sendKeyword", (val) => {
-      console.log('val', val);
-      this.pageApi(this.sort, this.offset, val);
-    });
-    this.username = localStorage.getItem("username");
-    this.objId = localStorage.getItem("objId");
-    offset = this.offset;
-    sort = this.sort;
-    console.log(offset, sort);
-    const arrdomain = localStorage.getItem("domainArr");
-    this.$store.dispatch("fetchDomain");
-    let domain = this.getWordCloudDomain.toString();
-    if (domain == "All" || domain == "") {
-      // console.log('เข้าDomain',arrdomain);
-      domain = arrdomain;
-    }
-    //   await this.axios
-    //     .get(
-    //       "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-    //         domain
-    //     )
-    //     .then((response) => (this.arrword = response.data[0]));
-    //   var k = this.arrword.Keywords;
-    //   var ka = this.arrword.and_keywords;
-    //   let result = ka.map((key) => {
-    //     return key.split("+");
-    //   });
-    //   this.andkey = result;
-    //   this.heightword = k;
-  }
-  // async created(sort, offset) {
-  //   this.username = localStorage.getItem("username");
-  //   this.objId = localStorage.getItem("objId");
-  //   offset = this.offset;
-  //   sort = this.sort;
-  //   console.log(offset, sort);
-  //   const arrdomain = localStorage.getItem("domainArr");
-  //   this.$store.dispatch("fetchDomain");
-  //   let domain = this.getWordCloudDomain.toString();
-  //   if (domain == "All" || domain == "") {
-  //     console.log('เข้าDomain',arrdomain);
-  //     domain = arrdomain;
-  //   }
-  //   await this.axios
-  //     .get(
-  //       "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-  //         domain
-  //     )
-  //     .then((response) => (this.arrword = response.data[0]));
-  //   var k = this.arrword.Keywords;
-  //   var ka = this.arrword.and_keywords;
-  //   let result = ka.map((key) => {
-  //     return key.split("+");
-  //   });
-  //   this.andkey = result;
-  //   this.heightword = k;
+    apiSpotNewsPost(offset) {
+      this.datacount = 0
+      this.dataIssue = []
+      this.fetchObjectCount()
+      this.load = true;
 
-  //   // let temp = result.join();
-  //   // temp = temp.split(",");
-  //   // this.heightword = k.concat(temp);
-  // },
+      // ------------------------
+      // 1) keyword / hashtag
+      // ------------------------
+      const rawKeyword = (this.localQuery || "").trim();
+      const isHashtag = rawKeyword.startsWith("#") && rawKeyword.length > 1;
+
+      // ตัด # ออกก่อนส่ง (backend ส่วนใหญ่อยากได้แบบไม่มี #)
+      const keyword = isHashtag ? "" : rawKeyword;
+      const hashtag = isHashtag ? rawKeyword.replace(/^#/, "") : "";
+      const monitor = this.$route.query.monitor || "";
+      // ------------------------
+      // 2) sentiment
+      // ------------------------
+      let stm = "";
+      if (this.selected == "1,0,-1") { stm = ""; } else {
+        stm = this.selected;
+      }
+      // ------------------------
+      // 3) date fallback
+      // ------------------------
+      const startQ = this.$route.query.start;
+      const endQ = this.$route.query.end;
+
+      const today = moment(new Date()).format("YYYY-MM-DD");
+      const start = (startQ && String(startQ).trim() ? String(startQ).trim() : today + "T00:00:00");
+      const end = (endQ && String(endQ).trim() ? String(endQ).trim() : today + "T23:59:59");
+
+      // ------------------------
+      // 4) params
+      // ------------------------
+      const params = {
+        sentiment: stm || "",
+        source: this.select_social,
+        sort_by: this.sort,
+        limit: 10,
+        start,
+        end,
+        offset,
+      };
+      if (monitor) params.monitor = monitor;
+      // ✅ เลือกส่ง param ให้ถูก
+      if (hashtag) {
+        params.hashtags = hashtag;
+      } else if (keyword) {
+        params.querySearch = keyword;
+      }
+      if (this.$route.query.domain_id) {
+        params.domain_id = this.$route.query.domain_id
+      }
+      // ------------------------
+      // 5) request
+      // ------------------------
+      this.axios({
+        method: "get",
+        url: "https://api2.cognizata.com/api/v2/wordcloud/getSentimentdetailWordcloud",
+        params,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          if (response.data) {
+            const post = response.data.data || [];
+            this.datacount = response.data.count || 0;
+
+            this.dataIssue = Array.isArray(post)
+              ? post.map((p) => ({ ...p, read: true }))
+              : [];
+          }
+          // this.check_sentiment_word(this.localQuery );
+          this.load = false;
+        })
+        .catch((error) => {
+          this.load = false;
+          this.datacount = 0
+          this.dataIssue = []
+          console.error(error);
+        });
+    }
+    ,
+    check_sentiment_word(name) {
+      const object_id = this.$route.query.object_id;
+      let names = ""
+      if (object_id) {
+        names = "&name=" + name
+      } else {
+        names = "&subdomain=" + name
+      }
+      let domain_ids = "domain_id=" + this.$route.query.domain_id
+
+      var config = {
+        method: "get",
+        url:
+          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?" + domain_ids
+        ,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+
+      this.axios(config)
+        .then((response) => {
+          this.arrword = response.data[0];
+          // console.log(this.arrword);
+
+          // ดำเนินการกับข้อมูลเมื่อ API เสร็จ
+          var k = this.arrword?.Keywords;
+          var ka = this.arrword?.and_keywords;
+          let result = ka.map((key) => {
+            return key.split("+");
+          });
+          this.andkey = result;
+          this.heightword = k;
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+    }
+  },
+  async mounted() {
+    this.setDateRange();
+    this.$emitter.on("sendKeyword", (val) => {
+      // console.log('val', val);
+      this.localQuery = val || "";
+      this.offset = 0;
+      this.currentPage = 1;
+      this.apiSpotNewsPost(0);
+    });
+    // await this.apiSpotNewsPost();
+    // await this.fetchObjectCount()
+    //await this.check_sentiment_word()
+  },
+  beforeDestroy() {
+    this.$emitter.off("sendKeyword"); // กันซ้ำ/กัน memory leak
+  }
 };
 </script>
 
 <style scoped>
+.slider-item {
+  flex: 0 0 auto;
+  /* การ์ดแต่ละอันมีขนาดคงที่ */
+  width: 25%;
+  /* ขนาดการ์ด 4 ชิ้นใน 100% */
+  flex-wrap: nowrap;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  border-radius: 15px;
+}
+
+.slider-button {
+  background-color: #ffffff;
+  color: rgb(112, 108, 108);
+  border: none;
+  padding: 10px 15px;
+  margin: 0px 10px;
+  cursor: pointer;
+  border-radius: 15px;
+  font-size: 20px;
+}
+
+.img-issue {
+  width: 37px;
+}
+
+.card-platform {
+  margin-bottom: 18px;
+  border-radius: 15px;
+  border: 0px solid rgba(0, 0, 0, .125) !important;
+  box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
 .box-hl {
   border-radius: 10px;
 }
@@ -1421,6 +1846,12 @@ p {
   color: white;
   background-color: #495057;
   border-color: #495057;
+}
+
+a {
+  color: #2c3e50;
+  text-decoration: none;
+  background-color: transparent;
 }
 
 .highlight-search {
@@ -1843,6 +2274,24 @@ card-img,
 }
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
+  .title-news {
+    font-size: 15px !important;
+  }
+
+  .bv-no-focus-ring {
+    zoom: 80% !important;
+  }
+
+  .custom-control-inline {
+    margin-right: 2px !important;
+  }
+
+  .card-platform .col-12 {
+    padding-right: 2px !important;
+    padding-left: 2px !important;
+  }
+
+
   .box-hl {
     font-size: 16px;
     font-weight: 600;

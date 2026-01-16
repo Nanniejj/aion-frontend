@@ -10,74 +10,61 @@
             <span>Today</span>
             {{ new Intl.DateTimeFormat("en-AU").format() }}
           </span>
-          <span class="pt-3"><i class="fa fa-print align-middle" @click="printWindow()"></i></span>
+          <span class="pt-3">
+            <i class="fa fa-print align-middle" @click="printWindow()"></i>
+          </span>
         </div>
       </b-col>
     </b-row>
 
-
     <div class="footer_magin pr-lg-5 pl-lg-5">
-      <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.5)"
-        color="#b6ac9a" />
-
+      <!-- <vue-element-loading
+        :active="getLoadStatus"
+        size="80"
+        background-color="rgba(255, 255, 255, 0.5)"
+        color="#b6ac9a"
+      /> -->
+<!-- {{ domain_name }} -->
       <b-row>
-        <b-col cols="12" md="3">
-          <v-select class="mb-3" :options="formattedDomainOptions" v-model="domain_name" label="name"
-            :reduce="d => d.name" placeholder="เลือก Domain" multiple style="width:100%" />
+        <b-col cols="12" md="">
+          <v-select class="mb-3" :options="formattedDomainOptions" v-model="domain_name" label="name" return-object
+            placeholder="เลือกหัวเรื่อง (Domain) " multiple style="width: 100%" @input="onDomainChange" />
         </b-col>
+
         <b-col cols="12" md="3">
           <div class="mb-2 text-lg-right text-sm-center">
             <section id="date-picker">
               <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" size="md"
                 :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
-                @change="checkDateRange()" class="w-100">{{ valueDate }}</date-picker>
+                @change="checkDateRange()" class="w-100">
+                {{ valueDate }}
+              </date-picker>
             </section>
           </div>
         </b-col>
-        <b-col class="text-right" cols="12" md="auto">
+
+        <b-col class="text-right" cols="auto" md="auto">
           <b-form-group label="" v-slot="{ ariaDescribedby }">
             <b-form-radio-group v-model="selected" :options="options" :aria-describedby="ariaDescribedby"
-              name="radio-inline" class="mt-2"></b-form-radio-group>
+              name="radio-inline" class="mt-2" />
           </b-form-group>
         </b-col>
-        <b-col cols="12" md="auto" class="text-center">
-          <b-button variant="info" @click="summitform()" pill class="w-80 px-4">
+
+        <b-col cols="auto" md="auto" class="text-md-center text-sm-left">
+          <b-button variant="info" @click="summitform()" pill class="w-80 px-4" :disabled="getLoadStatus">
             ค้นหา
           </b-button>
         </b-col>
       </b-row>
-      <b-row class="d-none">
-        <b-col cols="12">
-          <b-row>
-            <b-col>
-
-              <v-select class="mb-3" :options="formattedDomainOptions" v-model="domain_name" label="name"
-                :reduce="d => d.name" placeholder="เลือก Domain" @input="selectDomain" multiple style="width:100%" />
-              <select name="list" v-model="domain_name" class="form-control md-font" multiple>
-                <option value="Alls">เลือกทั้งระบบ</option>
-                <option value="All">เลือกทุก Domain</option>
-                <option v-for="domain in getShowDomain" :key="domain.id">
-                  {{ domain.name }}
-                </option>
-              </select>
-            </b-col>
-          </b-row>
-
-          <b-row align-h="center" style="margin-top: 15px">
-            <b-col cols="10">
-              <b-button class="btn submit md-font" @click="summitform()">
-                ค้นหา
-              </b-button>
-            </b-col>
-          </b-row>
-        </b-col>
-        <b-col>
-
-        </b-col>
-      </b-row>
 
     </div>
-    <hr class="mt-5 mb-3 mr-5 ml-5" />
+    <div class="text-left mx-lg-5 h6" v-if="domain_title">
+    <span class="bg-tags">  {{ domain_title }}</span>
+    </div>
+    <div v-else class="text-left mx-lg-5 h6">
+     <span class="bg-tags"> ทั้งระบบ </span>
+    </div>
+    <hr class="mt-2 mb-3 mx-lg-5" />
     <!-- <DefaultCloud /> -->
   </div>
 </template>
@@ -87,9 +74,10 @@ import DefaultCloud from "@/components/wordcloud/DefaultCloud.vue";
 import { mapGetters } from "vuex";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
+
 export default {
   components: { DefaultCloud },
-  data: function () {
+  data() {
     return {
       options: [
         { text: "ทั้งหมด", value: "" },
@@ -100,7 +88,10 @@ export default {
       today: "",
       word: "",
       type_selected: "daily",
+
+      // ✅ v-select multiple + reduce => array ของ id
       domain_name: [],
+      domain_title: "",
       start_date: "",
       end_date: "",
       valueDate: "",
@@ -120,114 +111,161 @@ export default {
       "getWordCloudDomain",
       "getKeywords",
       "getDate",
-      "getLoadStatus",
-      "getSelectedMonitor"
+      "getSelectedMonitor",
     ]),
     formattedDomainOptions() {
       return [
-        { id: 'Alls', name: 'เลือกทั้งระบบ' },
-        { id: 'All', name: 'เลือกทุก Domain' },
+        { id: "Alls", name: "เลือกทั้งระบบ" },
+        { id: "All", name: "เลือกทุก Domain" },
         ...this.getShowDomain,
       ];
     },
-
   },
   methods: {
+    // ✅ ถ้าเลือก All หรือ Alls ให้เคลียร์ค่าอื่นออก เหลือแค่ตัวเอง
+    onDomainChange(val) {
+      const arr = Array.isArray(val) ? val : val ? [val] : [];
+
+      // ถ้าเลือก "ทั้งระบบ"
+      if (arr.includes("Alls")) {
+        this.domain_name.id = ["Alls"];
+        return;
+      }
+
+      // ถ้าเลือก "ทุก Domain"
+      if (arr.includes("All")) {
+        this.domain_name.id = ["All"];
+        return;
+      }
+
+      // เลือก domain ปกติ -> ตัด All / Alls ออกถ้าติดมา
+      const cleaned = arr.filter((x) => x !== "All" && x !== "Alls");
+      if (cleaned.length !== arr.length) {
+        this.domain_name.id = cleaned;
+      }
+    },
+
     checkDateRange() {
       const startDate = moment(this.valueDate[0]);
       const endDate = moment(this.valueDate[1]);
 
-      const diffDays = endDate.diff(startDate, 'days');
+      const diffDays = endDate.diff(startDate, "days");
 
       if (diffDays > 31) {
-        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
-        this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
+        alert("กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน");
+        this.valueDate[1] = startDate.add(31, "days").format("YYYY-MM-DD");
       } else {
-        this.selectData(); // Call your existing method
+        this.selectData();
       }
     },
-    printWindow: function () {
+
+    printWindow() {
       try {
         window.print();
       } catch (err) {
         console.log(err);
       }
     },
-    onOptionsChange: function () {
+
+    onOptionsChange() {
       this.$store.commit("changeDataChoice", { choice: this.type_selected });
-      console.log(this.type_selected);
+      // console.log(this.type_selected);
     },
-    // selectMonitor(){
-    //   this.monitor = true
-    // },
+
     selectData() {
-     // console.log(this.valueDate[0], this.valueDate[1]);
       this.start_date = this.valueDate[0] + "T00:00:00";
       this.end_date = this.valueDate[1] + "T23:59:59";
       this.$store.commit("setWordCloudStartDate", this.start_date);
       this.$store.commit("setWordCloudEndDate", this.end_date);
-
-      // this.$store.dispatch("fetchSentimentStat", {
-      //   start_date: this.start_date,
-      //   end_date: this.end_date,
-      // });
     },
-    summitform: function () {
+
+    summitform() {
       this.keyword = this.word;
       this.date = this.type_selected;
-      console.log('domainjaa', this.domain_name);
-      if (this.domain_name == "Alls" || this.domain_name.length == 0) {
-        this.domain_name = "";
+
+      // ✅ Normalize domain ก่อนส่ง store/API
+      // - Alls => ส่ง "" (ทั้งระบบ)
+      // - All  => ส่ง "All" หรือ "" แล้วแต่ backend (ที่นี่คงเดิมเป็น "All")
+      // - ไม่เลือก => ""
+      let domainPayload = [...this.domain_name].map(n => n.id).toLocaleString()
+      this.domain_title = [...this.domain_name].map(n => n.name).toLocaleString()
+      if (
+        !domainPayload ||
+        (Array.isArray(domainPayload) && domainPayload.length === 0)
+      ) {
+        domainPayload = "";
+      } else if (Array.isArray(domainPayload) && domainPayload.includes("Alls")) {
+        domainPayload = "";
+      } else if (Array.isArray(domainPayload) && domainPayload.includes("All")) {
+        domainPayload = "All";
       }
+
       this.$store.commit("setSelected", true);
-      this.$store.commit("setWordCloudDomain", this.domain_name);
+      this.$store.commit("setWordCloudDomain", domainPayload);
       this.$store.commit("setKeywords", this.word);
       this.$store.commit("setSelectedMonitor", this.selected);
-      console.log("kw", this.getSelectedMonitor);
-      console.log("domain_name", this.domain_name);
+        const todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
+        const todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
 
-      if (this.valueDate == "") {
-        var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
-        var todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
-        console.log("monitor", this.selected);
-        this.$store.commit('setWordCloud', "")
+      if (this.valueDate === "" || !this.valueDate) {
+
+        this.$store.commit("setWordCloud", "");
         this.$store.dispatch("fetchWordCloud", {
           start_date: todays,
           end_date: todaye,
           keywords: this.keyword,
-          domain: this.domain_name,
+          domain_id: domainPayload,
           monitor: this.selected,
         });
 
         this.$store.commit("setWordCloudStartDate", todays);
         this.$store.commit("setWordCloudEndDate", todaye);
-        this.$router.push({ name: "WordcloudSentiment" });
       } else {
-        this.$store.commit('setWordCloud', "")
+        this.$store.commit("setWordCloud", "");
         this.$store.dispatch("fetchWordCloud", {
           start_date: this.start_date,
           end_date: this.end_date,
           keywords: this.keyword,
-          domain: this.domain_name,
+          domain_id: domainPayload,
           monitor: this.selected,
         });
-        this.$router.push({ name: "WordcloudSentiment" });
       }
+      // console.log('domainPayload',domainPayload,this.domain_name.id);
+      // console.log('this.valueDate',this.valueDate);
+      
+      this.$store.commit("setArrDate", this.valueDate);
+
+      this.$emit("filters-changed", {
+        start: this.start_date ||todays,
+        end:this.end_date||todaye,
+        monitor: this.selected || "",
+        domain_id: domainPayload || "",
+      });
     },
   },
+  destroyed() {
+         this.$store.commit("setArrDate","");
+  },
   mounted() {
-
-    var todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
-    var todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
+    const todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
+    const todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
     this.$store.commit("setWordCloudStartDate", todays);
     this.$store.commit("setWordCloudEndDate", todaye);
     this.$store.dispatch("fetchDomain");
-    // this.$store.commit("setSelectedMonitor", true);
   },
 };
 </script>
 
 <style scoped>
+  .bg-tags{
+    background: linear-gradient(to right, #d2e2e3, #e8dff6);
+    width: 100% !important;
+    padding: 2px 12px;
+    border-radius: 20px;
+   box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    font-size: 16px;
+    font-weight: 600;
+  }
 .rounded {
   border-radius: 6px !important;
 }
@@ -331,7 +369,14 @@ export default {
   }
 }
 
-@media only screen and (min-width: 0px) and (max-width: 600px) {
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+  .bg-tags{
+    display: block;
+    padding: 5px 18px;
+  }
+.mx-datepicker-range {
+  width: 100% !important;
+}
   .rounded {
     font-size: small;
   }

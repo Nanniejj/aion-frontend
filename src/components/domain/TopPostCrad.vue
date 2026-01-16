@@ -137,7 +137,7 @@
             <b-row>
               <b-col md="12"> </b-col>
               <b-col lg="12">
-                <div v-if="postDomain&&postDomain.news_info && postDomain.news_info.source_news == 'external'"
+                <div v-if="postDomain && postDomain.news_info && postDomain.news_info.source_news == 'external'"
                   class="info-news text-right my-1 small ">
                   <span v-if="postDomain.news_info.source_news == 'external'">ข่าวต่างประเทศ</span>
                   | <span v-if="postDomain.news_info.nation">{{ postDomain.news_info.nation }}</span>
@@ -828,28 +828,36 @@ export default {
       );
       return paragraphs.join('');
     },
-    filterNumbers(numbers) {
-      // Create a copy of the numbers array and sort by length
-      const filtered = [...numbers].sort(
-        (a, b) => a.toString().length - b.toString().length
-      );
 
+    filterNumbers(numbers) {
+      // ✅ PRE-PROCESS
+      const filtered = [
+        ...new Set(
+          (numbers || [])
+            .map(n => String(n).trim())
+            // ❌ ตัด 7 หลักทิ้ง
+            .filter(s => /^\d+$/.test(s) && s.length !== 7)
+        )
+      ].sort((a, b) => a.length - b.length);
+
+      // ✅ LOGIC เดิม
       for (let i = 0; i < filtered.length; i++) {
         for (let j = i + 1; j < filtered.length; j++) {
-          const num1 = filtered[i].toString();
-          const num2 = filtered[j].toString();
+          const num1 = filtered[i];
+          const num2 = filtered[j];
 
           // If num1 matches the start of num2, remove num1
           if (num2.startsWith(num1)) {
-            filtered.splice(i, 1); // Remove num1
-            i--; // Adjust index after removal
-            break; // Restart the inner loop
+            filtered.splice(i, 1);
+            i--;
+            break;
           }
         }
       }
 
-      return filtered; // Return filtered array
+      return filtered;
     },
+
     matchGeocode(geocode) {
       const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
       let found = null;

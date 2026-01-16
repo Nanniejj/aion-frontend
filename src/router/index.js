@@ -610,7 +610,7 @@ axios.interceptors.response.use(
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem("reftoken");
       console.log("error 401");
-      console.log(refreshToken);
+      // console.log(refreshToken);
       return axios
         .post("https://api2.cognizata.com/api/auth/reftoken", {
           reftoken: refreshToken
