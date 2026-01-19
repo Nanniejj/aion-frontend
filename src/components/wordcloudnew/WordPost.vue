@@ -13,44 +13,44 @@
         <!-- {{ datachart }} -->
         <div class="text-left text-tt mb-2 h6 " style="letter-spacing: 1.5px;">Total <span class="h6 bold">{{
           datachart.count
-          | numFormat }}</span>
+          | numFormat ||0}}</span>
           Posts</div>
         <b-row>
           <b-col cols="12" lg="5">
             <div>
               <b-row md="5" style="font-size:16px">
-                <b-col>
+                <b-col v-b-tooltip.hover :title="platform.Accounts + ' accounts'">
                   <i class="fa fa-users mr-1" aria-hidden="true"></i>
-                  <div v-b-tooltip.hover :title="platform.Accounts + ' accounts'">
-                    {{ platform.Accounts | shortNumber }}
+                  <div >
+                    {{ platform.Accounts | shortNumber||0 }}
                   </div>
                 </b-col>
 
-                <b-col>
+                <b-col  v-b-tooltip.hover :title="platform.totalPost + ' posts'">
                   <i class="fa fa-paper-plane mr-1" />
-                  <div v-b-tooltip.hover :title="platform.totalPost + ' posts'">
-                    {{ platform.totalPost | shortNumber }}
+                  <div>
+                    {{ platform.totalPost | shortNumber ||0}}
                   </div>
                 </b-col>
 
-                <b-col>
+                <b-col v-b-tooltip.hover :title="platform.comments_count + ' comments'">
                   <i class="fa fa-comments mr-1" aria-hidden="true"></i>
-                  <div v-b-tooltip.hover :title="platform.comments_count + ' comments'">
-                    {{ platform.comments_count | shortNumber }}
+                  <div >
+                    {{ platform.comments_count | shortNumber ||0}}
                   </div>
                 </b-col>
 
-                <b-col>
+                <b-col v-b-tooltip.hover :title="platform.likes_count + ' likes'">
                   <i class="fa fa-thumbs-o-up mr-1" aria-hidden="true"></i>
-                  <div v-b-tooltip.hover :title="platform.likes_count + ' likes'">
-                    {{ platform.likes_count | shortNumber }}
+                  <div >
+                    {{ platform.likes_count | shortNumber ||0}}
                   </div>
                 </b-col>
 
-                <b-col>
+                <b-col v-b-tooltip.hover :title="platform.retweets_count + ' reposts'">
                   <i class="fa fa-retweet mr-1" aria-hidden="true"></i>
-                  <div v-b-tooltip.hover :title="platform.retweets_count + ' reposts'">
-                    {{ platform.retweets_count | shortNumber }}
+                  <div >
+                    {{ platform.retweets_count | shortNumber||0 }}
                   </div>
                 </b-col>
 

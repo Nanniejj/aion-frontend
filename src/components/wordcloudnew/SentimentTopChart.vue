@@ -5,7 +5,7 @@
       color="#b6ac9a" />
     <!-- {{ rows }} {{ items }} -->
     <b-list-group flush class="chart-box" ref="chartBox">
-      <b-list-group-item v-for="(item, i) in rows" :key="item.uid || i" class="ta-row py-2" @click="onClick(item)">
+      <b-list-group-item v-for="(item, i) in rows" :key="item.uid || i" class="ta-row py-2" @click="onClick(item)"  :class="{ 'ta-row-active': isActive(item) }">
         <b-row align-v="center" v-b-tooltip.hover
           :title="item.name + ' ' + 'Positive: ' + formatCount(item.pos) + ' ' + 'Neutral: ' + formatCount(item.neu) + ' ' + 'Negative: ' + formatCount(item.neg)">
           <!-- ซ้าย -->
@@ -81,7 +81,11 @@ export default {
     limit: { type: Number, default: 10 },
     order: { type: String, default: 'desc' }, // 'desc' | 'asc' | 'none'
     labelMode: { type: String, default: 'count' }, // 'count' | 'percent' | 'both'
-    labelMinWidthPct: { type: Number, default: 8 }
+    labelMinWidthPct: { type: Number, default: 8 },
+    
+    // ✅ เพิ่ม 2 props นี้สำหรับ highlight
+    chartId: { type: String, default: "" },                 // 'word' | 'hash'
+    activeKey: { type: [String, Number, null], default: null } // uid ที่ถูกเลือก
   },
   data() {
     return {
@@ -141,12 +145,20 @@ export default {
     }
   },
   methods: {
-    onClick(word, data) {
-      // console.log('word', word);
-      // ✅ เพิ่ม: ส่งขึ้น parent
-      this.$emit("select-word2", word.name); // keyword อาจเป็น "" ถ้ากดซ้ำ
-    }
-    ,
+     // ✅ activeKey เทียบกับ uid
+    isActive(item) {
+      if (this.activeKey == null) return false;
+      return String(item.uid) === String(this.activeKey);
+    },
+   // ✅ คลิกแล้วส่ง payload กลับ parent
+    onClick(item) {
+      const key = item.uid || item.name;
+      this.$emit("row-click", { name: item.name, key, chartId: this.chartId });
+
+      // ✅ เผื่อคุณยังมีโค้ดเก่าใช้งาน event นี้อยู่
+      this.$emit("select-word2", item.name);
+    },
+
     // onClick(item) {
     //   this.$emit('add-watch', item);
     // },
@@ -255,7 +267,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .badge-warning {
   color: #212529;
@@ -305,7 +316,7 @@ a {
 
 .ta-row {
   border: 0;
-  border-radius: 20px;
+  border-radius: 10px;
   overflow: hidden;
   transition: transform .15s ease, box-shadow .15s ease;
   background: #ffffff00;
@@ -317,7 +328,6 @@ a {
   box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, .08);
     background: #e6fafacc;
 }
-
 .ta-card {
   border: 0;
   border-radius: 20px;
@@ -332,6 +342,12 @@ a {
 
 }
 
+/* ✅ ไฮไลท์ตอน active */
+.ta-row-active {
+  background: #dff7f7 !important;
+  border: 1px solid rgba(25, 165, 187, 0.205);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, .12);
+}
 .ta-name {
   font-weight: 600;
   font-size: 16px;

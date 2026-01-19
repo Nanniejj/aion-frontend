@@ -35,8 +35,10 @@
     <!-- ✅ ส่ง tab ให้ WordcloudList -->
     <WordcloudList v-if="!getLoadWordCloud" class="mb-3" :activeTab="activeTabMobile" @select-word="onSelectWord" />
     <div class="mt-2">
+      <br v-if="getshowStatWC">
       <vue-element-loading :active="getshowStatWC" size="50" background-color="rgba(255, 255, 255, 0.5)"
-        color="#b6ac9a" />
+        color="#17a2b8" />
+              <br v-if="getshowStatWC">  
       <div v-if="showWordPost" ref="wordPostSection" class="px-lg-5">
         <WordPost :querySearch="selectedWord" :key="selectedWord" />
       </div>

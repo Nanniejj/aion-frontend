@@ -94,7 +94,7 @@ const routes = [
       )
   },
   {
-    path: "/wordcloud",
+    path: "/wordclouds",
     name: "Wordcloud",
     props: true,
     // route level code-splitting
@@ -104,7 +104,7 @@ const routes = [
       import(/* webpackChunkName: "wordcloud" */ "../views/Wordcloud.vue")
   },
    {
-    path: "/wordcloudnew",
+    path: "/wordcloud",
     name: "WordcloudNew",
     props: true,
     // route level code-splitting
