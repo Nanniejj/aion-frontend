@@ -2,6 +2,11 @@
     <div id="overflow-page">
       <HomeNav id="navHome" />
       <div id="content" >
+            <back-to-top bottom="50px" right="50px">
+          <button type="button" class="btn btn-to-top">
+            <i class="fa fa-chevron-up"></i>
+          </button>
+        </back-to-top>
         <b-container fluid id="tp-size">
           <b-row >
             <b-col> <h1 class="title">Posts</h1></b-col>
@@ -52,6 +57,24 @@ import MapTabAllPost from "../components/monitor/MapTabAllPost.vue";
   </script>
   
   <style scoped>
+    .btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+    background-color: #fed16e;
+    border-color: #fed16e;
+      color: #fff;
+       box-shadow: 2px 1px 4px #888888;
+}
+.btn-to-top:hover{
+
+    background-color: #f7c24e;
+    border-color: #f7c24e;
+      color: #fff;
+}
 
   .fa-print {
     text-align: end;
@@ -170,6 +193,16 @@ import MapTabAllPost from "../components/monitor/MapTabAllPost.vue";
     .fa-print {
       font-size: 25px;
     }
+     .vue-back-to-top {
+    right: 14px !important;
+  }
+
+  .btn-to-top {
+    width: 50px;
+    height: 50px;
+    padding: 10px 13px;
+
+  }
   }
   </style>
   

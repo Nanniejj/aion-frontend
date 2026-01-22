@@ -13,7 +13,7 @@
         <!-- {{ datachart }} -->
         <div class="text-left text-tt mb-2 h6 " style="letter-spacing: 1.5px;">Total <span class="h6 bold">{{
           datachart.count
-          | numFormat ||0}}</span>
+          | numFormat }}</span>
           Posts</div>
         <b-row>
           <b-col cols="12" lg="5">
@@ -22,35 +22,35 @@
                 <b-col v-b-tooltip.hover :title="platform.Accounts + ' accounts'">
                   <i class="fa fa-users mr-1" aria-hidden="true"></i>
                   <div >
-                    {{ platform.Accounts | shortNumber||0 }}
+                    {{ platform.Accounts | shortNumber }}
                   </div>
                 </b-col>
 
                 <b-col  v-b-tooltip.hover :title="platform.totalPost + ' posts'">
                   <i class="fa fa-paper-plane mr-1" />
                   <div>
-                    {{ platform.totalPost | shortNumber ||0}}
+                    {{ platform.totalPost | shortNumber }}
                   </div>
                 </b-col>
 
                 <b-col v-b-tooltip.hover :title="platform.comments_count + ' comments'">
                   <i class="fa fa-comments mr-1" aria-hidden="true"></i>
                   <div >
-                    {{ platform.comments_count | shortNumber ||0}}
+                    {{ platform.comments_count | shortNumber }}
                   </div>
                 </b-col>
 
                 <b-col v-b-tooltip.hover :title="platform.likes_count + ' likes'">
                   <i class="fa fa-thumbs-o-up mr-1" aria-hidden="true"></i>
                   <div >
-                    {{ platform.likes_count | shortNumber ||0}}
+                    {{ platform.likes_count | shortNumber }}
                   </div>
                 </b-col>
 
                 <b-col v-b-tooltip.hover :title="platform.retweets_count + ' reposts'">
                   <i class="fa fa-retweet mr-1" aria-hidden="true"></i>
                   <div >
-                    {{ platform.retweets_count | shortNumber||0 }}
+                    {{ platform.retweets_count | shortNumber}}
                   </div>
                 </b-col>
 
@@ -941,7 +941,7 @@
           pageNumber == totalPages ||
           pageNumber == 1
         ">
-          <a class="page-link md-font" v-bind:key="pageNumber" href="#allpost" @click="setPage(pageNumber)" :class="{
+          <a class="page-link md-font" v-bind:key="pageNumber"  @click="setPage(pageNumber)" :class="{
             current: currentPage === pageNumber,
             last:
               pageNumber == totalPages &&

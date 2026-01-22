@@ -635,9 +635,9 @@ export default {
       const diffDays = endDate.diff(startDate, 'days');
 console.log('diffDays',diffDays);
 
-      if (diffDays > 1) {
-        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 2 วัน');
-        this.valueDate[0] = startDate.add(2, 'days').format('YYYY-MM-DD');
+      if (diffDays > 31) {
+        alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 30 วัน');
+        this.valueDate[0] = startDate.add(30, 'days').format('YYYY-MM-DD');
       }
     },
     getColors(posval, neuval, negval) {
