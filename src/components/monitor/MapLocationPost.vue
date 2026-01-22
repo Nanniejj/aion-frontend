@@ -654,28 +654,17 @@
               </div>
             </div>
           </div>
-          <div
-            v-if="
-              datas &&
-                datas.location &&
-                datas.location.length
-            "
-            class="text-left ai-box mt-3 text-small "
-            style="font-size: 13px;font-weight: 500; color: #2c3e50;"
-          >
-            <i
-              class="fa fa-map-marker mr-1"
-              aria-hidden="true"
-              style="font-size: 15px;"
-            ></i>
-            <span
-              v-for="(geo, k) in filterNumbers(datas.location)"
-              :key="k"
-              class="mr-1"
-              style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
+              <div v-if="
+          datas &&
+          datas.location &&
+          datas.location.length
+
+        " class="text-left ai-box my-2 text-small mx-3" style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
+          <div v-for="(geo, k) in filterNumbers(datas.location)" :key="k" class="mr-1 my-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;display: inline-flex;text-align: center;
     border-radius: 33px;
-"
-            >
+">
+            <span v-if="geo">
               <!-- {{ geo.toString() }} -->
               <span v-if="geo.toString() && geo.toString().length == 2">
                 {{ matchGeocode(geo).name_th }}
@@ -684,7 +673,7 @@
                 {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
                 {{
                   geo.toString().substring(0, 2) == "10"
-                    ? " ข." + matchGeocode(geo).name_th
+                    ? " เขต" + matchGeocode(geo).name_th
                     : " อ." + matchGeocode(geo).name_th
                 }}
               </span>
@@ -692,17 +681,19 @@
                 {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
                 {{
                   geo.toString().substring(0, 2) == "10"
-                    ? " ข." + matchGeocode(geo).name_th
-                    : " อ." + matchGeocode(geo).name_th
+                    ? " เขต" +
+                    matchGeocode(geo.toString().substring(0, 4)).name_th
+                    : " อ." +
+                    matchGeocode(geo.toString().substring(0, 4)).name_th
                 }}
                 {{
                   geo.toString().substring(0, 2) == "10"
                     ? "แขวง" + matchGeocode(geo).name_th
                     : "ต." + matchGeocode(geo).name_th
                 }}
-              </span>
-            </span>
+              </span></span>
           </div>
+        </div>
           <div
             class="text-left ai-box mt-2"
             v-if="datas && datas.face_detect && username == 'adminatapy'"
@@ -1351,7 +1342,6 @@
             <a
               class="page-link md-font"
               v-bind:key="pageNumber"
-              href="#wordcloud"
               @click="setPage(pageNumber)"
               :class="{
                 current: currentPage === pageNumber,
@@ -1603,28 +1593,35 @@ export default {
     },
   },
   methods: {
-    filterNumbers(numbers) {
-      // Create a copy of the numbers array and sort by length
-      const filtered = [...numbers].sort(
-        (a, b) => a.toString().length - b.toString().length
-      );
+  filterNumbers(numbers) {
+      // ✅ PRE-PROCESS
+      const filtered = [
+        ...new Set(
+          (numbers || [])
+            .map(n => String(n).trim())
+            // ❌ ตัด 7 หลักทิ้ง
+            .filter(s => /^\d+$/.test(s) && s.length !== 7)
+        )
+      ].sort((a, b) => a.length - b.length);
 
+      // ✅ LOGIC เดิม
       for (let i = 0; i < filtered.length; i++) {
         for (let j = i + 1; j < filtered.length; j++) {
-          const num1 = filtered[i].toString();
-          const num2 = filtered[j].toString();
+          const num1 = filtered[i];
+          const num2 = filtered[j];
 
           // If num1 matches the start of num2, remove num1
           if (num2.startsWith(num1)) {
-            filtered.splice(i, 1); // Remove num1
-            i--; // Adjust index after removal
-            break; // Restart the inner loop
+            filtered.splice(i, 1);
+            i--;
+            break;
           }
         }
       }
 
-      return filtered; // Return filtered array
+      return filtered;
     },
+
     matchGeocode(geocode) {
       const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
       let found = null;

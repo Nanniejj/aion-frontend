@@ -61,7 +61,7 @@ export const WordcloudService = {
     if (payload.monitor) params.set("monitor", payload.monitor);
     if (payload.source) params.set("source", payload.source);
     if (payload.domain) params.set("domain", payload.domain); // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
-    if (payload.domain_ids) params.set("domain_id", payload.domain_ids);
+    if (payload.domain_id) params.set("domain_id", payload.domain_id);
     if (payload.keywords) params.set("keywords", payload.keywords);
 
     return ApiService.get(`/v1/getwordcloud/?${params.toString()}`);

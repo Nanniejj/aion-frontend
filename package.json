@@ -24,6 +24,8 @@
     "colorjs.io": "^0.4.5",
     "core-js": "^3.6.5",
     "cytoscape": "^3.33.0",
+    "d3": "^7.9.0",
+    "d3-cloud": "^1.2.8",
     "docx": "^8.2.4",
     "docxtemplater": "^3.42.4",
     "docxtemplater-image-module": "^3.1.0",

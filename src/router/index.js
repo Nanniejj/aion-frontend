@@ -94,7 +94,7 @@ const routes = [
       )
   },
   {
-    path: "/wordcloud",
+    path: "/wordclouds",
     name: "Wordcloud",
     props: true,
     // route level code-splitting
@@ -104,7 +104,7 @@ const routes = [
       import(/* webpackChunkName: "wordcloud" */ "../views/Wordcloud.vue")
   },
    {
-    path: "/wordcloudnew",
+    path: "/wordcloud",
     name: "WordcloudNew",
     props: true,
     // route level code-splitting
@@ -610,7 +610,7 @@ axios.interceptors.response.use(
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem("reftoken");
       console.log("error 401");
-      console.log(refreshToken);
+      // console.log(refreshToken);
       return axios
         .post("https://api2.cognizata.com/api/auth/reftoken", {
           reftoken: refreshToken

@@ -28,8 +28,12 @@ export default {
     loadPostIssue: false,
     loadAllPostIssue: false,
     loadTopUserF: false,
+    showStatWC:false
   },
   getters: {
+    getshowStatWC: (state) => {
+      return state.showStatWC;
+    },
     getSearchWords: (state) => {
       return state.searchWords;
     },
@@ -117,6 +121,9 @@ export default {
   },
 
   mutations: {
+    setshowStatWC: (state, payload) => {
+   state.showStatWC= payload;
+    },
     setSearchWords: (state, payload) => {
       state.searchWords = payload;
     },
