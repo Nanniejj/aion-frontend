@@ -8,7 +8,7 @@
             </div>
             <div class="mb-3 text-left">
                 <span class="h5 bold">
-                    <i class="fa fa-tag mr-2" aria-hidden="true"></i>{{ datachart.name }}
+                    <i class="fa fa-tag mr-2" aria-hidden="true"></i>{{ datachart.name ||  this.$route.query.domain }}
 
                 </span>
 
@@ -1140,58 +1140,74 @@ export default {
     },
     methods: {
         fetchObjectCount() {
-            const domain_id = this.$route.query.domain_id;
-            const subdomain_id = this.$route.query.subdomain_id;
-            const object_id = this.$route.query.object_id;
-            const start = this.$route.query.start;
-            const end = this.$route.query.end;
+            const domain_id = this.$route.query.domain_id
+            const subdomain_id = this.$route.query.subdomain_id
+            const object_id = this.$route.query.object_id
+            const start = this.$route.query.start 
+            const end = this.$route.query.end
 
-            let url = "";
-            let params = {};
-
-            if (object_id) {
-                // กรณีมี object_id → ใช้ getObjectCount
-                url = `https://api2.cognizata.com/api/v2/ranking/getObjectCount`;
-                params = {
-                    domain_id,
-                    subdomain_id,
-                    object_id,
-                    start,
-                    end,
-                    limit: 10,
-                };
-            } else {
-                // กรณีไม่มี object_id → ใช้ getSubdomainCount
-                url = `https://api2.cognizata.com/api/v2/ranking/getSubdomainCount`;
-                params = {
-                    domain_id,
-                    subdomain_id,
-                    start,
-                    end,
-                };
+            let url = ''
+            let params = {
+                domain_id,
+                start,
+                end
             }
 
-            this.axios
-                .get(url, {
-                    params,
-                    headers: {
-                        Authorization: "Bearer " + localStorage.getItem("token"),
-                        "Content-Type": "application/json"
-                    }
-                })
-                .then((response) => {
-                    this.datachart = response.data.data[0] || response.data;
+            if (object_id) {
+                // 1️⃣ มี object_id
+                url = 'https://api2.cognizata.com/api/v2/ranking/getObjectCount'
+                params = {
+                    ...params,
+                    subdomain_id,
+                    object_id,
+                    limit: 10
+                }
 
-                    // ตรวจสอบก่อนเรียก check_sentiment_word
-                    if (this.datachart && this.datachart.name) {
-                        this.check_sentiment_word(this.datachart.name);
-                        this.datacount = response.data.data[0].count || 0;
-                        this.platform = response.data.data[0].platform || ""
+            } else if (subdomain_id) {
+                // 2️⃣ ไม่มี object_id แต่มี subdomain_id
+                url = 'https://api2.cognizata.com/api/v2/ranking/getSubdomainCount'
+                params = {
+                    ...params,
+                    subdomain_id
+                }
+
+            } else {
+                // 3️⃣ ไม่มีทั้ง object_id และ subdomain_id
+                url = 'https://api2.cognizata.com/api/v2/ranking/getDomainCount'
+            }
+
+            this.axios.get(url, {
+                params,
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then((response) => {
+                    let data = null
+
+                    if (Array.isArray(response.data)) {
+                        // ✅ getDomainCount
+                        data = response.data[0]
+                    } else if (Array.isArray(response.data.data)) {
+                        // ✅ getObjectCount / getSubdomainCount
+                        data = response.data.data[0]
+                    } else {
+                        data = response.data.data || response.data
+                    }
+
+                    this.datachart = data
+
+                    if (data?.name || data?.domain_name) {
+                        this.check_sentiment_word(data.name || data.domain_name)
+                        this.datacount = data.count || 0
+                        this.platform = data.platform || {}
                     }
                 })
+
                 .catch((error) => {
-                    console.error("Error fetching object/subdomain count:", error);
-                });
+                    console.error('Error fetching count:', error)
+                })
         },
 
         onSlideStart(slide) {
@@ -1208,34 +1224,34 @@ export default {
             const slider = this.$refs.slider;
             slider.scrollLeft += 300; // เลื่อนขวา 300px
         },
-     filterNumbers(numbers) {
-      // ✅ PRE-PROCESS
-      const filtered = [
-        ...new Set(
-          (numbers || [])
-            .map(n => String(n).trim())
-            // ❌ ตัด 7 หลักทิ้ง
-            .filter(s => /^\d+$/.test(s) && s.length !== 7)
-        )
-      ].sort((a, b) => a.length - b.length);
+        filterNumbers(numbers) {
+            // ✅ PRE-PROCESS
+            const filtered = [
+                ...new Set(
+                    (numbers || [])
+                        .map(n => String(n).trim())
+                        // ❌ ตัด 7 หลักทิ้ง
+                        .filter(s => /^\d+$/.test(s) && s.length !== 7)
+                )
+            ].sort((a, b) => a.length - b.length);
 
-      // ✅ LOGIC เดิม
-      for (let i = 0; i < filtered.length; i++) {
-        for (let j = i + 1; j < filtered.length; j++) {
-          const num1 = filtered[i];
-          const num2 = filtered[j];
+            // ✅ LOGIC เดิม
+            for (let i = 0; i < filtered.length; i++) {
+                for (let j = i + 1; j < filtered.length; j++) {
+                    const num1 = filtered[i];
+                    const num2 = filtered[j];
 
-          // If num1 matches the start of num2, remove num1
-          if (num2.startsWith(num1)) {
-            filtered.splice(i, 1);
-            i--;
-            break;
-          }
-        }
-      }
+                    // If num1 matches the start of num2, remove num1
+                    if (num2.startsWith(num1)) {
+                        filtered.splice(i, 1);
+                        i--;
+                        break;
+                    }
+                }
+            }
 
-      return filtered;
-    },
+            return filtered;
+        },
 
         matchGeocode(geocode) {
             const geocodeStr = geocode.toString(); // แปลง geocode เป็น string

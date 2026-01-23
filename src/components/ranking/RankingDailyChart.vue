@@ -12,7 +12,6 @@
                 </b-button-group>
             </b-col>
         </b-row>
-
         <apexchart type="area" height="350" :options="chartOptions" :series="series" />
     </div>
 </template>
@@ -29,6 +28,10 @@ export default {
         dataVersion: {
             type: Number,
             required: true
+        },
+        isSubdomain: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -44,6 +47,7 @@ export default {
                 chart: {
                     stacked: false,
                     toolbar: { show: true },
+                    fontFamily: "Prompt, sans-serif",
                     selection: {
                         enabled: true
                     },
@@ -64,10 +68,11 @@ export default {
                 //   title: { text: "วันที่" }
                 },
                 yaxis: {
-                    title: { text: "จำนวนโพสต์" }
+                    // title: { text: "จำนวนโพสต์" }
                 },
                 stroke: { curve: "smooth" },
                 fill: { opacity: 0.7 },
+                 colors: ['#e6ba59', '#40A578', '#725CAD', '#F075AA', '#368ab6', '#ea7668', '#9ABF80', '#71C0BB', '#34495e',],
                 tooltip: {
                     shared: false,
                     intersect: true
@@ -106,7 +111,8 @@ export default {
                     y: item.y[idx] ?? 0
                 }))
             }))
-        }
+        },
+        
     },
     methods: {
         onPointClick(event, chartContext, config) {
@@ -137,14 +143,14 @@ export default {
         openByDomain(domain, date) {
             console.log("domain === ", domain,date);
             const routeData = this.$router.resolve({ name: "AllPost" })
-            const query = `?domain_id=${domain.domain_id}&domain=${domain.domain_name}&start=${date}&end=${date}`
+            const query = `?domain_id=${domain.domain_id}&domain=${domain.domain_name}&start=${date + 'T00:00:00'}&end=${date + 'T23:59:59'}`
             window.open(`${routeData.href}${query}`, "_blank")
         },
 
         openBySubdomain(subdomain, date) {  
             console.log("subdomain === ", subdomain, date);
             const routeData = this.$router.resolve({ name: "AllPost" })
-            const query = `?domain_id=${subdomain.domain_id}&domain=${subdomain.domain_name}&start=${date}&end=${date}&subdomain_id=${subdomain.subdomain_id}`
+            const query = `?domain_id=${subdomain.domain_id}&domain=${subdomain.domain_name}&start=${date + 'T00:00:00'}&end=${date + 'T23:59:59'}&subdomain_id=${subdomain.subdomain_id}`
             window.open(`${routeData.href}${query}`, "_blank")
         },
 
@@ -152,20 +158,25 @@ export default {
             console.log("object === ", object, date);
             // const objectName = encodeURIComponent(object.object_name)
             const routeData = this.$router.resolve({ name: "AllPost" })
-            const query = `?domain_id=${object.domain_id}&domain=${object.domain_name}&start=${date}&end=${date}&subdomain_id=${object.subdomain_id}&object_id=${object.object_id}`
+            const query = `?domain_id=${object.domain_id}&domain=${object.domain_name}&start=${date + 'T00:00:00'}&end=${date + 'T23:59:59'}&subdomain_id=${object.subdomain_id}&object_id=${object.object_id}`
             window.open(`${routeData.href}${query}`, "_blank")
         }
     },
     watch: {
         dataVersion() {
-            this.mode = "domain"   // reset ปุ่มกลับค่า default
+           this.mode = this.isSubdomain ? "subdomain" : "domain"
         },
-
+        isSubdomain: {
+            immediate: true,
+            handler(val) {
+            if (val) {
+                this.mode = "subdomain"
+            }
+            }
+        },
         mode() {
             this.chartOptions.chart.stacked = this.mode !== "domain"
         }
     }
-
-
 }
 </script>

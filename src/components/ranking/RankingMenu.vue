@@ -51,8 +51,8 @@
                                 <div class="text-left bold">Platform</div>
                                 <!-- <b-form-select class="" id="source-select" v-model="select_source"
                                     :options="sourceOptions"></b-form-select> -->
-                                <v-select multiple :disabled="loading" :options="sourceOptions" v-model="select_source" class="subdomain"
-                                    label="text" :reduce="d => d.value" placeholder="เลือก Platform">
+                                <v-select multiple :disabled="loading" :options="sourceOptions" v-model="select_source"
+                                    class="subdomain" label="text" :reduce="d => d.value" placeholder="เลือก Platform">
                                     <!-- ตัวเลือกใน dropdown -->
                                     <template #option="{ text, value }">
                                         {{ text }}
@@ -79,12 +79,8 @@
                                                 class="social-imgs" />
                                             <img v-if="value == 'threads'" src="@/assets/Threads.png"
                                                 class="social-imgs" />
-                                            <b-avatar
-                                                v-if="value === null"
-                                                text="All"
-                                                size="25"
-                                                style="background-color: #fed16e;"
-                                                ></b-avatar>
+                                            <b-avatar v-if="value === null" text="All" size="25"
+                                                style="background-color: #fed16e;"></b-avatar>
 
                                         </b-col>
                                         {{ text }}
@@ -105,9 +101,9 @@
                     <b-row class="mx-0">
                         <b-col cols="12" md="" class="px-0 px-md-3 mb-2">
                             <div class="text-left bold">Domain</div>
-                            <v-select multiple :disabled="loading" class="" :options="domainOptions" v-model="select_domain"
-                                @input="subdomain" label="name" id="search-input" :reduce="d => d.id"
-                                placeholder="เลือก Domain">
+                            <v-select multiple :disabled="loading" class="" :options="domainOptions"
+                                v-model="select_domain" @input="subdomain" label="name" id="search-input"
+                                :reduce="d => d.id" placeholder="เลือก Domain">
                             </v-select>
                         </b-col>
                         <b-col cols="12" md="" class="px-0 px-md-3 mb-2">
@@ -140,8 +136,8 @@
                     <div class="d-flex justify-content-end w-100">
                         <b-button @click="submitform()" :disabled="isDisabled || loading" size="sm" variant="info"
                             class="mr-3 text-uppercase">Apply</b-button>
-                        <b-button @click="resetform()" :disabled="isDisabled || loading" size="sm" variant="outline-info"
-                            class="text-uppercase">reset</b-button>
+                        <b-button @click="resetform()" :disabled="isDisabled || loading" size="sm"
+                            variant="outline-info" class="text-uppercase">reset</b-button>
                     </div>
                 </template>
             </b-card>
@@ -169,29 +165,19 @@
                 </template>
                 <b-card-text class="text-left">
                     <b-row class="m-0" style="gap: 10px;">
-                        <b-col cols="auto" class="tag-filter px-2 py-1 align-self-center d-flex flex-wrap align-items-center">
+                        <b-col cols="auto"
+                            class="tag-filter px-2 py-1 align-self-center d-flex flex-wrap align-items-center">
                             <!-- กรณี All Platform -->
                             <template v-if="isAllPlatform">
-                                <b-avatar
-                                    text="All"
-                                    size="30"
-                                    class="mr-2"
-                                    style="background-color: #fed16e;"
-                                />
+                                <b-avatar text="All" size="30" class="mr-2" style="background-color: #fed16e;" />
                                 <span>All Platform</span>
                             </template>
 
                             <!-- กรณีเลือกบาง platform -->
                             <template v-else>
-                                <span
-                                    v-for="(s, index) in normalizedSource"
-                                    :key="s"
-                                    class="d-inline-flex align-items-center mr-2"
-                                >
-                                    <img
-                                        :src="require(`@/assets/${iconMap[s]}`)"
-                                        class="social-img mr-1"
-                                    />
+                                <span v-for="(s, index) in normalizedSource" :key="s"
+                                    class="d-inline-flex align-items-center mr-2">
+                                    <img :src="require(`@/assets/${iconMap[s]}`)" class="social-img mr-1" />
                                     <span>{{ s }}</span>
                                     <span v-if="index < normalizedSource.length - 1">,</span>
                                 </span>
@@ -223,38 +209,35 @@
             </b-card>
         </b-row>
         <!-- {{ loading }} -->
-        <div v-if="loading" style="min-height: 300px;position: relative;">
-            <vue-element-loading
-            :active="loading"
-            size="60"
-            background-color="rgba(255, 255, 255, 0.1)"
-            spinner="line-scale"
-            color="#7cd1dc"
-            />
-        </div>
-        <b-row v-if="dataCharts && !isDisabled && !loading" class="py-3">
-            <!-- <b-col><b-card-title class="text-left">การจัดการอันดับ</b-card-title></b-col> -->
-            <b-col cols="12" class="text-left">
-                <RankingDailyChart :rawData="dataCharts" :dataVersion="dataVersion"/>
+        <b-row class="py-3">
+            <b-col cols="12" class="text-left px-0 mb-3">
+                <div v-if="loading" style="min-height: 300px;position: relative;">
+                    <vue-element-loading :active="loading" size="60" background-color="rgba(255, 255, 255, 0.1)"
+                        spinner="line-scale" color="#7cd1dc" />
+                </div>
+                <div v-if="dataCharts && !isDisabled && !loading">
+                    <RankingOverviewChart v-if="isReadyToShowChart" :domainId="domainIdString"
+                        :subdomainId="subdomainIdString" :start="valueDate[0]" :end="valueDate[1]"
+                        :dataVersion="dataVersion" :source="apiSource" />
+                </div>
             </b-col>
-            <b-col cols="12" class="text-left">
-                <!-- <span class="bold">Subdomain</span> -->
-                <RankingOverviewChart 
-                    v-if="isReadyToShowChart"
-                    :domainId="domainIdString" 
-                    :subdomainId="subdomainIdString"
-                    :start="valueDate[0]"
-                    :end="valueDate[1]" 
-                    :dataVersion="dataVersion"
-                    :source="apiSource"
+            <b-col v-if="dataCharts && !isDisabled && !loading" cols="12" class="text-left px-0">
+                <RankingDailyChart :rawData="dataCharts" :isSubdomain="isSubdomain" :dataVersion="dataVersion" />
+            </b-col>
+            <b-col v-if="dataCharts && !isDisabled && !loading" cols="12" class="text-left px-0 mt-3">
+                <div v-if="loadingDomain || loadingSubdomain || loadingObject" style="min-height: 300px;position: relative;">
+                    <vue-element-loading :active="loading" size="60" background-color="rgba(255, 255, 255, 0.1)"
+                        spinner="line-scale" color="#7cd1dc" />
+                </div>
+                <RankingWords
+                    v-else
+                    :domains="domainCountData"
+                    :subdomains="subdomainCountData"
+                    :objects="objectCountData"
                 />
             </b-col>
         </b-row>
-        <!-- <div>
-            <b-container>
-                <RankingTab v-show="getSubmitRanking" />
-            </b-container>
-        </div> -->
+
     </div>
 </template>
 
@@ -267,13 +250,16 @@ import moment from "moment";
 import RankingTab from "@/components/ranking/RankingTab.vue";
 import RankingDailyChart from "./RankingDailyChart.vue";
 import RankingOverviewChart from "./RankingOverviewChart.vue";
-
+import RankingWords from "./RankingWords.vue"; 
 export default {
-    components: { RankingTab, RankingDailyChart, RankingOverviewChart },
+    components: { RankingTab, RankingDailyChart, RankingOverviewChart,RankingWords },
 
     data: function () {
         return {
             loading: false,
+            loadingDomain: false,
+            loadingSubdomain: false,
+            loadingObject: false,
             dropdownloading: false,
             showFilters: true,
             dmy: "",
@@ -321,16 +307,19 @@ export default {
             datearrs: null,
             datearre: null,
             valueDate: [this.datearre, this.datearrs],
+            domainCountData:[],
+            subdomainCountData:[],
+            objectCountData:[],
         };
     },
     computed: {
         isReadyToShowChart() {
             return (
-            !!this.domainIdString &&
-            Array.isArray(this.valueDate) &&
-            this.valueDate.length === 2 &&
-            !!this.valueDate[0] &&
-            !!this.valueDate[1]
+                !!this.domainIdString &&
+                Array.isArray(this.valueDate) &&
+                this.valueDate.length === 2 &&
+                !!this.valueDate[0] &&
+                !!this.valueDate[1]
             )
         },
         normalizedSource() {
@@ -338,6 +327,9 @@ export default {
             return this.select_source.filter(v => v !== null)
         },
 
+        isSubdomain() {
+            return this.select_subdomain?.length > 0
+        },
         isAllPlatform() {
             return this.select_source?.length === 1 && this.select_source[0] === null
         },
@@ -368,37 +360,37 @@ export default {
                 .join(", ");
         },
         isDisabled() {
-            return (!Array.isArray(this.select_domain) || this.select_domain.length === 0 )&& !this.dropdownloading
+            return (!Array.isArray(this.select_domain) || this.select_domain.length === 0) && !this.dropdownloading
         },
         apiSource() {
             // กรณี All Platform
             if (
-            Array.isArray(this.select_source) &&
-            this.select_source.length === 1 &&
-            this.select_source[0] === null
+                Array.isArray(this.select_source) &&
+                this.select_source.length === 1 &&
+                this.select_source[0] === null
             ) {
-            return 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
+                return 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads'
             }
 
             // กรณีเลือกบาง platform
             if (this.select_source?.length) {
-            return this.select_source.join(',')
+                return this.select_source.join(',')
             }
 
             return null
         },
-        ...mapGetters([
-            "getWordCloudStartDate",
-            "getWordCloudEndDate",
-            "getSubDomainRanking",
-            "getDomainRanking",
-            "getShowSubDomainRanking",
-            "getSubmitRanking",
-            "getRanking",
-            "getSocial",
-            "getShowRankTab",
-            "getToSection",
-        ]),
+        // ...mapGetters([
+        //     "getWordCloudStartDate",
+        //     "getWordCloudEndDate",
+        //     "getSubDomainRanking",
+        //     "getDomainRanking",
+        //     "getShowSubDomainRanking",
+        //     "getSubmitRanking",
+        //     "getRanking",
+        //     "getSocial",
+        //     "getShowRankTab",
+        //     "getToSection",
+        // ]),
     },
     methods: {
         checkDateRange() {
@@ -465,15 +457,11 @@ export default {
             this.dmy = dd[1] + "/" + dd[0] + "/" + dd[2];
             return this.dmy;
         },
-        submitform() {
-            // this.showLoading();
-            // this.selected = 0;
-            // this.type = this.selected2;
-            // this.getranking();
+        async submitform() {
             this.apiGetRanking();
-            // this.dataVersion++
-            // this.$store.commit("setSubmitRanking", true);
-            // this.getranking();
+            this.apiGetSubdomainCount();
+            this.apiGetObjectCount();
+            this.apiGetDomainCount();
         },
         resetform() {
             this.valueDate = [this.datearre, this.datearrs];
@@ -489,53 +477,8 @@ export default {
             this.dataCharts = null;
             this.apiGetSubDomains();
         },
-        // submitform: function () {
-        //     //this.submited = true;
-        //     this.$store.commit("setArrDateRank", this.valueDate);
-        //     this.$store.commit("setDataTrend", []);
-        //     this.$store.commit("setShowRankTab", true);
-        //     this.$store.commit("setShowWordList", true);
-        //     this.$store.commit("setSubmitRanking", true);
-        //     this.$store.commit("setObjectName", this.select_domain);
-        //     this.$store.commit("setSubDomain", this.select_subdomain);
-        //     this.$store.commit("setSocial", this.social);
-        //     if (this.valueDate == "") {
-        //         var todaye =
-        //             moment(new Date())
-        //                 .format()
-        //                 .slice(0, 10) + "T23:59:59";
-        //         var todayend = new Date(todaye);
-        //         todayend.setDate(todayend.getDate() - 6);
-        //         var todays =
-        //             moment(todayend)
-        //                 .format()
-        //                 .slice(0, 10) + "T00:00:00";
-
-        //         this.$store.dispatch("fetchRanking", {
-        //             start_date: todays,
-        //             end_date: todaye,
-        //             domain: this.select_domain,
-        //             source: this.social,
-        //             rankingtype: "object",
-        //             subdomain: this.select_subdomain,
-        //         });
-        //         this.$store.commit("setWordCloudStartDate", todays);
-        //         this.$store.commit("setWordCloudEndDate", todaye);
-        //     } else {
-        //         this.$store.dispatch("fetchRanking", {
-        //             start_date: this.getWordCloudStartDate,
-        //             end_date: this.getWordCloudEndDate,
-        //             domain: this.select_domain,
-        //             source: this.social,
-        //             rankingtype: "object",
-        //             subdomain: this.select_subdomain,
-        //         });
-        //     }
-        // },
         async apiGetDomains() {
             this.dropdownloading = true;
-            // console.log('apiMonitorList ===',this.currentPage);
-
             const config = {
                 method: "get",
                 url: "https://api2.cognizata.com/api/v2/domain/getDomainlist",
@@ -601,49 +544,176 @@ export default {
                 });
         },
         async apiGetRanking() {
-    this.loading = true
-    this.showFilters = false
+            this.loading = true
+            this.showFilters = false
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/ranking/getRanking",
+                params: {
+                    domain_id: this.select_domain?.length
+                        ? this.select_domain.join(',')
+                        : '',
+                    ...(this.select_subdomain?.length && {
+                        subdomain_id: this.select_subdomain.join(',')
+                    }),
+                    ...(this.apiSource && {
+                        source: this.apiSource
+                    }),
+                    start: this.valueDate[0] + 'T00:00:00',
+                    end: this.valueDate[1] + 'T23:59:59',
+                },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            }
 
-    const config = {
-        method: "get",
-        url: "https://api2.cognizata.com/api/v2/ranking/getRanking",
-        params: {
-            domain_id: this.select_domain?.length
-                ? this.select_domain.join(',')
-                : '',
-            ...(this.select_subdomain?.length && {
-                subdomain_id: this.select_subdomain.join(',')
-            }),
-            ...(this.apiSource && {
-                source: this.apiSource
-            }),
-            start: this.valueDate[0] + 'T00:00:00',
-            end: this.valueDate[1] + 'T23:59:59',
+            try {
+                const response = await this.axios(config)
+                this.dataCharts = response.data || {}
+
+                // ✅ สำคัญมาก
+                this.dataVersion++
+
+            } catch (error) {
+                console.error(error)
+            } finally {
+                this.loading = false
+            }
         },
-        headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-            "Content-Type": "application/json",
+        async apiGetDomainCount() {
+            this.loadingDomain = true
+            this.showFilters = false
+            try {
+                // this.chartOptions = {
+                //     ...this.chartOptions,
+                //     noData: { text: "Loading..." }
+                // };
+                this.domainCountData = [];
+                const res = await this.axios.get(
+                    `https://api2.cognizata.com/api/v2/ranking/getDomainCount`,
+                    {
+                        params: {
+                            domain_id: this.select_domain?.length
+                                ? this.select_domain.join(',')
+                                : '',
+                            start: this.valueDate[0] + 'T00:00:00',
+                            end: this.valueDate[1] + 'T23:59:59',
+                            ...(this.apiSource && {
+                                source: this.apiSource
+                            }),
+                        },
+                        headers: {
+                            Authorization: "Bearer " + localStorage.getItem("token")
+                        }
+                    }
+                );
+                this.domainCountData = res?.data?.data || [];
+                // this.updateDomainChart();
+                // this.chartOptionsSubdomain = {
+                //     ...this.chartOptionsSubdomain,
+                //     noData: { text: "" }
+                // };
+            } catch (err) {
+                this.domainCountData = [];
+                console.error("loadSubdomainChart error:", err);
+            }finally {
+                this.loadingDomain = false
+            }
         },
-    }
+        async apiGetSubdomainCount() {
+            this.loadingSubdomain = true
+            this.showFilters = false
+            try {
+                this.subdomainCountData = [];
+                const res = await this.axios.get(
+                    `https://api2.cognizata.com/api/v2/ranking/getSubdomainCount`,
+                    {
+                        params: {
+                            domain_id: this.select_domain?.length
+                                ? this.select_domain.join(',')
+                                : '',
+                            ...(this.select_subdomain?.length && {
+                                subdomain_id: this.select_subdomain.join(',')
+                            }),
+                            limit: 10,
+                            start: this.valueDate[0] + 'T00:00:00',
+                            end: this.valueDate[1] + 'T23:59:59',
+                            ...(this.apiSource && {
+                                source: this.apiSource
+                            }),
+                        },
+                        headers: {
+                            Authorization: "Bearer " + localStorage.getItem("token")
+                        }
+                    }
+                );
+                // this.subdomainCountData = res.data.data;
+                const list = res?.data?.data || [];
+                this.subdomainCountData = list.length ? list.slice(0, 10) : [];
+            } catch (err) {
+                this.subdomainCountData = [];
+                console.error("loadSubdomainChart error:", err);
+            }finally {
+                this.loadingSubdomain = false
+            }
+        },
+        async apiGetObjectCount() {
+            this.loadingObject = true
+            this.showFilters = false
+            try {
+                // this.chartOptions = {
+                //     ...this.chartOptions,
+                //     noData: { text: "Loading..." }
+                // };
+                this.objectCountData = [];
+                const params = {
+                    domain_id: this.select_domain?.length
+                        ? this.select_domain.join(',')
+                        : '',
+                    ...(this.select_subdomain?.length && {
+                        subdomain_id: this.select_subdomain.join(',')
+                    }),
+                    limit: 10,
+                    start: this.valueDate[0] + 'T00:00:00',
+                    end: this.valueDate[1] + 'T23:59:59',
+                    ...(this.apiSource && {
+                        source: this.apiSource
+                    }),
+                }
 
-    try {
-        const response = await this.axios(config)
-        this.dataCharts = response.data || {}
-
-        // ✅ สำคัญมาก
-        this.dataVersion++
-
-    } catch (error) {
-        console.error(error)
-    } finally {
-        this.loading = false
-    }
-}
-,
+                // ลำดับความสำคัญ: subdomain_idText > subdomainId
+                // if (Array.isArray(this.select_subdomain) && this.subdomain_idText.length > 0) {
+                //     params.subdomain_id = this.subdomain_idText.join(',')
+                // } else if (this.subdomainId) {
+                //     params.subdomain_id = this.subdomainId
+                // }
+                const res = await this.axios.get(
+                    "https://api2.cognizata.com/api/v2/ranking/getObjectCount",
+                    {
+                        params,
+                        headers: {
+                            Authorization: "Bearer " + localStorage.getItem("token")
+                        }
+                    }
+                )
+                this.objectCountData = res?.data?.data || [];
+                // this.updateDomainChart();
+                // this.chartOptionsSubdomain = {
+                //     ...this.chartOptionsSubdomain,
+                //     noData: { text: "" }
+                // };
+            } catch (err) {
+                this.objectCountData = [];
+                console.error("loadSubdomainChart error:", err);
+            }finally {
+                this.loadingObject = false
+            }
+        },
     },
     created: function () {
         this.domain = this.select_domain;
-        this.$store.dispatch("fetchDomainRanking");
+        // this.$store.dispatch("fetchDomainRanking");
 
         this.$nextTick(function () {
             this.dateFormat();
@@ -682,13 +752,13 @@ export default {
 
             // ถ้าเลือก platform อื่น → เอา null ออก
             if (newVal.length > 1 && newVal.includes(null)) {
-            this.select_source = newVal.filter(v => v !== null)
-            return
+                this.select_source = newVal.filter(v => v !== null)
+                return
             }
 
             // ถ้าลบหมด → กลับเป็น All
             if (newVal.length === 0) {
-            this.select_source = [null]
+                this.select_source = [null]
             }
         }
     }
@@ -861,26 +931,6 @@ h5 {
     padding-left: 3.8125rem;
 }
 
-/* #search-input {
-  box-sizing: border-box;
-  background-image: url("@/assets/search_icon.png");
-  background-position: 14px 17px;
-  background-repeat: no-repeat;
-  padding: 7px 20px 7px 45px;
-  border: none;
-  background-color: #ede7dd;
-  text-align: center;
-  width: 95%;
-  border-radius: 7px;
-  margin-bottom: 45px;
-}
-#search-input .vs--disabled .vs__clear,
-.vs--disabled .vs__dropdown-toggle,
-.vs--disabled .vs__open-indicator,
-.vs--disabled .vs__search,
-.vs--disabled .vs__selected {
-  background-color: #ede7dd !important;
-} */
 
 #content {
     max-width: 93%;

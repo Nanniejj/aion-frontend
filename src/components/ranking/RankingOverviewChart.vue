@@ -1,24 +1,24 @@
 <template>
     <b-container fluid>
-        <b-col cols="auto" class="text-left h5 bold">ภาพรวมในช่วงวัน <span class="small">{{ start }} - {{ end }}</span></b-col>
-        <b-row class="mx-0 mb-3">
-            <b-col cols="12">
+        <b-col cols="auto" class="text-left h5 bold px-0">ภาพรวม</b-col>
+        <!-- <b-row class="mx-0 mb-3"> -->
+        <!-- </b-row> -->
+        <b-row class="px-0">
+            <b-col md="6">
                 <b-row class="mx-0 justify-content-between align-items-center">
                     <div class="text-left h6">หัวเรื่อง <span class="small">(Domain)</span></div>
-                    <b-button-group class="mb-2">
-                        <button v-for="m in modes" :key="m.value" class="btn btn-sm"
-                            :class="mode === m.value ? 'btn-info' : 'btn-outline-info'" @click="mode = m.value">
-                            {{ m.label }}
-                        </button>
-                    </b-button-group>
                 </b-row>
+                <b-button-group class="mb-2">
+                    <button v-for="m in modes" :key="m.value" class="btn btn-sm"
+                        :class="mode === m.value ? 'btn-info' : 'btn-outline-info'" @click="mode = m.value">
+                        {{ m.label }}
+                    </button>
+                </b-button-group>
                 <apexchart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
             </b-col>
-        </b-row>
-        <b-row class="px-0">
             <b-col md="6" class="mt-2 ">
                 <!-- <div class="text-left ml-2 h5">Subdomain Statistics <span class="small">(posts)</span></div> -->
-                <div class="text-left h6">หมวดหมู่ <span class="small">(Subdomain)</span></div>
+                <div class="text-left h6">Top 10 หมวดหมู่ <span class="small">(Subdomain)</span></div>
                 <b-row class="m-0">
                     <b-col class="px-0">
                         <div v-if="sublabelType === 'posts'">
@@ -61,14 +61,14 @@
                 <apexchart :type="subdomainChartType" height="420" :options="finalChartOptionsSubdomain"
                     :series="finalSeriesSubdomain" />
             </b-col>
-            <b-col md="6" class="mt-2">
+            <b-col md="12" class="mt-2">
                 <!-- <div class="text-left ml-2 h5 mt-3 mt-md-0">Top 10 Objects <span class="small">(posts)</span></div> -->
                 <div class="text-left h6 mt-3 mt-md-0">Top 10 ประเด็น <span class="small">(Objects)</span></div>
                 <b-row>
                     <!-- {{ subdomains }} -->
                     <b-col> <v-select class="mb-3 w-100 se-subdomain" :options="subdomains" v-model="subdomain_idText"
                             label="name" :reduce="s => s.subdomain_id" multiple placeholder="เลือกหมวดหมู่" /></b-col>
-                    <b-col>
+                    <b-col md="auto">
                         <div class="text-center">
                             <b-button-group class="mx-1">
                                 <b-button :variant="labelType === 'posts' ? 'info' : 'outline-info'"
@@ -137,19 +137,35 @@ export default {
             subdomain_idText: '',
             subdomains: [],
             objectRawData: [],
-            mode: "platform", // platform | post | sentiment
+            mode: "post", // platform | post | sentiment
             modes: [
                 { value: "post", label: "Post" },
                 { value: "sentiment", label: "Sentiment" },
                 { value: "platform", label: "Platform" }
             ],
             chartOptions: {
-                // plotOptions: {
-                //     bar: {
-                //     horizontal: true,
-                //     barHeight: '10%' // 🔽 ลดความหนาแท่ง (ลอง 10%–50%)
-                //     }
-                // },
+                grid: { show: false },
+                chart: {
+                    toolbar: {
+                        show: false
+                    },
+                    id: "objectChart",
+                    type: "bar",
+                    events: {
+                        dataPointSelection: this.onDomainBarClick
+                    },
+                    stacked: false,
+                    fontFamily: "Prompt, sans-serif",
+                },
+                xaxis: {
+                    categories: [],
+                    labels: {
+                        show: false // ซ่อน label แกน x ที่นี่เลย
+                    }
+                },
+                noData: {
+                    text: "Loading...",
+                },
             },
             chartSeries: [],
             domainRawData: [],
@@ -246,6 +262,20 @@ export default {
                     y: { formatter: (val) => Number(val).toLocaleString() },
                 },
                 colors: ["#53b993", "#368ab6", "#ea7668"],
+                responsive: [
+                    {
+                        breakpoint: 768, // tablet / mobile 
+                        options: {
+                            xaxis: {
+                                labels: {
+                                    rotate: -45, // 📱 เอียงเฉียง 
+                                    rotateAlways: true,
+                                    style: { fontSize: "11px" }
+                                }
+                            }
+                        }
+                    }
+                ]
             },
         };
     },
@@ -273,8 +303,8 @@ export default {
             const startDefault = `${y}-${m}-${d}T00:00:00`;
             const endDefault = `${y}-${m}-${d}T23:59:59`;
 
-            const start = this.start || startDefault;
-            const end = this.end || endDefault;
+            const start = this.start + 'T00:00:00' || startDefault;
+            const end = this.end + 'T23:59:59' || endDefault;
             const labels = this.subdomains.map(item => {
                 const label = item.name || '';
                 return label.length > 20 ? label.slice(0, 20) + '...' : label;
@@ -457,6 +487,7 @@ export default {
         domainId: {
             immediate: true,
             handler() {
+                this.loadDomainChart();
                 this.loadCharts()
             }
         },
@@ -509,7 +540,7 @@ export default {
     // },
 
     mounted() {
-        this.loadDomainChart();
+        // this.loadDomainChart();
         // this.loadCharts();
     },
 
@@ -537,6 +568,17 @@ export default {
             this.chartOptions = result.options
             this.chartSeries = result.series
         },
+        onDomainBarClick(event, chartContext, config) {
+            const index = config.dataPointIndex
+            if (index === -1) return
+            const domain = this.domainRawData[index]
+            if (!domain) return
+            const start = this.start + 'T00:00:00'
+            const end = this.end + 'T23:59:59'
+            const routeData = this.$router.resolve({ name: "AllPost" })
+            const query = `?domain_id=${domain.domain_id}&domain=${domain.domain_name}&start=${start}&end=${end}`
+            window.open(`${routeData.href}${query}`, "_blank")
+        },
         buildDomainPost() {
             return {
                 options: {
@@ -544,7 +586,8 @@ export default {
                     plotOptions: {
                         bar: {
                             horizontal: true,
-                            barHeight: this.domainRawData.length > 2 ? "50%" : "20%",
+                            barHeight: this.domainRawData.length > 6 ? "80%" : `${this.domainRawData.length * 10}%`,
+                            // barHeight: this.domainRawData.length > 2 ? "50%" : "10%",
                             borderRadius: 5,
                             borderRadiusApplication: "end"
                         }
@@ -556,7 +599,21 @@ export default {
                         enabled: true,
                         formatter: val => this.formatCash(val)
                     },
-                    colors: ["#3dabbc"]
+                    colors: ["#3dabbc"],
+                    // responsive: [
+                    //     {
+                    //         breakpoint: 768, // tablet / mobile 
+                    //         options: {
+                    //             xaxis: {
+                    //                 labels: {
+                    //                     rotate: -45, // 📱 เอียงเฉียง 
+                    //                     rotateAlways: true,
+                    //                     style: { fontSize: "11px" }
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // ]
                 },
                 series: [
                     {
@@ -576,7 +633,7 @@ export default {
                     plotOptions: {
                         bar: {
                             horizontal: true,
-                            barHeight: this.domainRawData.length > 2 ? "50%" : "20%",
+                            barHeight: this.domainRawData.length > 6 ? "80%" : `${this.domainRawData.length * 10}%`,
                             borderRadius: 5,
                             borderRadiusApplication: "end"
                         }
@@ -641,7 +698,7 @@ export default {
                     plotOptions: {
                         bar: {
                             horizontal: true,
-                            barHeight: this.domainRawData.length > 2 ? "50%" : "20%",
+                            barHeight: this.domainRawData.length > 6 ? "80%" : `${this.domainRawData.length * 10}%`,
                             borderRadius: 5,
                             borderRadiusApplication: "end"
                         }
@@ -671,8 +728,8 @@ export default {
                     {
                         params: {
                             domain_id: this.domainId,
-                            start: this.start,
-                            end: this.end,
+                            start: this.start + 'T00:00:00',
+                            end: this.end + 'T23:59:59',
                             source: this.source
                         },
                         headers: {
@@ -680,7 +737,7 @@ export default {
                         }
                     }
                 );
-                this.domainRawData = res.data.data;
+                this.domainRawData = res?.data?.data || [];
                 this.updateDomainChart();
                 this.chartOptionsSubdomain = {
                     ...this.chartOptionsSubdomain,
@@ -725,8 +782,8 @@ export default {
                             ...(this.subdomainId && {
                                 subdomain_id: this.subdomainId
                             }),
-                            start: this.start,
-                            end: this.end,
+                            start: this.start + 'T00:00:00',
+                            end: this.end + 'T23:59:59',
                             source: this.source
                         },
                         headers: {
@@ -734,7 +791,8 @@ export default {
                         }
                     }
                 );
-                this.subdomains = res.data.data;
+                const list = res?.data?.data || [];
+                this.subdomains = list.length ? list.slice(0, 10) : [];
                 this.seriesSubdomainRaw = this.subdomains.map(item => item.count);
 
                 this.seriesSubdomainSentiment = [
@@ -779,8 +837,8 @@ export default {
             const startDefault = `${y}-${m}-${d}T00:00:00`;
             const endDefault = `${y}-${m}-${d}T23:59:59`;
 
-            const start = this.start || startDefault;
-            const end = this.end || endDefault;
+            const start = this.start + 'T00:00:00' || startDefault;
+            const end = this.end + 'T23:59:59' || endDefault;
 
             try {
                 this.chartOptionsObject = {
@@ -792,8 +850,8 @@ export default {
                 const params = {
                     domain_id: this.domainId,
                     limit: 10,
-                    start: this.start,
-                    end: this.end,
+                    start: this.start + 'T00:00:00',
+                    end: this.end + 'T23:59:59',
                     source: this.source
                 }
 
@@ -814,7 +872,7 @@ export default {
                     }
                 )
 
-                const data = res.data.data;
+                const data = res?.data?.data || [];
                 this.objectRawData = data;
                 const categories = data.map(item =>
                     item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name
