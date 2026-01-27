@@ -4,17 +4,34 @@
         <!-- <b-row class="mx-0 mb-3"> -->
         <!-- </b-row> -->
         <b-row class="px-0">
-            <b-col md="6">
+            <b-col md="6" class="mt-2 ">
                 <b-row class="mx-0 justify-content-between align-items-center">
                     <div class="text-left h6">หัวเรื่อง <span class="small">(Domain)</span></div>
                 </b-row>
-                <b-button-group class="mb-2">
-                    <button v-for="m in modes" :key="m.value" class="btn btn-sm"
-                        :class="mode === m.value ? 'btn-info' : 'btn-outline-info'" @click="mode = m.value">
-                        {{ m.label }}
-                    </button>
-                </b-button-group>
-                <apexchart type="bar" height="350" :options="chartOptions" :series="chartSeries" />
+                <b-row class="m-0">
+                    <b-col cols="auto" class="px-0">
+                        <b-button-group v-if="mode == 'post'" class="mb-2">
+                            <b-button :variant="domainPostChart === 'polar' ? 'info' : 'outline-info'"
+                                @click="domainPostChart = 'polar'" size="sm">
+                                <i class="fa fa-pie-chart" aria-hidden="true"></i>
+                            </b-button>
+                            <b-button :variant="domainPostChart === 'bar' ? 'info' : 'outline-info'"
+                                @click="domainPostChart = 'bar'" size="sm">
+                                <i class="fa fa-chart-bar" aria-hidden="true"></i>
+                            </b-button>
+                        </b-button-group>
+                    </b-col>
+                    <b-col class="px-0 text-right">
+                        <b-button-group class="mb-2 mx-1">
+                            <button v-for="m in modes" :key="m.value" class="btn btn-sm"
+                                :class="mode === m.value ? 'btn-info' : 'btn-outline-info'" @click="mode = m.value">
+                                {{ m.label }}
+                            </button>
+                        </b-button-group>
+                    </b-col>
+                </b-row>
+                <apexchart :key="domainPostChart + mode" :type="domainChartType" height="420" :options="chartOptions"
+                    :series="chartSeries" />
             </b-col>
             <b-col md="6" class="mt-2 ">
                 <!-- <div class="text-left ml-2 h5">Subdomain Statistics <span class="small">(posts)</span></div> -->
@@ -41,7 +58,7 @@
                             </div>
                         </div>
                     </b-col>
-                    <b-col class="px-0 ">
+                    <b-col class="px-0">
                         <div class="text-right">
                             <b-button-group class="mx-1">
                                 <b-button :variant="sublabelType === 'posts' ? 'info' : 'outline-info'"
@@ -52,7 +69,8 @@
                                     @click="sublabelType = 'platform'" size="sm">platform</b-button>
                             </b-button-group>
                         </div>
-                    </b-col></b-row>
+                    </b-col>
+                </b-row>
 
                 <!-- <b-form-select v-model="subdomainChartType" class="mb-3" :options="[
           { value: 'pie', text: 'Pie Chart' },
@@ -64,13 +82,14 @@
             <b-col md="12" class="mt-2">
                 <!-- <div class="text-left ml-2 h5 mt-3 mt-md-0">Top 10 Objects <span class="small">(posts)</span></div> -->
                 <div class="text-left h6 mt-3 mt-md-0">Top 10 ประเด็น <span class="small">(Objects)</span></div>
-                <b-row>
+                <b-row class="justify-content-between m-0">
                     <!-- {{ subdomains }} -->
-                    <b-col> <v-select class="mb-3 w-100 se-subdomain" :options="subdomains" v-model="subdomain_idText"
+                    <b-col md="6" class="px-0"> 
+                        <v-select class="mb-3 w-100 se-subdomain" :options="subdomains" v-model="subdomain_idText"
                             label="name" :reduce="s => s.subdomain_id" multiple placeholder="เลือกหมวดหมู่" /></b-col>
-                    <b-col md="auto">
+                    <b-col md="auto" class="px-0">
                         <div class="text-center">
-                            <b-button-group class="mx-1">
+                            <b-button-group class="w-100">
                                 <b-button :variant="labelType === 'posts' ? 'info' : 'outline-info'"
                                     @click="labelType = 'posts'" size="sm">posts</b-button>
                                 <b-button :variant="labelType === 'sentiment' ? 'info' : 'outline-info'"
@@ -94,7 +113,6 @@ import VueApexCharts from "vue-apexcharts";
 import axios from "axios";
 import { mapGetters } from "vuex";
 import moment from "moment";
-
 
 export default {
     components: {
@@ -137,6 +155,7 @@ export default {
             subdomain_idText: '',
             subdomains: [],
             objectRawData: [],
+            domainPostChart: 'polar',
             mode: "post", // platform | post | sentiment
             modes: [
                 { value: "post", label: "Post" },
@@ -149,23 +168,24 @@ export default {
                     toolbar: {
                         show: false
                     },
-                    id: "objectChart",
-                    type: "bar",
+                    id: "domainChart",
+                    type: "polarArea",
                     events: {
                         dataPointSelection: this.onDomainBarClick
                     },
                     stacked: false,
                     fontFamily: "Prompt, sans-serif",
                 },
-                xaxis: {
-                    categories: [],
-                    labels: {
-                        show: false // ซ่อน label แกน x ที่นี่เลย
-                    }
-                },
+                // xaxis: {
+                //     categories: [],
+                //     labels: {
+                //         show: false // ซ่อน label แกน x ที่นี่เลย
+                //     }
+                // },
                 noData: {
                     text: "Loading...",
                 },
+                
             },
             chartSeries: [],
             domainRawData: [],
@@ -281,7 +301,13 @@ export default {
     },
 
     computed: {
-
+        domainChartType() {
+            return (
+                this.chartOptions &&
+                this.chartOptions.chart &&
+                this.chartOptions.chart.type
+            ) || 'bar'
+        },
         finalSeriesSubdomain() {
             if (this.sublabelType === "posts" && this.subdomainChartType === "pie") {
                 return this.seriesSubdomainRaw;
@@ -385,7 +411,18 @@ export default {
             } else if (this.sublabelType === "posts" && this.subdomainChartType === "bar") {
                 return {
                     ...baseOptions,
-                    colors: ["#3dabbc"], // เพิ่มบรรทัดนี้สำหรับสีฟ้า
+                    plotOptions: {
+                            bar: {
+                                horizontal: true,
+                                distributed: true,
+                                // barHeight: this.domainRawData.length > 6
+                                //     ? "80%"
+                                //     : `${this.domainRawData.length * 10}%`,
+                                // borderRadius: 5,
+                                // borderRadiusApplication: "end"
+                            }
+                        },
+                    // colors: ["#3dabbc"], // เพิ่มบรรทัดนี้สำหรับสีฟ้า
                 };
             } else {
                 return baseOptions;
@@ -463,7 +500,9 @@ export default {
         getArrDate() {
             this.loadCharts();
         },
-
+        domainPostChart() {
+            this.updateDomainChart();
+        },
         subdomain_idText(val) {
             if (Array.isArray(val) && val.length > 0) {
                 this.chartKey++
@@ -580,53 +619,143 @@ export default {
             window.open(`${routeData.href}${query}`, "_blank")
         },
         buildDomainPost() {
+            // ======================
+            // ✅ BAR CHART
+            // ======================
+            if (this.domainPostChart === "bar") {
+                return {
+                    options: {
+                        chart: {
+                            type: "bar",
+                            toolbar: { show: false },
+                            fontFamily: "Prompt, sans-serif",
+                        },
+                        plotOptions: {
+                            bar: {
+                                horizontal: true,
+                                distributed: true,
+                                barHeight: this.domainRawData.length > 6
+                                    ? "80%"
+                                    : `${this.domainRawData.length * 10}%`,
+                                borderRadius: 5,
+                                borderRadiusApplication: "end"
+                            }
+                        },
+                        xaxis: {
+                            categories: this.domainRawData.map(d => d.domain_name)
+                        },
+                        dataLabels: {
+                            enabled: true,
+                            formatter: val => Number.isFinite(val) ? this.formatCash(val) : ""
+                        },
+                        colors: [
+                        "#8E44AD", // purple dark
+                        "#C0392B", // red brick
+                        "#16A085", // green ocean
+                        "#F39C12", // amber
+                        "#2980B9", // blue strong
+                        "#7F8C8D", // gray cool
+                        "#2D3436", // charcoal
+                        "#6C5CE7", // violet blue
+                        "#00B894",  // mint
+                        "#FF6F61",
+                        "#6B5B95",
+                        "#88B04B",
+                        "#F7CAC9",
+                        "#92A8D1",
+                        "#955251",
+                        "#DD4124",
+                    ],
+                        responsive: [
+                            {
+                                breakpoint: 768, // tablet / mobile 
+                                options: {
+                                    xaxis: {
+                                        labels: {
+                                            rotate: -45, // 📱 เอียงเฉียง 
+                                            rotateAlways: true,
+                                            style: { fontSize: "11px" }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    series: [
+                        {
+                            name: "จำนวนโพสต์",
+                            data: this.domainRawData.map(d => d.count || 0)
+                        }
+                    ]
+                }
+            }
+
+            // ======================
+            // ✅ POLAR AREA (default)
+            // ======================
             return {
+                series: this.domainRawData.map(d => d.count || 0),
                 options: {
-                    chart: { type: "bar" },
-                    plotOptions: {
-                        bar: {
-                            horizontal: true,
-                            barHeight: this.domainRawData.length > 6 ? "80%" : `${this.domainRawData.length * 10}%`,
-                            // barHeight: this.domainRawData.length > 2 ? "50%" : "10%",
-                            borderRadius: 5,
-                            borderRadiusApplication: "end"
+                    chart: {
+                        id: "domainChart",
+                        type: "polarArea",
+                        toolbar: { show: false },
+                        fontFamily: "Prompt, sans-serif",
+                        events: {
+                            dataPointSelection: this.onDomainBarClick
                         }
                     },
-                    xaxis: {
-                        categories: this.domainRawData.map(d => d.domain_name)
-                    },
+                    labels: this.domainRawData.map(d => d.domain_name),
+                    fill: { opacity: 1 },
+                    stroke: { width: 1 },
+                    yaxis: { show: false },
+                    legend: { position: "bottom" },
                     dataLabels: {
                         enabled: true,
-                        formatter: val => this.formatCash(val)
+                        formatter: val =>
+                            this.formatCash(Math.round(val * 100) / 100) + "%"
                     },
-                    colors: ["#3dabbc"],
-                    // responsive: [
-                    //     {
-                    //         breakpoint: 768, // tablet / mobile 
-                    //         options: {
-                    //             xaxis: {
-                    //                 labels: {
-                    //                     rotate: -45, // 📱 เอียงเฉียง 
-                    //                     rotateAlways: true,
-                    //                     style: { fontSize: "11px" }
-                    //                 }
-                    //             }
-                    //         }
-                    //     }
-                    // ]
-                },
-                series: [
-                    {
-                        name: "จำนวนโพสต์",
-                        data: this.domainRawData.map(d => d.count || 0)
-                    }
-                ]
+                    tooltip: {
+                        theme: "dark",
+                        y: {
+                            formatter: val => this.formatCash(val)
+                        }
+                    },
+                    plotOptions: {
+                        polarArea: {
+                            rings: { strokeWidth: 0 },
+                            spokes: { strokeWidth: 0 }
+                        }
+                    },
+                    colors: [
+                        "#8E44AD", // purple dark
+                        "#C0392B", // red brick
+                        "#16A085", // green ocean
+                        "#F39C12", // amber
+                        "#2980B9", // blue strong
+                        "#7F8C8D", // gray cool
+                        "#2D3436", // charcoal
+                        "#6C5CE7", // violet blue
+                        "#00B894",  // mint
+                        "#FF6F61",
+                        "#6B5B95",
+                        "#88B04B",
+                        "#F7CAC9",
+                        "#92A8D1",
+                        "#955251",
+                        "#DD4124",
+                    ],
+                    // theme: {
+                    //     monochrome: { enabled: false }
+                    // }
+                }
             }
         },
         buildDomainSentiment() {
             return {
                 options: {
                     chart: {
+                        toolbar: { show: false },
                         type: "bar",
                         stacked: true
                     },
@@ -645,7 +774,21 @@ export default {
                         enabled: true,
                         formatter: val => val === 0 ? "" : this.formatCash(val)
                     },
-                    colors: ["#53b993", "#368ab6", "#ea7668"]
+                    colors: ["#53b993", "#368ab6", "#ea7668"],
+                    responsive: [
+                        {
+                            breakpoint: 768, // tablet / mobile 
+                            options: {
+                                xaxis: {
+                                    labels: {
+                                        rotate: -45, // 📱 เอียงเฉียง 
+                                        rotateAlways: true,
+                                        style: { fontSize: "11px" }
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 },
                 series: [
                     {
@@ -692,6 +835,7 @@ export default {
             return {
                 options: {
                     chart: {
+                        toolbar: { show: false },
                         type: "bar",
                         stacked: true
                     },
@@ -706,7 +850,21 @@ export default {
                     xaxis: {
                         categories: this.domainRawData.map(d => d.domain_name)
                     },
-                    colors: series.map(s => platformColorMap[s.name] || "#999")
+                    colors: series.map(s => platformColorMap[s.name] || "#999"),
+                    responsive: [
+                        {
+                            breakpoint: 768, // tablet / mobile 
+                            options: {
+                                xaxis: {
+                                    labels: {
+                                        rotate: -45, // 📱 เอียงเฉียง 
+                                        rotateAlways: true,
+                                        style: { fontSize: "11px" }
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 },
                 series
             }
@@ -723,6 +881,7 @@ export default {
                     noData: { text: "Loading..." }
                 };
                 this.domainRawData = [];
+                let social = this.source == 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads' ? null : this.source;
                 const res = await axios.get(
                     `https://api2.cognizata.com/api/v2/ranking/getDomainCount`,
                     {
@@ -730,7 +889,7 @@ export default {
                             domain_id: this.domainId,
                             start: this.start + 'T00:00:00',
                             end: this.end + 'T23:59:59',
-                            source: this.source
+                            source: social
                         },
                         headers: {
                             Authorization: "Bearer " + localStorage.getItem("token")
@@ -846,13 +1005,13 @@ export default {
                     noData: { text: "Loading..." }
                 };
                 this.seriesObject = [];
-
+                let social = this.source == 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads' ? null : this.source;
                 const params = {
                     domain_id: this.domainId,
                     limit: 10,
                     start: this.start + 'T00:00:00',
                     end: this.end + 'T23:59:59',
-                    source: this.source
+                    source: social
                 }
 
                 // ลำดับความสำคัญ: subdomain_idText > subdomainId

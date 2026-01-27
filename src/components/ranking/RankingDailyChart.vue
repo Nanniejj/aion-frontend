@@ -12,7 +12,7 @@
                 </b-button-group>
             </b-col>
         </b-row>
-        <apexchart type="area" height="350" :options="chartOptions" :series="series" />
+        <apexchart type="line" height="350" :options="chartOptions" :series="series" />
     </div>
 </template>
 
@@ -129,7 +129,7 @@ export default {
 
             const clickedDate = point.x
 
-            console.log('CLICK', meta, clickedDate)
+            // console.log('CLICK', meta, clickedDate)
 
             if (this.mode === 'domain') {
                 this.openByDomain(meta, clickedDate)
@@ -141,21 +141,21 @@ export default {
         },
 
         openByDomain(domain, date) {
-            console.log("domain === ", domain,date);
+            // console.log("domain === ", domain,date);
             const routeData = this.$router.resolve({ name: "AllPost" })
             const query = `?domain_id=${domain.domain_id}&domain=${domain.domain_name}&start=${date + 'T00:00:00'}&end=${date + 'T23:59:59'}`
             window.open(`${routeData.href}${query}`, "_blank")
         },
 
         openBySubdomain(subdomain, date) {  
-            console.log("subdomain === ", subdomain, date);
+            // console.log("subdomain === ", subdomain, date);
             const routeData = this.$router.resolve({ name: "AllPost" })
             const query = `?domain_id=${subdomain.domain_id}&domain=${subdomain.domain_name}&start=${date + 'T00:00:00'}&end=${date + 'T23:59:59'}&subdomain_id=${subdomain.subdomain_id}`
             window.open(`${routeData.href}${query}`, "_blank")
         },
 
         openByObject(object, date) {
-            console.log("object === ", object, date);
+            // console.log("object === ", object, date);
             // const objectName = encodeURIComponent(object.object_name)
             const routeData = this.$router.resolve({ name: "AllPost" })
             const query = `?domain_id=${object.domain_id}&domain=${object.domain_name}&start=${date + 'T00:00:00'}&end=${date + 'T23:59:59'}&subdomain_id=${object.subdomain_id}&object_id=${object.object_id}`

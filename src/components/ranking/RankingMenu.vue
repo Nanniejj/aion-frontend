@@ -1,18 +1,18 @@
 <template>
     <!-- <div id="content"> -->
-    <div class="container" style="min-height: 100vh;">
+    <div class="container" style="min-height: 100vh;padding-left: 15px;">
         <back-to-top bottom="50px" right="50px">
             <button type="button" class="btn btn-to-top">
                 <i class="fa fa-chevron-up"></i>
             </button>
         </back-to-top>
-        <b-row>
+        <b-row class="mx-0">
             <b-col class="d-contents pl-0">
                 <h1 class="title ml-0 pl-0">Ranking</h1>
             </b-col>
-            <b-col class="text-right">
+            <b-col md="auto" class="text-right px-0">
                 <span class="bold md-font"> </span>
-                <div class="p-4 my-0 text-sm-center text-lg-right">
+                <div class="p-4 px-0 my-0 text-sm-center text-lg-right">
                     <span class="shadow-sm p-2 mb-3 bg-white rounded bold mr-2">
                         <span>Today</span>
                         {{ new Intl.DateTimeFormat("en-AU").format() }}
@@ -21,7 +21,7 @@
                 </div>
             </b-col>
         </b-row>
-        <b-row class="bg-filter ">
+        <b-row class="bg-filter mx-0">
             <b-card v-if="showFilters" header-tag="header" footer="Card Footer" footer-tag="footer"
                 class="transparent-card w-100 border-0" style="background-color: transparent;" body-class="pt-0">
                 <template #header>
@@ -209,7 +209,7 @@
             </b-card>
         </b-row>
         <!-- {{ loading }} -->
-        <b-row class="py-3">
+        <b-row class="py-3 mx-0">
             <b-col cols="12" class="text-left px-0 mb-3">
                 <div v-if="loading" style="min-height: 300px;position: relative;">
                     <vue-element-loading :active="loading" size="60" background-color="rgba(255, 255, 255, 0.1)"
@@ -224,7 +224,7 @@
             <b-col v-if="dataCharts && !isDisabled && !loading" cols="12" class="text-left px-0">
                 <RankingDailyChart :rawData="dataCharts" :isSubdomain="isSubdomain" :dataVersion="dataVersion" />
             </b-col>
-            <b-col v-if="dataCharts && !isDisabled && !loading" cols="12" class="text-left px-0 mt-3">
+            <b-col v-if="dataCharts && !isDisabled && !loading" cols="12" class="px-0 mt-3">
                 <div v-if="loadingDomain || loadingSubdomain || loadingObject" style="min-height: 300px;position: relative;">
                     <vue-element-loading :active="loading" size="60" background-color="rgba(255, 255, 255, 0.1)"
                         spinner="line-scale" color="#7cd1dc" />
@@ -234,6 +234,8 @@
                     :domains="domainCountData"
                     :subdomains="subdomainCountData"
                     :objects="objectCountData"
+                    :start="valueDate[0]+'T00:00:00'"
+                    :end="valueDate[1]+'T23:59:59'"
                 />
             </b-col>
         </b-row>
@@ -530,7 +532,7 @@ export default {
                     const resData = response.data;
 
                     this.subDomainOptions = resData.data || [];
-                    console.log(this.subDomainOptions);
+                    // console.log(this.subDomainOptions);
                     // this.totalRows = resData.pagination?.totalCount || this.data.length;
                     // this.totalCount = resData.totalCount || this.subDomainOptions.length;
                     this.dropdownloading = false;
@@ -666,6 +668,7 @@ export default {
                 //     ...this.chartOptions,
                 //     noData: { text: "Loading..." }
                 // };
+                let social = this.apiSource == 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads' ? null : this.apiSource;
                 this.objectCountData = [];
                 const params = {
                     domain_id: this.select_domain?.length
@@ -677,8 +680,8 @@ export default {
                     limit: 10,
                     start: this.valueDate[0] + 'T00:00:00',
                     end: this.valueDate[1] + 'T23:59:59',
-                    ...(this.apiSource && {
-                        source: this.apiSource
+                    ...(social && {
+                        source: social
                     }),
                 }
 

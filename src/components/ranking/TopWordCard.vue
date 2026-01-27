@@ -147,19 +147,17 @@ export default {
 
     methods: {
         getModeTotal(item) {
-            console.log("total = ", item);
-
-            /* 🔵 POST MODE */
+            
             if (this.mode === "post") {
                 return item.count || 0;
             }
 
-            /* 🟡 SENTIMENT MODE */
+           
             if (this.mode === "sentiment") {
                 return (item.pos || 0) + (item.neu || 0) + (item.neg || 0);
             }
 
-            /* 🟣 PLATFORM MODE */
+            
             if (this.mode === "platform") {
                 return Object.values(item.platform || {}).reduce(
                     (sum, v) => sum + v,
@@ -236,13 +234,14 @@ export default {
                 return Object.entries(item.platform || {})
                     .map(([k, v]) => `${k}: ${this.format(v)}`)
                     .join("\n");
+            }else if (this.mode === "post") {
+                return `รวม: ${this.format(item.count)} โพสต์`;
             }
 
             return `
-บวก: ${this.format(item.pos)}
-กลาง: ${this.format(item.neu)}
-ลบ: ${this.format(item.neg)}
-รวม: ${this.format(item.count)}
+                บวก: ${this.format(item.pos)}
+                กลาง: ${this.format(item.neu)}
+                ลบ: ${this.format(item.neg)}
             `.trim();
         },
     },
