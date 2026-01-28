@@ -72,7 +72,8 @@ export default {
                 },
                 stroke: { curve: "smooth" },
                 fill: { opacity: 0.7 },
-                 colors: ['#e6ba59', '#40A578', '#725CAD', '#F075AA', '#368ab6', '#ea7668', '#9ABF80', '#71C0BB', '#34495e',],
+                colors: ['#e6ba59', '#40A578', '#725CAD', '#F075AA',"#C0392B",
+                    '#368ab6', '#ea7668', '#9ABF80', '#71C0BB', '#34495e',],
                 tooltip: {
                     shared: false,
                     intersect: true

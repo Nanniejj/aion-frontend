@@ -214,7 +214,8 @@ export default {
                     y: { formatter: (val) => Number(val).toLocaleString() },
                 },
                 legend: { position: "bottom" },
-                colors: ['#e6ba59', '#40A578', '#725CAD', '#F075AA', '#368ab6', '#ea7668', '#9ABF80', '#71C0BB', '#34495e',],
+                colors: ['#e6ba59', '#40A578', '#725CAD', '#F075AA',"#C0392B",
+                    '#368ab6', '#ea7668', '#9ABF80', '#71C0BB', '#34495e',],
                 dataLabels: {
                     enabled: true,
                 },
@@ -757,7 +758,8 @@ export default {
                     chart: {
                         toolbar: { show: false },
                         type: "bar",
-                        stacked: true
+                        stacked: true,
+                        fontFamily: "Prompt, sans-serif",
                     },
                     plotOptions: {
                         bar: {
@@ -837,7 +839,8 @@ export default {
                     chart: {
                         toolbar: { show: false },
                         type: "bar",
-                        stacked: true
+                        stacked: true,
+                        fontFamily: "Prompt, sans-serif",
                     },
                     plotOptions: {
                         bar: {
