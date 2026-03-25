@@ -1,446 +1,453 @@
 <template>
-  <div class="mt-3">
-    <span id="box-domain" class="mt-3 mb-3">
-      <b-row cols="auto" class="m-auto">
-        <!-- d-contents -->
-        <b-col cols="6" md="3" lg="auto"
-          ><a
-            :id="'eltab1' + idx"
-            tabindex="0"
-            @click="allActive('eltab1' + idx, '', 'i1' + idx)"
-          >
-            <b-icon icon="check" :id="'i1' + idx"></b-icon>All</a
-          ></b-col
-        >
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab2' + idx"
-            tabindex="0"
-            @click="allActive('eltab2' + idx, 'facebook', 'i2' + idx)"
-          >
-            <b-icon icon="check" :id="'i2' + idx" />Facebook</a
-          ></b-col
-        >
-        <b-col cols="6" md="3" lg="auto"
-          ><a
-            :id="'eltab3' + idx"
-            tabindex="0"
-            @click="allActive('eltab3' + idx, 'twitter', 'i3' + idx)"
-          >
-            <b-icon icon="check" :id="'i3' + idx" />X</a
-          ></b-col
-        >
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab4' + idx"
-            tabindex="0"
-            @click="allActive('eltab4' + idx, 'pantip', 'i4' + idx)"
-          >
-            <b-icon icon="check" :id="'i4' + idx" />Board</a
-          ></b-col
-        >
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab5' + idx"
-            tabindex="0"
-            @click="allActive('eltab5' + idx, 'news', 'i5' + idx)"
-          >
-            <b-icon icon="check" :id="'i5' + idx" />News</a
-          ></b-col
-        >
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab6' + idx"
-            tabindex="0"
-            @click="allActive('eltab6' + idx, 'youtube', 'i6' + idx)"
-          >
-            <b-icon icon="check" :id="'i6' + idx" />Youtube</a
-          ></b-col
-        >
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab7' + idx"
-            tabindex="0"
-            @click="allActive('eltab7' + idx, 'instagram', 'i7' + idx)"
-          >
-            <b-icon icon="check" :id="'i7' + idx" />Instagram</a
-          ></b-col
-        >
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab8' + idx"
-            tabindex="0"
-            @click="allActive('eltab8' + idx, 'blockdit', 'i8' + idx)"
-          >
-            <b-icon icon="check" :id="'i8' + idx" />Blockdit</a
-          ></b-col
-        >
+  <div
+    class="social-tab-bar position-relative d-flex align-items-center my-2"
+    :class="{ 'is-overflowing': isOverflowing }"
+  >
+    <b-button
+      v-show="showLeftArrow"
+      variant="light"
+      class="arrow-btn arrow-btn-left p-0 d-flex align-items-center justify-content-center"
+      aria-label="Scroll left"
+      @click="scrollTabs(-1)"
+    >
+      <i class="fas fa-chevron-left"></i>
+    </b-button>
 
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab9' + idx"
-            tabindex="0"
-            @click="allActive('eltab9' + idx, 'tiktok', 'i9' + idx)"
-          >
-            <b-icon icon="check" :id="'i9' + idx" />Tiktok</a
-          ></b-col
+    <div
+      ref="scrollWrap"
+      class="scroll-wrap flex-fill"
+      @scroll="updateScrollState"
+    >
+      <div
+        ref="scrollInner"
+        class="scroll-inner d-inline-flex align-items-center"
+      >
+        <b-button
+          v-for="p in platforms"
+          :key="p.key"
+          variant="light"
+          class="tab-btn d-inline-flex align-items-center"
+          :class="{ active: activeSocial === p.key }"
+          @click="setActive(p.key)"
         >
-        <b-col cols="6" sm="6" md="3" lg="auto"
-          ><a
-            :id="'eltab10' + idx"
-            tabindex="0"
-            @click="allActive('eltab10' + idx, 'threads', 'i10' + idx)"
-          >
-            <b-icon icon="check" :id="'i10' + idx" />Threads</a
-          ></b-col
-        >
-      </b-row>
-    </span>
+          <span class="platform-icon" :style="{ background: p.bg, color: p.color }">
+            <i :class="p.iconClass"></i>
+          </span>
+
+          <span class="tab-label">{{ p.label }}</span>
+          <span class="active-dot"></span>
+        </b-button>
+      </div>
+    </div>
+
+    <b-button
+      v-show="showRightArrow"
+      variant="light"
+      class="arrow-btn arrow-btn-right p-0 d-flex align-items-center justify-content-center"
+      aria-label="Scroll right"
+      @click="scrollTabs(1)"
+    >
+      <i class="fas fa-chevron-right"></i>
+    </b-button>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex'
+
+const PLATFORMS = [
+  {
+    key: '',
+    label: 'All',
+    bg: '#eef0fb',
+    color: '#4c5bce',
+    iconClass: 'fas fa-globe'
+  },
+  {
+    key: 'facebook',
+    label: 'Facebook',
+    bg: '#e7f1fd',
+    color: '#1877f2',
+    iconClass: 'fab fa-facebook-f'
+  },
+  {
+    key: 'twitter',
+    label: 'X',
+    bg: '#f0f0f0',
+    color: '#111111',
+    iconClass: 'fab fa-x-twitter'
+  },
+  {
+    key: 'pantip',
+    label: 'Board',
+    bg: '#f3edfb',
+    color: '#7c3d8b',
+    iconClass: 'fas fa-comments'
+  },
+  {
+    key: 'news',
+    label: 'News',
+    bg: '#fde8e6',
+    color: '#c0392b',
+    iconClass: 'fas fa-newspaper'
+  },
+  {
+    key: 'youtube',
+    label: 'YouTube',
+    bg: '#ffe8e8',
+    color: '#ff0000',
+    iconClass: 'fab fa-youtube'
+  },
+  {
+    key: 'instagram',
+    label: 'Instagram',
+    bg: '#fceef8',
+    color: '#c13584',
+    iconClass: 'fab fa-instagram'
+  },
+  {
+    key: 'blockdit',
+    label: 'Blockdit',
+    bg: '#f0f0f0',
+    color: '#444444',
+    iconClass: 'fas fa-th-large'
+  },
+  {
+    key: 'tiktok',
+    label: 'TikTok',
+    bg: '#f0f0f0',
+    color: '#111111',
+    iconClass: 'fab fa-tiktok'
+  },
+  {
+    key: 'threads',
+    label: 'Threads',
+    bg: '#f0f0f0',
+    color: '#111111',
+    iconClass: 'fab fa-threads'
+  },
+  {
+    key: 'telegram',
+    label: 'Telegram',
+    bg: '#e8f6fd',
+    color: '#2ca5e0',
+    iconClass: 'fab fa-telegram-plane'
+  }
+]
+
+const COMMIT_MAP = {
+  post: 'setSocialDomain',
+  postword: 'setWordCloudSocial',
+  posthash: 'setHashtagSocial',
+  feed: 'setSocialFeed'
+}
+
+const SCROLL_STEP = 180
+const DESKTOP_BREAKPOINT = 1024
+
 export default {
-  computed: {
-    ...mapGetters([
-      "getClickDomain",
-      "getSdateDm",
-      "getEdateDm",
-      "getArrDate",
-      "getQuerySearch",
-      "getWordCloudHashtag",
-    ]),
-  },
-  watch: {
-    getArrDate: function(newVal, oldVal) {
-      // watch it
-      console.log("Prop changed: ", newVal, " | was: ", oldVal);
-      this.allActive("eltab11", "", "i11");
-      //this.allActive('eltab12', '', 'i12')
-    },
-    getQuerySearch() {
-      this.allActive("eltab11", "", "i11");
-    },
-    getWordCloudHashtag() {
-      this.allActive("eltab11", "", "i11");
-    },
-  },
+  name: 'SocialTabFilter',
 
   props: {
     tabsocial: {
       type: String,
-    },
-  },
-  data() {
-    return {
-      check: false,
-      idx: 1,
-    };
-  },
-  methods: {
-    allActive(ele, social, check) {
-      console.log(ele, social, check, this.idx);
-      var active = ele;
-      var a, b, c, d, e, f, g, bd, tt,td;
-      a = "eltab1" + this.idx;
-      b = "eltab2" + this.idx;
-      c = "eltab3" + this.idx;
-      d = "eltab4" + this.idx;
-      e = "eltab5" + this.idx;
-      f = "eltab6" + this.idx;
-      g = "eltab7" + this.idx;
-      bd = "eltab8" + this.idx;
-      tt = "eltab9" + this.idx;
-      td = "eltab10" + this.idx;
-
-      var h, i, j, k, l, m, n, o, p,q;
-      h = "i1" + this.idx;
-      i = "i2" + this.idx;
-      j = "i3" + this.idx;
-      k = "i4" + this.idx;
-      l = "i5" + this.idx;
-      m = "i6" + this.idx;
-      n = "i7" + this.idx;
-      o = "i8" + this.idx;
-      p = "i9" + this.idx;
-      q = "i10" + this.idx;
-
-      if (this.tabsocial == "post") {
-        this.$store.commit("setSocialDomain", social);
-      }
-      if (this.tabsocial == "postword") {
-        this.$store.commit("setWordCloudSocial", social);
-      }
-
-      if (this.tabsocial == "posthash") {
-        this.$store.commit("setHashtagSocial", social);
-      }
-
-      if (this.tabsocial == "feed") {
-        console.log("ddddddddddddddddd");
-        this.$store.commit("setSocialFeed", social);
-      }
-      //  if (this.tabsocial=='issue') {
-      //    this.$store.commit('setSocialIssue',social)
-      //  }
-      //underline
-      document.getElementById(a).style.borderColor = "#ffffff00";
-      document.getElementById(b).style.borderColor = "#ffffff00";
-      document.getElementById(c).style.borderColor = "#ffffff00";
-      document.getElementById(d).style.borderColor = "#ffffff00";
-      document.getElementById(e).style.borderColor = "#ffffff00";
-      document.getElementById(f).style.borderColor = "#ffffff00";
-      document.getElementById(g).style.borderColor = "#ffffff00";
-      document.getElementById(bd).style.borderColor = "#ffffff00";
-      document.getElementById(tt).style.borderColor = "#ffffff00";
-      document.getElementById(td).style.borderColor = "#ffffff00";
-      if (this.tabsocial == "feed") {
-        document.getElementById(active).style.borderColor = "#fed16e";
-      } else {
-        document.getElementById(active).style.borderColor = "#fed16e";
-      }
-
-      //check
-      document.getElementById(h).style.color = "#ffffff00";
-      document.getElementById(i).style.color = "#ffffff00";
-      document.getElementById(j).style.color = "#ffffff00";
-      document.getElementById(k).style.color = "#ffffff00";
-      document.getElementById(l).style.color = "#ffffff00";
-      document.getElementById(m).style.color = "#ffffff00";
-      document.getElementById(n).style.color = "#ffffff00";
-      document.getElementById(o).style.color = "#ffffff00";
-      document.getElementById(p).style.color = "#ffffff00";
-      document.getElementById(q).style.color = "#ffffff00";
-      //change
-      document.getElementById(check).style.color = "#2c3e50";
-    },
-  },
-  mounted(){
- if (this.tabsocial == "feed") {
-      document.getElementById("eltab11").style.borderColor = "#fed16e";
-    } else {
-      document.getElementById("eltab11").style.borderColor = "#fed16e";
+      default: ''
     }
   },
-  created() {
-    this.idx = 1;
+
+  data() {
+    return {
+      platforms: PLATFORMS,
+      activeSocial: '',
+      isDesktop: false,
+      isOverflowing: false,
+      atStart: true,
+      atEnd: false,
+      resizeObserver: null
+    }
   },
-  destroyed() {
-    console.log("setSocialDomain");
-    this.$store.commit("setSocialDomain", "");
-    this.$store.commit("setSocialFeed", "");
+
+  computed: {
+    ...mapGetters(['getArrDate', 'getQuerySearch', 'getWordCloudHashtag']),
+
+    showLeftArrow() {
+      return this.isDesktop && this.isOverflowing && !this.atStart
+    },
+
+    showRightArrow() {
+      return this.isDesktop && this.isOverflowing && !this.atEnd
+    }
   },
-};
+
+  watch: {
+    getArrDate() {
+      this.resetActive()
+    },
+    getQuerySearch() {
+      this.resetActive()
+    },
+    getWordCloudHashtag() {
+      this.resetActive()
+    }
+  },
+
+  mounted() {
+    this.$nextTick(() => {
+      this.refreshScrollState()
+      this.initResizeObserver()
+    })
+
+    window.addEventListener('resize', this.handleResize)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
+
+    this.$store.commit('setSocialDomain', '')
+    this.$store.commit('setSocialFeed', '')
+  },
+
+  methods: {
+    setActive(key) {
+      this.activeSocial = key
+
+      const mutation = COMMIT_MAP[this.tabsocial]
+      if (mutation) {
+        this.$store.commit(mutation, key)
+      }
+
+      this.$nextTick(() => {
+        this.scrollActiveIntoView()
+        this.refreshScrollState()
+      })
+    },
+
+    resetActive() {
+      this.activeSocial = ''
+      this.$nextTick(() => {
+        this.refreshScrollState()
+      })
+    },
+
+    scrollTabs(dir) {
+      const el = this.$refs.scrollWrap
+      if (!el) return
+
+      el.scrollBy({
+        left: dir * SCROLL_STEP,
+        behavior: 'smooth'
+      })
+
+      setTimeout(() => {
+        this.refreshScrollState()
+      }, 250)
+    },
+
+    scrollActiveIntoView() {
+      const wrap = this.$refs.scrollWrap
+      if (!wrap) return
+
+      const activeEl = wrap.querySelector('.tab-btn.active')
+      if (!activeEl) return
+
+      activeEl.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      })
+    },
+
+    updateScrollState() {
+      const el = this.$refs.scrollWrap
+      if (!el) return
+
+      const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth)
+      this.atStart = el.scrollLeft <= 2
+      this.atEnd = el.scrollLeft >= maxScrollLeft - 2
+    },
+
+    updateOverflowState() {
+      const wrap = this.$refs.scrollWrap
+      const inner = this.$refs.scrollInner
+      if (!wrap || !inner) return
+
+      this.isOverflowing = inner.scrollWidth > wrap.clientWidth + 2
+    },
+
+    updateViewport() {
+      if (typeof window === 'undefined') return
+      this.isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT
+    },
+
+    refreshScrollState() {
+      this.updateViewport()
+      this.updateOverflowState()
+      this.updateScrollState()
+    },
+
+    handleResize() {
+      this.$nextTick(() => {
+        this.refreshScrollState()
+      })
+    },
+
+    initResizeObserver() {
+      if (typeof ResizeObserver === 'undefined') return
+
+      const wrap = this.$refs.scrollWrap
+      const inner = this.$refs.scrollInner
+      if (!wrap || !inner) return
+
+      this.resizeObserver = new ResizeObserver(() => {
+        this.refreshScrollState()
+      })
+
+      this.resizeObserver.observe(wrap)
+      this.resizeObserver.observe(inner)
+    }
+  }
+}
 </script>
 
 <style scoped>
-#box-domain {
-  width: 100%;
-  height: auto;
-  padding: 20px 0px;
-  border-radius: 7px;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  display: flex;
+.social-tab-bar {
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e4e4e4;
+  border-radius: 14px;
+  padding: 7px 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.scroll-wrap {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding: 0px 20px;
+}
+
+.scroll-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-inner {
+  gap: 5px;
+  min-width: max-content;
+  padding: 2px 0;
+}
+
+.tab-btn {
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 5px 12px 5px 6px !important;
+  border-radius: 999px !important;
+  border: 1px solid #e8e8e8 !important;
+  background: #f7f7f7 !important;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+  color: #666 !important;
+  white-space: nowrap;
+  line-height: 1;
+  user-select: none;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.tab-btn:hover {
+  border-color: #c0c0c0 !important;
+  background: #efefef !important;
+  color: #111 !important;
+}
+
+.tab-btn.active {
+  background: #fff7cc !important;      /* เหลืองอ่อน */
+  border-color: #ffd54f !important;    /* เหลือง */
+  color: #b8860b !important;           /* ตัวหนังสือโทนเหลืองเข้ม */
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(255, 193, 7, 0.25) !important;
+}
+
+.platform-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-#all-eltab {
-  border-bottom: 5px solid #ffffff00;
-}
-#eltab11,
-#eltab21,
-#eltab31,
-#eltab41,
-#eltab51,
-#eltab61,
-#eltab71,
-#eltab81,
-#eltab91 ,#eltab101{
-  cursor: pointer;
-  text-align: center;
-  margin: 0px 10px;
-  line-height: 30px;
+  flex-shrink: 0;
+  font-size: 11px;
 }
 
-#eltab11 {
-  outline-style: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  border-color: transparent;
-  border-bottom: 5px solid #fed06e00;
-}
-#eltab21,
-#eltab31,
-#eltab41,
-#eltab51,
-#eltab61,
-#eltab71,
-#eltab81,
-#eltab91 ,#eltab101{
-  outline-style: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  border-color: transparent;
-  border-bottom: 5px solid #ffffff00;
-}
-#i21,
-#i31,
-#i41,
-#i51,
-#i61,
-#i71,
-#i81,
-#i91,#i101 {
-  color: #ffffff00;
+.tab-label {
+  line-height: 1;
 }
 
-#eltab12,
-#eltab22,
-#eltab32,
-#eltab42,
-#eltab52,
-#eltab62,
-#eltab72,
-#eltab82,
-#eltab92,#eltab102 {
-  cursor: pointer;
-  text-align: center;
-  margin: 0px 10px;
-  line-height: 30px;
-}
-#eltab12 {
-  outline-style: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  border-color: transparent;
-  border-bottom: 5px solid #fed16e;
-}
-#eltab22,
-#eltab32,
-#eltab42,
-#eltab52,
-#eltab62,
-#eltab72,
-#eltab82,
-#eltab92 ,#eltab102{
-  outline-style: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  border-color: transparent;
-  border-bottom: 5px solid #ffffff00;
-}
-#i22,
-#i32,
-#i42,
-#i52,
-#i62,
-#i72,
-#i82,
-#i92,#i102 {
-  color: #ffffff00;
+.active-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a975e4;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
 }
 
-.col-lg-auto {
-  display: contents;
-  font-size: 17px;
+.tab-btn.active .active-dot {
+  opacity: 1;
 }
-.col-md-3 {
-  display: contents;
+
+.arrow-btn {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 999px !important;
+  border: 1px solid #d0d0d0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #444 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+  min-width: 30px;
 }
-.col-sm-6 {
-  display: contents;
+
+.arrow-btn-left {
+  left: 2px;
 }
-@media (max-width: 1220px) {
-  #eltab1,
-  #eltab2,
-  #eltab3,
-  #eltab4,
-  #eltab5,
-  #eltab6,
-  #eltab7 {
-    margin: 0px 7px;
-  }
+
+.arrow-btn-right {
+  right: 2px;
 }
-@media (max-width: 1150px) {
-  #eltab1,
-  #eltab2,
-  #eltab3,
-  #eltab4,
-  #eltab5,
-  #eltab6,
-  #eltab7 {
-    margin: 0px 1px;
+
+@media (max-width: 1023px) {
+  .arrow-btn {
+    display: none !important;
   }
-  .col-6 {
-    display: contents;
-    font-size: 16px;
-    padding: 10px;
+
+  .social-tab-bar {
+    padding: 6px;
+    border-radius: 12px;
   }
-}
-@media (max-width: 980px) {
-  #eltab1,
-  #eltab2,
-  #eltab3,
-  #eltab4,
-  #eltab5,
-  #eltab6,
-  #eltab7 {
-    margin: 0px 6px;
+
+  .tab-btn {
+    font-size: 12px;
+    padding: 5px 10px 5px 5px !important;
   }
-}
-@media (max-width: 780px) {
-  #eltab1,
-  #eltab2,
-  #eltab3,
-  #eltab4,
-  #eltab5,
-  #eltab6,
-  #eltab7 {
-    margin: 0px 3px;
-  }
-}
-@media (max-width: 630px) {
-  #eltab11,
-  #eltab21,
-  #eltab31,
-  #eltab41,
-  #eltab51,
-  #eltab61,
-  #eltab71,
-  #eltab81,
-  #eltab91, #eltab101 {
-    cursor: pointer;
-    text-align: center;
-    margin: 0px 2px;
-    line-height: 30px;
-  }
-  #eltab1,
-  #eltab2,
-  #eltab3,
-  #eltab4,
-  #eltab5,
-  #eltab6,
-  #eltab7 {
-    cursor: pointer;
-    text-align: center;
-    margin: 0px 5px;
-    line-height: 20px;
-  }
-  .col-6 {
-    display: contents;
-    font-size: 14px;
-    padding: 10px;
-  }
-  #box-domain {
-    width: 100%;
-    height: auto;
-    padding: 0px 5px;
-    border-radius: 7px;
-    box-shadow: 0 4px 8px 0 rgba(255, 250, 250, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+  .platform-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
   }
 }
 </style>

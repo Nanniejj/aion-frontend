@@ -52,22 +52,17 @@
         <b-container>
           <b-row style="padding-bottom: 200px" v-if="dataSum">
             <Summary class="mt-2" :dataSum="dataSum" />
-            <Facebook 
-                :dataSum="platformSum('facebook')"
-                :dataPlatform="platformStat('facebook')"
-            />
+            <Facebook :dataSum="platformSum('facebook')" :dataPlatform="platformStat('facebook')" />
             <Twitter :dataSum="platformSum('twitter')" :dataPlatform="platformStat('twitter')" />
             <Pantip :dataSum="platformSum('pantip')" :dataPlatform="platformStat('pantip')" />
             <News :dataSum="platformSum('news')" :dataPlatform="platformStat('news')" />
-            <Youtube :dataSum="platformSum('youtube')"
-              :dataPlatform="platformStat('youtube')" />
-            <Instagram :dataSum="platformSum('instagram')"
-              :dataPlatform="platformStat('instagram')" />
-            <Blockdit :dataSum="platformSum('blockdit')"
-              :dataPlatform="platformStat('blockdit')" />
+            <Youtube :dataSum="platformSum('youtube')" :dataPlatform="platformStat('youtube')" />
+            <Instagram :dataSum="platformSum('instagram')" :dataPlatform="platformStat('instagram')" />
+            <Blockdit :dataSum="platformSum('blockdit')" :dataPlatform="platformStat('blockdit')" />
             <Tiktok :dataSum="platformSum('tiktok')" :dataPlatform="platformStat('tiktok')" />
-            <Threads :dataSum="platformSum('threads')"
-              :dataPlatform="platformStat('threads')" />
+            <Threads :dataSum="platformSum('threads')" :dataPlatform="platformStat('threads')" />
+            <Telegram :dataSum="platformSum('telegram')" :dataPlatform="platformStat('telegram')" />
+    
           </b-row>
         </b-container>
       </div>
@@ -87,6 +82,7 @@ import Blockdit from "@/components/dashboard/Blockdit.vue";
 import Tiktok from "@/components/dashboard/Tiktok.vue";
 import Summary from "@/components/dashboard/Summary.vue";
 import Threads from "../components/dashboard/Threads.vue";
+import Telegram from "../components/dashboard/Telegram.vue";
 // import VueElementLoading from "vue-element-loading";
 import { mapGetters } from "vuex";
 import { Printd } from "printd";
@@ -133,7 +129,8 @@ export default {
     PlatFormMain,
     Blockdit,
     Tiktok,
-    Threads
+    Threads,
+    Telegram
   },
   data: function () {
     return {
@@ -249,20 +246,20 @@ export default {
       }`
     };
   },
-    methods: {
+  methods: {
     platformSum(name) {
-        return this.dataSum &&
-            this.dataSum.summary &&
-            this.dataSum.summary.platform_data &&
-            this.dataSum.summary.platform_data[name]
+      return this.dataSum &&
+        this.dataSum.summary &&
+        this.dataSum.summary.platform_data &&
+        this.dataSum.summary.platform_data[name]
         ? this.dataSum.summary.platform_data[name]
-        : {};
+        : { comment: 0, post: 0, users: 0 };
     },
 
     platformStat(name) {
-        return this.dataPlatform && this.dataPlatform[name]
+      return this.dataPlatform && this.dataPlatform[name]
         ? this.dataPlatform[name]
-        : {};
+        : { comment: 0, post: 0, users: 0 };
     },
     apidash() {
       this.$store.commit("setLoadStatus", true);
@@ -273,7 +270,7 @@ export default {
       // sdate = "start_date=" + today + "T00:00:00";
       // edate = "&end_date=" + today + "T23:59:59";
       if (this.valueDate[0] != null) {
-       // console.log(this.valueDate[0], this.valueDate[1]);
+        // console.log(this.valueDate[0], this.valueDate[1]);
         this.start_date = this.valueDate[0] + "T00:00:00";
         this.end_date = this.valueDate[1] + "T23:59:59";
       } else {
@@ -322,7 +319,7 @@ export default {
       this.axios(config2)
         .then((response) => {
           this.dataPlatform = response.data
-         // this.$store.commit('setStat', response.data)
+          // this.$store.commit('setStat', response.data)
           // console.log('dataSum', this.dataPlatform);
           this.$store.commit("setLoadStatus", false);
         })

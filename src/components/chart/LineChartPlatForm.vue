@@ -220,6 +220,8 @@ export default {
             this.colorp = ["#396eb6"];
           } else if (this.getNamePlatform == "threads") {
             this.colorp = ["#e75aa1"];
+          } else if (this.getNamePlatform == "telegram") {
+               this.colorp = ["#3bced5"];
           } else {
             this.colorp = ["#1f0043"];
           }

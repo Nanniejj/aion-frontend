@@ -3,7 +3,7 @@ export default {
   state: {
     statplatform:  {
       facebook:{}, twitter:{}, pantip:{}, news:{}, youtube:{},
-      instagram:{}, blockdit:{}, tiktok:{}, threads:{}
+      instagram:{}, blockdit:{}, tiktok:{}, threads:{}, telegram:{},
     },
     sumstatplatform: { summary: {
         platform_data: {
@@ -16,6 +16,7 @@ export default {
           tiktok: {},
           threads: {},
           blockdit: {},
+          telegram:{}
         },
       }},
     datacraw: {
@@ -37,6 +38,7 @@ export default {
       preprocess_blockdit: 0,
       preprocess_tiktok: 0,
       preprocess_threads: 0,
+      preprocess_telegram: 0,   
     },
     sumdb: [],
     editData: [],
@@ -96,8 +98,15 @@ export default {
       users: 0,
       total_sentiments: { positive: 0, neutral: 0, negative: 0 },
     },
+    telegram: {
+      post: 0,
+      comment: 0,
+      users: 0,
+      total_sentiments: { positive: 0, neutral: 0, negative: 0 },
+    },
     timelineFacebook: [],
     timelineNews: [],
+    timelineTelegram: [],
     timelineTwitter: [],
     timelineInstagram: [],
     timelinePantip: [],
@@ -167,6 +176,14 @@ export default {
       users: 0,
     },
     sumThreads: {
+      comment: 0,
+      enddate: "",
+      post: 0,
+      source: 0,
+      startdate: "",
+      users: 0,
+    },
+    sumTelegram: {
       comment: 0,
       enddate: "",
       post: 0,
@@ -296,6 +313,15 @@ export default {
     getSumThreads: (state) => {
       return state.sumThreads;
     },
+    getTelegram: (state) => {
+      return state.telegram;
+    },
+    getSumTelegram: (state) => {
+      return state.sumTelegram;
+    },
+    getTimelineTelegram: (state) => {
+      return state.timelineTelegram;
+    },
     getSummary: (state) => {
       return state.summary;
     },
@@ -346,6 +372,9 @@ export default {
     setTimelineNews: (state, payload) => {
       state.timelineNews = payload;
     },
+    setTimelineTelegram: (state, payload) => {
+      state.timelineTelegram = payload;
+    },
     setFetchApiDashboard: (state, payload) => {
       state.facebook = payload.facebook;
       state.twitter = payload.twitter;
@@ -356,6 +385,7 @@ export default {
       state.blockdit = payload.blockdit;
       state.tiktok = payload.tiktok;
       state.threads = payload.threads;
+      state.telegram = payload.telegram;
     },
     setFetchApiSumDashboard: (state, payload) => {
       //state.sumdb=payload
@@ -416,12 +446,24 @@ export default {
           summary.post = summary.post + item.post;
           summary.comment = summary.comment + item.comment;
         }
+          if (item.source === "telegram") {
+          state.sumTelegram = item;
+          summary.users = summary.users + item.users;
+          summary.post = summary.post + item.post;
+          summary.comment = summary.comment + item.comment;
+        } 
       });
       state.summary = summary;
 
       for (const [key, value] of Object.entries(payload[1][0])) {
         state.datacraw[key] = value;
       }
+    },
+    setTelegram: (state, payload) => {
+      state.telegram = payload;
+    },
+    setSumTelegram: (state, payload) => {
+      state.sumTelegram = payload;
     },
     setBlockdit: (state, payload) => {
       state.blockdit = payload;

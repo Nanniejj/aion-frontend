@@ -102,7 +102,7 @@ export default {
         platformLabels() {
             return [
                 "facebook", "twitter", "instagram", "pantip",
-                "youtube", "news", "tiktok", "blockdit", "threads"
+                "youtube", "news", "tiktok", "blockdit", "threads", "telegram"
             ];
         },
         labelMap() {
@@ -115,7 +115,8 @@ export default {
                 news: "News",
                 tiktok: "TikTok",
                 blockdit: "Blockdit",
-                threads: "Threads"
+                threads: "Threads",
+                telegram: "Telegram"
             };
         },
         colorMap() {
@@ -130,7 +131,8 @@ export default {
                 news: "#f3b557",
                 tiktok: "#5c4d67",
                 blockdit: "#1F76BD",
-                threads: "#e75aa1"
+                threads: "#e75aa1",
+                telegram: "#0088cc"
             };
         }
     }

@@ -194,17 +194,17 @@ export default {
       this.$store.commit("setArrDate", this.valueDate);
 
       //news list
-      this.axios
-        .get(
-          "https://api2.cognizata.com/api/v2/userposts/getNews?source=news&start=" +
-          this.start_date +
-          "&end=" +
-          this.end_date +
-          "&domain=" +
-          this.getDomainArr
-        )
-        .then((response) => this.$store.commit("setNewslt", response.data[0]));
-      // console.log("acc", this.getNewslt);
+      // this.axios
+      //   .get(
+      //     "https://api2.cognizata.com/api/v2/userposts/getNews?source=news&start=" +
+      //     this.start_date +
+      //     "&end=" +
+      //     this.end_date +
+      //     "&domain=" +
+      //     this.getDomainArr
+      //   )
+      //   .then((response) => this.$store.commit("setNewslt", response.data[0]));
+
       let objword, objtop;
       if (this.selected) {
         objtop = {

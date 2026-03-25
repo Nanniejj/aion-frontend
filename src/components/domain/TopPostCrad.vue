@@ -45,7 +45,9 @@
                     <img v-if="postDomain.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
                     <img v-if="postDomain.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
                     <img v-if="postDomain.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
-                    <img v-if="postDomain.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                   <img v-if="postDomain.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                    <img v-if="postDomain.source == 'telegram'" src="@/assets/Telegram.png" class="social-img" />
+                   
                   </span>
                 </b-col>
                 <b-col class="align-start w-auto" sm="8" lg="auto">

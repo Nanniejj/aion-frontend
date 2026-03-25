@@ -55,6 +55,11 @@
             src="@/assets/ctd.png"
             class="imgstt"
           />
+           <img
+            v-if="getNamePlatform == 'telegram'"
+            src="@/assets/ctg.png"
+            class="imgstt"
+          />
         </b-row>
         <b-row class="m-2" v-if="getStatPlatform2">
           <b-col v-if="getNamePlatform != 'news'" >
@@ -410,13 +415,13 @@ getArrDate(){
     },
   },
   mounted() {
-    if (this.getNamePlatform=="news") {
-       this.axios
-      .get(
-        "https://api2.cognizata.com/api/v2/userposts/getNews?source=news&start="+this.start_date+"&end="+  this.end_date+"&domain="+this.getDomainArr
-      )
-      .then((response) => (this.$store.commit('setNewslt',response.data[0])  ));
-    }
+    // if (this.getNamePlatform=="news") {
+    //    this.axios
+    //   .get(
+    //     "https://api2.cognizata.com/api/v2/userposts/getNews?source=news&start="+this.start_date+"&end="+  this.end_date+"&domain="+this.getDomainArr
+    //   )
+    //   .then((response) => (this.$store.commit('setNewslt',response.data[0])  ));
+    // }
    
   },
   async created() {

@@ -223,6 +223,22 @@
                   </b-col>
                 </b-row>
               </b-col>
+               <!-- Telegram -->
+              <b-col>
+                <b-row>
+                  <b-col cols="12">
+                    <div class="text-center">
+                      <div class="h5">
+                        <img src="@/assets/ctg.png" class="img-issue" />
+                      </div>
+                      <div class="h6">
+                        {{ platform.telegram | numFormat }}
+                        <span style="font-size: small;letter-spacing: 1.5px;">posts</span>
+                      </div>
+                    </div>
+                  </b-col>
+                </b-row>
+              </b-col>
             </b-row>
 
           </b-col>
@@ -1107,22 +1123,23 @@ export default {
       selected: [1, 0, -1],
       selectedSort: "",
       select_social:
-        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+        "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram",
       itemSocial: [
         {
           text: "All Platform",
           value:
-            "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads",
+            "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram",
         },
         { text: "facebook", value: "facebook" },
         { text: "X", value: "twitter" },
         { text: "board", value: "pantip" },
-        // { text: "news", value: "news" },
+       { text: "news", value: "news" },
         { text: "youtube", value: "youtube" },
         { text: "instagram", value: "instagram" },
         { text: "blockdit", value: "blockdit" },
         { text: "tiktok", value: "tiktok" },
         { text: "threads", value: "threads" },
+        { text: "telegram", value: "telegram" },
       ],
 
       options: [

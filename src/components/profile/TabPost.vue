@@ -89,6 +89,8 @@
                 <img v-if="profilePost.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
                 <img v-if="profilePost.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
                 <img v-if="profilePost.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                <img v-if="profilePost.source == 'telegram'" src="@/assets/Telegram.png" class="social-img" />
+  
               </span>
             </b-col>
             <b-col class="align-start w-auto" sm="8" lg="auto">

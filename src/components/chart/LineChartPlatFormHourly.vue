@@ -19,17 +19,17 @@ export default {
   },
   watch: {
     getArrDate: function () {
-    //   const e = moment(new Date()).format('YYYY-MM-DD'); // ✅ กันปัญหา timezone
-    // //   if (
-    // //     this.getSdateDm.slice(0, 10) == e &&
-    // //     this.getEdateDm.slice(0, 10) == e
-    // //   ) {
-    // //     this.startChart();
-    // //   } else {
-    // //     this.updateChart();
-    //       //   }
-        this.startChart();
-    //   this.val = 0;
+      //   const e = moment(new Date()).format('YYYY-MM-DD'); // ✅ กันปัญหา timezone
+      // //   if (
+      // //     this.getSdateDm.slice(0, 10) == e &&
+      // //     this.getEdateDm.slice(0, 10) == e
+      // //   ) {
+      // //     this.startChart();
+      // //   } else {
+      // //     this.updateChart();
+      //       //   }
+      this.startChart();
+      //   this.val = 0;
     },
   },
   data() {
@@ -157,127 +157,129 @@ export default {
     },
 
     async startChart() {
-        const currentTime = new Date();
-        currentTime.setDate(currentTime.getDate() - 14);
+      const currentTime = new Date();
+      currentTime.setDate(currentTime.getDate() - 14);
 
-        let sdate = "", edate = "";
-        if (this.getSdateDm || this.getEdateDm) {
-            sdate = "&start_date=" + this.getSdateDm;
-            edate = "&end_date=" + this.getEdateDm;
+      let sdate = "", edate = "";
+      if (this.getSdateDm || this.getEdateDm) {
+        sdate = "&start_date=" + this.getSdateDm;
+        edate = "&end_date=" + this.getEdateDm;
+      }
+
+      try {
+        const config = {
+          method: "get",
+          url:
+            "https://api2.cognizata.com/api/v2/platform/getChartDataPlatformHourly?source=" +
+            this.getNamePlatform +
+            sdate +
+            edate,
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        };
+
+        // console.log("config === ", config);
+
+        const response = await this.axios(config);
+        const data = response.data.data;
+
+        // console.log("hourly response === ", data);
+
+        // ⏱ เวลาทั้งหมด เช่น ["00:00", "01:00", ...]
+        const timeList = data.map(item => item.time);
+
+        // 📊 ค่าจำนวนโพสต์ เช่น [694, 716, ...]
+        const countList = data.map(item => item.count);
+        // console.log("countList ==== ", countList);
+
+        // 🕒 แสดงช่วงเวลา
+        this.range = "ข้อมูลรายชั่วโมง";
+
+        // 📈 Series ของ ApexChart
+        this.series = [
+          { name: "จำนวนโพสต์", data: countList },
+        ];
+        // console.log("series ==== ", this.series);
+
+        // 🎨 กำหนดสี platform
+        if (this.getNamePlatform == "twitter") {
+          this.colorp = ["#919495"];
+        } else if (this.getNamePlatform == "facebook") {
+          this.colorp = ["#4c77bb"];
+        } else if (this.getNamePlatform == "pantip") {
+          this.colorp = ["#532d84"];
+        } else if (this.getNamePlatform == "youtube") {
+          this.colorp = ["#e24246"];
+        } else if (this.getNamePlatform == "news") {
+          this.colorp = ["#fdd072"];
+        } else if (this.getNamePlatform == "instagram") {
+          this.colorp = ["#ff9773"];
+        } else if (this.getNamePlatform == "blockdit") {
+          this.colorp = ["#396eb6"];
+        } else if (this.getNamePlatform == "threads") {
+          this.colorp = ["#e75aa1"];
+        } else if (this.getNamePlatform == "telegram") {
+          this.colorp = ["#3bced5"];
+        } else {
+          this.colorp = ["#1f0043"];
         }
 
-        try {
-            const config = {
-            method: "get",
-            url:
-                "https://api2.cognizata.com/api/v2/platform/getChartDataPlatformHourly?source=" +
-                this.getNamePlatform +
-                sdate +
-                edate,
-            headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-                "Content-Type": "application/json",
+        // ⚙ ตั้งค่า Chart
+        this.chartOptions = {
+          yaxis: {
+            labels: {
+              formatter: (value) => value.toLocaleString(),
             },
-            };
+          },
+          chart: {
+            fontFamily: "Prompt, FontAwesome, sans-serif",
+            type: "line",
+            zoom: { enabled: true },
+            dropShadow: {
+              enabled: true,
+              color: "#000",
+              top: 18,
+              left: 7,
+              blur: 10,
+              opacity: 0.2,
+            },
+          },
+          colors: this.colorp,
+          dataLabels: {
+            enabled: true,
+            style: { colors: ["#4c412b"] },
+            formatter: (value) => value.toLocaleString(),
+          },
+          stroke: { curve: "smooth" },
+          title: {
+            text: "จำนวนโพสต์รายชั่วโมง วันที่ " + this.formatDateTH(this.getArrDate[0]), // ✅ ไทยแล้ว
+            align: "left",
+            fontFamily: "Prompt",
+          },
+          markers: { size: 1 },
+          grid: {
+            row: { colors: ["#ffffff", "transparent"], opacity: 0.5 },
+            padding: { left: 30 },
+          },
+          xaxis: {
+            categories: timeList, // ⬅ ใช้เวลาจาก API โดยตรง
+          },
+        };
 
-            // console.log("config === ", config);
-
-            const response = await this.axios(config);
-            const data = response.data.data;
-
-            // console.log("hourly response === ", data);
-
-            // ⏱ เวลาทั้งหมด เช่น ["00:00", "01:00", ...]
-            const timeList = data.map(item => item.time);
-
-            // 📊 ค่าจำนวนโพสต์ เช่น [694, 716, ...]
-            const countList = data.map(item => item.count);
-            // console.log("countList ==== ", countList);
-
-            // 🕒 แสดงช่วงเวลา
-            this.range = "ข้อมูลรายชั่วโมง";
-
-            // 📈 Series ของ ApexChart
-            this.series = [
-            { name: "จำนวนโพสต์", data: countList },
-            ];
-            // console.log("series ==== ", this.series);
-            
-            // 🎨 กำหนดสี platform
-            if (this.getNamePlatform == "twitter") {
-            this.colorp = ["#919495"];
-            } else if (this.getNamePlatform == "facebook") {
-            this.colorp = ["#4c77bb"];
-            } else if (this.getNamePlatform == "pantip") {
-            this.colorp = ["#532d84"];
-            } else if (this.getNamePlatform == "youtube") {
-            this.colorp = ["#e24246"];
-            } else if (this.getNamePlatform == "news") {
-            this.colorp = ["#fdd072"];
-            } else if (this.getNamePlatform == "instagram") {
-            this.colorp = ["#ff9773"];
-            } else if (this.getNamePlatform == "blockdit") {
-            this.colorp = ["#396eb6"];
-            } else if (this.getNamePlatform == "threads") {
-            this.colorp = ["#e75aa1"];
-            } else {
-            this.colorp = ["#1f0043"];
-            }
-
-            // ⚙ ตั้งค่า Chart
-            this.chartOptions = {
-                yaxis: {
-                    labels: {
-                    formatter: (value) => value.toLocaleString(),
-                    },
-                },
-                chart: {
-                    fontFamily: "Prompt, FontAwesome, sans-serif",
-                    type: "line",
-                    zoom: { enabled: true },
-                    dropShadow: {
-                    enabled: true,
-                    color: "#000",
-                    top: 18,
-                    left: 7,
-                    blur: 10,
-                    opacity: 0.2,
-                    },
-                },
-                colors: this.colorp,
-                dataLabels: {
-                    enabled: true,
-                    style: { colors: ["#4c412b"] },
-                    formatter: (value) => value.toLocaleString(),
-                },
-                stroke: { curve: "smooth" },
-                title: {
-                    text: "จำนวนโพสต์รายชั่วโมง วันที่ "+ this.formatDateTH(this.getArrDate[0]), // ✅ ไทยแล้ว
-                    align: "left",
-                    fontFamily: "Prompt",
-                },
-                markers: { size: 1 },
-                grid: {
-                    row: { colors: ["#ffffff", "transparent"], opacity: 0.5 },
-                    padding: { left: 30 },
-                },
-                xaxis: {
-                    categories: timeList, // ⬅ ใช้เวลาจาก API โดยตรง
-                },
-            };
-
-        } catch (error) {
-            console.error("Error fetching chart data:", error);
-            // this.$toast.error("ไม่สามารถดึงข้อมูลกราฟได้ในขณะนี้ กรุณาลองใหม่ภายหลัง");
-        }
+      } catch (error) {
+        console.error("Error fetching chart data:", error);
+        // this.$toast.error("ไม่สามารถดึงข้อมูลกราฟได้ในขณะนี้ กรุณาลองใหม่ภายหลัง");
+      }
     }
 
   },
-//   created: async function () {
-//     this.startChart();
-//  },
-    mounted() {
-        this.startChart();  
-    }   
+  //   created: async function () {
+  //     this.startChart();
+  //  },
+  mounted() {
+    this.startChart();
+  }
 };
 </script>

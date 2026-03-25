@@ -1,21 +1,15 @@
 <template>
   <div id="chart" class="mt-3">
+    <!-- {{ series }}{{ typeChart }}{{ label }} -->
     <apexchart id="chart-domain" type="line" height="400" :options="chartOptions" :series="series"></apexchart>
-    <!-- <apexchart
-      v-else
-      id="chart-domain"
-      type="line"
-      height="400"
-      :options="chartOptions2"
-      :series="series"
-    ></apexchart> -->
   </div>
 </template>
+
 <script>
 import VueApexCharts from "vue-apexcharts";
 import { mapGetters } from "vuex";
 import moment from "moment";
-import 'moment/locale/th'; // เพิ่มบรรทัดนี้ให้ moment ใช้ภาษาไทย
+import 'moment/locale/th';
 
 export default {
   components: { apexchart: VueApexCharts },
@@ -30,7 +24,6 @@ export default {
     getArrDate(val) {
       this.apiFilterChart();
       this.valdate = 0;
-      // แปลงช่วงวันที่เป็นไทย
       const startTH = this.formatDateTH(val[0]);
       const endTH = this.formatDateTH(val[1]);
       this.range = `${startTH} - ${endTH}`;
@@ -38,17 +31,35 @@ export default {
     typeChart() { this.apiFilterChart(); },
     label() { this.apiFilterChart(); },
   },
-  data() { return { valdate: 0, sentiment: [], source: [], series: [], chartOptions2: { chart: { type: "line", fontFamily: "Prompt, FontAwesome, sans-serif", }, colors: [], dataLabels: { enabled: true, }, series: [], title: { text: "จำนวนโพสต์ในแต่ละวัน", }, noData: { text: "Loading...", }, stroke: { curve: "smooth", width: 3, }, markers: { size: 5, }, }, chartOptions: { chart: { type: "line", fontFamily: "Prompt, FontAwesome, sans-serif", }, colors: [], dataLabels: { enabled: true, }, series: [], title: { text: "จำนวนโพสต์ในแต่ละวัน", }, noData: { text: "Loading...", }, stroke: { curve: "smooth", width: 3, }, markers: { size: 5, }, }, }; },
+  data() {
+    return {
+      valdate: 0,
+      range: "",
+      sentiment: [],
+      source: [],
+      series: [],
+      chartOptions: {
+        chart: {
+          type: "line",
+          fontFamily: "Prompt, FontAwesome, sans-serif",
+        },
+        colors: [],
+        dataLabels: { enabled: true },
+        series: [],
+        title: { text: "จำนวนโพสต์ในแต่ละวัน" },
+        noData: { text: "Loading..." },
+        stroke: { curve: "smooth", width: 3 },
+        markers: { size: 5 },
+      },
+    };
+  },
   methods: {
-    // ✅ ฟังก์ชันช่วย: แปลงวันที่เป็นไทย “D MMM YY” (เช่น 9 ก.ย. 68)
-      formatDateTH(dateStr) {
+    formatDateTH(dateStr) {
       const m = moment(dateStr).locale('th');
-      const buddhistYear = m.year() + 543;       // ปี พ.ศ. เต็ม เช่น 2568
-      const buddhistYearShort = buddhistYear % 100; // 68
-
+      const buddhistYear = m.year() + 543;
+      const buddhistYearShort = buddhistYear % 100;
       return m.format('D MMM ') + buddhistYearShort;
     },
-
 
     formatCash(n) {
       if (n < 1e3) return n;
@@ -58,29 +69,31 @@ export default {
       if (n >= 1e12) return +(n / 1e12).toFixed(1) + "T";
     },
 
+    getYText() {
+      if (this.label == "posts") return "จำนวนโพสต์";
+      if (this.label == "engages") return "จำนวน engagement";
+      if (this.label == "comments") return "จำนวน comments";
+      return "จำนวน messages";
+    },
+
     // ====== DOMAIN ======
     domainFilter(dataAll) {
       let data = dataAll;
-
-      // วันที่ดิบ และวันที่รูปแบบไทย
       let datelist = data.map((item) => item.date);
       let datelistTH = datelist.map(d => this.formatDateTH(d));
-
       let countlist = data.map((item) => item.count);
       let top3 = data.map((item) => item.TopHashtags);
 
-      // ช่วงวันที่แบบไทย
       this.range = `${datelistTH[0]} - ${datelistTH[datelistTH.length - 1]}`;
-
       this.series = [{ name: "จำนวนโพสต์", data: countlist }];
 
-      let ytext = "จำนวนโพสต์";
-      if (this.label == "posts") ytext = "จำนวนโพสต์";
-      else if (this.label == "engages") ytext = "จำนวน engagement";
-      else if (this.label == "comments") ytext = "จำนวน comments";
-      else ytext = "จำนวน messages";
+      const ytext = this.getYText();
 
       this.chartOptions = {
+        chart: {
+          type: "line",
+          fontFamily: "Prompt, FontAwesome, sans-serif",
+        },
         yaxis: {
           labels: { formatter: (value) => Number(value).toLocaleString() },
         },
@@ -90,7 +103,6 @@ export default {
           fontFamily: "Prompt",
         },
         xaxis: {
-          // ✅ ใช้วันที่ไทยบนแกน X
           categories: datelistTH,
         },
         tooltip: {
@@ -106,8 +118,6 @@ export default {
             } else {
               f = " ไม่พบ";
             }
-
-            // w.globals.categoryLabels จะเป็นวันที่ไทยอยู่แล้ว
             return (
               '<div class="arrow_box m-2 p-1">' +
               "<div>" +
@@ -136,6 +146,7 @@ export default {
           formatter: (value) => this.formatCash(value),
         },
         stroke: { curve: "smooth" },
+        markers: { size: 5 },
       };
     },
 
@@ -146,18 +157,9 @@ export default {
 
       this.series = [...data].map((x) => ({ name: x.source, data: x.y }));
 
-      let ytext = "จำนวนโพสต์";
-      if (this.label == "posts") ytext = "จำนวนโพสต์";
-      else if (this.label == "engages") ytext = "จำนวน engagement";
-      else if (this.label == "comments") ytext = "จำนวน comments";
-      else ytext = "จำนวน messages";
+      const ytext = this.getYText();
 
       this.chartOptions = {
-        title: {
-          text: `${ytext} วันที่ ${this.range}`,
-          align: "left",
-          fontFamily: "Prompt",
-        },
         chart: {
           fontFamily: "Prompt, FontAwesome, sans-serif",
           type: "line",
@@ -166,20 +168,31 @@ export default {
             enabled: true, color: "#000", top: 18, left: 7, blur: 10, opacity: 0.2,
           },
         },
-        colors: ["#e75aa1", "#eb363a", "#8050be", "#438afe", "#e18457", "#543b66", "#336db6", "#919495", "#ef9a1a"],
+        title: {
+          text: `${ytext} วันที่ ${this.range}`,
+          align: "left",
+          fontFamily: "Prompt",
+        },
+        colors: ["#e75aa1", "#eb363a", "#8050be", "#438afe", "#e18457", "#543b66", "#336db6", "#919495", "#ef9a1a", "#2DA5E1"],
         dataLabels: { enabled: false },
         grid: {
           row: { colors: ["#ffffff", "transparent"], opacity: 0.5 },
           padding: { left: 30 },
         },
         xaxis: {
-          // ✅ ใช้วันที่ไทยบนแกน X
           categories: datearrTH,
         },
         tooltip: {
-          enabled: true, shared: true, followCursor: false, intersect: false, inverseOrder: false,
+          custom: undefined, // ✅ reset custom tooltip จาก domainFilter
+          enabled: true,
+          shared: true,
+          followCursor: false,
+          intersect: false,
+          inverseOrder: false,
           y: { formatter: (value) => Number(value).toLocaleString() },
         },
+        stroke: { curve: "smooth", width: 3 },
+        markers: { size: 5 },
       };
     },
 
@@ -199,17 +212,9 @@ export default {
       let datearr = data[0].x || [];
       let datearrTH = datearr.map(d => this.formatDateTH(d));
 
-      let ytext = this.label == "posts" ? "จำนวนโพสต์" : this.label == "comments" ? "จำนวน comments" : this.label == "messages" ? "จำนวน messages" : "จำนวน engagement";
+      const ytext = this.getYText();
 
       this.chartOptions = {
-        title: {
-          text: `${ytext} วันที่ ${this.range}`,
-          align: "left",
-          fontFamily: "Prompt",
-        },
-        yaxis: {
-          labels: { formatter: (value) => Number(value).toLocaleString() },
-        },
         chart: {
           fontFamily: "Prompt, FontAwesome, sans-serif",
           type: "line",
@@ -217,6 +222,14 @@ export default {
           dropShadow: {
             enabled: true, color: "#000", top: 18, left: 7, blur: 10, opacity: 0.2,
           },
+        },
+        title: {
+          text: `${ytext} วันที่ ${this.range}`,
+          align: "left",
+          fontFamily: "Prompt",
+        },
+        yaxis: {
+          labels: { formatter: (value) => Number(value).toLocaleString() },
         },
         colors: this.series.map((s) => sentimentColors[s.name]),
         dataLabels: {
@@ -228,13 +241,19 @@ export default {
           padding: { left: 30 },
         },
         xaxis: {
-          // ✅ ใช้วันที่ไทยบนแกน X
           categories: datearrTH,
         },
         tooltip: {
-          enabled: true, shared: true, followCursor: false, intersect: false, inverseOrder: false,
+          custom: undefined, // ✅ reset custom tooltip จาก domainFilter
+          enabled: true,
+          shared: true,
+          followCursor: false,
+          intersect: false,
+          inverseOrder: false,
           y: { formatter: (value) => Number(value).toLocaleString() },
         },
+        stroke: { curve: "smooth", width: 3 },
+        markers: { size: 5 },
       };
     },
 
@@ -266,15 +285,15 @@ export default {
         .then((response) => {
           this.sentiment = response.data[0].sentiment;
 
-          const order = ["threads", "youtube", "pantip", "blockdit", "instagram", "tiktok", "facebook", "twitter", "news"];
+          const order = ["threads", "youtube", "pantip", "blockdit", "instagram", "tiktok", "facebook", "twitter", "news", "telegram"];
           let rel2 = response.data[0].source.result2.sort(
             (a, b) => order.indexOf(a.source) - order.indexOf(b.source)
           );
           this.source = rel2;
 
           if (this.typeChart == "platform") this.sourceFilter(rel2);
-          if (this.typeChart == "sentiment") this.sentimentFilter(response.data[0].sentiment);
-          if (this.typeChart == "domain" || !this.typeChart) this.domainFilter(response.data[0].data);
+          else if (this.typeChart == "sentiment") this.sentimentFilter(response.data[0].sentiment);
+          else this.domainFilter(response.data[0].data);
         })
         .catch((error) => { console.log(error); });
     },

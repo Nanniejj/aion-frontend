@@ -14,7 +14,7 @@
     <b-container>
       <SocialSelect :tabsocial="'post'" />
       <b-row cols="12" >
-        <b-col sm>
+        <b-col cols="">
           <b-form-input
             id="filter-input"
             v-model="keyword"
@@ -22,7 +22,7 @@
             placeholder="ค้นหา keyword"
           ></b-form-input>
         </b-col>
-        <b-col cols="auto" class="mt-2 mt-lg-0 mt-md-0">
+        <b-col cols="auto" class="mt-lg-0 mt-md-0">
           <b-button
             @click="submitform"
             id="btn-submit"
@@ -33,12 +33,12 @@
           </b-button>
         </b-col>
       </b-row>
-      <div class="mt-3 mb-3 box-domain">
+      <div class="mt-2 mb-3 box-domain">
         <b-row v-if="getClickDomain" class="mb-1">
-          <b-col md="8" lg="8" class="m-auto my-1">
+          <b-col cols="" md="8" lg="8" class="m-auto my-1">
             <h5 class="bold text-lg-left text-md-left">{{ getClickDomain }}</h5>
           </b-col>
-          <b-col md="4" lg="4" class="text-lg-right my-1">
+          <b-col cols="" md="4" lg="4" class="text-lg-right my-1">
             <span id="post-comment">
               <i class="far fa-paper-plane" />
 
@@ -123,10 +123,10 @@ export default {
 .box-domain {
   overflow-x: hidden;
   height: 100vh;
-  width: 95%;
+  /* width: 95%; */
   margin: auto;
   overflow-y: auto;
-  padding: 20px 20px;
+  padding: 0px 10px;
 }
 @media (max-width: 900px) {
   .container {

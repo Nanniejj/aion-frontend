@@ -473,6 +473,15 @@ const routes = [
       import(/* webpackChunkName: "login" */ "../views/UserLineList.vue")
   },
   {
+    path: "/telegramgroup",
+    name: "TelegramGroup",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/TelegramGroup.vue")
+  },
+  {
     path: "/hottopicspost",
     name: "SpotSocialPost",
     component: () =>

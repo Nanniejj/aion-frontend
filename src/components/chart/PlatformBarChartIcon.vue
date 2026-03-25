@@ -29,24 +29,25 @@ export default {
         tiktok:   require("@/assets/tt.png"),
         blockdit: require("@/assets/Block.png"),
         threads:  require("@/assets/ctd.png"),
+        telegram: require("@/assets/ctg.png"),
       },
       chartOptions: null, // จะเซ็ตใน created()
     };
   },
   computed: {
     platformLabels() {
-      return ["facebook","twitter","instagram","pantip","youtube","news","tiktok","blockdit","threads"];
+      return ["facebook","twitter","instagram","pantip","youtube","news","tiktok","blockdit","threads","telegram"];
     },
     labelMap() {
       return {
         facebook:"Facebook", twitter:"X", instagram:"Instagram", pantip:"Pantip",
-        youtube:"YouTube", news:"News", tiktok:"TikTok", blockdit:"Blockdit", threads:"Threads"
+        youtube:"YouTube", news:"News", tiktok:"TikTok", blockdit:"Blockdit", threads:"Threads", telegram:"Telegram"
       };
     },
     colorMap() {
       return {
         facebook:"#4c77bb", twitter:"#727373", instagram:"#dc7848", pantip:"#532d84",
-        youtube:"#e24246", news:"#f3b557", tiktok:"#5c4d67", blockdit:"#1F76BD", threads:"#e75aa1"
+        youtube:"#e24246", news:"#f3b557", tiktok:"#5c4d67", blockdit:"#1F76BD", threads:"#e75aa1", telegram:"#0088cc"
       };
     },
     totalPosts() {
