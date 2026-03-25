@@ -1612,7 +1612,7 @@ export default {
        
         }
       } else {
-        console.log("log2");
+        // console.log("log2");
         word.push(...this.getObName.split());
       }
       return word;
@@ -1623,7 +1623,7 @@ export default {
       this.currentPage = 1;
     },
     onClick(i, data) {
-      console.log(data);
+    //   console.log(data);
       this.index = i;
       this.dataPhoto = data;
     },
@@ -1640,7 +1640,7 @@ export default {
       this.end_date = moment(this.valueDate[1])
         .format()
         .slice(0, 10);
-      console.log(this.start_date);
+    //   console.log(this.start_date);
       this.$store.dispatch("fetchSentimentDetailRanking", {
         start_date: this.start_date,
         end_date: this.end_date,
@@ -1682,27 +1682,27 @@ export default {
       }
       this.setPage(pageNumber);
       this.gotopage = "";
-      console.log(pageNumber);
+    //   console.log(pageNumber);
     },
     setPage: function(pageNumber) {
       this.currentPage = pageNumber;
-      console.log(this.currentPage);
-      console.log("page num:",typeof(pageNumber));
+    //   console.log(this.currentPage);
+    //   console.log("page num:",typeof(pageNumber));
       //Call new data from api here
       if (this.currentPage > 1) {
         this.offset = 10 * (this.currentPage - 1);
-        console.log("offset : ", this.offset);
+        // console.log("offset : ", this.offset);
       } else {
         this.offset = 0;
       }
       if (this.getObName != "") {
         this.pageApi(this.sort, 0);
       } else {
-        console.log("setPage else");
+        // console.log("setPage else");
         this.pageApi(this.sort, this.offset);
         
       }
-      console.log("#box-domain");
+    //   console.log("#box-domain");
       //var element = document.querySelector("#tab-all");
       //element.scrollIntoView({behavior: "smooth"});
       //this.$store.dispatch("fetchSentimentPost",{type:this.getDateChoice,source:this.social,sentiment:this.status,sort_by:"",offset:this.offset});
@@ -1767,7 +1767,7 @@ export default {
           };
           this.axios(config)
             .then(function(response) {
-              console.log(response);
+            //   console.log(response);
               if (_this.selected == "") {
                 if (v == 1) {
                   _this.getDetailPostRanking[k].sentiment = 1;
@@ -1782,13 +1782,13 @@ export default {
                   ] = -1;
                 }
               } else {
-                console.log("in 1");
+                // console.log("in 1");
                 if (v == _this.selected) {
-                  console.log("in 11");
+                //   console.log("in 11");
                   _this.getDetailPostRanking[k].sentiment = v;
                   _this.getDetailPostRanking[k].user_sentiment[_this.objId] = v;
                 } else {
-                  console.log("in 12");
+                //   console.log("in 12");
                   _this.getDetailPostRanking.splice(k, 1);
                 }
               }
