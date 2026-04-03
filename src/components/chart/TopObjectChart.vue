@@ -272,7 +272,7 @@ export default {
         const platformColorMap = {
           facebook: "#4c77bb", x: "#727373", instagram: "#dc7848",
           pantip: "#9959eb", youtube: "#e24246", news: "#f3b557",
-          tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1"
+          tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1", telegram: "#2ca5e0"
         };
         const colors = this.seriesSubdomainPlatform.map(s => platformColorMap[s.name] || "#fff");
         return {
@@ -376,7 +376,7 @@ export default {
         const platformColorMap = {
           facebook: "#4c77bb", x: "#727373", instagram: "#dc7848",
           pantip: "#9959eb", youtube: "#e24246", news: "#f3b557",
-          tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1"
+          tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1", telegram: "#2ca5e0"
         };
 
         const platformKeys = new Set();
@@ -460,7 +460,8 @@ export default {
             news: "#f3b557",
             tiktok: "#5c4d67",
             blockdit: "#1F76BD",
-            threads: "#e75aa1"
+            threads: "#e75aa1",
+            telegram: "#2ca5e0"
           };
 
           const rawPlatforms = new Set();

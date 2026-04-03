@@ -392,7 +392,7 @@ export default {
                 const platformColorMap = {
                     facebook: "#4c77bb", x: "#727373", instagram: "#dc7848",
                     pantip: "#9959eb", youtube: "#e24246", news: "#f3b557",
-                    tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1"
+                    tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1", telegram: "#2ca5e0"
                 };
                 const colors = this.seriesSubdomainPlatform.map(s => platformColorMap[s.name] || "#fff");
                 return {
@@ -469,7 +469,8 @@ export default {
                 news: "#f3b557",
                 tiktok: "#5c4d67",
                 blockdit: "#1F76BD",
-                threads: "#e75aa1"
+                threads: "#e75aa1",
+                telegram: "#2ca5e0"
             }
 
             const isStacked = this.labelType !== "posts"
@@ -818,7 +819,8 @@ export default {
                 news: "#f3b557",
                 tiktok: "#5c4d67",
                 blockdit: "#1F76BD",
-                threads: "#e75aa1"
+                threads: "#e75aa1",
+                telegram: "#2ca5e0"
             }
 
             const platformKeys = new Set()
@@ -884,7 +886,7 @@ export default {
                     noData: { text: "Loading..." }
                 };
                 this.domainRawData = [];
-                let social = this.source == 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads' ? null : this.source;
+                let social = this.source == 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram' ? null : this.source;
                 const res = await axios.get(
                     `https://api2.cognizata.com/api/v2/ranking/getDomainCount`,
                     {
@@ -966,7 +968,7 @@ export default {
                 const platformColorMap = {
                     facebook: "#4c77bb", x: "#727373", instagram: "#dc7848",
                     pantip: "#9959eb", youtube: "#e24246", news: "#f3b557",
-                    tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1"
+                    tiktok: "#5c4d67", blockdit: "#1F76BD", threads: "#e75aa1", telegram: "#2ca5e0"
                 };
 
                 const platformKeys = new Set();
@@ -1008,7 +1010,7 @@ export default {
                     noData: { text: "Loading..." }
                 };
                 this.seriesObject = [];
-                let social = this.source == 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads' ? null : this.source;
+                let social = this.source == 'news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram' ? null : this.source;
                 const params = {
                     domain_id: this.domainId,
                     limit: 10,

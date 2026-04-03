@@ -415,7 +415,7 @@ export default {
   height: 30px;
   border-radius: 999px !important;
   border: 1px solid #d0d0d0 !important;
-  background: rgba(255, 255, 255, 0.96) !important;
+  background: rgba(255, 255, 255, 0.664) !important;
   color: #444 !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
   min-width: 30px;
@@ -430,9 +430,9 @@ export default {
 }
 
 @media (max-width: 1023px) {
-  .arrow-btn {
+  /* .arrow-btn {
     display: none !important;
-  }
+  } */
 
   .social-tab-bar {
     padding: 6px;

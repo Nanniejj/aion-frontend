@@ -280,7 +280,8 @@ export default {
                 { value: 'instagram', text: 'Instagram' },
                 { value: 'blockdit', text: 'Blockdit' },
                 { value: 'tiktok', text: 'Tiktok' },
-                { value: 'threads', text: 'Threads' }
+                { value: 'threads', text: 'Threads' },
+                { value: 'telegram', text: 'Telegram' },
             ],
             iconMap: {
                 facebook: 'Facebook.png',
