@@ -730,7 +730,6 @@ export default {
                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
             } else {
                 this.selectDate(); // Call your existing method
-                // this.apiUserPosts();
             }
         },
         selectDate() {
@@ -751,7 +750,7 @@ export default {
         },
 
         apiUserPosts() {
-            console.log('apiUserPosts called');
+            console.log('apiUserPosts called in tab post');
 
             const isHashtagList = this.$route.query.type === 'hashtaglist';
             this.getLoadPostTab = true;
@@ -817,10 +816,11 @@ export default {
             this.valueDate = [this.start, this.end];
             this.selectDate();
         }
-        this.apiUserPosts();
+        // this.apiUserPosts();
     },
     watch: {
         source: {
+            immediate: true,
             handler(newVal, oldVal) {
                 const isTargetList = this.$route.query.type === 'targetlist'
 
@@ -840,20 +840,8 @@ export default {
             },
             // immediate: true // หรือใช้เงื่อนไขเหมือนด้านบนก็ได้
         },
-        // startAndEnd: {
-        //     handler([newStart, newEnd], [oldStart, oldEnd]) {
-        //         // if (newStart !== oldStart && newEnd !== oldEnd) {
-        //         //     console.log("watch startAndEnd old tab post : ", oldStart, oldEnd);
-        //         //     console.log("watch startAndEnd new tab post : ", newStart, newEnd);
-        //         //     // this.checkDateRange();
-        //         // }
-        //         this.valueDate = [newStart, newEnd];
-        //         this.apiUserPosts();
-        //     },
-        //     immediate: true
-        // },
         startAndEnd: {
-            immediate: true,
+            immediate: false, // ไม่ต้องเรียก handler ตอนเริ่มต้น
             handler(value, oldValue) {
                 // ถ้า value เป็น undefined ให้ return ออก
                 if (!value || !Array.isArray(value)) return;

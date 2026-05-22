@@ -1099,12 +1099,7 @@ export default {
                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
             } else {
                 this.onSearch();
-                // this.offset = 0;
-                // this.timelinePosts = [];
-                // this.apiTimelineUserPosts();
                 
-                
-                // this.selectDate(); // Call your existing method
             }
         },
         setHashtagSource(source) {
@@ -1658,7 +1653,6 @@ export default {
             });
         },
         async apiTimelineUserPosts() {
-            // console.log('apiTimelineUserPosts called');
             const isHashtagList = this.$route.query.type === 'hashtaglist';
             const targetApi = 'https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/';
             const hashtagApi = 'https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain/';
@@ -1666,8 +1660,6 @@ export default {
             const config = {
                 method: "get",
                 url: isHashtagList ? hashtagApi : targetApi,
-                // url: "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain/",
-                //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
                     // querySearch: this.search,
@@ -1731,8 +1723,6 @@ export default {
         if (this.$route.query.type === 'targetlist') {
             this.profile.uid = this.$route.query.uid
             this.selectedSource = this.$route.query.source;
-            // await this.apiTimelineUserPosts();
-            // await this.getWordCloudImage();
         }else if (this.$route.query.type === 'hashtaglist') {
             this.selectedSource = 'all'
             await this.apiTimelineUserPosts();
@@ -1741,8 +1731,7 @@ export default {
         this.apiGetProvinces();
         this.apiGetInfluencerType();
         await this.getWordCloudImage();
-        // await this.apiTimelineUserPosts();
-        // console.log('this.selectedSource ==== ',this.selectedSource);
+        
     },
     computed: {
         location: {
@@ -1787,35 +1776,7 @@ export default {
                 }
             }
         }
-        // valueDate: {
-        //     deep: true, // เฝ้าการเปลี่ยนแปลงภายใน array
-        //     handler(newVal, oldVal) {
-        //         console.log("valueDate timeline changed:", newVal);
-        //         if (newVal !== oldVal) {
-        //             // this.timelinePosts = [];
-        //             // this.offset = 0;
-        //             const startDate = moment(this.valueDate[0]);
-        //             const endDate = moment(this.valueDate[1]);
-
-        //             const diffDays = endDate.diff(startDate, 'days');
-
-        //             if (diffDays > 31) {
-        //                 alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
-        //                 this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
-        //             } else {
-        //                 this.offset = 0;
-        //                 this.timelinePosts = [];
-        //                 if (this.type === 'hashtaglist') {
-        //                     // this.onSearch();
-        //                     // this.apiTimelineUserPosts();
-        //                 }
-        //                 this.getWordCloudImage();
-        //                 // this.selectDate(); // Call your existing method
-        //             }
-        //         }
-        //         // this.checkDateRange()
-        //     }
-        // }
+       
     },
 }
 </script>

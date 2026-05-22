@@ -2,7 +2,7 @@
   <b-card header-class="text-left">
     <template #header>
         <span>📝 สรุปแนวโน้มกราฟสถิติรายชั่วโมง </span>
-        <button
+        <!-- <button
             variant="info"
             size="sm"
             class="analysis-button"
@@ -22,7 +22,7 @@
             <span class="md-font">
                 {{ analyzing ? 'Analyzing...' : 'Chart Analyze (beta)' }}
             </span>
-        </button>
+        </button> -->
     </template>
 
     <div v-if="summary && summary.text" class="text-left card-body-scroll">
@@ -113,14 +113,14 @@ export default {
         }
     },
     watch: {
-        filters: {
-            handler(newVal, oldVal) {
-            if (JSON.stringify(newVal) === JSON.stringify(oldVal)) return;
-            this.summarizeGraph();
-            },
-            deep: true,
-            immediate: true
-        }
+        // filters: {
+        //     handler(newVal, oldVal) {
+        //     if (JSON.stringify(newVal) === JSON.stringify(oldVal)) return;
+        //     this.summarizeGraph();
+        //     },
+        //     deep: true,
+        //     immediate: true
+        // }
     },
     methods: {
         fmtNum(n) {
