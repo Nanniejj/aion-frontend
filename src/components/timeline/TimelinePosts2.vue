@@ -1,50 +1,31 @@
 <template>
   <div class="timeline-wrapper">
-    <!-- <SnapshotButton
-      :getTargetEl="() => $refs['timeline-wrapper']"
-      filenamePrefix="timeline"
-      format="png"             
-      :scale="2"                
-      :useCORS="true"
-      @start="onStart"
-      @done="onDone"
-      @error="onError"
-    >
-      แคป & ดาวน์โหลด
-    </SnapshotButton> -->
     <div class="timeline" ref="timeline-wrapper">
-      <!-- {{ items }} -->
-      <!-- โหมดรายวัน -->
-      <!-- {{ isDaily }} {{ mode }} -->
       <template v-if="isDaily">
 
+        <!-- ✅ loading กลาง โชว์ครั้งเดียวตอนรอข้อมูลรายวันทั้งหมด -->
+        <div v-if="dailyLoading" class="text-center my-3 daily-loading-box">
+          <vue-element-loading :active="true" size="50"
+            background-color="rgba(255,255,255,0)" color="#17a2b891" />
+          <div class="small text-muted mt-1">กำลังโหลดข้อมูล...</div>
+        </div>
+
         <div v-for="(day, idx) in items" :key="day.date || idx" class="timeline-item d-flex">
-          <!-- {{ day.date }} -->
           <div class="timeline-dot">
-            <!-- {{ day.date }} -->
             <span class="h4 date-label bold" v-if="sort !== 'engagement'">
               {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
               <span class="h6"> {{ formatTime(day.date) }}</span>
             </span>
             <span class="h4 date-label bold" v-else-if="day.items && day.items.length">
               <span class="h4 date-label bold">
-
                 {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
                 <span class="h6"> {{ formatTime(day.date) }}</span>
               </span>
               <div class="h6 mt-1" v-b-tooltip.hover :title="day.items[0].engagement | numFormat"> <i
                   class="fas fa-chart-line"></i> {{ numFormat(day.items[0].engagement) }}</div>
-
-              <!-- <div class="h6"
-                >{{ formatDate(day.date) }}</div
-              > -->
             </span>
 
-            <!-- ใช้รูปโปรไฟล์/ไอคอนจากโพสต์แรกของวัน ถ้ามี -->
             <template v-if="day.items && day.items.length">
-              <!-- <span v-if="day.items[0].photos&&day.items[0].photos[0]" >
-                <b-img :src="day.items[0].photos[0]"></b-img>
-               </span> -->
               <span v-if="day.items[0].profile_image" class="story-ring ">
                 <b-avatar size="57px" :src="day.items[0].profile_image" loading="lazy"
                   v-if="day.items[0].source != 'blockdit'"></b-avatar>
@@ -75,19 +56,12 @@
                 <i class="fa fa-shuffle" @click="toggle(idx)" style="cursor: pointer;color:#17a2b8;" v-b-tooltip.hover
                   title="สลับโพสต์"></i>
                 <span class="ml-2 small ">
-                  <!-- {{ day.countShown }} /  -->
                   <b> {{ day.countTotal | numFormat }}</b> โพสต์
-                  <!-- <span v-if="day._hasMore">(+)</span> -->
                 </span>
-                <!-- <span class="ml-2 small text-muted">
-                  {{ count }} โพสต์
-                </span> -->
               </div>
 
-              <!-- โพสต์แรกของวัน -->
               <CardTitle :post="day.items[0]" v-if="!isOpen(idx)" class="mx-2" />
 
-              <!-- รายการ 10 โพสต์ของวันนั้น -->
               <CardPostSlider v-else :clusters="day.items" :title="`${formatThaiDayLabel(day.date)}`"
                 @selectPost="post => replaceDayPost(idx, post)" :ymd="day.date" :initial-sort="sort"
                 :has-more="day._hasMore" @requestLoadMore="payload => $emit('loadMoreDay', payload)"
@@ -95,7 +69,10 @@
                 :day-loading="dayLoadingMap && dayLoadingMap[day.date]" />
             </div>
 
-            <div v-else class="text-muted small mx-2">ไม่มีข้อมูล  {{ formatDay(day.date) }} {{ formatMoth(day.date) }}</div>
+            <!-- ✅ ระหว่างที่ dailyLoading ยังทำงานอยู่ ไม่โชว์อะไร (กัน "ไม่มีข้อมูล" หลอกและ spinner ซ้อนกัน) -->
+            <div v-else-if="!dailyLoading" class="text-muted small mx-2">
+              ไม่มีข้อมูล {{ formatDay(day.date) }} {{ formatMoth(day.date) }}
+            </div>
           </div>
         </div>
       </template>
@@ -104,16 +81,13 @@
       <template v-else>
         <div class="text-right allpost"> ทั้งหมด <b>{{ count || 0 | numFormat }} </b> โพสต์</div>
         <div v-for="(it, idx) in items" :key="it._id || idx" class="timeline-item d-flex">
-          <!-- {{ items }} -->
           <div class="timeline-dot">
             <div class=" date-label" v-if="sort !== 'engagement'">
               <div class="h4  bold "> {{ formatDay(it.date) }} {{ formatMoth(it.date) }}</div>
-
               <div class="h6 d-block"> <i class="fa fa-clock-o" aria-hidden="true"></i> {{ formatTime(it.date) }}</div>
             </div>
             <span class="h5 date-label bold" v-else v-b-tooltip.hover :title="it.engagement | numFormat">
               <i class="fas fa-chart-line"></i> {{ numFormat(it.engagement) }}
-
               <div class="h6 mt-1"> {{ formatDay(it.date) }} {{ formatMoth(it.date) }} {{ formatTime(it.date) }} </div>
             </span>
 
@@ -126,7 +100,6 @@
 
             <img v-if="it.source === 'twitter'" :src="imgtw" class="social-img" />
             <img v-if="it.source === 'facebook'" :src="imgfb" class="social-img" />
-            <!-- <img v-if="it.source === 'pantip'" :src="imgpt" class="social-img" /> -->
             <img v-if="it.source === 'youtube'" :src="imgyt" class="social-img" />
             <img v-if="it.source === 'news'" :src="imgnw" class="social-img" />
             <img v-if="it.source === 'instagram'" :src="imgig" class="social-img" />
@@ -141,7 +114,6 @@
             </template>
             <span class="line"></span>
           </div>
-          <!-- การ์ดเดี่ยวตามโพสต์ -->
           <div class="flex-grow-1">
             <CardTitle :post="it" class="mx-2" />
           </div>
@@ -160,7 +132,6 @@ import CardPost from "./CardPost.vue";
 import CardTitle from "./CardTitle.vue";
 import SnapshotButton from './SnapshotButton.vue'
 
-// import 'moment-timezone'   // ต้องมีถ้าจะใช้ .tz()
 export default {
   name: "TimelinePosts",
   components: {
@@ -170,13 +141,13 @@ export default {
   },
   props: {
     dayLoading: { type: Boolean, default: false },
-    // ส่ง array เข้ามาได้; ถ้าไม่ส่งจะใช้ sampleData ด้านล่าง
+    dailyLoading: { type: Boolean, default: false }, // ✅ flag กลาง รับจาก parent
     items: {
       type: Array,
       default: () => [],
     },
     count: { type: Number, default: 0 },
-    mode: { type: String, default: "posts" }, // 'posts' | 'daily'
+    mode: { type: String, default: "posts" },
     sort: { type: String, default: "" },
   },
   data() {
@@ -197,35 +168,12 @@ export default {
   },
   computed: {
     isDaily() {
-      // ถ้ารายการแรกมีฟิลด์ items แปลว่ามาแบบ grouped by day
       return Array.isArray(this.items?.[0]?.items) && this.mode === "daily";
     },
-    // mappedItems() {
-    //   const src = (this.items && this.items.length) ? this.items : this.sampleData;
-    //   return src
-    //     .map((x) => ({
-    //       _id: x._id,
-    //       uid: x.uid,
-    //       source: x.source,
-    //       account_name: x.account_name,
-    //       date: x.date,
-    //       full_text: x.full_text,
-    //       photo: Array.isArray(x.photos) && x.photos.length ? x.photos[0] : null,
-    //       post_type: x.post_type,
-    //       profile_image: x.profile_image,
-    //       sentiment: typeof x.sentiment === "number" ? x.sentiment : null,
-    //       url_post: x.url_post,
-    //     }))
-    //     .sort((a, b) => new Date(b.date) - new Date(a.date)); // ใหม่ → เก่า
-    // },
   },
   methods: {
     baseMoment(date) {
-      // ถ้าในโหมด daily ไม่ต้องปรับเวลา (ใช้วันที่ล้วน)
-      // ถ้าโหมดโพสต์ ปรับตามเดิมที่คุณต้องการ (-7 ชั่วโมง) หรือเปลี่ยนเป็น .utc().local() ก็ได้
       return this.isDaily ? moment(date) : moment(date).subtract(7, 'hours');
-      // ตัวเลือกที่แม่นกว่า ถ้าแหล่งข้อมูลเป็น UTC เสมอ:
-      // return this.isDaily ? moment.utc(date).local() : moment.utc(date).local();
     },
     numFormat(n) {
       if (!n) return 0;
@@ -246,24 +194,20 @@ export default {
       const found = list.findIndex(p => keyOf(p) === selKey);
 
       if (found === 0) {
-        // เลือกตัวที่อยู่หัวอยู่แล้ว
         this.toggle(idx);
         return;
       }
 
       if (found > 0) {
-        // มีในลิสต์อยู่แล้ว -> ย้ายขึ้นหัว
         list.splice(found, 1);
         list.unshift(post);
       } else {
-        // ไม่มีในลิสต์ -> ใส่ขึ้นหัว
         list.unshift(post);
       }
 
       this.$set(this.items[idx], 'items', list);
-      this.toggle(idx); // ปิด slider กลับไปโชว์ CardTitle
-    }
-    ,
+      this.toggle(idx);
+    },
     formatThaiDayLabel(ymd) {
       return moment(ymd, "YYYY-MM-DD").format("ll");
     },
@@ -296,7 +240,6 @@ export default {
     formatTime(date) {
       return date.slice(11, 16);
     },
-
     sentimentText(val) {
       if (val === 1) return "Positive";
       if (val === 0) return "Neutral";
@@ -318,15 +261,12 @@ export default {
   display: inline-flex;
   padding: 3px;
   z-index: 99;
-  /* ระยะห่างวงแหวน */
   border-radius: 50%;
   background: conic-gradient(#feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
-  /* ไล่สีแบบ IG */
 }
 
 .story-ring .b-avatar {
   border: 2px solid white;
-  /* ให้รูปไม่ติดกับวงแหวน */
   border-radius: 50%;
 }
 
@@ -342,24 +282,19 @@ export default {
   z-index: 99;
 }
 
-/* wrapper ให้มี padding ข้าง ๆ */
 .timeline-wrapper {
   padding: 8px 8px 16px;
 }
 
-/* คอลัมน์เส้นไทม์ไลน์ */
 .timeline {
   position: relative;
   margin-left: 10px;
-  /* เผื่อระยะให้ dot */
 }
 
-/* แต่ละรายการ */
 .timeline-item {
   position: relative;
 }
 
-/* วงจุด + เส้นแนวตั้ง */
 .timeline-dot {
   width: 100px;
   display: flex;
@@ -385,7 +320,6 @@ export default {
   margin-top: 6px;
 }
 
-/* การ์ดของโพสต์ */
 .timeline-card {
   width: 60%;
   border: 0;
@@ -395,23 +329,26 @@ export default {
   height: 250px;
 }
 
-/* โปรไฟล์เป็นวงกลมขนาดพอดี */
 .b-avatar.imgpro.badge-secondary {
   width: 55px;
   height: 55px;
 }
 
-/* รูปคอนเทนท์ใหญ่ */
 .timeline-photo {
   max-height: 260px;
   object-fit: cover;
 }
 
-/* ปรับระยะเล็กน้อย */
 h5 {
   font-weight: 600;
 }
 
+/* ✅ กรอบ loading กลาง ตำแหน่งคงที่ ไม่ดึงความสูงจาก ancestor */
+.daily-loading-box {
+  position: relative;
+  height: 70px;
+  overflow: hidden;
+}
 
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   .allpost {

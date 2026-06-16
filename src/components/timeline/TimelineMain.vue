@@ -253,8 +253,9 @@
       <!-- <div v-if="postsFromApi.data&&postsFromApi.data.length==0"> ไม่พบข้อมูล</div> -->
 
 
-      <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by" @loadMoreDay="loadMoreDay"
-        @changeDaySort="changeDaySort" :count="count" v-else />
+     <timeline-posts :items="postsFromApi" :mode="filters.view_mode" :sort="filters.sort_by"
+  :daily-loading="dailyLoading"
+  @loadMoreDay="loadMoreDay" @changeDaySort="changeDaySort" :count="count" v-else />
       <div v-if="filters.view_mode === 'posts' && !loading && filters.page < totalPages" class="text-center my-2 pb-5">
         <div class="text-center mb-3 py-5" v-if="loadingMore">
           <vue-element-loading :active="loadingMore" size="80" background-color="rgba(255, 255, 255, 0.5)"
@@ -331,6 +332,7 @@ export default {
   ,
   data() {
     return {
+      dailyLoading: false, 
       showFilters: true,
       templateQuery: '',
       templates: [],
@@ -784,62 +786,63 @@ export default {
         }
       }
     },
-    async apiTimelineDaily() {
-      this.loading = true;
-      try {
-        // ใช้ startLocal/endLocal ถ้ามี ไม่งั้น fallback เป็น valueDate
-        const startIso = this.filters.startLocal || (this.valueDate?.[0] + "T00:00:00");
-        const endIso = this.filters.endLocal || (this.valueDate?.[1] + "T23:59:59");
+async apiTimelineDaily() {
+  this.loading = true;
+  try {
+    const startIso = this.filters.startLocal || (this.valueDate?.[0] + "T00:00:00");
+    const endIso = this.filters.endLocal || (this.valueDate?.[1] + "T23:59:59");
+    const startYMD = startIso.slice(0, 10);
+    const endYMD = endIso.slice(0, 10);
 
-        const startYMD = startIso.slice(0, 10);
-        const endYMD = endIso.slice(0, 10);
+    const days = this.getDaysInclusive(startYMD, endYMD);
+    this.buildParamsForDay2(startYMD, endYMD);
 
-        const days = this.getDaysInclusive(startYMD, endYMD);
-        const grouped = [];
-        this.buildParamsForDay2(startYMD, endYMD);
+    const grouped = days.map(ymd => ({
+      date: ymd, items: [], _hasMore: false, countTotal: 0, countShown: 0,
+    }));
 
-        for (const ymd of days) {
-          if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
-          this.$set(this.daySortMap, ymd, this.filters.sort_by);
-          if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
+    this.postsFromApi = grouped;
+    this.postsForAnalysis = grouped;
+    this.totalPages = 0;
+    this.loading = false;       // ✅ โครง timeline ขึ้นทันที
+    this.dailyLoading = true;   // ✅ เปิด loading กลาง
 
-          const params = this.buildParamsForDay(ymd);
+    let pending = days.length;
 
-          try {
-            const { data } = await this.axios.get(
-              "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-              { params }
-            );
-            const items = data?.data || [];
-            const countTotal = (typeof data?.count === 'number') ? data.count : items.length;
+    days.forEach((ymd, i) => {
+      if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
+      this.$set(this.daySortMap, ymd, this.filters.sort_by);
+      if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
 
-            grouped.push({
-              date: ymd,
-              items,
-              _hasMore: items.length >= (params.limit || 10),
-              countTotal,
-              countShown: items.length,
-            });
-          } catch (err) {
-            console.warn("daily error", ymd, err);
-            grouped.push({
-              date: ymd,
-              items: [],
-              _hasMore: false,
-              countTotal: 0,
-              countShown: 0,
-            });
-          }
-        }
+      const params = this.buildParamsForDay(ymd);
 
-        this.postsFromApi = grouped;
-        this.postsForAnalysis = grouped;
-        this.count = grouped.reduce((sum, d) => sum + (d.countTotal || 0), 0);
-        this.totalPages = 0;
-      } finally {
-        this.loading = false;
-      }
-    },
+      this.axios.get(
+        "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+        { params }
+      ).then(({ data }) => {
+        const items = data?.data || [];
+        const countTotal = (typeof data?.count === 'number') ? data.count : items.length;
+        this.postsFromApi.splice(i, 1, {
+          date: ymd, items,
+          _hasMore: items.length >= (params.limit || 10),
+          countTotal, countShown: items.length,
+        });
+        this.count = this.postsFromApi.reduce((sum, d) => sum + (d.countTotal || 0), 0);
+      }).catch((err) => {
+        console.warn("daily error", ymd, err);
+        this.postsFromApi.splice(i, 1, {
+          date: ymd, items: [], _hasMore: false, countTotal: 0, countShown: 0,
+        });
+      }).finally(() => {
+        pending -= 1;
+        if (pending <= 0) this.dailyLoading = false; // ✅ วันสุดท้ายเสร็จ -> ปิด loading
+      });
+    });
+  } catch (e) {
+    this.loading = false;
+    this.dailyLoading = false;
+  }
+},
 
     async loadMoreDay({ date }) {
       this.$store.commit("setLoadCardPost", true)
@@ -963,60 +966,59 @@ export default {
       }
     },
 
-    async apiTimelineDailySilent() {
-      this.loading = true;
-      try {
-        // ใช้ช่วงเวลาจริงจาก filters.startLocal/endLocal ถ้ามี (ไม่แตะ paramTo)
-        const startIso = this.filters.startLocal || (this.valueDate?.[0] + "T00:00:00");
-        const endIso = this.filters.endLocal || (this.valueDate?.[1] + "T23:59:59");
+async apiTimelineDailySilent() {
+  this.loading = true;
+  try {
+    const startIso = this.filters.startLocal || (this.valueDate?.[0] + "T00:00:00");
+    const endIso = this.filters.endLocal || (this.valueDate?.[1] + "T23:59:59");
+    const startYMD = startIso.slice(0, 10);
+    const endYMD = endIso.slice(0, 10);
+    const days = this.getDaysInclusive(startYMD, endYMD);
 
-        const startYMD = startIso.slice(0, 10);
-        const endYMD = endIso.slice(0, 10);
+    const grouped = days.map(ymd => ({
+      date: ymd, items: [], _hasMore: false, countTotal: 0, countShown: 0,
+    }));
+    this.postsFromApi = grouped;
+    this.totalPages = 0;
+    this.loading = false;
+    this.dailyLoading = true;
 
-        const days = this.getDaysInclusive(startYMD, endYMD);
-        const grouped = [];
+    let pending = days.length;
 
-        // ❌ ไม่เรียก buildParamsForDay2() (ตัวนั้นไปตั้ง this.paramTo)
-        for (const ymd of days) {
-          if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
-          this.$set(this.daySortMap, ymd, this.filters.sort_by);
-          if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
+    days.forEach((ymd, i) => {
+      if (!this.dayPageMap[ymd]) this.$set(this.dayPageMap, ymd, 1);
+      this.$set(this.daySortMap, ymd, this.filters.sort_by);
+      if (!this.dayLimitMap[ymd]) this.$set(this.dayLimitMap, ymd, 10);
 
-          const params = this.buildParamsForDay(ymd); // อันนี้ปลอดภัย ไม่แตะ paramTo
-          try {
-            const { data } = await this.axios.get(
-              "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-              { params }
-            );
-            const items = data?.data || [];
-            const countTotal = (typeof data?.count === 'number') ? data.count : items.length;
+      const params = this.buildParamsForDay(ymd);
 
-            grouped.push({
-              date: ymd,
-              items,
-              _hasMore: items.length >= (params.limit || 10),
-              countTotal,
-              countShown: items.length,
-            });
-          } catch (err) {
-            console.warn("daily silent error", ymd, err);
-            grouped.push({
-              date: ymd,
-              items: [],
-              _hasMore: false,
-              countTotal: 0,
-              countShown: 0,
-            });
-          }
-        }
-
-        this.postsFromApi = grouped;
-        this.count = grouped.reduce((sum, d) => sum + (d.countTotal || 0), 0);
-        this.totalPages = 0;
-      } finally {
-        this.loading = false;
-      }
-      },
+      this.axios.get(
+        "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
+        { params }
+      ).then(({ data }) => {
+        const items = data?.data || [];
+        const countTotal = (typeof data?.count === 'number') ? data.count : items.length;
+        this.postsFromApi.splice(i, 1, {
+          date: ymd, items,
+          _hasMore: items.length >= (params.limit || 10),
+          countTotal, countShown: items.length,
+        });
+        this.count = this.postsFromApi.reduce((sum, d) => sum + (d.countTotal || 0), 0);
+      }).catch((err) => {
+        console.warn("daily silent error", ymd, err);
+        this.postsFromApi.splice(i, 1, {
+          date: ymd, items: [], _hasMore: false, countTotal: 0, countShown: 0,
+        });
+      }).finally(() => {
+        pending -= 1;
+        if (pending <= 0) this.dailyLoading = false;
+      });
+    });
+  } catch (e) {
+    this.loading = false;
+    this.dailyLoading = false;
+  }
+},
     
     async loadMorePosts() {
       if (this.filters.page >= this.totalPages) return;
