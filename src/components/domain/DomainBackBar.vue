@@ -32,7 +32,17 @@
             </div>
             </b-col>
         </b-col>
+        <b-col></b-col>
         <b-col cols="12" xl="" align-self="end" class="d-flex justify-content-center justify-content-sm-end text-sm-right px-0 mt-sm-2 mt-md-4 mt-lg-3 mt-xl-2">
+            <b-dropdown size="sm" variant="outline-secondary" class="mr-2">
+                <template #button-content>
+                  <i class="fas fa-newspaper mr-2"></i>
+                  {{ newsSourceLabel }}
+                </template>
+                <b-dropdown-item @click="setNewsSource('all')">ทั้งหมด</b-dropdown-item>
+                <b-dropdown-item @click="setNewsSource('internal')">ข่าวในประเทศ</b-dropdown-item>
+                <b-dropdown-item @click="setNewsSource('external')">ข่าวนอกประเทศ</b-dropdown-item>
+            </b-dropdown>
             <section
             id="date-picker"
             class="d-inline position-relative align-bottom"
@@ -86,12 +96,15 @@
 <script>
 import { mapGetters } from "vuex";
 import moment from "moment";
-import ExportDocx from "./ExportDocx.vue";
 
 export default {
-  components: { ExportDocx },
   computed: {
-    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm","getClickDomainId"]),
+    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getClickDomainId", "getSourceNews"]),
+    newsSourceLabel() {
+      if (this.getSourceNews === "internal") return "ข่าวในประเทศ";
+      if (this.getSourceNews === "external") return "ข่าวนอกประเทศ";
+      return "ทั้งหมด";
+    },
   },
   data() {
     return {
@@ -119,9 +132,13 @@ export default {
       if (diffDays > 31) {
         alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 1 เดือน หรือ 31 วัน');
         this.valueDate[1] = startDate.add(31, 'days').format('YYYY-MM-DD');
-      }else{
+      } else {
         this.selectData(); // Call your existing method
       }
+    },
+    setNewsSource(value) {
+      this.$store.commit("setSourceNews", value);
+      this.selectData();
     },
     toReport() {
       window.dispatchEvent(new Event("resize"));
@@ -157,6 +174,7 @@ export default {
         start_date: this.start_date,
         end_date: this.end_date,
         domain: this.getClickDomain,
+        source_news: this.getSourceNews,
         //   monitor: this.selected
       });
 
@@ -167,6 +185,7 @@ export default {
         sort_by: "engagement",
         offset: 0,
         domain: this.getClickDomainId,
+        source_news: this.getSourceNews,
       });
 
       //AllPost
@@ -176,6 +195,7 @@ export default {
         sort_by: "",
         offset: 0,
         domain: this.getClickDomainId,
+        source_news: this.getSourceNews,
       });
       this.$store.dispatch("fetchExportPostDomainNeg", {
         start_date: this.start_date,
@@ -185,6 +205,7 @@ export default {
         sort_by: "engagement",
         offset: 0,
         domain: this.getClickDomainId,
+        source_news: this.getSourceNews,
       });
       this.$store.dispatch("fetchExportPostDomain", {
         start_date: this.start_date,
@@ -194,6 +215,7 @@ export default {
         sort_by: "engagement",
         offset: 0,
         domain: this.getClickDomainId,
+        source_news: this.getSourceNews,
       });
     },
     backDomain() {

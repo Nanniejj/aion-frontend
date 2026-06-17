@@ -32,8 +32,7 @@
       <h5><b>เพิ่มประเด็น Issue</b></h5>
       <hr />
       <div class="text-left">
-        คำแนะนำ : กรุณาใส่ชื่อถุงคำที่ต้องการ Keyword ให้ enter หากมีมากกว่า 1
-        คำ
+        คำแนะนำ : กรุณาใส่ชื่อถุงคำที่ต้องการ Keyword โดยกด Enter หรือใช้เครื่องหมาย , เพื่อแยกคำ เช่น การเมือง,สถาบัน
       </div>
       <label class="mt-4" for="textarea-default"
         ><b>ชื่อหัวเรื่อง (Object)</b></label
@@ -51,6 +50,7 @@
         tag-variant="light"
         tag-pills
         size="md"
+        separator=",;"
         placeholder="Enter เพื่อพิมพ์คำใหม่"
         remove-on-delete
         :disabled="!addTitle"
@@ -78,6 +78,7 @@
         @tag-state="onTagState"
         tag-pills
         size="md"
+        separator=",;"
         placeholder="Enter เพื่อพิมพ์คำใหม่"
         remove-on-delete
       ></b-form-tags>
@@ -92,6 +93,7 @@
         tag-variant="light"
         tag-pills
         size="md"
+        separator=",;"
         placeholder="Enter เพื่อพิมพ์คำใหม่"
         remove-on-delete
         :disabled="!addTitle"

@@ -908,7 +908,8 @@ export default {
       "getAllPostDomain",
       "getNamePlatform",
       "getDomainArr",
-      "getClickDomainId"
+      "getClickDomainId",
+      "getSourceNews"
     ]),
   },
     methods: {
@@ -1209,6 +1210,7 @@ export default {
         sort_by: "engagement",
         offset: 0,
         domain: this.getClickDomainId,
+        source_news: this.getSourceNews,
       });
     } else {
       this.$store.commit("setTopPostDomain", "");

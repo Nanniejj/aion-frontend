@@ -699,7 +699,8 @@ export default {
       "getAllPostDomain",
       "getNamePlatform",
       "getDomainArr",
-      "getClickDomainId"
+      "getClickDomainId",
+      "getSourceNews"
     ]),
     dataPost() {
       let data = [];
@@ -877,6 +878,7 @@ export default {
         sort_by: "engagement",
         offset: 0,
         domain: this.getClickDomainId,
+        source_news: this.getSourceNews,
       });
     }
     if (this.typeStm == "neg") {
@@ -888,6 +890,7 @@ export default {
         sort_by: "engagement",
         offset: 0,
         domain: this.getClickDomainId,
+        source_news: this.getSourceNews,
       });
     }
 

@@ -21,6 +21,7 @@ export default {
     arrDate: "",
     exportTopPost: [],
     exportTopPostNeg: [],
+    sourceNews: "all",
   },
   getters: {
     getShowReport: (state) => {
@@ -87,6 +88,9 @@ export default {
     getAllPostDomain: (state) => {
       return state.allPost;
     },
+    getSourceNews: (state) => {
+      return state.sourceNews;
+    },
   },
   mutations: {
     setClickDomainId: (state, payload) => {
@@ -130,6 +134,9 @@ export default {
     },
     setClickDomain: (state, payload) => {
       state.clickDomain = payload;
+    },
+    setSourceNews: (state, payload) => {
+      state.sourceNews = payload;
     },
     setLoadWordCloud: (state, payload) => {
       state.loadWcloud = payload;

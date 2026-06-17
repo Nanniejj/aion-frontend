@@ -10,7 +10,7 @@
         <!-- {{ objectData }} -->
         <h5><b>เพิ่มประเด็น</b></h5>
         <hr>
-        <p>คำแนะนำ : กรุณาใส่ชื่อถุงคำที่ต้องการ Keyword ให้ enter หากมีมากกว่า 1 คำ</p>
+        <p>คำแนะนำ : กรุณาใส่ชื่อถุงคำที่ต้องการ Keyword โดยกด Enter หรือใช้เครื่องหมาย , เพื่อแยกคำ เช่น การเมือง,สถาบัน</p>
         <b-container>
           <!-- {{ objectData }} -->
           <!-- ปุ่ม Clear & Import CSV -->
@@ -30,10 +30,9 @@
             <b-form-input v-model="objectName" maxlength="50" required></b-form-input>
             <small class="text-muted">{{ objectName.length }} / 50 ตัวอักษร</small>
           </b-form-group>
-
           <!-- Keywords -->
           <b-form-group label="Keyword" label-class="font-weight-bold">
-            <b-form-tags v-model="keywords" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+            <b-form-tags v-model="keywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
           </b-form-group>
 
           <b-form-group>
@@ -41,13 +40,13 @@
             <b-alert variant="info" show>
               ใช้ <b>+</b> ในการ AND เช่น <strong>การเมือง + การปกครอง</strong>
             </b-alert>
-            <b-form-tags v-model="andKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"
+            <b-form-tags v-model="andKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"
               @input="logAndKeywords"></b-form-tags>
           </b-form-group>
 
           <b-form-group>
             <label><b>Exclude Keyword <span class="badge badge-danger">NOT</span></b></label>
-            <b-form-tags v-model="notKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"
+            <b-form-tags v-model="notKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"
               @input="logNotKeywords"></b-form-tags>
           </b-form-group>
 

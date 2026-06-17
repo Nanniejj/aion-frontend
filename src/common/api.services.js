@@ -911,11 +911,17 @@ export const DomainService = {
     } else {
       mor = "";
     }
+    if (payload.source_news) {
+      source_news = `&source_news=${payload.source_news}`;
+    } else {
+      source_news = "";
+    }
     return ApiService.get(
       `/v2/userposts/getSentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
         stm +
         dm +
         source +
+        source_news +
         dash +
         findkey +
         mor
@@ -960,11 +966,17 @@ export const DomainService = {
     } else {
       mor = "";
     }
+    if (payload.source_news) {
+      source_news = `&source_news=${payload.source_news}`;
+    } else {
+      source_news = "";
+    }
     return ApiService.get(
       `/v2/userposts/getSentimentdetailDomain/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
         stm +
         dm +
         source +
+        source_news +
         dash +
         findkey +
         mor

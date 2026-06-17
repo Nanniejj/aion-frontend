@@ -32,11 +32,11 @@
           <!-- Keywords -->
           <b-tabs content-class="mt-3" lazy active-nav-item-class="font-weight-bold" nav-item-class="font-weight-bold">
             <b-tab title="Keyword">
-              <b-form-tags v-model="editKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+              <b-form-tags v-model="editKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
             </b-tab>
 
             <b-tab title="Include Keyword">
-              <b-form-tags v-model="editAndKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+              <b-form-tags v-model="editAndKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
               <br />
               <b-alert variant="info" show>
                 ใช้ <b>+</b> ในการ AND เช่น <strong>การเมือง + การปกครอง</strong>
@@ -44,7 +44,7 @@
             </b-tab>
 
             <b-tab title="Exclude Keyword">
-              <b-form-tags v-model="editNotKeywords" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+              <b-form-tags v-model="editNotKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
             </b-tab>
           </b-tabs>
 

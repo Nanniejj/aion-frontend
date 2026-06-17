@@ -135,6 +135,7 @@ export default {
       "getArrDate",
       "getDateReport",
       "getClickDomainId",
+      "getSourceNews",
     ]),
 
     displayRows() {
@@ -171,6 +172,9 @@ export default {
       this.updateChart();
     },
     getEdateDm() {
+      this.updateChart();
+    },
+    getSourceNews() {
       this.updateChart();
     },
   },
@@ -215,11 +219,13 @@ export default {
         edate = "&end=" + today + "T23:59:59";
       }
 
+      const sourceNewsParam = this.getSourceNews ? `&source_news=${this.getSourceNews}` : "";
       return (
         "https://api2.cognizata.com/api/v2/userposts/getTotalPosts?domain_id=" +
         this.getClickDomainId +
         sdate +
-        edate
+        edate +
+        sourceNewsParam
       );
     },
 

@@ -29,7 +29,14 @@
             <b-icon icon="search" class="mr-1"></b-icon> {{ pretty.keyword }}
           </div>
 
-          <div v-if="pretty.keyword && pretty.hashtags && pretty.hashtags.length" class="mr-2 my-1"> / </div>
+          <div v-if="pretty.keyword && (pretty.excludeKeyword || pretty.hashtags.length)" class="mr-2 my-1"> / </div>
+
+          <!-- ยกเว้นคำ -->
+          <div v-if="pretty.excludeKeyword" class="mr-2 my-1 text-muted">
+            <b-icon icon="x-circle" class="mr-1"></b-icon> {{ pretty.excludeKeyword }}
+          </div>
+
+          <div v-if="pretty.excludeKeyword && pretty.hashtags.length" class="mr-2 my-1"> / </div>
 
           <!-- Hashtags -->
           <div v-for="h in pretty.hashtags" :key="h" pill variant="info" class="mr-2 my-1">
@@ -83,22 +90,22 @@
         </b-alert>
         <b-form @submit.prevent="handleSearch">
           <b-row>
-            <b-col cols="12" md="8">
-              <b-form-group label="" label-for="kw" class="pr-md-3 flex-grow-1">
+            <b-col cols="12" md="6">
+              <b-form-group label="" label-for="kw" class=" flex-grow-1">
                 <b-form-input id="kw" v-model.trim="formFilters.keywordInput"
-                  placeholder="เช่น คาเฟ่ บรรยากาศดี,มัทฉะ อร่อย" />
+                  placeholder="คำค้นหา เช่น คาเฟ่ บรรยากาศดี,มัทฉะ อร่อย" />
               </b-form-group>
             </b-col>
 
-            <b-col cols="12" md="4">
-              <!-- Sentiment -->
-              <b-form-group class="pr-md-3 checkbox-v">
-                <!-- <span class="text-muted small">sentiment</span> -->
-                <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
+            <b-col cols="12" md="6">
+              <b-form-group label="" label-for="exclude-kw" class="flex-grow-1">
+                <!-- <label for="exclude-kw" class="small text-muted">ยกเว้นคำ (คั่นด้วย ,)</label> -->
+                <b-form-input id="exclude-kw" v-model.trim="formFilters.excludeKeywordInput"
+                  placeholder="ยกเว้นคำ (คั่นด้วย ,) เช่น โฆษณา, สปอนเซอร์" />
               </b-form-group>
             </b-col>
             <b-col cols="12" md="6">
-              <b-form-group label="" label-for="accounts" class="pr-md-3">
+              <b-form-group label="" label-for="accounts" >
                 <b-form-tags id="accounts" v-model="formFilters.HashtagsInput" tag-variant="light" tag-pills size="md"
                   separator=" ,;" placeholder="ค้นหา hashtag" no-add-on-enter add-on-change remove-on-delete
                   class="input-tag" />
@@ -106,7 +113,7 @@
             </b-col>
             <b-col cols="12" md="6">
               <!-- Hashtags -->
-              <b-form-group label="" label-for="accounts" class="pr-md-3">
+              <b-form-group label="" label-for="accounts">
                 <b-form-tags id="accounts" v-model="formFilters.accountsInput" tag-variant="light" tag-pills size="md"
                   separator=",;" placeholder="ค้นหาบัญชี (ใส่ uid หรือ url หลายบัญชีคั่นด้วย ,)" no-add-on-enter
                   add-on-change remove-on-delete class="input-tag" />
@@ -141,6 +148,13 @@
           </b-row>
 
           <b-row align-h="end" class="mt-2" justify="center">
+             <b-col cols="auto" md="auto" align="center" justify="center">
+              <!-- Sentiment -->
+              <b-form-group class="pr-md-3 checkbox-v mt-1">
+                <!-- <span class="text-muted small">sentiment</span> -->
+                <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
+              </b-form-group>
+            </b-col>
             <b-col cols="auto" md="auto" align="center" justify="center">
               <b-form-group class="pr-md-3">
                 <b-form-radio-group v-model="formFilters.view_mode" :options="[
@@ -356,6 +370,7 @@ export default {
       filters: {
         sentiment: ["1", "0", "-1"],
         keywordInput: "",
+        excludeKeywordInput: "",
         view_mode: "posts",
         source: [null],
         sort_by: "recent",//recent
@@ -366,6 +381,7 @@ export default {
       formFilters: {
         sentiment: ["1", "0", "-1"],
         keywordInput: "",
+        excludeKeywordInput: "",
         view_mode: "posts",
         source: [null],
         sort_by: "recent",
@@ -421,6 +437,10 @@ export default {
         ? String(f.keywordInput).trim()
         : '';
 
+      const excludeKeyword = f.excludeKeywordInput && String(f.excludeKeywordInput).trim()
+        ? String(f.excludeKeywordInput).trim()
+        : '';
+
       // รองรับทั้ง hashtags และ HashtagsInput
       const hashtags = (f.hashtags || f.HashtagsInput || []).filter(Boolean);
 
@@ -446,11 +466,11 @@ export default {
         dateRange = `${this.valueDate[0]} → ${this.valueDate[1]}`;
       }
 
-      return { keyword, sentiments, hashtags, sourceText, viewMode, sortBy, dateRange };
+      return { keyword, excludeKeyword, sentiments, hashtags, sourceText, viewMode, sortBy, dateRange };
     },
     hasAnyPretty() {
       const p = this.pretty;
-      return !!(p.keyword || p.sentiments.length || p.hashtags.length || p.sourceText || p.viewMode || p.sortBy || p.dateRange);
+      return !!(p.keyword || p.excludeKeyword || p.sentiments.length || p.hashtags.length || p.sourceText || p.viewMode || p.sortBy || p.dateRange);
     }
 
   },
@@ -689,6 +709,14 @@ export default {
         .map((g) => g.trim().split(/[+\s]+/).filter(Boolean).join("+"))
         .join(",");
     },
+    buildExcludeKeywordParam() {
+      const raw = (this.filters.excludeKeywordInput || "").trim();
+      if (!raw) return "";
+      return raw
+        .split(",")
+        .map((g) => g.trim().split(/[+\s]+/).filter(Boolean).join("+"))
+        .join(",");
+    },
     buildParamsForDay(ymd, overrides = {}) {
       const sortRaw = overrides.sort_by ?? this.daySortMap[ymd] ?? this.filters.sort_by;
       const page = overrides.page ?? this.dayPageMap[ymd] ?? 1;
@@ -697,6 +725,7 @@ export default {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
+        excludeKeyword: this.buildExcludeKeywordParam(),
         source: this.sourceParam(this.filters.source),
         // ถ้า 'recent' ให้ไม่ส่ง (ตามโค้ดเดิมของคุณ)
         sort_by: sortRaw === "recent" ? undefined : sortRaw,
@@ -720,6 +749,7 @@ export default {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
+        excludeKeyword: this.buildExcludeKeywordParam(),
         source: this.sourceParam(this.filters.source),
         // ถ้า 'recent' ให้ไม่ส่ง (ตามโค้ดเดิมของคุณ)
         sort_by: sortRaw === "recent" ? undefined : sortRaw,
@@ -927,6 +957,7 @@ async apiTimelineDaily() {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
+        excludeKeyword: this.buildExcludeKeywordParam(),
         start,
         end,
         source: this.sourceParam(this.filters.source),

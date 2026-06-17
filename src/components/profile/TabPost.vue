@@ -1006,6 +1006,7 @@ export default {
       "getEDateHt",
       "getArrDateHashtag",
       "getValSource",
+      "getSourceNews",
 
     ]),
     domainName() {
@@ -1446,6 +1447,7 @@ export default {
               domain: domains,
               offset: offset,
               dashboard: dash,
+              source_news: this.getSourceNews,
             };
           } else {
             //  have  sentiment
@@ -1458,6 +1460,7 @@ export default {
               domain: domains,
               offset: offset,
               dashboard: dash,
+              source_news: this.getSourceNews,
             };
           }
           if (this.domainKeyword) {

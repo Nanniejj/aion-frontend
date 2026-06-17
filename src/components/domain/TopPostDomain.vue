@@ -67,6 +67,7 @@ export default {
       "getArrDate",
       "getNamePlatform",
       "getDomainArr",
+      "getSourceNews",
     ]),
   },
   data() {
@@ -121,9 +122,10 @@ export default {
     
         };
       }
-      if (this.$route.name!=='Domain') {
+      if (this.$route.name !== 'Domain') {
         this.$store.dispatch("fetchPostDomain", objtop);
-      }else{
+      } else {
+        objtop.source_news = this.getSourceNews;
         this.$store.dispatch("fetchTopPostDomain", objtop);
       }
 

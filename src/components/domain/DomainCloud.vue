@@ -54,7 +54,8 @@ export default {
       "getSdateDm",
       "getEdateDm",
       "getArrDate",
-      "getClickDomainId"
+      "getClickDomainId",
+      "getSourceNews"
     ]),
     myImage() {
       if (this.getWordCloudImg) {
@@ -94,6 +95,7 @@ export default {
       start_date: this.sdate,
       end_date: this.edate,
       domain: this.getClickDomain,
+      source_news: this.getSourceNews,
       // domain_ids:this.getClickDomainId,
 
       //   monitor: this.selected
