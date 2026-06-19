@@ -145,6 +145,7 @@ export default {
                 keyword: f.keyword ||"",
                 sort_by: f.sort_by,
                 source: f.source,
+                exclude: f.exclude,
             };
 
             const config = {

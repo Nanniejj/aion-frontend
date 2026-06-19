@@ -550,6 +550,7 @@ export default {
       //today = moment(new Date()).format().slice(0, 10);
       sdate = "&start=" + this.getSdateDm;
       edate = "&end=" + this.getEdateDm;
+      let source_news = "";
       //http://139.59.103.67:3000/api/v2/userposts/getInfluDomain?&domain=
       // "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain="
       var config = {

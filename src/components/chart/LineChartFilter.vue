@@ -14,7 +14,7 @@ import 'moment/locale/th';
 export default {
   components: { apexchart: VueApexCharts },
   computed: {
-    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate", "getClickDomainId"]),
+    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate", "getClickDomainId", "getSourceNews"]),
   },
   props: {
     typeChart: { type: String },
@@ -30,6 +30,7 @@ export default {
     },
     typeChart() { this.apiFilterChart(); },
     label() { this.apiFilterChart(); },
+    getSourceNews() { this.apiFilterChart(); },
   },
   data() {
     return {
@@ -270,12 +271,12 @@ export default {
       }
       if (start == "start") { sdate = ""; edate = ""; }
       label = this.label ? "&label=" + this.label : "";
-
+let source_news = this.getSourceNews ? "&source_news=" + this.getSourceNews : "";
       var config = {
         method: "get",
         url:
           "https://api2.cognizata.com/api/v2/userposts/getChartDomainFilter?domain_id=" +
-          this.getClickDomainId + sdate + edate + label,
+          this.getClickDomainId + sdate + edate + label + source_news,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",

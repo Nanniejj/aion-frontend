@@ -154,54 +154,43 @@ export default {
         this.$emit('filterAccount', this.accountsInput)
         // this.fetchTopUsers();
     },
-    async fetchTopUsers() {
-      this.loading = true
-      this.topError = null
-    //   this.topUsers = []
+fetchTopUsers() {
+  this.loading = true
+  this.topError = null
 
-    //   if (!this.peakOnlyWindow || !this.peakOnlyWindow.startLocalStr || !this.peakOnlyWindow.endLocalStr) {
-    //     this.loading = false
-    //     this.topError = 'ยังไม่พบช่วงพีคจากกราฟ'
-    //     return
-    //   }
+  const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
+  const params = {
+    sentiment: this.sentiment || '1,0,-1',
+    account: this.filters.account,
+    keyword: this.filters.keyword || '',
+    ...(this.filters.exclude ? { exclude: this.filters.exclude } : {}),
+    ...(this.filters.source_news ? { source_news: this.filters.source_news } : {}),
+    ...(this.filters.sort_by ? { sort_by: this.filters.sort_by } : {}),
+    top_accounts_limit: 10,
+    page: this.topPage,
+    start: this.filters.start,
+    end: this.filters.end,
+    ...(this.filters.source ? { source: this.filters.source } : {})
+  }
 
-      const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
-      const params = {
-        sentiment: this.sentiment || '1,0,-1',
-        account:this.filters.account,
-        keyword: this.filters.keyword || '',
-        //   sort_by: 'engagement',
-        ...(this.filters.sort_by ? { sort_by: this.filters.sort_by } : {}),
-        top_accounts_limit: 10,
-        page: this.topPage,
-        start: this.filters.start,
-          end: this.filters.end,
-        ...(this.filters.source ? { source: this.filters.source } : {})
-        // start: this.peakOnlyWindow.startLocalStr,
-        // end: this.peakOnlyWindow.endLocalStr
-      }
-
-      try {
-          const { data } = await axios.get(API_URL, { params })
-        
-        const raw =
-          (Array.isArray(data?.top_accounts) && data.top_accounts) ||
-          (Array.isArray(data?.accounts) && data.accounts) ||
-          (Array.isArray(data?.data) && data.data) ||
-          [];
-        this.topUsers = raw
-        console.log("top users === ", this.topUsers);
-        
-        // this.topUsers = raw.slice(0, 10).map((p, idx) => this.normalizePost(p, idx))
-        // this.canNextTop = this.topUsers.length >= this.topLimit
-      } catch (err) {
-        console.error(err)
-        this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
-        // this.canNextTop = false
-      } finally {
-        this.loading = false
-      }
-    },
+  axios.get(API_URL, { params })
+    .then(({ data }) => {
+      const raw =
+        (Array.isArray(data?.top_accounts) && data.top_accounts) ||
+        (Array.isArray(data?.accounts) && data.accounts) ||
+        (Array.isArray(data?.data) && data.data) ||
+        [];
+      this.topUsers = raw
+      console.log("top users === ", this.topUsers)
+    })
+    .catch(err => {
+      console.error(err)
+      this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
+    })
+    .finally(() => {
+      this.loading = false
+    })
+},
     },
     watch: {
         filters: {
@@ -215,8 +204,8 @@ export default {
         deep: true
         }
     },
-    async mounted() {
-        await this.fetchTopUsers();
+  mounted() {
+       this.fetchTopUsers();
     }
 }
 </script>

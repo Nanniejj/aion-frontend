@@ -237,6 +237,9 @@ export default {
     getArrDate: function () {
       this.updateStat();
     },
+    getSourceNews: function () {
+      this.updateStat();
+    },
   },
   computed: {
     ...mapGetters([
@@ -245,7 +248,8 @@ export default {
       "getEdateDm",
       "getLoadStat",
       "getArrDate",
-      "getClickDomainId"
+      "getClickDomainId",
+      "getSourceNews"
     ]),
   },
   data() {
@@ -267,6 +271,7 @@ export default {
       let sdate, edate;
       sdate = "&start=" + this.getSdateDm;
       edate = "&end=" + this.getEdateDm;
+      let source_news = this.getSourceNews !== "all" ? "&source_news=" + this.getSourceNews : "";
       this.$store.commit("setLoadStat", true);
      var config ={
         method: "get",
@@ -274,7 +279,8 @@ export default {
           "https://api2.cognizata.com/api/v2/userposts/getStatistics?domain_id=" +
           this.getClickDomainId +
           sdate +
-          edate,
+          edate +
+          source_news,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",
@@ -331,6 +337,7 @@ export default {
     today =moment(new Date()).format().slice(0,10);
     sdate = "&start=" +today + "T00:00:00";
     edate = "&end=" +today + "T23:59:59";
+    let source_news = this.getSourceNews !== "all" ? "&source_news=" + this.getSourceNews : "";
 
 var config ={
         method: "get",
@@ -338,7 +345,8 @@ var config ={
           "https://api2.cognizata.com/api/v2/userposts/getStatistics?domain_id=" +
           this.getClickDomainId +
           sdate +
-          edate,
+          edate +
+          source_news,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
           "Content-Type": "application/json",

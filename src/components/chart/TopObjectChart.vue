@@ -188,7 +188,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["getClickDomainId", "getSdateDm", "getEdateDm", "getArrDate", "getClickDomain"]),
+    ...mapGetters(["getClickDomainId", "getSdateDm", "getEdateDm", "getArrDate", "getClickDomain", "getSourceNews"]),
     finalSeriesSubdomain() {
       if (this.sublabelType === "posts" && this.subdomainChartType === "pie") {
         return this.seriesSubdomainRaw;
@@ -346,6 +346,12 @@ export default {
 
       const start = this.getSdateDm || startDefault;
       const end = this.getEdateDm || endDefault;
+      let sourceNewsParam = '';
+      if (this.getSourceNews === 'internal') {
+        sourceNewsParam = '&source_news=internal';
+      } else if (this.getSourceNews === 'external') {
+        sourceNewsParam = '&source_news=external';
+      }
       try {
         // show loading
         this.chartOptionsSubdomain = {
@@ -355,7 +361,7 @@ export default {
         this.seriesSubdomainRaw = [];
 
         const res = await axios.get(
-          `https://api2.cognizata.com/api/v2/ranking/getSubdomainCount?domain_id=${this.getClickDomainId}&start=${start}&end=${end}`,
+          `https://api2.cognizata.com/api/v2/ranking/getSubdomainCount?domain_id=${this.getClickDomainId}&start=${start}&end=${end}${sourceNewsParam}`,
           {
             headers: {
               Authorization: "Bearer " + localStorage.getItem("token"),
@@ -411,7 +417,12 @@ export default {
 
       const start = this.getSdateDm || startDefault;
       const end = this.getEdateDm || endDefault;
-
+      let sourceNewsParam = '';
+      if (this.getSourceNews === 'internal') {
+        sourceNewsParam = '&source_news=internal';
+      } else if (this.getSourceNews === 'external') {
+        sourceNewsParam = '&source_news=external';
+      }
       try {
         this.chartOptionsObject = {
           ...this.chartOptionsObject,
@@ -419,7 +430,7 @@ export default {
         };
         this.seriesObject = [];
 
-        let url = `https://api2.cognizata.com/api/v2/ranking/getObjectCount?domain_id=${this.getClickDomainId}&start=${start}&end=${end}&limit=10`;
+        let url = `https://api2.cognizata.com/api/v2/ranking/getObjectCount?domain_id=${this.getClickDomainId}&start=${start}&end=${end}&limit=10${sourceNewsParam}`;
         if (subdomainId) url += `&subdomain_id=${subdomainId}`;
 
         const res = await axios.get(url, {

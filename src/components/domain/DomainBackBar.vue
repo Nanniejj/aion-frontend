@@ -34,14 +34,14 @@
         </b-col>
         <b-col></b-col>
         <b-col cols="12" xl="" align-self="end" class="d-flex justify-content-center justify-content-sm-end text-sm-right px-0 mt-sm-2 mt-md-4 mt-lg-3 mt-xl-2">
-            <b-dropdown size="sm" variant="outline-secondary" class="mr-2">
+            <b-dropdown size="sm" variant="warning" class="mr-2 ">
                 <template #button-content>
-                  <i class="fas fa-newspaper mr-2"></i>
+                  <i class="fas fa-newspaper mr-2" ></i>
                   {{ newsSourceLabel }}
                 </template>
                 <b-dropdown-item @click="setNewsSource('all')">ทั้งหมด</b-dropdown-item>
-                <b-dropdown-item @click="setNewsSource('internal')">ข่าวในประเทศ</b-dropdown-item>
-                <b-dropdown-item @click="setNewsSource('external')">ข่าวนอกประเทศ</b-dropdown-item>
+                <b-dropdown-item @click="setNewsSource('internal')">ข่าว <b>ภายในประเทศ</b> </b-dropdown-item>
+                <b-dropdown-item @click="setNewsSource('external')">ข่าว <b>นอกประเทศ</b> </b-dropdown-item>
             </b-dropdown>
             <section
             id="date-picker"

@@ -29,14 +29,14 @@
             <b-icon icon="search" class="mr-1"></b-icon> {{ pretty.keyword }}
           </div>
 
-          <div v-if="pretty.keyword && (pretty.excludeKeyword || pretty.hashtags.length)" class="mr-2 my-1"> / </div>
+          <div v-if="pretty.keyword && (pretty.exclude || pretty.hashtags.length)" class="mr-2 my-1"> / </div>
 
           <!-- ยกเว้นคำ -->
-          <div v-if="pretty.excludeKeyword" class="mr-2 my-1 text-muted">
-            <b-icon icon="x-circle" class="mr-1"></b-icon> {{ pretty.excludeKeyword }}
+          <div v-if="pretty.exclude" class="mr-2 my-1 text-muted text-small">
+            <b-icon icon="x-circle" class="mr-1" variant="danger"></b-icon>{{ pretty.exclude }}
           </div>
 
-          <div v-if="pretty.excludeKeyword && pretty.hashtags.length" class="mr-2 my-1"> / </div>
+          <div v-if="pretty.exclude && pretty.hashtags.length" class="mr-2 my-1"> / </div>
 
           <!-- Hashtags -->
           <div v-for="h in pretty.hashtags" :key="h" pill variant="info" class="mr-2 my-1">
@@ -60,16 +60,17 @@
           <b-badge v-if="pretty.viewMode" pill variant="light" class="mr-2  py-2 my-1">
             {{ pretty.viewMode }}
           </b-badge>
-
           <!-- จัดเรียง -->
           <b-badge v-if="pretty.sortBy" pill variant="light" class="mr-2  py-2 my-1">
             <b-icon icon="sort-down" class="mr-1"></b-icon>{{ pretty.sortBy }}
           </b-badge>
-
           <!-- ช่วงเวลา -->
           <b-badge v-if="pretty.dateRange" pill variant="light" class="mr-2 py-2 my-1">
             <b-icon icon="calendar-date" class="mr-1"></b-icon>{{ pretty.dateRange }}
           </b-badge>
+
+          <span > <b-badge v-if="newsSourceLabel" pill variant="light" class="mr-2 py-2 my-1"> <i class="fas fa-earth-africa mr-1"></i> {{ newsSourceLabel }}</b-badge> </span>
+
         </div>
       </div>
 
@@ -148,12 +149,24 @@
           </b-row>
 
           <b-row align-h="end" class="mt-2" justify="center">
-             <b-col cols="auto" md="auto" align="center" justify="center">
+           
+             <b-col cols="auto" md="auto" align="center" justify="center" class="text-right">
               <!-- Sentiment -->
-              <b-form-group class="pr-md-3 checkbox-v mt-1">
+              <b-form-group class=" checkbox-v mt-1">
                 <!-- <span class="text-muted small">sentiment</span> -->
                 <b-form-checkbox-group v-model="formFilters.sentiment" :options="sentimentOptions" />
               </b-form-group>
+            </b-col>
+             <b-col cols="auto" md="auto" align="center" justify="center" class="mb-2">
+                <b-dropdown variant="outline-info" >
+                <template #button-content>
+                  <i class="fas fa-earth-africa mr-1"></i>
+                  {{ newsSourceLabel }}
+                </template>
+                <b-dropdown-item @click="setNewsSource('all')">ทั้งหมด</b-dropdown-item>
+                <b-dropdown-item @click="setNewsSource('internal')">ข่าว <b>ในประเทศ</b></b-dropdown-item>
+                <b-dropdown-item @click="setNewsSource('external')">ข่าว <b>นอกประเทศ</b></b-dropdown-item>
+            </b-dropdown>
             </b-col>
             <b-col cols="auto" md="auto" align="center" justify="center">
               <b-form-group class="pr-md-3">
@@ -373,6 +386,7 @@ export default {
         excludeKeywordInput: "",
         view_mode: "posts",
         source: [null],
+        source_news: "all", // ✅ all | internal | external
         sort_by: "recent",//recent
         limit: 50,
         page: 1,
@@ -384,6 +398,7 @@ export default {
         excludeKeywordInput: "",
         view_mode: "posts",
         source: [null],
+        source_news: "all", // ✅ all | internal | external
         sort_by: "recent",
         limit: 50,
         page: 1,
@@ -411,12 +426,17 @@ export default {
   },
   computed: {
     // ...ของคุณ
+        newsSourceLabel() {
+      if (this.filters.source_news === "internal") return "ข่าวในประเทศ";
+      if (this.filters.source_news === "external") return "ข่าวนอกประเทศ";
+      return "ทั้งหมด";
+    },
     filteredTemplates() {
       const q = (this.templateQuery || '').toLowerCase().trim();
       if (!q) return this.templates || [];
       return (this.templates || []).filter(t => (t.name || '').toLowerCase().includes(q));
     },
-    ...mapGetters(["getSelected", "getSentimentChart", "getWordCloud", "getDomain", "getLoadStatus", "getToSection"]),
+    ...mapGetters(["getSelected", "getSentimentChart", "getWordCloud", "getDomain", "getLoadStatus", "getToSection","getSourceNewsTimeline"]),
     pretty() {
       const f = this.filters || this.formFilters || {};
 
@@ -437,7 +457,7 @@ export default {
         ? String(f.keywordInput).trim()
         : '';
 
-      const excludeKeyword = f.excludeKeywordInput && String(f.excludeKeywordInput).trim()
+      const exclude = f.excludeKeywordInput && String(f.excludeKeywordInput).trim()
         ? String(f.excludeKeywordInput).trim()
         : '';
 
@@ -466,11 +486,11 @@ export default {
         dateRange = `${this.valueDate[0]} → ${this.valueDate[1]}`;
       }
 
-      return { keyword, excludeKeyword, sentiments, hashtags, sourceText, viewMode, sortBy, dateRange };
+      return { keyword, exclude, sentiments, hashtags, sourceText, viewMode, sortBy, dateRange };
     },
     hasAnyPretty() {
       const p = this.pretty;
-      return !!(p.keyword || p.excludeKeyword || p.sentiments.length || p.hashtags.length || p.sourceText || p.viewMode || p.sortBy || p.dateRange);
+      return !!(p.keyword || p.exclude || p.sentiments.length || p.hashtags.length || p.sourceText || p.viewMode || p.sortBy || p.dateRange);
     }
 
   },
@@ -485,6 +505,10 @@ export default {
     }
     const domain = localStorage.getItem("domainArr");
     this.$store.commit("setDomainArr", domain);
+    if (this.getSourceNewsTimeline) {
+      this.filters.source_news = this.getSourceNewsTimeline;
+      this.formFilters.source_news = this.getSourceNewsTimeline;
+    }
     this.apiTimeline();
     this.$nextTick(() => this.createObserver());
     if (this.filters.view_mode !== 'daily') {
@@ -495,6 +519,12 @@ export default {
     if (this.observer) this.observer.disconnect();
   },
     methods: {
+        setNewsSource(value) {
+      this.$store.commit("setSourceNewsTimeline", value);
+      this.filters.source_news = value;
+      this.formFilters.source_news = value;
+     this.handleSearch();
+    },
     handleSearchAccount(val) {
         this.formFilters.accountsInput = val;
         this.handleSearch();
@@ -556,6 +586,8 @@ export default {
       const t = this.templates.find(x => x.id === id);
       if (!t) return;
       this.formFilters = JSON.parse(JSON.stringify(t.filters));
+      if (!this.formFilters.source_news) this.formFilters.source_news = 'all';
+      this.$store.commit("setSourceNewsTimeline", this.formFilters.source_news);
       if (t.includeTimeRange && t.valueDate && t.valueDate[0] && t.valueDate[1]) {
         this.valueDate = JSON.parse(JSON.stringify(t.valueDate));
       }
@@ -725,8 +757,9 @@ export default {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
-        excludeKeyword: this.buildExcludeKeywordParam(),
+        exclude: this.buildExcludeKeywordParam(),
         source: this.sourceParam(this.filters.source),
+        source_news: this.filters.source_news === 'all' ? undefined : this.filters.source_news,
         // ถ้า 'recent' ให้ไม่ส่ง (ตามโค้ดเดิมของคุณ)
         sort_by: sortRaw === "recent" ? undefined : sortRaw,
         limit,
@@ -749,8 +782,9 @@ export default {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
-        excludeKeyword: this.buildExcludeKeywordParam(),
+        exclude: this.buildExcludeKeywordParam(),
         source: this.sourceParam(this.filters.source),
+        source_news: this.filters.source_news === 'all' ? undefined : this.filters.source_news,
         // ถ้า 'recent' ให้ไม่ส่ง (ตามโค้ดเดิมของคุณ)
         sort_by: sortRaw === "recent" ? undefined : sortRaw,
         start: `${strat}T00:00:00`,
@@ -957,10 +991,11 @@ async apiTimelineDaily() {
       const p = {
         sentiment: this.filters.sentiment.join(","),
         keyword: this.buildKeywordParam(),
-        excludeKeyword: this.buildExcludeKeywordParam(),
+        exclude: this.buildExcludeKeywordParam(),
         start,
         end,
         source: this.sourceParam(this.filters.source),
+        source_news: this.filters.source_news === 'all' ? undefined : this.filters.source_news,
         sort_by: this.filters.sort_by === "recent" ? undefined : this.filters.sort_by,
         limit: this.filters.limit,
         page: this.filters.page

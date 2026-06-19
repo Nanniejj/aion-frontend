@@ -22,6 +22,7 @@ export default {
     exportTopPost: [],
     exportTopPostNeg: [],
     sourceNews: "all",
+    sourceNewsTimeline: "all",
   },
   getters: {
     getShowReport: (state) => {
@@ -91,6 +92,9 @@ export default {
     getSourceNews: (state) => {
       return state.sourceNews;
     },
+    getSourceNewsTimeline: (state) => {
+      return state.sourceNewsTimeline;
+    }
   },
   mutations: {
     setClickDomainId: (state, payload) => {
@@ -137,6 +141,9 @@ export default {
     },
     setSourceNews: (state, payload) => {
       state.sourceNews = payload;
+    },
+    setSourceNewsTimeline: (state, payload) => {
+      state.sourceNewsTimeline = payload;
     },
     setLoadWordCloud: (state, payload) => {
       state.loadWcloud = payload;
@@ -221,7 +228,6 @@ export default {
           var posts = post.map((result) => {
             return { ...result, ...pair };
           });
-
           commit("setTopPostDomain", posts.slice(0, 3));
         } else {
           commit("setTopPostDomain", []);
@@ -229,7 +235,8 @@ export default {
 
         commit("setLoadTopPost", false);
       } catch (error) {
-        console.log(error.response);
+               commit("setLoadTopPost", false);
+        console.log(error);
       }
     },
 

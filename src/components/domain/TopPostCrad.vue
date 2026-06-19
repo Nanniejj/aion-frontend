@@ -1,9 +1,11 @@
 <template>
   <!-- <div> -->
-  <!-- {{ getTopPostDomain }} -->
+
   <div v-if="getTopPostDomain && getTopPostDomain.length">
+    <!-- getTopPostDomain -->
     <!-- {{ getTopPostDomain }} -->
     <!-- Highlight -->
+         
     <b-form-checkbox switch size="lg" class="text-right" v-model="checked" v-if="pageCheck == 'Domain'">
       <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
       <span v-else class="box-hl pl-2 pr-2">Highlight</span>

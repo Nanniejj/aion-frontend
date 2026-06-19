@@ -35,6 +35,8 @@
 
         <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
       </b-col>
+
+      <!-- กล่อง SummaryButton + TrendSummary: ยังคงผูกกับ series ตามเดิม -->
       <b-col v-if="series.length !== 0" cols="12" class="">
           <SummaryButton
             class="text-left mb-3"
@@ -45,7 +47,6 @@
             :topN="5"
             :openTopUsers="openTopUsers"
             :openTrendSummary="openTrendSummary"
-            
           />
         <b-collapse id="trendSummary" v-model="openTrendSummary" class="my-2">
             <TrendSummary
@@ -55,52 +56,15 @@
             :totals-count="totals_count"
             />
         </b-collapse>
+      </b-col>
+
+      <!-- TopUsers: ย้ายออกมานอกเงื่อนไข series เพื่อให้โหลดข้อมูลของตัวเองได้ทันที ไม่ต้องรอกราฟ -->
+      <b-col cols="12" class="">
         <b-collapse id="top-participants" v-model="openTopUsers" class="my-2">
-            <!-- <b-card>
-                <template #header>
-                <div class="d-flex align-items-center justify-content-between">
-                    <span>🔥 สรุปผู้มีส่วนร่วมใน <b>ช่วงพีคสูงสุด</b> (Top {{ topLimit }})</span>
-                    <small v-if="peakOnlyWindow" class="text-muted">
-                    ช่วงที่ใช้: {{ peakOnlyWindow.startLocalStr }} – {{ peakOnlyWindow.endLocalStr }}
-                    </small>
-                </div>
-                </template>
-
-                <div v-if="topLoading" class="text-center py-3">
-                <b-spinner small></b-spinner> กำลังโหลดโพสต์...
-                </div>
-
-                <div v-else-if="topError" class="text-danger">
-                {{ topError }}
-                </div>
-
-                <div v-else-if="!topPosts.length && !topLoading" class="text-muted">
-                ไม่พบโพสต์ในช่วงพีค
-                </div>
-
-                <div v-else>
-                    <top-accounts 
-                        :accounts="topPosts" 
-                        :limit="10" 
-                        :loading="topLoading" 
-                        :top-sentiment="filters.sentiment" 
-                        @change-top-sentiment="onChangeTopSentiment" 
-                        @filter-account="onFilterAccount"
-                    />
-                </div>
-            </b-card> -->
             <TopUsers
                 :filters="filters"
                 @filterAccount="updateAccount"
             />
-                <!-- :top-posts="topPosts"
-                :top-loading="topLoading"
-                :top-error="topError"
-                :top-limit="topLimit"
-                :top-page="topPage"
-                :can-next-top="canNextTop"
-                :peak-only-window="peakOnlyWindow"
-                @change-page="changeTopPage" -->
         </b-collapse>
       </b-col>
     </b-row>
@@ -261,8 +225,9 @@ export default {
 
     this._flushTimer = setInterval(() => this._flushClickMap(), Math.max(this._dblDelay * 2, 1000))
 
-    // โหลดข้อมูลกราฟ
-    // this.fetchData()
+    // โหลดข้อมูลกราฟ (เปิดใช้งานเพื่อให้ getPostCharts ยิงตั้งแต่เปิดหน้า
+    // พร้อมๆ กับ getPostSentiment ของ TopUsers ที่ mount ทันทีแล้ว)
+    this.fetchData()
   },
   beforeDestroy() {
     if (this._flushTimer) { clearInterval(this._flushTimer); this._flushTimer = null }
@@ -367,46 +332,6 @@ export default {
       }
     },
 
-    // ========= ยิง API Fulltext เฉพาะช่วงพีค =========
-    // async fetchTopPosts() {
-    //   this.topLoading = true
-    //   this.topError = null
-    //   this.topPosts = []
-
-    //   if (!this.peakOnlyWindow || !this.peakOnlyWindow.startLocalStr || !this.peakOnlyWindow.endLocalStr) {
-    //     this.topLoading = false
-    //     this.topError = 'ยังไม่พบช่วงพีคจากกราฟ'
-    //     return
-    //   }
-
-    //   const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'
-    //   const params = {
-    //     sentiment: this.filters.sentiment || '1,0,-1',
-    //     keyword: this.filters.keyword || '',
-    //     sort_by: 'engagement',
-    //     limit: this.topLimit,
-    //     page: this.topPage,
-    //     start: this.peakOnlyWindow.startLocalStr,
-    //     end: this.peakOnlyWindow.endLocalStr
-    //   }
-
-    //   try {
-    //     const { data } = await axios.get(API_URL, { params })
-    //     const raw = Array.isArray(data) ? data
-    //       : (data && Array.isArray(data.data)) ? data.data
-    //         : (data && Array.isArray(data.items)) ? data.items
-    //           : (data && Array.isArray(data.results)) ? data.results
-    //             : []
-    //     this.topPosts = raw.map((p, idx) => this.normalizePost(p, idx))
-    //     this.canNextTop = this.topPosts.length >= this.topLimit
-    //   } catch (err) {
-    //     console.error(err)
-    //     this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
-    //     this.canNextTop = false
-    //   } finally {
-    //     this.topLoading = false
-    //   }
-    // },
     async fetchTopPosts() {
         console.log(
             "%c CALL → fetchTopPosts from:",
@@ -427,6 +352,7 @@ export default {
       const params = {
         sentiment: this.filters.sentiment || '1,0,-1',
         keyword: this.filters.keyword || '',
+        
         sort_by: 'engagement',
         limit: this.topLimit,
         page: this.topPage,

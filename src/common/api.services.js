@@ -935,7 +935,8 @@ export const DomainService = {
       source = "",
       dash = "",
       findkey = "",
-      mor = "";
+      mor = "",
+      source_news="";
     if (payload.querySearch) {
       findkey = `&querySearch=${payload.querySearch}`;
     } else {

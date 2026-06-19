@@ -44,6 +44,7 @@
 <script>
 import { mapGetters } from "vuex";
 import moment from "moment";
+import axios from "axios";
 import cfb from "@/assets/cfb.png";
 import ctw from "@/assets/ctw.png";
 import cboard from "@/assets/cboard.png";
@@ -62,6 +63,10 @@ export default {
       rawData: [],
       total: 0,
       range: "",
+      // debounce + cancel state, ไม่เกี่ยวกับ render เลยไม่จำเป็นต้องเป็น reactive
+      // แต่เก็บไว้ใน data() ก็ใช้งานได้ปกติ
+      _updateTimer: null,
+      _cancelSource: null,
       platformConfig: [
         {
           source: "facebook",
@@ -158,24 +163,26 @@ export default {
     },
   },
 
+  // ใช้ watcher เดี่ยว ๆ ตามเดิม แต่ทุกตัวเรียกผ่าน queueUpdate()
+  // เพื่อรวม trigger ที่ยิงพร้อมกันให้เหลือ request เดียว
   watch: {
     getArrDate() {
-      this.updateChart();
+      this.queueUpdate();
     },
     getDateReport() {
-      this.updateChart();
+      this.queueUpdate();
     },
     getClickDomainId() {
-      this.updateChart();
+      this.queueUpdate();
     },
     getSdateDm() {
-      this.updateChart();
+      this.queueUpdate();
     },
     getEdateDm() {
-      this.updateChart();
+      this.queueUpdate();
     },
     getSourceNews() {
-      this.updateChart();
+      this.queueUpdate();
     },
   },
 
@@ -229,7 +236,23 @@ export default {
       );
     },
 
+    // รวม trigger ที่ยิงมาพร้อม ๆ กันจาก watcher หลายตัว (เช่น domain_id, sdate, edate,
+    // source_news เปลี่ยนพร้อมกันตอน user submit filter) ให้เหลือ updateChart() แค่ครั้งเดียว
+    queueUpdate() {
+      clearTimeout(this._updateTimer);
+      this._updateTimer = setTimeout(() => {
+        this.updateChart();
+      }, 150);
+    },
+
     async updateChart() {
+      // ถ้ามี request ก่อนหน้ายังไม่เสร็จ ให้ยกเลิกทิ้งก่อน
+      // กัน response เก่ามาถึงทีหลังแล้วทับข้อมูลที่ใหม่กว่า (race condition)
+      if (this._cancelSource) {
+        this._cancelSource.cancel();
+      }
+      this._cancelSource = axios.CancelToken.source();
+
       try {
         const urlapi = this.getApiUrl();
 
@@ -240,6 +263,7 @@ export default {
             Authorization: "Bearer " + localStorage.getItem("token"),
             "Content-Type": "application/json",
           },
+          cancelToken: this._cancelSource.token,
         };
 
         const response = await this.axios(config);
@@ -249,6 +273,10 @@ export default {
         this.total = data.reduce((sum, item) => sum + (item.count || 0), 0);
         this.range = `${this.getSdateDm || ""} - ${this.getEdateDm || ""}`;
       } catch (error) {
+        if (axios.isCancel(error)) {
+          // request ถูกยกเลิกเอง (มี request ใหม่กว่ามาแทนที่) ไม่ใช่ error จริง ไม่ต้อง log
+          return;
+        }
         console.error("updateChart error:", error);
         this.rawData = [];
         this.total = 0;
@@ -261,6 +289,10 @@ export default {
   },
 
   beforeDestroy() {
+    clearTimeout(this._updateTimer);
+    if (this._cancelSource) {
+      this._cancelSource.cancel();
+    }
     this.rawData = [];
     this.total = 0;
   },
