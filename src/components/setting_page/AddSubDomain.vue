@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="d-flex justify-content-end px-3">
     <!-- <button class="btn btn-add" @click="open = true;" style="background-color: #7cd1dc; color: black; border:#7cd1dc;"><i class="fa fa-plus"/> -->
 
-    <b-button pill class="w-100 w-md-auto"
+    <b-button pill class="w-auto w-md-auto"
       style="background-color: #7cd1dc; color: black; border:#7cd1dc;box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;"
       @click="open = true;">
       <i class="fa fa-plus"></i> เพิ่มหมวดหมู่
@@ -22,6 +22,9 @@
           <b-col sm="12">
             <b-form-input id="input-small2" placeholder="" maxlength="50" v-model="addSubDomain" focus></b-form-input>
             <small class="text-muted">{{ addSubDomain.length }} / 50 ตัวอักษร</small>
+            <div v-if="hasForbiddenChars(addSubDomain)" class="text-danger small mt-1">
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            </div>
 
             <!-- {{addSubDomain}} -->
           </b-col>
@@ -31,7 +34,7 @@
             <br>
             <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button> <b-button
               class="btn btn-save" size="sm" @click="addRowSubDomain"
-              :disabled="addSubDomain.trim().length === 0">บันทึก</b-button>
+              :disabled="addSubDomain.trim().length === 0 || hasForbiddenChars(addSubDomain)">บันทึก</b-button>
           </b-col>
         </b-row>
       </b-container>
@@ -55,6 +58,12 @@ export default {
     }
   },
   methods: {
+    // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่ (ใช้กฎเดียวกับ ImportObject.vue)
+    // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข และเว้นวรรคเท่านั้น
+    hasForbiddenChars(value) {
+      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      return forbiddenPattern.test(String(value || ""));
+    },
  async apiAddSubdomain() {
       const newSubdomainData = {
         name: this.addSubDomain.trim(),
@@ -90,6 +99,9 @@ export default {
     },
     addRowSubDomain() {
       //  this.getItemsSubDomain.push({name:this.addSubDomain,domain:{name:this.getDomainName},id:this.getItemsSubDomain.length});
+      if (this.addSubDomain.trim().length === 0 || this.hasForbiddenChars(this.addSubDomain)) {
+        return;
+      }
       this.apiAddSubdomain()
       this.open = false;
       this.addSubDomain = ''

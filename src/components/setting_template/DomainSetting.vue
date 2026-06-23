@@ -42,15 +42,16 @@
         </template>
 
         <template #cell(actions)="row">
-          <span class="fa fa-pencil" v-b-tooltip.hover title=" แก้ไขข้อมูล" size="sm" @click="
-            open = true;
-          info(row.item, row.index, $event.target);
-          ">
+          
+          <span class="fas fa-list-ul" v-b-tooltip.hover title="ดู SubDomain" size="sm"
+            @click="linkToSubDomain(row.item)"></span>
+          <span class="fas fa-copy" v-b-tooltip.hover title="คัดลอก Domain" size="sm"
+            @click="buildCloneInfo(row.item, row.index, $event.target);" ></span>
+            <span class="fa fa-pencil" v-b-tooltip.hover title=" แก้ไขข้อมูล" size="sm" 
+          @click="info(row.item, row.index, $event.target);">
           </span>
           <span class="fa fa-trash-alt" v-b-tooltip.hover title="ลบ" size="sm"
             v-on:click="removeRow(row.index, row.item)"></span>
-          <span class="fas fa-list-ul" v-b-tooltip.hover title="ดู SubDomain" size="sm"
-            @click="linkToSubDomain(row.item)"></span>
         </template>
 
         <template #cell(display)="row">
@@ -79,9 +80,13 @@
           <hr />
           <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
           <div>
-            <b-form-input v-model="textDomain" placeholder="" maxlength="50">
-              <b>{{ textDomain }}</b></b-form-input> <small class="text-muted">{{ textDomain.length }} / 50
+            <b-form-input v-model="textDomain" placeholder="" maxlength="50" class="modal-input">
+              <b>{{ textDomain }}</b></b-form-input>
+              <small class="text-muted">{{ textDomain.length }} / 50
               ตัวอักษร</small>
+            <div v-if="hasForbiddenChars(textDomain)" class="text-danger small mt-1">
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            </div>
             <br />
             <b-form-group v-slot="{ ariaDescribedby }">
               <b-form-radio-group v-model="selected" :options="options" :aria-describedby="ariaDescribedby"
@@ -92,10 +97,58 @@
                 <br />
                 <b-button class="btn btn-close" size="sm" @click="hideModal()">ปิดหน้าต่าง</b-button>
                 <b-button class="btn btn-save" size="sm" @click="editDomain()"
-                  :disabled="textDomain.trim().length === 0">บันทึก</b-button>
+                  :disabled="textDomain.trim().length === 0 || hasForbiddenChars(textDomain)">บันทึก</b-button>
               </b-col>
             </b-row>
             <!-- <div class="mt-2">Value: {{ textDomain }}</div> -->
+          </div>
+        </b-container>
+      </vue-modaltor>
+
+
+      <!-- clone modal -->
+      <vue-modaltor :visible="openClone" @hide="hideCloneModal" :animation-panel="'modal-slide-top'">
+        <b-container fluid>
+          <h5>คัดลอกข้อมูลหัวเรื่อง<b>{{ textDomain }}</b></h5>
+          <hr />
+          <p>คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
+          <div>
+            <label class="mb-1">ชื่อ Domain ใหม่</label>
+            <b-form-input v-model="domainClone.new_domain_name" placeholder="ชื่อ Domain ใหม่" maxlength="50" class="modal-input">
+            </b-form-input>
+            <small class="text-muted">{{ domainClone.new_domain_name.length }} / 50 ตัวอักษร</small>
+            <div v-if="hasForbiddenChars(domainClone.new_domain_name)" class="text-danger small mt-1">
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            </div>
+            <br />
+            <br />
+            <label class="mb-1">คำต่อท้ายชื่อ SubDomain เดิม</label>
+            <b-form-input v-model="domainClone.subdomain_suffix" placeholder="เช่น -copy" maxlength="20" class="modal-input">
+            </b-form-input>
+            <small class="text-muted">{{ domainClone.subdomain_suffix.length }} / 20 ตัวอักษร (เว้นว่างได้)</small>
+            <div v-if="hasForbiddenChars(domainClone.subdomain_suffix)" class="text-danger small mt-1">
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            </div>
+            <br />
+            <br />
+            <label class="mb-1">คำต่อท้ายชื่อ Object เดิม</label>
+            <b-form-input v-model="domainClone.object_suffix" placeholder="เช่น -copy" maxlength="20" class="modal-input">
+            </b-form-input>
+            <small class="text-muted">{{ domainClone.object_suffix.length }} / 20 ตัวอักษร (เว้นว่างได้)</small>
+            <div v-if="hasForbiddenChars(domainClone.object_suffix)" class="text-danger small mt-1">
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            </div>
+            <b-row class="my-1">
+              <b-col sm="12" style="text-align:right;">
+                <br />
+                <b-button class="btn btn-close mx-3" size="sm" @click="hideCloneModal()">ปิดหน้าต่าง</b-button>
+                <b-button class="btn btn-save" size="sm" @click="createClone()"
+                  :disabled="domainClone.new_domain_name.trim().length === 0 ||
+                    hasForbiddenChars(domainClone.new_domain_name) ||
+                    hasForbiddenChars(domainClone.subdomain_suffix) ||
+                    hasForbiddenChars(domainClone.object_suffix)">คัดลอก</b-button>
+              </b-col>
+            </b-row>
           </div>
         </b-container>
       </vue-modaltor>
@@ -137,6 +190,7 @@ export default {
       ],
       textDomain: "",
       open: false,
+      openClone: false,
       totalRows: 1,
       currentPage: 1,
       perPage: 10,
@@ -151,6 +205,12 @@ export default {
         title: "",
         content: "",
       },
+      domainClone: {
+        domain_id: null,
+        new_domain_name: "", //ชื่อโดเมนใหม่
+        subdomain_suffix: "", //คำต่อท้ายชื่อ subdomain เดิม
+        object_suffix: ""  //คำต่อท้ายชื่อ object เดิม
+      }
     };
   },
   computed: {
@@ -170,6 +230,13 @@ export default {
     },
   },
   methods: {
+    // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่
+    // (กฎเดียวกับ ImportObject.vue / AddSubDomain.vue / SubdomainCard.vue / TemplateAddDomain.vue)
+    // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
+    hasForbiddenChars(value) {
+      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      return forbiddenPattern.test(String(value || ""));
+    },
     removeRow: function (index, item) {
       console.log("delete");
       this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
@@ -182,6 +249,7 @@ export default {
     },
     editDomain() {
       let tdomain = this.textDomain.trim();
+      if (tdomain.length === 0 || this.hasForbiddenChars(tdomain)) return;
       this.$store.dispatch("updateDomain", {
         name: tdomain,
         id: this.idDomain,
@@ -194,7 +262,7 @@ export default {
       //   var token='8ed9acde328c317fef0afce75850dc637e674174';
       //   const AuthStr = "Token " + token;
       //   var data = JSON.stringify({"name":_this.textDomain,"display":_this.selected,"id":_this.idDomain});
-      console.log(data);
+      // console.log(data);
       //   var config = {
       //     method: 'put',
       //     url: API_URL+'/v1/domain/'+_this.idDomain+'/',
@@ -221,6 +289,43 @@ export default {
 
       // });
     },
+    createClone() {
+      let newName = this.domainClone.new_domain_name.trim();
+      if (newName.length === 0) {
+        return;
+      }
+      if (
+        this.hasForbiddenChars(newName) ||
+        this.hasForbiddenChars(this.domainClone.subdomain_suffix) ||
+        this.hasForbiddenChars(this.domainClone.object_suffix)
+      ) {
+        return;
+      }
+      this.$confirm("คุณต้องการคัดลอก Domain นี้?").then(() => {
+        this.$store
+          .dispatch("cloneDomain", {
+            domain_id: this.domainClone.domain_id,
+            new_domain_name: newName,
+            subdomain_suffix: this.domainClone.subdomain_suffix.trim(),
+            object_suffix: this.domainClone.object_suffix.trim(),
+          })
+          .then(() => {
+            this.$fire({
+              title: "คัดลอกข้อมูลสำเร็จ",
+              type: "success",
+              showConfirmButton: false,
+              timer: 1000,
+            });
+            this.$store.dispatch("fetchTemplateDomain").then(() => {
+              this.totalRows = this.getItemsDomain.length;
+            });
+            this.hideCloneModal();
+          })
+          .catch(() => {
+            this.$alert("ไม่สามารถดำเนินการได้").then(() => {});
+          });
+      });
+    },
     linkToSubDomain(item) {
       // this.$store.dispatch("fetchListSubDomain",{name:item.name})
       console.log(item.id);
@@ -231,14 +336,33 @@ export default {
     hideModal() {
       this.open = false;
     },
+    hideCloneModal() {
+      this.openClone = false;
+      this.domainClone = {
+        domain_id: null,
+        new_domain_name: "",
+        subdomain_suffix: "",
+        object_suffix: "",
+      };
+    },
     info(item, button) {
       // this.infoModal.title = `Row index: ${index}`;
+      this.open = true;
       this.idDomain = item.id;
       console.log(this.idDomain);
       this.infoModal.content = item.name;
       this.textDomain = item.name;
       this.selected = item.display;
       console.log( this.options);
+      this.$root.$emit("bv::show::modal", this.infoModal.id, button);
+    },
+    buildCloneInfo(item, index, button) {
+      this.textDomain = item.name;
+      this.domainClone.domain_id = item.id;
+      this.domainClone.new_domain_name = item.name + " (สำเนา)";
+      this.domainClone.subdomain_suffix = "";
+      this.domainClone.object_suffix = "";
+      this.openClone = true;
       this.$root.$emit("bv::show::modal", this.infoModal.id, button);
     },
     resetInfoModal() {
@@ -294,7 +418,16 @@ table>thead>tr>th:nth-child(3) {
 #content>div>div:nth-child(1) .form-control:focus {
   border-color: transparent;
   outline: 0;
-  box-shadow: 0 0 0 0 #ede7dd;
+  box-shadow: 0 0 0 0 #665b48;
+}
+
+/* ✅ คืน focus border ให้ input ในกล่อง modal (แก้ไข/คัดลอก)
+   เพราะ rule ด้านบนดันไปลบ focus style ของ input พวกนี้ไปด้วยโดยไม่ตั้งใจ
+   ทำให้ตอนคลิกกรอกข้อมูล มองไม่เห็นว่ากำลังโฟกัสอยู่ที่ช่องไหน */
+.modal-input:focus {
+  border-color: #50c1d0 !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(80, 193, 208, 0.25) !important;
 }
 
 #btn-filter {
@@ -321,15 +454,6 @@ table>thead>tr>th:nth-child(3) {
   margin: 7px 5px;
   color: #4c412b;
 }
-
-.fa-list-ul{
-  background: #17a2b8;
-  padding: 10px;
-  border-radius: 50%;
-  box-shadow: 1px 1px 3px #666666;
-  margin: 7px 5px;
-  color: #ffffff;
-}
 .fa-trash-alt {
   background: #ffc8c8;
   padding: 10px;
@@ -338,6 +462,23 @@ table>thead>tr>th:nth-child(3) {
   margin: 7px 5px;
   color: #776167;
 }
+.fa-list-ul{
+  background: #17a2b8;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 1px 1px 3px #666666;
+  margin: 7px 5px;
+  color: #ffffff;
+}
+.fa-copy{
+  background: #8cc751;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 1px 1px 3px #666666;
+  margin: 7px 5px;
+  color: #ffffff;
+}
+
 
 .fa-pencil:hover {
   background: #4c412b;
@@ -385,6 +526,18 @@ table>thead>tr>th:nth-child(3) {
   .table {
     /* width: 85%; */
     margin: auto;
+  }
+  .fa-copy{
+    font-size: 12px;
+  }
+  .fa-list-ul{
+    font-size: 12px;
+  }
+  .fa-trash-alt{
+    font-size: 12px;
+  }
+  .fa-pencil{
+    font-size: 12px;
   }
 }
 </style>

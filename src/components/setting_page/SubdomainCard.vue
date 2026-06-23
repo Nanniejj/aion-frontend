@@ -15,13 +15,13 @@
               </span>
             </b-input-group-prepend>
 
-            <!-- ✅ พิมพ์ได้ แต่ไม่ยิงงานหนัก -->
+            <!-- ✅ พิมพ์ค้นหาแบบ debounce: หยุดพิมพ์ ~300ms แล้วค่อยกรองให้อัตโนมัติ -->
             <b-form-input
               ref="searchInput"
               v-model="searchQuery"
               @input="checkSearch"
               placeholder="ค้นหา"
-                @keyup.enter="filterSubdomains"
+              @keyup.enter="filterSubdomains"
               class="input-group-text text-left"
             />
 
@@ -125,7 +125,7 @@
 
   <!-- FAB -->
   <b-button
-    v-if="!loadWord"
+    v-if="!loadWord && !isFullscreenModalOpen"
     variant="warning"
     class="fab"
     @click="scrollToTop"
@@ -159,9 +159,16 @@
             />
           </b-form-group>
           <small class="text-muted">{{ editSubdomainName.length || 0 }} / 50 ตัวอักษร</small>
+          <div v-if="hasForbiddenChars(editSubdomainName)" class="text-danger small mt-1">
+            <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+          </div>
 
           <div class="d-flex justify-content-end mt-3">
-            <b-button class="btn-submit" @click="handleEditSubdomain" :disabled="editSubdomainName.length == 0">
+            <b-button
+              class="btn-submit"
+              @click="handleEditSubdomain"
+              :disabled="editSubdomainName.length == 0 || hasForbiddenChars(editSubdomainName)"
+            >
               บันทึก
             </b-button>
           </div>
@@ -218,6 +225,8 @@ isPaging: false,
 
       // search
       searchQuery: "",
+      searchDebounceTimer: null,
+      searchClearRaf: null,
 
       // suggestion
       suggestionKeywrords: [],
@@ -237,17 +246,10 @@ isPaging: false,
       subLimit: 10,
 
       showFabButton: false,
+      isFullscreenModalOpen: false,
     };
   },
   computed: {
-
-    checkSearch() {
-  if (!this.searchQuery) {
-    this.keyword = "";
-    this.filteredSubdomains = this.subdomains;
-    this.currentPage = 1; // ✅ เพิ่ม
-  }
-},
      totalSubdomains() {
     return this.filteredSubdomains?.length || 0;
   },
@@ -262,13 +264,31 @@ isPaging: false,
       return this.subLimit < (this.filteredSubdomains?.length || 0);
     },
   },
-  mounted() {
-    window.addEventListener("scroll", this.handleScroll);
-  },
   beforeDestroy() {
     window.removeEventListener("scroll", this.handleScroll);
+    this.$emitter.off("fullscreenModalToggled", this.onFullscreenModalToggled);
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+    if (this.searchClearRaf) {
+      cancelAnimationFrame(this.searchClearRaf);
+    }
   },
   methods: {
+    // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่ (กฎเดียวกับ ImportObject.vue / AddSubDomain.vue)
+    // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
+    // บล็อกสัญลักษณ์พิเศษอื่นๆ เช่น @ _ # $ ฿ % ^ & * , ฯลฯ
+    hasForbiddenChars(value) {
+      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      return forbiddenPattern.test(String(value || ""));
+    },
+    // เรียกเมื่อ ImportObject (หรือ modal เต็มจออื่นๆ) เปิด/ปิด
+    // เพื่อซ่อนปุ่ม FAB ของหน้านี้ไม่ให้ลอยทับ modal อยู่ดี
+    // (เพราะ FAB เป็น position: fixed กับหน้าเพจ ปรับ z-index เพียงอย่างเดียว
+    // ทำได้แค่จัดลำดับ ไม่ได้ทำให้ปุ่มหายไปจากตำแหน่งเดิม)
+    onFullscreenModalToggled(isOpen) {
+      this.isFullscreenModalOpen = isOpen;
+    },
  onPageChange(page) {
     if (page === this.currentPage) return;
    this.currentPage = page;
@@ -298,17 +318,42 @@ isPaging: false,
     loadMoreSubdomains() {
       this.subLimit = Math.min(this.filteredSubdomains.length, this.subLimit + this.subStep);
     },
+// ✅ พิมพ์ค้นหาแบบ debounce — รอให้หยุดพิมพ์ 300ms ก่อนค่อยกรองจริง
+// เพื่อไม่ยิง filterSubdomains() ทุกครั้งที่กดแต่ละตัวอักษร (ของเดิมที่ comment ไว้ว่า
+// "พิมพ์ได้ แต่ไม่ยิงงานหนัก" แต่ไม่เคย implement จริง ทำให้พิมพ์แล้วไม่เห็นผลเลยจนกว่าจะกด Enter)
 checkSearch() {
-  if (!this.searchQuery) {
-    this.keyword = "";
-    this.filteredSubdomains = this.subdomains;
-    this.currentPage = 1;
+  if (this.searchDebounceTimer) {
+    clearTimeout(this.searchDebounceTimer);
+    this.searchDebounceTimer = null;
   }
+  // ยกเลิก rAF clear ที่ค้างอยู่ (ถ้ามี) ก่อนเสมอ ป้องกันกรณีพิมพ์ตัวใหม่ทันที
+  // หลัง backspace จนว่าง แล้ว rAF เก่าดันมาเคลียร์ค่าที่พิมพ์ใหม่ทับ
+  if (this.searchClearRaf) {
+    cancelAnimationFrame(this.searchClearRaf);
+    this.searchClearRaf = null;
+  }
+
+  // ลบจนว่างแล้ว (กด backspace จนตัวอักษรสุดท้าย) — ต้อง defer การ reset list ที่หนัก
+  // ออกไปด้วย requestAnimationFrame เพื่อให้ช่อง input เคลียร์ตัวอักษรให้เห็นทันที (paint ก่อน)
+  // ไม่ถูกบล็อกโดยการ re-render รายการ subdomain ทั้งหมดที่อาจมีจำนวนมาก (sync, ทำงานหนัก)
+  // ถ้าไม่ defer ผู้ใช้จะรู้สึกว่า backspace ตัวสุดท้ายแล้ว "ค้าง"/ไม่ตอบสนองทันที
+  if (!this.searchQuery) {
+    this.searchClearRaf = requestAnimationFrame(() => {
+      this.searchClearRaf = null;
+      this.keyword = "";
+      this.filteredSubdomains = this.subdomains;
+      this.currentPage = 1;
+    });
+    return;
+  }
+
+  this.searchDebounceTimer = setTimeout(() => {
+    this.filterSubdomains();
+  }, 300);
 },
 
-
-    // ✅ เดิม filterSubdomains ของคุณตั้ง keyword อย่างเดียว :contentReference[oaicite:4]{index=4}
-    // เราคงแนวคิดเดิมเพื่อไม่ให้หนัก: ไม่ไปไล่ค้นทุก object/keyword ทั้งก้อน
+// ✅ เดิม filterSubdomains ของคุณตั้ง keyword อย่างเดียว :contentReference[oaicite:4]{index=4}
+// เราคงแนวคิดเดิมเพื่อไม่ให้หนัก: ไม่ไปไล่ค้นทุก object/keyword ทั้งก้อน
 filterSubdomains() {
   const q = (this.searchQuery || "").trim().toLowerCase();
 
@@ -457,6 +502,7 @@ this.currentPage = 1;
 
     async handleEditSubdomain() {
       if (this.editSubdomainIndex === null || !this.editSubdomainName.trim()) return;
+      if (this.hasForbiddenChars(this.editSubdomainName)) return;
 
       const subdomain = this.subdomains[this.editSubdomainIndex];
       const updatedSubdomainData = {
@@ -539,6 +585,9 @@ this.currentPage = 1;
   },
 
   async mounted() {
+    window.addEventListener("scroll", this.handleScroll);
+    this.$emitter.on("fullscreenModalToggled", this.onFullscreenModalToggled);
+
     await this.apiList();
     await this.apiGetSuggestionKeywrords();
 

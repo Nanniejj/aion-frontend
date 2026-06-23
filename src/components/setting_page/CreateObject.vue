@@ -1,6 +1,6 @@
 <template>
   <span>
-    <b-button size="md" class="w-md-auto btn-addobj" pill style="background-color: #fdd071;color: #2c3e50;" @click="open = true;">
+    <b-button size="md" class="w-md-auto btn-addobj w-100" pill style="background-color: #fdd071;color: #2c3e50;" @click="open = true;">
       <i class="fa fa-plus" style="font-size: 18px; line-height: 1;"></i> เพิ่มประเด็น
     </b-button>
     <vue-modaltor :visible="open" @hide="open = false;" :animation-panel="'modal-slide-top'"
@@ -29,10 +29,19 @@
           <b-form-group label="ประเด็น" label-class="font-weight-bold">
             <b-form-input v-model="objectName" maxlength="50" required></b-form-input>
             <small class="text-muted">{{ objectName.length }} / 50 ตัวอักษร</small>
+            <div v-if="hasForbiddenChars(objectName)" class="text-danger small mt-1">
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            </div>
           </b-form-group>
           <!-- Keywords -->
           <b-form-group label="Keyword" label-class="font-weight-bold">
-            <b-form-tags v-model="keywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+            <b-form-tags
+              v-model="keywords"
+              separator=",;"
+              placeholder="Enter เพื่อพิมพ์คำใหม่"
+              :tag-validator="tagValidator"
+              invalid-tag-text="ห้ามใส่อักขระพิเศษ"
+            ></b-form-tags>
           </b-form-group>
 
           <b-form-group>
@@ -40,14 +49,26 @@
             <b-alert variant="info" show>
               ใช้ <b>+</b> ในการ AND เช่น <strong>การเมือง + การปกครอง</strong>
             </b-alert>
-            <b-form-tags v-model="andKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"
-              @input="logAndKeywords"></b-form-tags>
+            <b-form-tags
+              v-model="andKeywords"
+              separator=",;"
+              placeholder="Enter เพื่อพิมพ์คำใหม่"
+              :tag-validator="tagValidator"
+              invalid-tag-text="ห้ามใส่อักขระพิเศษ"
+              @input="logAndKeywords"
+            ></b-form-tags>
           </b-form-group>
 
           <b-form-group>
             <label><b>Exclude Keyword <span class="badge badge-danger">NOT</span></b></label>
-            <b-form-tags v-model="notKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"
-              @input="logNotKeywords"></b-form-tags>
+            <b-form-tags
+              v-model="notKeywords"
+              separator=",;"
+              placeholder="Enter เพื่อพิมพ์คำใหม่"
+              :tag-validator="tagValidator"
+              invalid-tag-text="ห้ามใส่อักขระพิเศษ"
+              @input="logNotKeywords"
+            ></b-form-tags>
           </b-form-group>
 
           <!-- ปุ่มบันทึก & ปิด -->
@@ -55,7 +76,7 @@
           <div class="d-flex justify-content-end mt-3">
             <b-button style="background-color: #646462; border:  #646462;" @click="closeModal">ปิดหน้าต่าง</b-button>
             <b-button style="background-color: #50c1d0; color: black; border:#50c1d0;" class="ml-2"
-              :disabled="objectName.length == 0" @click="saveObject">บันทึก</b-button>
+              :disabled="objectName.trim().length === 0 || hasForbiddenChars(objectName)" @click="saveObject">บันทึก</b-button>
           </div>
 
         </b-container>
@@ -89,6 +110,17 @@ export default {
     };
   },
   methods: {
+    // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่
+    // (กฎเดียวกับ ImportObject.vue / AddSubDomain.vue / SubdomainCard.vue / TemplateAddDomain.vue / DomainSetting.vue)
+    // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
+    hasForbiddenChars(value) {
+      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      return forbiddenPattern.test(String(value || ""));
+    },
+    // ใช้กับ b-form-tags prop tag-validator — return false จะปฏิเสธไม่ให้เพิ่ม tag นั้นเลย
+    tagValidator(tag) {
+      return !this.hasForbiddenChars(tag);
+    },
     clearForm() {
       this.objectName = "";
       this.keywords = [];
@@ -102,6 +134,11 @@ export default {
     async saveObject() {
       if (!this.objectName.trim()) {
         alert("กรุณากรอกชื่อ Object");
+        return;
+      }
+
+      if (this.hasForbiddenChars(this.objectName)) {
+        alert("ชื่อ Object ห้ามมีอักขระพิเศษ");
         return;
       }
 

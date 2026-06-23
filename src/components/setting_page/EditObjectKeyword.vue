@@ -27,16 +27,31 @@
           <b-form-group label="ประเด็น" label-class="font-weight-bold">
             <b-form-input v-model="objectName" maxlength="50" required></b-form-input>
             <small class="text-muted">{{ objectName.length }} / 50 ตัวอักษร</small>
+            <div v-if="hasForbiddenChars(objectName)" class="text-danger small mt-1">
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            </div>
           </b-form-group>
 
           <!-- Keywords -->
           <b-tabs content-class="mt-3" lazy active-nav-item-class="font-weight-bold" nav-item-class="font-weight-bold">
             <b-tab title="Keyword">
-              <b-form-tags v-model="editKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+              <b-form-tags
+                v-model="editKeywords"
+                separator=",;"
+                placeholder="Enter เพื่อพิมพ์คำใหม่"
+                :tag-validator="tagValidator"
+                invalid-tag-text="ห้ามใส่อักขระพิเศษ"
+              ></b-form-tags>
             </b-tab>
 
             <b-tab title="Include Keyword">
-              <b-form-tags v-model="editAndKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+              <b-form-tags
+                v-model="editAndKeywords"
+                separator=",;"
+                placeholder="Enter เพื่อพิมพ์คำใหม่"
+                :tag-validator="tagValidator"
+                invalid-tag-text="ห้ามใส่อักขระพิเศษ"
+              ></b-form-tags>
               <br />
               <b-alert variant="info" show>
                 ใช้ <b>+</b> ในการ AND เช่น <strong>การเมือง + การปกครอง</strong>
@@ -44,7 +59,13 @@
             </b-tab>
 
             <b-tab title="Exclude Keyword">
-              <b-form-tags v-model="editNotKeywords" separator=",;" placeholder="Enter เพื่อพิมพ์คำใหม่"></b-form-tags>
+              <b-form-tags
+                v-model="editNotKeywords"
+                separator=",;"
+                placeholder="Enter เพื่อพิมพ์คำใหม่"
+                :tag-validator="tagValidator"
+                invalid-tag-text="ห้ามใส่อักขระพิเศษ"
+              ></b-form-tags>
             </b-tab>
           </b-tabs>
 
@@ -52,6 +73,7 @@
           <div class="d-flex justify-content-end mt-3">
             <b-button style="background-color: #646462; border:  #646462;" @click="closeModal">ปิดหน้าต่าง</b-button>
             <b-button class="ml-2" style="background-color: #50c1d0; color: black; border:#50c1d0;"
+              :disabled="objectName.trim().length === 0 || hasForbiddenChars(objectName)"
               @click="updateObject">บันทึก</b-button>
           </div>
         </b-container>
@@ -101,6 +123,17 @@ export default {
    
   },
   methods: {
+    // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่
+    // (กฎเดียวกับ ImportObject.vue / CreateObject.vue / ฯลฯ ทั้งแอป)
+    // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
+    hasForbiddenChars(value) {
+      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      return forbiddenPattern.test(String(value || ""));
+    },
+    // ใช้กับ b-form-tags prop tag-validator — return false จะปฏิเสธไม่ให้เพิ่ม tag นั้นเลย
+    tagValidator(tag) {
+      return !this.hasForbiddenChars(tag);
+    },
     closeModal() {
       this.open = false;
       // this.$bvModal.hide("edit-object-keyword-modal");
@@ -110,6 +143,16 @@ export default {
       console.log("ค่า objectId:", this.objectId);
       console.log("ค่า subdomainId:", this.subdomainId);
       console.log(' this.objectData', this.objectData);
+
+      if (!this.objectName.trim()) {
+        alert("กรุณากรอกชื่อ Object");
+        return;
+      }
+
+      if (this.hasForbiddenChars(this.objectName)) {
+        alert("ชื่อ Object ห้ามมีอักขระพิเศษ");
+        return;
+      }
 
       if (!this.objectData && this.objectData.object_id) {
         alert("ไม่พบ Object ID! ตรวจสอบค่าใน Console");

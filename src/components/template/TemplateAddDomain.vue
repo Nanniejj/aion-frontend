@@ -16,6 +16,9 @@
             <b-col sm="12">
               <b-form-input id="input-small1" placeholder="" v-model="addDomain"  maxlength="50" ></b-form-input>
               <small class="text-muted">{{ addDomain.length }} / 50 ตัวอักษร</small>
+              <div v-if="hasForbiddenChars(addDomain)" class="text-danger small mt-1">
+                <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+              </div>
             </b-col>
           </b-row>
           <b-row class="my-1">
@@ -43,7 +46,17 @@ export default {
         }
     },
 methods: {
+   // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่ (กฎเดียวกับ ImportObject.vue / AddSubDomain.vue / SubdomainCard.vue)
+   // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
+   // หมายเหตุ: & และ / ก็อยู่ในรายการต้องห้ามด้วย แม้โค้ดเดิมจะมี auto-replace
+   // เป็น "-" ให้สองตัวนี้ใน addRowDomain() — แต่เมื่อ disable ปุ่มบันทึกไว้ก่อนแล้ว
+   // ผู้ใช้จะพิมพ์ผ่านไปกดบันทึกไม่ได้ตั้งแต่แรก โค้ด replace เดิมจึงไม่มีโอกาสถูกใช้งานอีก
+   hasForbiddenChars(value) {
+     const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+     return forbiddenPattern.test(String(value || ""));
+   },
    addRowDomain() {
+     if (this.isAddDomainInvalid) return;
      let domain = this.addDomain.replace("/","-").replace("&","-")
      let tdomain =domain.trim()
      this.$store.dispatch("updateAddDomain",{name: tdomain ,display:true});
@@ -57,7 +70,7 @@ methods: {
     computed: {
     ...mapGetters(['getAddDomain']),
     isAddDomainInvalid() {
-      return this.addDomain.trim().length === 0;
+      return this.addDomain.trim().length === 0 || this.hasForbiddenChars(this.addDomain);
     },
   },
 }

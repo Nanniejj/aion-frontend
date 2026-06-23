@@ -5,7 +5,7 @@
             style="background-color: #7cd1dc; color: #000; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 10px; margin-bottom: 0px;">
             <span class="text-center subdomain-name" style="flex: 1;">
                 {{ subdomain.subdomain_name }}
-                <small class="ml-2" style="opacity:.85;">({{ totalObjects.toLocaleString() }})</small>
+                
             </span>
 
             <div class="d-flex justify-content-end">
@@ -37,14 +37,21 @@
         <!-- Objects ใน Card -->
         <b-card class="custom-card">
             <b-row class="mb-3 mb-lg-0 mx-0">
-                <b-col cols="12" sm="4" style="padding-left: 10px; text-align: left;">
+                <b-col cols="12" md="4" style="padding-left: 10px; text-align: left;">
                     <div class="h5">
-                        <strong>ประเด็น </strong>
+                        <strong>ประเด็น <small class="" style="opacity:.85;">({{ totalObjects.toLocaleString() }})</small></strong>
                     </div>
                 </b-col>
-                <b-col class="d-md-flex justify-content-end px-0">
-                    <!-- ก้อนเพิ่ม object -->
+                <b-col class="d-flex w-100 justify-content-md-end" style="padding-left: 10px;gap: 10px;">
+                    <b-col cols="6" sm="auto" class="px-0">
+                        <!-- เพิ่ม object -->
                     <CreateObject :objectData="subdomain" />
+                    </b-col>
+                    <b-col cols="6" sm="auto" class="px-0">
+                        <!-- import object -->
+                        <ImportObject :objectData="subdomain"/>
+                    </b-col>
+                    
                 </b-col>
             </b-row>
 
@@ -168,12 +175,13 @@
 
 <script>
 import CreateObject from "./CreateObject.vue";
+import ImportObject from "./ImportObject.vue";
 import EditObjectKeyword from "./EditObjectKeyword.vue";
 import Highlighter from "vue-highlight-words";
 import Swal from "sweetalert2";
 
 export default {
-    components: { EditObjectKeyword, CreateObject, Highlighter },
+    components: { EditObjectKeyword, CreateObject, Highlighter,ImportObject },
     props: {
         subdomain: { type: Object, required: true },
         searchQuery: { type: String, default: "" },
