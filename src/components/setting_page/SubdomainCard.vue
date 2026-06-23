@@ -16,30 +16,22 @@
             </b-input-group-prepend>
 
             <!-- ✅ พิมพ์ค้นหาแบบ debounce: หยุดพิมพ์ ~300ms แล้วค่อยกรองให้อัตโนมัติ -->
-            <b-form-input
-              ref="searchInput"
-              v-model="searchQuery"
-              @input="checkSearch"
-              placeholder="ค้นหา"
-              @keyup.enter="filterSubdomains"
-              class="input-group-text text-left"
-            />
+            <b-form-input ref="searchInput" v-model="searchQuery" @input="checkSearch" placeholder="ค้นหา"
+              @keyup.enter="filterSubdomains" class="input-group-text text-left" />
 
             <b-input-group-append>
               <!-- ✅ กดค้นหาแล้วค่อยส่ง keyword -->
-              <b-button
-                @click="filterSubdomains"
-                pill
-                style="position: relative; right: 15px; background-color: #777676"
-              >
+              <b-button @click="filterSubdomains" pill
+                style="position: relative; right: 15px; background-color: #777676">
                 ค้นหา
               </b-button>
             </b-input-group-append>
           </b-input-group>
         </b-col>
 
-        <b-col cols="12" md="auto" class="mt-4 mt-md-0 pl-md-0">
+        <b-col cols="12" md="auto" class="mt-4 mt-md-0 pl-md-0 d-flex">
           <AddSubDomain :domainId="domainId" />
+          <ExportDomain :subdomains="subdomains" />
         </b-col>
       </b-row>
 
@@ -50,18 +42,9 @@
         </b-col>
         <b-col cols="12" class="px-0">
           <b-row class="m-0">
-            <b-col
-              cols="auto"
-              class="pl-0 px-1 mb-2"
-              v-for="(keyword, index) in suggestionKeywrords"
-              :key="index + keyword"
-            >
-              <div
-                @click="copyToClipboard(keyword)"
-                class="bage-keyword"
-                v-b-tooltip.hover
-                title="คลิกเพื่อ 'คัดลอก' "
-              >
+            <b-col cols="auto" class="pl-0 px-1 mb-2" v-for="(keyword, index) in suggestionKeywrords"
+              :key="index + keyword">
+              <div @click="copyToClipboard(keyword)" class="bage-keyword" v-b-tooltip.hover title="คลิกเพื่อ 'คัดลอก' ">
                 {{ keyword }}
               </div>
             </b-col>
@@ -72,103 +55,58 @@
       <br />
 
       <div v-if="loadWord">
-        <vue-element-loading
-          :active="loadWord"
-          size="50"
-          background-color="rgba(255, 255, 255, 0.1)"
-          spinner="line-scale"
-          color="#7cd1dc"
-        />
+        <vue-element-loading :active="loadWord" size="50" background-color="rgba(255, 255, 255, 0.1)"
+          spinner="line-scale" color="#7cd1dc" />
       </div>
 
       <!-- List -->
-<div v-else class="mb-4">
+      <div v-else class="mb-4">
 
-    <b-col class="px-0 pb-3">
-      <div class="h5 text-left bold">หมวดหมู่</div>
-    </b-col>
+        <b-col class="px-0 pb-3">
+          <div class="h5 text-left bold">หมวดหมู่</div>
+        </b-col>
 
-    <ObjectCard
-      v-for="(subdomain, subIndex) in visibleSubdomains"
-      :key="subdomain.subdomain_id"
-      :subdomain="subdomain"
-      :searchQuery="keyword"
-      @edit-subDomain="editSubdomain(subIndex)"
-      @delete-subDomain="openDeleteSubdomainModal(subIndex, subdomain)"
-      @reset="apiList"
-    />
-    <!-- {{ isPaging }} {{ currentPage }} -->
-  
-    <!-- Pagination -->
-<div v-if="totalSubdomains > perPage" class="d-flex flex-column align-items-center my-3">
+        <ObjectCard v-for="(subdomain, subIndex) in visibleSubdomains" :key="subdomain.subdomain_id"
+          :subdomain="subdomain" :searchQuery="keyword" @edit-subDomain="editSubdomain(subIndex)"
+          @delete-subDomain="openDeleteSubdomainModal(subIndex, subdomain)" @reset="apiList" />
+        <!-- {{ isPaging }} {{ currentPage }} -->
 
- <b-progress
-    v-if="isPaging"
-    :value="100"
-    height="10px"
-    class="w-100 mb-2"
-    variant="info"
-  />
-  <b-pagination
-    :value="currentPage"
-    @input="onPageChange"
-    :total-rows="totalSubdomains"
-    :per-page="perPage"
-    pills
-    size="sm"
-    align="center"
-    :disabled="isPaging"
-  />
-</div>
+        <!-- Pagination -->
+        <div v-if="totalSubdomains > perPage" class="d-flex flex-column align-items-center my-3">
+
+          <b-progress v-if="isPaging" :value="100" height="10px" class="w-100 mb-2" variant="info" />
+          <b-pagination :value="currentPage" @input="onPageChange" :total-rows="totalSubdomains" :per-page="perPage"
+            pills size="sm" align="center" :disabled="isPaging" />
+        </div>
 
 
 
-  <!-- FAB -->
-  <b-button
-    v-if="!loadWord && !isFullscreenModalOpen"
-    variant="warning"
-    class="fab"
-    @click="scrollToTop"
-    style="background-color: #fed06ea4;"
-  >
-    <i class="fas fa-arrow-up"></i>
-  </b-button>
-</div>
+        <!-- FAB -->
+        <b-button v-if="!loadWord && !isFullscreenModalOpen" variant="warning" class="fab" @click="scrollToTop"
+          style="background-color: #fed06ea4;">
+          <i class="fas fa-arrow-up"></i>
+        </b-button>
+      </div>
 
 
       <!-- edit subdomain -->
-      <b-modal
-        v-b-modal.modal-center
-        id="edit-subdomain-modal"
-        ref="editSubdomainModal"
-        @hidden="resetEditModal"
-        :ok-only="true"
-        class="custom-modal"
-        centered
-      >
+      <b-modal v-b-modal.modal-center id="edit-subdomain-modal" ref="editSubdomainModal" @hidden="resetEditModal"
+        :ok-only="true" class="custom-modal" centered>
         <b-form ref="editForm" @submit.prevent="handleEditSubdomain" class="custom-form">
           <h5><b>แก้ไขหมวดหมู่</b></h5>
           <hr />
           <b-form-group label-for="edit-subdomain">
-            <b-form-input
-              id="edit-subdomain"
-              v-model="editSubdomainName"
-              required
-              class="subdomain-input"
-              maxlength="50"
-            />
+            <b-form-input id="edit-subdomain" v-model="editSubdomainName" required class="subdomain-input"
+              maxlength="50" />
           </b-form-group>
           <small class="text-muted">{{ editSubdomainName.length || 0 }} / 50 ตัวอักษร</small>
           <div v-if="hasForbiddenChars(editSubdomainName)" class="text-danger small mt-1">
-            <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+            <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ % ^ & * ,
           </div>
 
           <div class="d-flex justify-content-end mt-3">
-            <b-button
-              class="btn-submit"
-              @click="handleEditSubdomain"
-              :disabled="editSubdomainName.length == 0 || hasForbiddenChars(editSubdomainName)"
-            >
+            <b-button class="btn-submit" @click="handleEditSubdomain"
+              :disabled="editSubdomainName.length == 0 || hasForbiddenChars(editSubdomainName)">
               บันทึก
             </b-button>
           </div>
@@ -194,6 +132,7 @@ import CreateObject from "./CreateObject.vue";
 import EditObjectKeyword from "./EditObjectKeyword.vue";
 import AddSubDomain from "./AddSubDomain.vue";
 import ObjectCard from "./ObjectCard.vue";
+import ExportDomain from "./ExportDomain.vue";
 
 export default {
   name: "SubdomainCard",
@@ -202,17 +141,18 @@ export default {
     EditObjectKeyword,
     ObjectCard,
     AddSubDomain,
+    ExportDomain,
   },
-watch:{
-  currentPage(){
-    this.isPaging=true
-  }
-},
+  watch: {
+    currentPage() {
+      this.isPaging = true
+    }
+  },
   data() {
     return {
-isPaging: false,
-    perPage: 10,
-    currentPage: 1,
+      isPaging: false,
+      perPage: 10,
+      currentPage: 1,
       // ✅ keyword ที่ส่งให้ ObjectCard (เดิมคุณใช้ keyword แยกจาก searchQuery) :contentReference[oaicite:3]{index=3}
       keyword: "",
 
@@ -250,13 +190,13 @@ isPaging: false,
     };
   },
   computed: {
-     totalSubdomains() {
-    return this.filteredSubdomains?.length || 0;
-  },
-  visibleSubdomains() {
-    const start = (this.currentPage - 1) * this.perPage;
-    return (this.filteredSubdomains || []).slice(start, start + this.perPage);
-  },
+    totalSubdomains() {
+      return this.filteredSubdomains?.length || 0;
+    },
+    visibleSubdomains() {
+      const start = (this.currentPage - 1) * this.perPage;
+      return (this.filteredSubdomains || []).slice(start, start + this.perPage);
+    },
     // visibleSubdomains() {
     //   return (this.filteredSubdomains || []).slice(0, this.subLimit);
     // },
@@ -277,9 +217,9 @@ isPaging: false,
   methods: {
     // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่ (กฎเดียวกับ ImportObject.vue / AddSubDomain.vue)
     // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
-    // บล็อกสัญลักษณ์พิเศษอื่นๆ เช่น @ _ # $ ฿ % ^ & * , ฯลฯ
+    // บล็อกสัญลักษณ์พิเศษอื่นๆ เช่น @ _ # $ % ^ & * , ฯลฯ
     hasForbiddenChars(value) {
-      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      const forbiddenPattern = /[@_#$%^&*!~`<>{}[\]|\\/:;"',]/;
       return forbiddenPattern.test(String(value || ""));
     },
     // เรียกเมื่อ ImportObject (หรือ modal เต็มจออื่นๆ) เปิด/ปิด
@@ -289,25 +229,25 @@ isPaging: false,
     onFullscreenModalToggled(isOpen) {
       this.isFullscreenModalOpen = isOpen;
     },
- onPageChange(page) {
-    if (page === this.currentPage) return;
-   this.currentPage = page;
-    this.isPaging = true;
+    onPageChange(page) {
+      if (page === this.currentPage) return;
+      this.currentPage = page;
+      this.isPaging = true;
 
-    // ให้ progress ได้ paint ก่อน
-    this.$nextTick(() => {
-      requestAnimationFrame(() => {
-     
+      // ให้ progress ได้ paint ก่อน
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
 
-        // ปิดหลัง render รอบถัดไป
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.isPaging = false;
-          }, 80);
+
+          // ปิดหลัง render รอบถัดไป
+          this.$nextTick(() => {
+            setTimeout(() => {
+              this.isPaging = false;
+            }, 80);
+          });
         });
       });
-    });
-  },
+    },
     handleScroll() {
       this.showFabButton = window.scrollY > 700;
     },
@@ -318,65 +258,65 @@ isPaging: false,
     loadMoreSubdomains() {
       this.subLimit = Math.min(this.filteredSubdomains.length, this.subLimit + this.subStep);
     },
-// ✅ พิมพ์ค้นหาแบบ debounce — รอให้หยุดพิมพ์ 300ms ก่อนค่อยกรองจริง
-// เพื่อไม่ยิง filterSubdomains() ทุกครั้งที่กดแต่ละตัวอักษร (ของเดิมที่ comment ไว้ว่า
-// "พิมพ์ได้ แต่ไม่ยิงงานหนัก" แต่ไม่เคย implement จริง ทำให้พิมพ์แล้วไม่เห็นผลเลยจนกว่าจะกด Enter)
-checkSearch() {
-  if (this.searchDebounceTimer) {
-    clearTimeout(this.searchDebounceTimer);
-    this.searchDebounceTimer = null;
-  }
-  // ยกเลิก rAF clear ที่ค้างอยู่ (ถ้ามี) ก่อนเสมอ ป้องกันกรณีพิมพ์ตัวใหม่ทันที
-  // หลัง backspace จนว่าง แล้ว rAF เก่าดันมาเคลียร์ค่าที่พิมพ์ใหม่ทับ
-  if (this.searchClearRaf) {
-    cancelAnimationFrame(this.searchClearRaf);
-    this.searchClearRaf = null;
-  }
+    // ✅ พิมพ์ค้นหาแบบ debounce — รอให้หยุดพิมพ์ 300ms ก่อนค่อยกรองจริง
+    // เพื่อไม่ยิง filterSubdomains() ทุกครั้งที่กดแต่ละตัวอักษร (ของเดิมที่ comment ไว้ว่า
+    // "พิมพ์ได้ แต่ไม่ยิงงานหนัก" แต่ไม่เคย implement จริง ทำให้พิมพ์แล้วไม่เห็นผลเลยจนกว่าจะกด Enter)
+    checkSearch() {
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer);
+        this.searchDebounceTimer = null;
+      }
+      // ยกเลิก rAF clear ที่ค้างอยู่ (ถ้ามี) ก่อนเสมอ ป้องกันกรณีพิมพ์ตัวใหม่ทันที
+      // หลัง backspace จนว่าง แล้ว rAF เก่าดันมาเคลียร์ค่าที่พิมพ์ใหม่ทับ
+      if (this.searchClearRaf) {
+        cancelAnimationFrame(this.searchClearRaf);
+        this.searchClearRaf = null;
+      }
 
-  // ลบจนว่างแล้ว (กด backspace จนตัวอักษรสุดท้าย) — ต้อง defer การ reset list ที่หนัก
-  // ออกไปด้วย requestAnimationFrame เพื่อให้ช่อง input เคลียร์ตัวอักษรให้เห็นทันที (paint ก่อน)
-  // ไม่ถูกบล็อกโดยการ re-render รายการ subdomain ทั้งหมดที่อาจมีจำนวนมาก (sync, ทำงานหนัก)
-  // ถ้าไม่ defer ผู้ใช้จะรู้สึกว่า backspace ตัวสุดท้ายแล้ว "ค้าง"/ไม่ตอบสนองทันที
-  if (!this.searchQuery) {
-    this.searchClearRaf = requestAnimationFrame(() => {
-      this.searchClearRaf = null;
-      this.keyword = "";
-      this.filteredSubdomains = this.subdomains;
+      // ลบจนว่างแล้ว (กด backspace จนตัวอักษรสุดท้าย) — ต้อง defer การ reset list ที่หนัก
+      // ออกไปด้วย requestAnimationFrame เพื่อให้ช่อง input เคลียร์ตัวอักษรให้เห็นทันที (paint ก่อน)
+      // ไม่ถูกบล็อกโดยการ re-render รายการ subdomain ทั้งหมดที่อาจมีจำนวนมาก (sync, ทำงานหนัก)
+      // ถ้าไม่ defer ผู้ใช้จะรู้สึกว่า backspace ตัวสุดท้ายแล้ว "ค้าง"/ไม่ตอบสนองทันที
+      if (!this.searchQuery) {
+        this.searchClearRaf = requestAnimationFrame(() => {
+          this.searchClearRaf = null;
+          this.keyword = "";
+          this.filteredSubdomains = this.subdomains;
+          this.currentPage = 1;
+        });
+        return;
+      }
+
+      this.searchDebounceTimer = setTimeout(() => {
+        this.filterSubdomains();
+      }, 300);
+    },
+
+    // ✅ เดิม filterSubdomains ของคุณตั้ง keyword อย่างเดียว :contentReference[oaicite:4]{index=4}
+    // เราคงแนวคิดเดิมเพื่อไม่ให้หนัก: ไม่ไปไล่ค้นทุก object/keyword ทั้งก้อน
+    filterSubdomains() {
+      const q = (this.searchQuery || "").trim().toLowerCase();
+
+      if (!q) {
+        this.keyword = "";
+        this.filteredSubdomains = this.subdomains;
+        this.currentPage = 1;
+        return;
+      }
+
+      // ส่งไปให้ ObjectCard filter รายชื่อ object_name ใน subdomain ที่ match
+      this.keyword = q;
+
+      // ✅ สำคัญ: กรอง subdomain ทั้งหมดก่อน paginate
+      this.filteredSubdomains = this.subdomains.filter((s) => {
+        // ถ้าจะให้ค้น subdomain_name ด้วยก็ใส่เพิ่มได้
+        const subName = String(s.subdomain_name || "").toLowerCase();
+        const blob = String(s._searchBlob || "");
+        return subName.includes(q) || blob.includes(q);
+      });
+
       this.currentPage = 1;
-    });
-    return;
-  }
-
-  this.searchDebounceTimer = setTimeout(() => {
-    this.filterSubdomains();
-  }, 300);
-},
-
-// ✅ เดิม filterSubdomains ของคุณตั้ง keyword อย่างเดียว :contentReference[oaicite:4]{index=4}
-// เราคงแนวคิดเดิมเพื่อไม่ให้หนัก: ไม่ไปไล่ค้นทุก object/keyword ทั้งก้อน
-filterSubdomains() {
-  const q = (this.searchQuery || "").trim().toLowerCase();
-
-  if (!q) {
-    this.keyword = "";
-    this.filteredSubdomains = this.subdomains;
-    this.currentPage = 1;
-    return;
-  }
-
-  // ส่งไปให้ ObjectCard filter รายชื่อ object_name ใน subdomain ที่ match
-  this.keyword = q;
-
-  // ✅ สำคัญ: กรอง subdomain ทั้งหมดก่อน paginate
-  this.filteredSubdomains = this.subdomains.filter((s) => {
-    // ถ้าจะให้ค้น subdomain_name ด้วยก็ใส่เพิ่มได้
-    const subName = String(s.subdomain_name || "").toLowerCase();
-    const blob = String(s._searchBlob || "");
-    return subName.includes(q) || blob.includes(q);
-  });
-
-  this.currentPage = 1;
-},
+    },
 
 
     copyToClipboard(text) {
@@ -431,32 +371,32 @@ filterSubdomains() {
 
           // คง logic เดิมที่ map + ใส่ค่า display/activeObjectId ฯลฯ :contentReference[oaicite:5]{index=5}
           this.subdomains = (response.data.subdomains || []).map((s) => {
-  const objs = Array.isArray(s.objects) ? s.objects : [];
-  const first = objs.length ? objs[0] : null;
+            const objs = Array.isArray(s.objects) ? s.objects : [];
+            const first = objs.length ? objs[0] : null;
 
-  // ✅ cache: รวม object_name ทั้งหมดของ subdomain นี้ (ทำครั้งเดียว)
-const searchBlob = objs
-  .map(o => {
-    const parts = [];
-    if (o.object_name) parts.push(o.object_name);
-    if (Array.isArray(o.keywords)) parts.push(o.keywords.join(" "));
-    if (Array.isArray(o.and_keywords)) parts.push(o.and_keywords.join(" "));
-    return parts.join(" ");
-  })
-  .join(" ")
-  .toLowerCase();
+            // ✅ cache: รวม object_name ทั้งหมดของ subdomain นี้ (ทำครั้งเดียว)
+            const searchBlob = objs
+              .map(o => {
+                const parts = [];
+                if (o.object_name) parts.push(o.object_name);
+                if (Array.isArray(o.keywords)) parts.push(o.keywords.join(" "));
+                if (Array.isArray(o.and_keywords)) parts.push(o.and_keywords.join(" "));
+                return parts.join(" ");
+              })
+              .join(" ")
+              .toLowerCase();
 
 
-  return {
-    ...s,
-  display: s.display !== false,
-  activeObjectId: first ? first.object_id : null,
-  _searchBlob: searchBlob,
-  };
-});
+            return {
+              ...s,
+              display: s.display !== false,
+              activeObjectId: first ? first.object_id : null,
+              _searchBlob: searchBlob,
+            };
+          });
 
-this.filteredSubdomains = this.subdomains;
-this.currentPage = 1;
+          this.filteredSubdomains = this.subdomains;
+          this.currentPage = 1;
 
         }
       } catch (error) {
@@ -613,12 +553,12 @@ this.currentPage = 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1050;
   font-size: 20px;
 }
 
-.bage-keyword{
+.bage-keyword {
   background-color: rgb(213, 246, 250);
   display: inline-flex;
   justify-content: center;
@@ -632,7 +572,10 @@ this.currentPage = 1;
   transition: all 0.5s ease;
 }
 
-.bage-keyword span { position: relative; z-index: 2; }
+.bage-keyword span {
+  position: relative;
+  z-index: 2;
+}
 
 .bage-keyword::before {
   content: '';

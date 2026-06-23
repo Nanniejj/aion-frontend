@@ -451,6 +451,7 @@
 <script>
 import axios from "axios";
 import * as XLSX from "xlsx";
+import Swal from 'sweetalert2'
 
 export default {
   name: "ImportObject",
@@ -818,6 +819,29 @@ export default {
           const workbook = XLSX.read(data, { type: "array" });
           const sheetName = workbook.SheetNames[0];
           const sheet = workbook.Sheets[sheetName];
+
+          // ✅ ตรวจหัวคอลัมน์ก่อน parse เป็นข้อมูลจริง เพื่อจับไฟล์ที่ format ไม่ตรง template
+          // (เช่น เปลี่ยนชื่อคอลัมน์, สลับลำดับ sheet, หรืออัปโหลดไฟล์คนละชนิดมาเลย)
+          const headerRow = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" })[0] || [];
+          const headerCheck = this.validateTemplateHeaders(headerRow);
+
+          if (!headerCheck.ok) {
+            this.previewRows = [];
+            this.statusMessage = "";
+            // เคลียร์ไฟล์ที่เลือกออกด้วย เพราะไม่สามารถนำเข้าได้จริงตาม format นี้
+            this.selectedFile = null;
+            if (this.$refs.fileInput) {
+              this.$refs.fileInput.value = "";
+            }
+            this.$fire({
+              title: "ไฟล์ไม่ตรงตามรูปแบบ Template",
+              text: headerCheck.message,
+              type: "error",
+              confirmButtonText: "ตกลง",
+            });
+            return;
+          }
+
           const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
           this.previewRows = rows.map((row) => {
@@ -850,28 +874,89 @@ export default {
           if (this.previewRows.length === 0) {
             this.statusMessage = "ไม่พบข้อมูลในไฟล์ที่อัปโหลด";
             this.statusClass = "warning";
+          } else if (headerCheck.warning) {
+            // ไฟล์ใช้นำเข้าได้ แต่มีคอลัมน์ที่ระบบไม่รู้จักปนมาด้วย แจ้งเตือนไว้เฉยๆ ไม่บล็อก
+            this.statusMessage = headerCheck.warning;
+            this.statusClass = "warning";
           }
         } catch (error) {
           console.error("Error parsing file:", error);
-          this.statusMessage = "ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบรูปแบบไฟล์ตาม Template";
-          this.statusClass = "danger";
+          this.statusMessage = "";
+          this.$fire({
+            title: "ไม่สามารถอ่านไฟล์ได้",
+            text: "กรุณาตรวจสอบรูปแบบไฟล์ตาม Template",
+            type: "error",
+            confirmButtonText: "ตกลง",
+          });
         }
       };
       reader.readAsArrayBuffer(file);
     },
+    // ตรวจหัวคอลัมน์ของไฟล์ที่อัปโหลด เทียบกับคอลัมน์ที่ระบบรองรับจริง (ตาม template_object.xlsx)
+    // - ถ้าไม่มี object_name เลย -> ถือว่า format ไม่ตรง template เลย ไม่ให้นำเข้า (ok: false)
+    // - ถ้ามีคอลัมน์แปลกปลอมที่ระบบไม่รู้จัก -> แจ้งเตือนแต่ยังให้นำเข้าได้ (warning)
+    validateTemplateHeaders(headerRow) {
+      const knownColumns = ["object_name", "keywords", "and_keywords", "not_keywords", "domain_name", "subdomain_name"];
+      const requiredColumns = ["object_name"];
+
+      const headers = (headerRow || [])
+        .map((h) => String(h || "").trim())
+        .filter((h) => h.length > 0);
+
+      if (headers.length === 0) {
+        return {
+          ok: false,
+          message: "ไม่พบหัวคอลัมน์ในไฟล์ — กรุณาตรวจสอบว่าไฟล์ตรงตาม Template (ดาวน์โหลด Template ใหม่ได้ที่ปุ่มด้านบน)",
+        };
+      }
+
+      const missingRequired = requiredColumns.filter((col) => !headers.includes(col));
+      if (missingRequired.length > 0) {
+        return {
+          ok: false,
+          message:
+            `ไฟล์นี้ไม่ตรงตามรูปแบบ Template ที่ระบบรองรับ — ไม่พบคอลัมน์ "${missingRequired.join(", ")}" ` +
+            `กรุณาดาวน์โหลด Template ใหม่และกรอกข้อมูลตามคอลัมน์ที่กำหนด`,
+        };
+      }
+
+      const unknownColumns = headers.filter((h) => !knownColumns.includes(h));
+      if (unknownColumns.length > 0) {
+        return {
+          ok: true,
+          warning: `พบคอลัมน์ที่ระบบไม่รู้จัก: ${unknownColumns.join(", ")} (จะถูกข้ามไป ไม่มีผลต่อการนำเข้า)`,
+        };
+      }
+
+      return { ok: true, warning: null };
+    },
     async importObjects() {
       if (!this.selectedFile) {
-        alert("ไม่พบไฟล์ที่จะนำเข้า กรุณาเลือกไฟล์ก่อน");
+        this.$fire({
+          title: "ไม่พบไฟล์ที่จะนำเข้า",
+          text: "กรุณาเลือกไฟล์ก่อน",
+          type: "warning",
+          confirmButtonText: "ตกลง",
+        });
         return;
       }
 
       if (this.previewRows.length === 0) {
-        alert("ไม่มีข้อมูลที่จะนำเข้า (อาจถูกลบออกจากตัวอย่างข้อมูลหมดแล้ว)");
+        this.$fire({
+          title: "ไม่มีข้อมูลที่จะนำเข้า",
+          text: "อาจถูกลบออกจากตัวอย่างข้อมูลหมดแล้ว",
+          type: "warning",
+          confirmButtonText: "ตกลง",
+        });
         return;
       }
 
       if (!this.objectData || !this.objectData.subdomain_id) {
-        alert("ไม่พบ Subdomain ID");
+        this.$fire({
+          title: "ไม่พบ Subdomain ID",
+          type: "error",
+          confirmButtonText: "ตกลง",
+        });
         return;
       }
 
@@ -912,9 +997,13 @@ export default {
         });
       } catch (error) {
         console.error("Error importing excel:", error.response?.data || error);
-        this.statusMessage =
-          error.response?.data?.message || "นำเข้าข้อมูลไม่สำเร็จ กรุณาตรวจสอบไฟล์แล้วลองอีกครั้ง";
-        this.statusClass = "danger";
+        this.statusMessage = "";
+        this.$fire({
+          title: "นำเข้าข้อมูลไม่สำเร็จ",
+          text: error.response?.data?.message || "กรุณาตรวจสอบไฟล์แล้วลองอีกครั้ง",
+          type: "error",
+          confirmButtonText: "ตกลง",
+        });
       } finally {
         this.importing = false;
       }
