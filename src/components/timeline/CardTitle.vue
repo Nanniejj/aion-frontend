@@ -3,6 +3,7 @@
     <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd my-2"
       v-if="post">
       <div class="position-relative">
+
         <div class="position-absolute pl-1 pt-1 pb-1" style="
           top: 0;
           right: -15px;
@@ -18,6 +19,8 @@
         </div>
         <b-row>
           <b-col cols="12" md="3" v-if="post.photos && post.photos.length && !hidePreview" class="img-col">
+       <b-badge v-if="post.image_match_percent" variant="info" class="mr-2 float-right" style="left:10px;position: absolute;bottom: 0;">Match: {{ formatMatchPercent(post.image_match_percent) }}%</b-badge>
+
             <!-- รูป preview -->
              <!-- {{ post.photos[0] }} -->
             <b-card-img class="img-cover" @error="setAltImg"
@@ -52,6 +55,7 @@
           <b-col class=" position-relative">
             <div class="text-left bold d-flex align-items-center mt-2 flex-wrap">
               <span class="account-name">{{ post.account_name }} </span>
+            
               <span class="d-inline-block box-link ml-2">
                 <a :href="post.url_post" class="fa fa-external-link" target="_blank"
                   style="color: #1b97a6;font-size: 14px;"></a>
@@ -60,8 +64,10 @@
                 {{ formatDate(post.date) }} {{ formatTime(post.date) }}
               </span>
             </div>
-
+ 
             <div class="mt-md-2 pb-1" v-if="post.full_text">
+               <div v-if="post.title" class="text-left small bold" style="font-size: 14px;">
+                <span class="name-ellipsis-11">{{ post.title }}</span></div>
               <ReadMoreBox :text="post.full_text.replace('...___...', '').replace('.#.##.', '')" :limit="300" :mobileLimit="110"
                 :breakpoint="800" />
             </div>
@@ -229,6 +235,7 @@ import moment from "moment";
 import "moment/locale/th";
 import CommentsAllModal from "./CommentsAllModal.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
+import { post } from "jquery";
 export default {
   name: "CardPost",
   components: { ReadMoreBox, CommentsAllModal,VueGallerySlideshow },
@@ -331,6 +338,11 @@ export default {
     },
     formatTime(date) {
       return date.slice(11, 16);
+    },
+    formatMatchPercent(value) {
+      const percent = Number(value) * 100;
+      if (!Number.isFinite(percent)) return 0;
+      return percent.toFixed(2).replace(/\.00$/, "");
     }
   },
   filters: {
@@ -659,7 +671,15 @@ ul {
   vertical-align: middle;
   text-align: left;
 }
-
+  .name-ellipsis-11 {
+    display: block;
+    /* หรือ inline-block */
+    max-width: 500px;
+    /* ปรับให้พอดีกับดีไซน์ */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 .date-label {
   display: block;
 }
@@ -769,7 +789,15 @@ img-cover {
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-
+  .name-ellipsis-11 {
+    display: block;
+    /* หรือ inline-block */
+    max-width: 90%;
+    /* ปรับให้พอดีกับดีไซน์ */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
   /* ถ้าอยู่ใน flex container ให้ใส่ที่ลูกคอลัมน์ด้วย */
   .flex-child-min0 {
     min-width: 0;

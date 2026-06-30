@@ -1,3 +1,4 @@
+<!-- wordcloud new -->
 <template>
   <div class="px-1 px-lg-5">
 
@@ -12,101 +13,84 @@
         </div>
       </div>
     </div>
-    <div class="mt-3 mb-3 box-domain">
-      <vue-element-loading :active="getLoadWordCloud" size="80" background-color="rgba(255, 255, 255, 0.5)"
-        color="#b6ac9a" />
+
+    <div class="mt-3 mb-3">
       <b-row class="w-100">
         <b-col class="text-left" lg="12">
-          <div class="card-tt">Wordcloud</div>
-          <!-- <div class="font-weight-normal m-3" v-if="!getWordCloudImg">
-            ไม่พบข้อมูล
-          </div> -->
-          <!-- <img v-else :src="myImage" id="img-tab" style="width: 100%" class="p-2 mb-3"  /> -->
-          <WordCloudD3 :default-domain-id="1" :default-start="'2026-01-12T00:00:00'"
-            :default-end="'2026-01-12T23:59:59'" :limit="50" :min-font="20" :max-font="150" :disableRotate="false"
-            font-family='"TH Sarabun New' :font-weight="700" @select="onSelectWord" @loaded="onLoaded" />
+
+          <!-- ✅ component ยิง API ของตัวเอง โดยรับ filter (start/end/domain_id/monitor)
+               มาจาก WordcloudMenu ผ่าน $route.query -->
+          <WordCloudD3
+            :token="token"
+            :domain-id="domainId"
+            :start="start"
+            :end="end"
+            :monitor="monitor"
+            :limit="50"
+            :min-font="20"
+            :max-font="180"
+            :disableRotate="false"
+            @select="onSelectWord"
+          />
         </b-col>
-        <!-- <b-col class="text-left" lg="6">
-          <div class="card-tt">Hashtagcloud</div>
-          <WordCloudD3 :token="token" default-domain-id="1" :limit="50" default-start="2026-01-12T00:00:00"
-            default-end="2026-01-12T23:59:59" data-type="hashtags" />
-         
-        </b-col> -->
       </b-row>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import moment from "moment";
 import WordCloudD3 from "./WordCloudD3.vue";
 
 export default {
   components: { WordCloudD3 },
-  watch: {
-    getArrDate: function () {
-      this.startd = this.getSdateDm.slice(0, 10);
-      this.endd = this.getEdateDm.slice(0, 10);
-    },
+  props: {
+    // ✅ รับ filter ตรงจาก parent ก็ได้ (เช่น WordcloudImg3 ที่ฟัง filters-changed)
+    activeTab: { type: String, default: "word" },
   },
   computed: {
-    ...mapGetters([
-      "getClickDomain",
-      "getWordCloudImg",
-      "getWordCloudHash",
-      "getLoadWordCloud",
-      "getSdateDm",
-      "getEdateDm",
-      "getArrDate",
-      "getClickDomainId"
-    ]),
-    myImage() {
-      if (this.getWordCloudImg) {
-        return (
-          `data:image/jpeg;base64,` +
-          this.getWordCloudImg.substring(2).replace("'", "")
-        );
-      } else {
-        return "";
-      }
+    token() {
+      return localStorage.getItem("token") || "";
     },
-    myImagehash() {
-      if (this.getWordCloudHash) {
-        return (
-          `data:image/jpeg;base64,` +
-          this.getWordCloudHash.substring(2).replace("'", "")
-        );
-      } else {
-        return "";
-      }
+
+    // ✅ ดึงค่าจาก query string ที่ WordcloudMenu set ไว้ตอนกด "ค้นหา"
+    domainId() {
+      const q = this.$route.query.domain_id;
+      return q && q !== "" ? q : 1;
+    },
+    start() {
+      return this.$route.query.start || this.todayStart;
+    },
+    end() {
+      return this.$route.query.end || this.todayEnd;
+    },
+    monitor() {
+      return this.$route.query.monitor || "";
+    },
+
+    startd() {
+      return String(this.start).slice(0, 10);
+    },
+    endd() {
+      return String(this.end).slice(0, 10);
     },
   },
   data() {
     return {
-      startd: "",
-      endd: "",
-      sdate: "",
-      edate: "",
+      todayStart: "",
+      todayEnd: "",
     };
   },
   mounted() {
-    this.startd = moment(new Date()).format().slice(0, 10);
-    this.endd = moment(new Date()).format().slice(0, 10);
-    this.sdate = moment(new Date()).format().slice(0, 10) + "T00:00:00";
-    this.edate = moment(new Date()).format().slice(0, 10) + "T23:59:59";
-    // this.$store.dispatch("fetchWordCloud", {
-    //   start_date: this.sdate,
-    //   end_date: this.edate,
-    //   //   domain: this.getClickDomain || 'all',
-    //   // domain_ids:this.getClickDomainId,
-
-    //   //   monitor: this.selected
-    // });
+    this.todayStart = moment(new Date()).format().slice(0, 10) + "T00:00:00";
+    this.todayEnd = moment(new Date()).format().slice(0, 10) + "T23:59:59";
   },
-  destroyed() {
-    this.$store.commit("setWordCloudImg", "");
-    this.$store.commit("setWordCloudHash", "");
+  methods: {
+    onSelectWord({ data }) {
+      // ✅ ส่งออกเป็นคำ/แฮชแท็ก (string) เหมือนพฤติกรรมเดิม ให้ใช้กับ WordPost ได้ตรง ๆ
+      const word = data?.name ?? data?.text ?? data?.key ?? "";
+      this.$emit("select", word);
+    },
   },
 };
 </script>
@@ -118,6 +102,7 @@ export default {
   border-radius: 7px;
   box-shadow: 0 3px 4px 0 rgb(0 0 0 / 20%);
   background: #fbf7f6;
+  font-family: "Kanit", "TH Sarabun New", sans-serif;
 }
 
 .box-domain {
@@ -131,5 +116,11 @@ export default {
   justify-content: center;
 }
 
-@media only screen and (min-width: 0px) and (max-width: 991px) {}
+.onedate,
+.twodate {
+  font-family: "Kanit", "TH Sarabun New", sans-serif;
+}
+
+@media only screen and (min-width: 0px) and (max-width: 991px) {
+}
 </style>

@@ -2,6 +2,9 @@ import { MonitorService } from "@/common/api.services";
 import { DomainService } from "@/common/api.services";
 import { API_V2_URL } from "@/common/config";
 import moment from "moment";
+
+const normalizePosts = (posts) => (Array.isArray(posts) ? posts : []);
+
 export default {
   state: {
     totalImgList:0,
@@ -386,20 +389,26 @@ export default {
     },
 
     setPostAllMonitor: (state, payload) => {
-      state.postMonitor = payload;
+      state.postMonitor = normalizePosts(payload);
     },
     addPostAllMonitor: (state, payload) => {
-      state.postMonitor = [...state.postMonitor, ...payload];
+      state.postMonitor = [
+        ...normalizePosts(state.postMonitor),
+        ...normalizePosts(payload),
+      ];
     },
     setPostLocation: (state, payload) => {
-      state.postMonitor = payload;
+      state.postMonitor = normalizePosts(payload);
     },
     setLocationCount: (state, payload) => {
       state.loCount = payload;
     },
     addPostLocation: (state, payload) => {
       console.log(payload);
-      state.postMonitor = [...state.postMonitor, ...payload];
+      state.postMonitor = [
+        ...normalizePosts(state.postMonitor),
+        ...normalizePosts(payload),
+      ];
     },
 
     setTabStatus: (state, payload) => {
@@ -432,7 +441,10 @@ export default {
     addAllPost: (state, payload) => {
       console.log(payload);
 
-      let temp = [...state.postMonitor, ...payload];
+      let temp = [
+        ...normalizePosts(state.postMonitor),
+        ...normalizePosts(payload),
+      ];
 
       const ids = temp.map((o) => o.full_text);
       const filtered = temp.filter(
@@ -442,7 +454,7 @@ export default {
     },
 
     setAllPostDomain: (state, payload) => {
-      let temp = (state.postMonitor = payload);
+      let temp = normalizePosts(payload);
       const ids = temp.map((o) => o.full_text);
       const filtered = temp.filter(
         ({ full_text }, index) => !ids.includes(full_text, index + 1)

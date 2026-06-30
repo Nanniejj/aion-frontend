@@ -13,8 +13,6 @@
     </div>
     <div ref="printArea">
         <div>
-        <!-- <b-img :src="subject.avatar"  class="" rounded="lg" /> -->
-        <!-- {{ dataImg }} -->
         <b-row class="mx-0 mb-3">
             <b-col v-if="dataImg && dataImg.image && dataImg.image.url" cols="12" lg="auto" class="">
             <b-avatar button :src="dataImg.image.url" size="20" class="iconimg my-3 justify-content-start w-auto" rounded="lg"
@@ -22,7 +20,6 @@
             <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
             </b-col>
             <b-col v-if="datachart && datachart.totals" class="py-3 px-0" cols="12" lg="">
-                <!-- <StaticTimeline :datachart="datachart" /> -->
                 <b-row>
                     <b-col cols="12" lg="">
                         <b-col cols="12" sm="12" lg="">
@@ -66,7 +63,6 @@
                                     <div class="text-center">
                                     <div class="h3">
                                         <img src="@/assets/cfb.png" class="img-issue" />
-                                        <!-- {{ datachart.totals.facebook | numFormat}} -->
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.facebook | numFormat }}
@@ -84,11 +80,9 @@
                                     <div class="text-center">
                                     <div class="h3">
                                         <img src="@/assets/ctw.png" class="img-issue" />
-                                        <!-- {{ datachart.totals.facebook | numFormat}} -->
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.twitter | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.twitter) }})</div>
                                     </div>
@@ -106,10 +100,8 @@
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.instagram | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.instagram) }})</div>
-        
                                     </div>
                                 </b-col>
                                 </b-row>
@@ -125,7 +117,6 @@
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.pantip | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.pantip) }})</div>
                                     </div>
@@ -143,7 +134,6 @@
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.youtube | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.youtube) }})</div>
                                     </div>
@@ -161,7 +151,6 @@
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.news | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.news) }})</div>
                                     </div>
@@ -179,7 +168,6 @@
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.tiktok | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.tiktok) }})</div>
                                     </div>
@@ -197,10 +185,8 @@
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.blockdit | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.blockdit) }})</div>
-        
                                     </div>
                                 </b-col>
                                 </b-row>
@@ -216,10 +202,8 @@
                                     </div>
                                     <div class="small">
                                         {{ datachart.totals.threads | numFormat }}
-                                        <!-- <span style="font-size: small;letter-spacing: 1.5px;">posts</span> -->
                                     </div>
                                     <div class="small-sub p-0">({{ pct(datachart.totals.threads) }})</div>
-        
                                     </div>
                                 </b-col>
                                 </b-row>
@@ -232,55 +216,33 @@
                 </b-row>
             </b-col>
         </b-row>
-
-
-        <!-- <b-card img-src="https://picsum.photos/400/200/?image=41" img-alt="Image" img-top>
-        <b-card-text>
-            This is a wider card with supporting text below as a natural lead-in to additional content.
-            This card has even longer content than the first.
-        </b-card-text>
-        <template #footer>
-            <small class="text-muted">Footer Text</small>
-        </template>
-    </b-card> -->
         </div>
+
         <!-- Header -->
         <b-card class="mb-3 shadow-sm card-photo sd-g d-none">
         <div>
-
             <div class="d-flex align-items-center" v-if="dataImg">
             <div class="flex-grow-1 text-left" v-if="dataImg.image">
-                <!-- <div class="font-weight-bold h5 mb-0">{{ subject.title }}</div> -->
                 <small class="text-muted mx-2">Date {{ formatDate(dataImg.image.created_at) }} | {{ formatTime(
                 dataImg.image.created_at) }}</small>
-
             </div>
             <div class="text-right mr-3">
                 <div class="mb-1">
-
                 <div class="flex-grow-2 text-center mr-2">
-
                     <div class="font-weight-bold h6 mb-0 mt-2">
                     {{ count | numFormat }} <small class="text-muted">Posts</small>
                     <b-badge :variant="statusVariant(dataImg.image.status)" pill class="py-2 px-3 text-uppercase mx-2"
                         v-if="dataImg.image && dataImg.image.status">
                         {{ dataImg.image.status }}
                     </b-badge>
-
                     </div>
                 </div>
                 </div>
             </div>
             </div>
-
         </div>
         </b-card>
 
-        <!-- chart -->
-        <!-- <b-col cols="12" class="mx-0">
-            <StaticTimeline :datachart="datachart" />
-        </b-col> -->
-        <!-- {{ series[0] }} -->
         <apexchart ref="chart" type="line" height="350" :options="chartOptions" :series="series" />
 
         <!-- Top bar + Export -->
@@ -289,50 +251,65 @@
             All ({{ count | numFormat }})
         </div>
         <div class="d-flex align-items-center">
-            <!-- Page size -->
-            <!-- <div class="mr-2">
-            <b-form-select size="sm" :options="pageSizeOptions" v-model="limit" @change="resetAndFetch"
-                class="select-sort" />
-            </div> -->
             <b-button size="sm" variant="outline-info" @click="printPosts" v-b-tooltip.hover title="Print">
             <b-icon-printer /> Print
             </b-button>
             <ExportExcelButton :posts="postForExport" :filters="filters"
             :disabled="loading || (Array.isArray(postForExport) && postForExport.length === 0)" :full-export="true"
             :prefer-single-shot="true"  inline-comments="json" :comments-limit="20" v-if="!loading" />
-                        
-            <!-- <b-button size="sm" variant="outline-info" @click="exportSelected" v-b-tooltip.hover title="Export">
-            <b-icon-download /> Export
-            </b-button> -->
         </div>
         </div>
 
         <hr />
+
         <!-- Controls -->
         <div>
-        <b-row class="my-1 mb-2">
-            <!-- sentiment (คงไว้ แต่ API ใหม่นี้ไม่ได้ใช้ส่ง) -->
+          <b-row class="my-1 mb-2 align-items-center">
+            <!-- sentiment -->
             <b-col sm="12" md="auto">
-            <b-form-radio-group v-model="selected" :options="options" name="radio-inline"
+              <b-form-radio-group v-model="selected" :options="options" name="radio-inline"
                 class="mt-1 mb-2 text-left ml-2 rdo" @change="resetAndFetch" />
             </b-col>
 
             <!-- source -->
             <b-col cols="6" md="">
-            <b-form-select :options="itemSocial" v-model="select_social" @change="resetAndFetch" id="search-input"
+              <b-form-select :options="itemSocial" v-model="select_social" @change="resetAndFetch" id="search-input"
                 size="sm" class="mb-2 select-sort" placeholder="Select Platform" />
             </b-col>
 
-            <!-- sort (คงไว้ แต่ API ใหม่นี้ไม่ได้ใช้ส่ง) -->
+            <!-- sort -->
             <b-col cols="6" md="" class="text-right">
-            <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
+              <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
                 @change="resetAndFetch" />
             </b-col>
-        </b-row>
+
+            <!-- ── Match % filter ── -->
+            <b-col cols="12" md="auto">
+              <div class="d-flex align-items-center mb-2" style="gap: 6px;">
+                <small class="text-muted text-nowrap">Match %</small>
+                <b-form-input
+                  v-model.number="matchMin"
+                  type="number" min="0" max="100"
+                  size="sm" style="width: 68px;"
+                  @change="clampMatchMin"
+                  @keyup.enter="resetAndFetch"
+                />
+                <small class="text-muted">–</small>
+                <b-form-input
+                  v-model.number="matchMax"
+                  type="number" min="0" max="100"
+                  size="sm" style="width: 68px;"
+                  @change="clampMatchMax"
+                  @keyup.enter="resetAndFetch"
+                />
+                <small class="text-muted">%</small>
+                <b-button size="sm" variant="outline-secondary" @click="resetAndFetch" style="white-space: nowrap;">
+                  <b-icon-search /> ค้นหา
+                </b-button>
+              </div>
+            </b-col>
+          </b-row>
         </div>
-
-
-        <!-- {{  $route.query.id }} -->
 
         <div class="text-center my-4 py-4" v-if="loading">
         <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)" color="#17a2b891" />
@@ -340,14 +317,12 @@
 
         <!-- Posts -->
         <div>
-        <!-- <CardTitle v-for="(post, i) in posts" :key="i" v-bind="post" :post="post" class="mx-2" /> -->
         <b-alert v-if="!loading && posts.length === 0" show variant="light" class="text-center">
             ไม่มีโพสต์
         </b-alert>
         <timeline-posts v-else :items="posts" mode="posts" 
             sort="recent" :count="count" />
             <div v-if="totalPages > 1" class="text-center my-2 pb-5">
-                
                 <div v-if="page === totalPages" class="text-center mb-3 py-5">
                 <vue-element-loading :active="loading" size="80" background-color="rgba(255, 255, 255, 0.5)"
                     color="#17a2b891" />
@@ -361,12 +336,6 @@
             color="#17a2b891" />
         </div>
         </div>
-
-        <!-- Pagination (bottom) -->
-        <!-- <div class="d-flex justify-content-center mt-3" v-if="!loading && posts.length > 0">
-        <b-pagination v-model="page" :total-rows="count" :per-page="limit" size="sm" align="center" :disabled="loading"
-            @input="onPageChange" />
-        </div> -->
     </div>
   </div>
 </template>
@@ -382,6 +351,7 @@ import TimelinePosts from '../timeline/TimelinePosts2.vue';
 import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
 import StaticTimeline from '@/components/timeline/StaticTimeline.vue'
 import SentimentBar from "@/components/domain/SentimentBar.vue";
+
 export default {
   name: 'PostBoard',
   components: { CardPost, CardTitle, VueGallerySlideshow, PlatformImgChart, TimelinePosts, ExportExcelButton, StaticTimeline, SentimentBar },
@@ -397,7 +367,6 @@ export default {
         quantity: 10
       })
     },
-    // รับ imageId จากภายนอก/route ถ้าไม่ส่งมา ใช้ตัวอย่างที่ให้ไว้
     imageId: {
       type: String,
       default: '68d4e5e7f605d5ac5823df48'
@@ -409,20 +378,22 @@ export default {
       index: null,
       dataPhoto: [],
       // filters
-      selected: "1, 0, -1", // ไม่ได้ส่งไปที่ API ใหม่ แต่คง UI ไว้
-      select_social: '',      // map ไปเป็น source
-      sort: 'asc',        // ไม่ได้ส่งไปที่ API ใหม่ แต่คง UI ไว้
+      selected: "1, 0, -1",
+      select_social: '',
+      sort: 'asc',
+
+      // ── match percent filter ──
+      matchMin: 0,
+      matchMax: 100,
 
       // pagination state
       page: 1,
-      limit: 20,      // API ใหม่ไม่ได้รับ limit แต่ใช้ควบคุม UI/pagination
+      limit: 20,
       totalPages: 0,
       count: 0,
 
-      // loading
       loading: false,
 
-      // selects
       itemSocial: [
         { text: 'All Platform', value: '' },
         { text: 'facebook', value: 'facebook' },
@@ -452,74 +423,71 @@ export default {
         { value: 100, text: '100 / หน้า' }
       ],
 
-      // tabs (kept, though not used for server paging)
       activeTab: 0,
       platforms: ['Facebook', 'X', 'Instagram', 'Pantip', 'Youtube', 'News', 'Tiktok', 'Blockdit', 'Threads'],
 
-      // data
-        posts: [],
-        postForExport: [],
-        lastPayload: null,
-        datachart: null,
-        series: [],
-        filters: {},
-        chartOptions: {
-            colors: ['#ff962e', '#17a2b8', '#e75aa1'],
-            chart: {
-            type: 'line',
-            fontFamily: 'Prompt, FontAwesome, sans-serif',
-            toolbar: {
-                show: true,
-                tools: { download: true, selection: true, zoom: true, pan: true, reset: true }
+      posts: [],
+      postForExport: [],
+      lastPayload: null,
+      datachart: null,
+      series: [],
+      filters: {},
+      chartOptions: {
+        colors: ['#ff962e', '#17a2b8', '#e75aa1'],
+        chart: {
+          type: 'line',
+          fontFamily: 'Prompt, FontAwesome, sans-serif',
+          toolbar: {
+            show: true,
+            tools: { download: true, selection: true, zoom: true, pan: true, reset: true }
+          }
+        },
+        stroke: { curve: 'smooth', width: 3 },
+        markers: { size: 5 },
+        legend: { position: 'top' },
+        xaxis: {
+          type: 'datetime',
+          labels: {
+            datetimeUTC: true,
+            formatter: (v) => {
+              const ts = Number(v)
+              if (!Number.isFinite(ts)) return ''
+              return new Intl.DateTimeFormat('th-TH', {
+                timeZone: 'Asia/Bangkok',
+                hourCycle: 'h23',
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+              }).format(ts)
             }
-            // events จะถูกผูกใน mounted()
-            },
-            stroke: { curve: 'smooth', width: 3 },
-            markers: { size: 5 },
-            legend: { position: 'top' },
-            xaxis: {
-            type: 'datetime',
-            labels: {
-                datetimeUTC: true,
-                formatter: (v) => {
-                const ts = Number(v)
-                if (!Number.isFinite(ts)) return ''
-                return new Intl.DateTimeFormat('th-TH', {
-                    timeZone: 'Asia/Bangkok',
-                    hourCycle: 'h23',
-                    day: '2-digit',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }).format(ts)
-                }
+          }
+        },
+        tooltip: {
+          shared: true,
+          x: {
+            formatter: (v) => {
+              const ts = Number(v)
+              if (!Number.isFinite(ts)) return ''
+              return new Intl.DateTimeFormat('th-TH', {
+                timeZone: 'Asia/Bangkok',
+                hourCycle: 'h23',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              }).format(ts)
             }
-            },
-            tooltip: {
-            shared: true,
-            x: {
-                formatter: (v) => {
-                const ts = Number(v)
-                if (!Number.isFinite(ts)) return ''
-                return new Intl.DateTimeFormat('th-TH', {
-                    timeZone: 'Asia/Bangkok',
-                    hourCycle: 'h23',
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }).format(ts)
-                }
-            }
-            },
-            yaxis: [
-            { seriesName: 'Posts', title: { text: 'Posts' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
-            { seriesName: 'Messages', title: { text: 'Messages' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
-            { seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } }
-            ],
-            noData: { text: 'กำลังโหลดข้อมูล...' }
-        }
+          }
+        },
+        yaxis: [
+          { seriesName: 'Posts', title: { text: 'Posts' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
+          { seriesName: 'Messages', title: { text: 'Messages' }, min: 0, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } },
+          { seriesName: 'Engagement', title: { text: 'Engagement' }, min: 0, opposite: true, labels: { formatter: v => Math.round(v).toLocaleString() || 0 } }
+        ],
+        noData: { text: 'กำลังโหลดข้อมูล...' }
+      }
     }
   },
   computed: {
@@ -528,38 +496,51 @@ export default {
     }
   },
   methods: {
-    printPosts() {
-    // ใส่สไตล์พิมพ์ margin ต่ำสุด (ครั้งเดียว)
-    const STYLE_ID = 'print-style-min-margin';
-    if (!document.getElementById(STYLE_ID)) {
-        const style = document.createElement('style');
-        style.id = STYLE_ID;
-        style.media = 'print';
-        style.textContent = `
-        @page { size: auto; margin: 0; }    /* ขอบกระดาษ 0 */
-        @media print {
-            html, body { margin: 0 !important; padding: 0 !important; }
-        }
-        `;
-        document.head.appendChild(style);
-    }
+    /* ── match percent clamp ── */
+    clampMatchMin() {
+      if (this.matchMin < 0) this.matchMin = 0
+      if (this.matchMin > this.matchMax) this.matchMin = this.matchMax
+      this.resetAndFetch()
+    },
+    clampMatchMax() {
+      if (this.matchMax > 100) this.matchMax = 100
+      if (this.matchMax < this.matchMin) this.matchMax = this.matchMin
+      this.resetAndFetch()
+    },
 
-    this.$nextTick(() => {
-        try { window.print(); } catch (e) { console.error(e); }
-    });
-    }
-    ,
+    /* ── helpers ── */
+    matchParams() {
+      return {
+        image_match_min: (this.matchMin / 100).toFixed(2),
+        image_match_max: (this.matchMax / 100).toFixed(2)
+      }
+    },
+
+    printPosts() {
+      const STYLE_ID = 'print-style-min-margin'
+      if (!document.getElementById(STYLE_ID)) {
+        const style = document.createElement('style')
+        style.id = STYLE_ID
+        style.media = 'print'
+        style.textContent = `
+          @page { size: auto; margin: 0; }
+          @media print { html, body { margin: 0 !important; padding: 0 !important; } }
+        `
+        document.head.appendChild(style)
+      }
+      this.$nextTick(() => { try { window.print() } catch (e) { console.error(e) } })
+    },
+
     formatDate(date) {
-      let dates = moment(date).subtract(7, "hours");
-      let date2 = moment(dates).format("ll");
-      return date2;
+      let dates = moment(date).subtract(7, "hours")
+      return moment(dates).format("ll")
     },
     formatTime(date) {
-      return date.slice(11, 16);
+      return date.slice(11, 16)
     },
     onClick(i, url) {
-      this.dataPhoto = [url];  // เซ็ตภาพก่อน
-      this.index = i;          // แล้วค่อยเปิดที่ index 0
+      this.dataPhoto = [url]
+      this.index = i
     },
     isAllZero(rows) {
       return rows.length > 0 && rows.every(r =>
@@ -577,132 +558,91 @@ export default {
       } else {
         this.chartOptions = { ...this.chartOptions, ...patch }
       }
-      },
+    },
     parseOffsetToMs(tzStr) {
       const m = /^([+-])(\d{2}):?(\d{2})$/.exec(String(tzStr).trim())
       if (!m) return 0
       const sign = m[1] === '+' ? 1 : -1
-      const hh = parseInt(m[2], 10) || 0
-      const mm = parseInt(m[3], 10) || 0
-      return sign * (hh * 60 + mm) * 60 * 1000
+      return sign * ((parseInt(m[2], 10) || 0) * 60 + (parseInt(m[3], 10) || 0)) * 60 * 1000
     },
     applyData(payload) {
-        this.lastPayload = payload
-        const tz = (payload?.range?.timezone) || '+07:00'
-        const rows = Array.isArray(payload?.seriesHourly) ? payload.seriesHourly : []
-        console.log('apply === ', rows);
-        
-        if (!rows.length || this.isAllZero(rows)) {
-            this.series = []
-            this.setNoDataText('ไม่พบข้อมูล')
-            return
-        }
-
-        this.setNoDataText('')
-
-        const offsetMs = this.parseOffsetToMs(tz)
-        const keyOf = (d, t) => `${d} ${t.padStart(5, '0')}`
-        const dataMap = new Map()
-
-        rows.forEach(r => {
-            const key = keyOf(r.date, r.time)
-            dataMap.set(key, {
-            post: Number(r.post_count || 0),
-            engagement: Number(r.engagement_sum || 0),
-            msg: Number(r.message_sum || 0)
-            })
+      this.lastPayload = payload
+      const tz = (payload?.range?.timezone) || '+07:00'
+      const rows = Array.isArray(payload?.seriesHourly) ? payload.seriesHourly : []
+      if (!rows.length || this.isAllZero(rows)) {
+        this.series = []
+        this.setNoDataText('ไม่พบข้อมูล')
+        return
+      }
+      this.setNoDataText('')
+      const offsetMs = this.parseOffsetToMs(tz)
+      const keyOf = (d, t) => `${d} ${t.padStart(5, '0')}`
+      const dataMap = new Map()
+      rows.forEach(r => {
+        dataMap.set(keyOf(r.date, r.time), {
+          post: Number(r.post_count || 0),
+          engagement: Number(r.engagement_sum || 0),
+          msg: Number(r.message_sum || 0)
         })
-
-        const toUtcMs = (d, t) => Date.parse(`${d}T${t}:00${tz}`)
-        const localMsFromUtc = (utc) => utc + offsetMs
-
-        let minLocal = Infinity
-        let maxLocal = -Infinity
-        rows.forEach(r => {
-            const utc = toUtcMs(r.date, r.time)
-            const local = localMsFromUtc(utc)
-            if (local < minLocal) minLocal = local
-            if (local > maxLocal) maxLocal = local
-        })
-
-        const HOUR = 3600000
-        const gridStartLocal = Math.floor(minLocal / HOUR) * HOUR
-        const gridEndLocal = Math.floor(maxLocal / HOUR) * HOUR
-
-        const posts = []
-        const engagements = []
-        const messages = []
-
-        for (let lt = gridStartLocal; lt <= gridEndLocal; lt += HOUR) {
-            const iso = new Date(lt).toISOString()
-            const d = iso.slice(0, 10)
-            const t = iso.slice(11, 16)
-            const key = keyOf(d, t)
-            const val = dataMap.get(key)
-
-            // ✅ ถ้าไม่มีข้อมูลในชั่วโมงนั้นเลย ให้ข้าม
-            if (!val || (val.post === 0 && val.msg === 0 && val.engagement === 0)) {
-            continue
-            }
-
-            const tsUTC = lt - offsetMs
-            posts.push([tsUTC, val.post])
-            messages.push([tsUTC, val.msg])
-            engagements.push([tsUTC, val.engagement])
-        }
-
-        // ✅ สร้าง series เฉพาะที่มีข้อมูลจริง
-        const series = []
-        if (posts.length) series.push({ name: 'Posts', data: posts, yAxisIndex: 0 })
-        if (messages.length) series.push({ name: 'Messages', data: messages, yAxisIndex: 1 })
-        if (engagements.length) series.push({ name: 'Engagement', data: engagements, yAxisIndex: 2 })
-
-        if (!series.length) {
-            this.setNoDataText('ไม่พบข้อมูล')
-        }
-
-        this.series = series
-        console.log('series === ', this.series);
+      })
+      const toUtcMs = (d, t) => Date.parse(`${d}T${t}:00${tz}`)
+      const localMsFromUtc = (utc) => utc + offsetMs
+      let minLocal = Infinity, maxLocal = -Infinity
+      rows.forEach(r => {
+        const local = localMsFromUtc(toUtcMs(r.date, r.time))
+        if (local < minLocal) minLocal = local
+        if (local > maxLocal) maxLocal = local
+      })
+      const HOUR = 3600000
+      const gridStartLocal = Math.floor(minLocal / HOUR) * HOUR
+      const gridEndLocal = Math.floor(maxLocal / HOUR) * HOUR
+      const posts = [], engagements = [], messages = []
+      for (let lt = gridStartLocal; lt <= gridEndLocal; lt += HOUR) {
+        const iso = new Date(lt).toISOString()
+        const val = dataMap.get(keyOf(iso.slice(0, 10), iso.slice(11, 16)))
+        if (!val || (val.post === 0 && val.msg === 0 && val.engagement === 0)) continue
+        const tsUTC = lt - offsetMs
+        posts.push([tsUTC, val.post])
+        messages.push([tsUTC, val.msg])
+        engagements.push([tsUTC, val.engagement])
+      }
+      const series = []
+      if (posts.length) series.push({ name: 'Posts', data: posts, yAxisIndex: 0 })
+      if (messages.length) series.push({ name: 'Messages', data: messages, yAxisIndex: 1 })
+      if (engagements.length) series.push({ name: 'Engagement', data: engagements, yAxisIndex: 2 })
+      if (!series.length) this.setNoDataText('ไม่พบข้อมูล')
+      this.series = series
     },
-      async apiPostImageByImageId() {
+
+    async apiPostImageByImageId() {
       this.loading = true
       try {
         const params = {
           image_id: this.$route.query.id,
-          source: this.select_social || undefined, // ส่งเฉพาะถ้ามีเลือก
-          page: this.page,
+          source: this.select_social || undefined,
           sort_by: this.sort || 'engagement',
           limit: this.limit,
           page: this.page,
-          source: this.select_social,
-          sentiment: this.selected
+          sentiment: this.selected,
+          ...this.matchParams()             // ← image_match_min / image_match_max
         }
         this.filters = params
         const token = localStorage.getItem('token')
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
         const { data } = await this.axios.get(
           'https://api2.cognizata.com/api/v2/image_upload/getImageUserposts',
           { params, headers }
         )
         this.dataImg = data
-        // ปรับรูปแบบผลลัพธ์ให้เข้ากับ UI
-        // const rows = data?.data || []
-        // this.posts = Array.isArray(rows) ? rows : []
-        const rows = Array.isArray(data?.data) ? data.data : [];
-
-        // ✅ ถ้า page = 1 → ล้างข้อมูลเก่า
-        // ✅ ถ้า page > 1 → ต่อข้อมูลใหม่เข้ากับของเดิม
+        const rows = Array.isArray(data?.data) ? data.data : []
         if (this.page === 1) {
-            this.posts = rows;
+          this.posts = rows
         } else {
-            this.posts = [...this.posts, ...rows];
+          this.posts = [...this.posts, ...rows]
         }
-        
         const apiCount = Number(data?.pagination?.total_posts || 0)
         const computed = this.posts.length
         this.count = apiCount > 0 ? apiCount : Math.max((this.page - 1) * this.limit + computed, 0)
-
         const apiTotalPages = Number(data?.pagination?.total_pages ?? 0)
         this.totalPages = apiTotalPages > 0
           ? apiTotalPages
@@ -712,132 +652,66 @@ export default {
         this.posts = []
         this.count = 0
         this.totalPages = 0
-        // ถ้าจะจัดการ 401:
-        // if (e?.response?.status === 401) this.$router.push('/login')
       } finally {
         this.loading = false
       }
     },
+
     async apiAllPostImageByImageId() {
       this.loading = true
       try {
         const params = {
           image_id: this.$route.query.id,
-          source: this.select_social || undefined, // ส่งเฉพาะถ้ามีเลือก
-          page: this.page,
+          source: this.select_social || undefined,
           sort_by: this.sort || 'engagement',
           limit: this.count,
           page: this.page,
-          source: this.select_social,
-          sentiment: this.selected
+          sentiment: this.selected,
+          ...this.matchParams()             // ← image_match_min / image_match_max
         }
         this.filters = params
         const token = localStorage.getItem('token')
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
         const { data } = await this.axios.get(
           'https://api2.cognizata.com/api/v2/image_upload/getImageUserposts',
           { params, headers }
         )
         this.dataImg = data
-        // ปรับรูปแบบผลลัพธ์ให้เข้ากับ UI
-        // const rows = data?.data || []
-        // this.posts = Array.isArray(rows) ? rows : []
-        const rows = Array.isArray(data?.data) ? data.data : [];
-        console.log("rows == ", rows);
+        const rows = Array.isArray(data?.data) ? data.data : []
         this.postForExport = rows
-        // ✅ ถ้า page = 1 → ล้างข้อมูลเก่า
-        // ✅ ถ้า page > 1 → ต่อข้อมูลใหม่เข้ากับของเดิม
-        // if (this.page === 1) {
-        //     this.posts = rows;
-        // } else {
-        //     this.posts = [...this.posts, ...rows];
-        // }
-        
-        // const apiCount = Number(data?.pagination?.total_posts || 0)
-        // const computed = this.posts.length
-        // this.count = apiCount > 0 ? apiCount : Math.max((this.page - 1) * this.limit + computed, 0)
-
-        // const apiTotalPages = Number(data?.pagination?.total_pages ?? 0)
-        // this.totalPages = apiTotalPages > 0
-        //   ? apiTotalPages
-        //   : (this.count && this.limit ? Math.ceil(this.count / this.limit) : 0)
       } catch (e) {
         console.error(e)
         this.postForExport = []
-        // this.count = 0
-        // this.totalPages = 0
-        // ถ้าจะจัดการ 401:
-        // if (e?.response?.status === 401) this.$router.push('/login')
       } finally {
         this.loading = false
       }
     },
 
-    async apiPostImageByImageId2() {
-      this.loading = true
-      try {
-        const params = {
-          start: '2025-09-24T00:00:00',
-          end: '2025-09-24T23:59:59',
-          sort_by: this.sort || 'engagement',
-          limit: this.limit,
-          page: this.page,
-          source: this.select_social,
-          sentiment: this.selected
-        }
-        const { data } = await this.axios.get(
-          'https://api2.cognizata.com/api/v2/userposts/getFulltextPost',
-          { params }
-        )
-
-        this.posts = data.data || []
-        this.count = Number(data.count || 0)
-        this.totalPages = Number(data.totalPages || Math.ceil(this.count / this.limit) || 0)
-      } catch (e) {
-        console.error(e)
-        this.posts = []
-        this.count = 0
-        this.totalPages = 0
-      } finally {
-        this.loading = false
-      }
-    },
     async apiGetImagePostCharts() {
-        // this.loading = true
       try {
         const params = {
           image_id: this.$route.query.id,
-          source: this.select_social || undefined, // ส่งเฉพาะถ้ามีเลือก
-          page: this.page,
+          source: this.select_social || undefined,
           sort_by: this.sort || 'engagement',
           limit: this.count,
           page: this.page,
-          source: this.select_social,
-          sentiment: this.selected
+          sentiment: this.selected,
+          ...this.matchParams()             // ← image_match_min / image_match_max
         }
         this.filters = params
         const token = localStorage.getItem('token')
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
         const { data } = await this.axios.get(
           'https://api2.cognizata.com/api/v2/image_upload/getImagePostCharts',
           { params, headers }
-          )
-          this.datachart = data
-          this.applyData(data)
-        console.log(data);
+        )
+        this.datachart = data
+        this.applyData(data)
       } catch (e) {
         console.error(e)
-        // this.postForExport = []
-        // this.count = 0
-        // this.totalPages = 0
-        // ถ้าจะจัดการ 401:
-        // if (e?.response?.status === 401) this.$router.push('/login')
-      } finally {
-        // this.loading = false
       }
     },
+
     onPageChange(p) {
       if (this.loading) return
       this.page = p
@@ -847,6 +721,7 @@ export default {
     resetAndFetch() {
       this.page = 1
       this.apiPostImageByImageId()
+       this.apiGetImagePostCharts()   
     },
 
     statusVariant(s) {
@@ -858,39 +733,37 @@ export default {
       return 'secondary'
     },
     pct(n) {
-        const socialKeys = ["tiktok","youtube","facebook","twitter","threads","news","blockdit","pantip","instagram"];
-        let platform = Object.fromEntries(
-            Object.entries(this.datachart.totals).filter(([key]) => socialKeys.includes(key))
-        );
-        const total = Object.values(platform || {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
-        if (!total) return "0%";
-        return ((Number(n) || 0) * 100 / total).toFixed(1) + "%";
+      const socialKeys = ["tiktok","youtube","facebook","twitter","threads","news","blockdit","pantip","instagram"]
+      let platform = Object.fromEntries(
+        Object.entries(this.datachart.totals).filter(([key]) => socialKeys.includes(key))
+      )
+      const total = Object.values(platform || {}).reduce((sum, v) => sum + (Number(v) || 0), 0)
+      if (!total) return "0%"
+      return ((Number(n) || 0) * 100 / total).toFixed(1) + "%"
     },
     exportSelected() {
-      // TODO: Implement export logic
       console.log('Export clicked')
     }
   },
   mounted() {
-      this.apiPostImageByImageId()
+    this.apiPostImageByImageId()
     this.apiGetImagePostCharts()
-    },
-    watch: {
-        count: {
-            handler(newVal, oldVal) {
-                this.apiAllPostImageByImageId();
-            },
-            // immediate: true
-        }
-    },
+  },
+  watch: {
+    count: {
+      handler(newVal, oldVal) {
+        this.apiAllPostImageByImageId()
+      }
+    }
+  },
   filters: {
     numFormat(v) {
-      const n = Number(v || 0)
-      return n.toLocaleString()
+      return Number(v || 0).toLocaleString()
     }
   }
 }
 </script>
+
 <style>
 .iconimg.b-avatar .b-avatar-img img {
   width: auto;
@@ -908,59 +781,47 @@ export default {
 .btn-secondary {
   background-color: transparent !important;
 }
-
 .btn-secondary:hover {
   background-color: transparent !important;
 }
-
 #overflow-page>div.container.my-3>div.card.mb-3.shadow-sm.card-photo.sd-g>div {
   padding: 2px !important;
 }
-
 .iconimg {
   height: 300px !important;
-  /* width: 600px !important; */
 }
-
 .iconimg .b-avatar>.b-icon {
   width: 8% !important;
   height: auto;
   max-width: 100%;
 }
-
 ::v-deep .nav-tabs .nav-link {
   border: 0 !important;
 }
-
 .badge-warning {
   color: #3a3838;
   background-color: #ffd968;
   font-weight: 500;
 }
-
 .badge-success {
   color: #3a3838;
   background-color: #1996006b;
   font-weight: 500;
 }
-
 .badge-danger {
   color: #3a3838;
   background-color: #e86c78c7;
   font-weight: 500;
 }
-
 .card-photo {
   margin-bottom: 18px;
   border-radius: 15px;
   border: 0px solid rgba(0, 0, 0, .125) !important;
   box-shadow: 0 .125rem .25rem rgba(0, 0, 0, 0.13) !important;
 }
-
 .sd-g {
   border: 1px solid #888787 !important;
 }
-
 .b-avatar .b-avatar-img img {
   width: auto;
   height: 100%;
@@ -969,26 +830,19 @@ export default {
   -o-object-fit: cover;
   object-fit: cover;
 }
-
 .row-cols-md-9 > * {
   flex: 0 0 auto;
   width: calc(100% / 9);
 }
 @media only screen and (min-width: 0px) and (max-width: 800px) {
-  .rdo {
-    zoom: 75%
-  }
-
+  .rdo { zoom: 75% }
   .iconimg {
     height: 200px !important;
     width: 600px !important;
   }
 }
-/* ไม่ต้องตั้ง width สำหรับหน้าจอ <768px (sm/xs) */
 @media (max-width: 516px) {
-  .row-cols-md-9 > * {
-    width: auto; /* จะใช้ค่า cols ของมือถือ/ค่า default ของ b-row */
-  }
+  .row-cols-md-9 > * { width: auto; }
 }
 @page { size: A4; margin: 0; }
 </style>

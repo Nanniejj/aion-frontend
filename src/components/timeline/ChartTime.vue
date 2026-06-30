@@ -38,6 +38,7 @@
 
       <!-- กล่อง SummaryButton + TrendSummary: ยังคงผูกกับ series ตามเดิม -->
       <b-col v-if="series.length !== 0" cols="12" class="">
+     
           <SummaryButton
             class="text-left mb-3"
             :hideTrandButton="series.length === 0"

@@ -1,63 +1,17 @@
 <template>
   <b-card class="wordcloud-card" no-body>
-    <!-- header -->
-    <div class="p-3 d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center">
-        <b-badge variant="light" class="mr-2">Wordcloud</b-badge>
-        <small class="text-muted" v-if="subtitle">{{ subtitle }}</small>
-      </div>
 
-      <div class="d-flex align-items-center">
-        <b-form-checkbox v-model="useSpiralArch" switch size="sm" class="mr-2">
-          Archimedean
-        </b-form-checkbox>
 
-        <b-button size="sm" variant="outline-secondary" :disabled="isLoading" @click="loadWordCloud(true)">
-          <span v-if="isLoading">กำลังโหลด...</span>
-          <span v-else>รีเฟรช</span>
-        </b-button>
-      </div>
-    </div>
+    <!-- <b-alert v-if="error" show variant="danger" class="mx-3 mb-2">
+      {{ error }}
+    </b-alert> -->
 
-    <!-- controls -->
-    <div class="px-3 pb-2">
-      <b-row>
-        <b-col md="3">
-          <b-form-group label="Domain ID" label-class="small text-muted mb-1">
-            <b-form-input v-model="domainId" size="sm" />
-          </b-form-group>
-        </b-col>
-
-        <b-col md="4">
-          <b-form-group label="Start" label-class="small text-muted mb-1">
-            <b-form-input v-model="start" size="sm" />
-          </b-form-group>
-        </b-col>
-
-        <b-col md="4">
-          <b-form-group label="End" label-class="small text-muted mb-1">
-            <b-form-input v-model="end" size="sm" />
-          </b-form-group>
-        </b-col>
-
-        <b-col md="1" class="d-flex align-items-end">
-          <b-button size="sm" variant="primary" block :disabled="isLoading" @click="loadWordCloud(true)">
-            โหลด
-          </b-button>
-        </b-col>
-      </b-row>
-
-      <b-alert v-if="error" show variant="danger" class="mt-2 mb-0">
-        {{ error }}
-      </b-alert>
-    </div>
-
-    <!-- ✅ 2 cloud ใน 1 component (ยิง API ครั้งเดียว) -->
+    <!-- ✅ 2 cloud ใน 1 component (component ยิง API เอง ไม่มี filter ในตัว) -->
     <div class="px-2 pb-3">
       <b-row>
         <!-- WORD CLOUD -->
-        <b-col md="6" class="mb-3 mb-md-0">
-          <div class="wc-panel">
+        <b-col md="6" >
+          <div class="wc-panel h-100 w-100">
             <div class="wc-panel-title">Words</div>
 
             <div class="wc-wrap position-relative">
@@ -69,11 +23,8 @@
                 <b-spinner />
               </div>
 
-              <div
-                v-show="tooltip.show && tooltip.target === 'words'"
-                class="wc-tooltip"
-                :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
-              >
+              <div v-show="tooltip.show && tooltip.target === 'words'" class="wc-tooltip"
+                :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
                 <div class="font-weight-bold">{{ tooltip.name }}</div>
                 <div class="small text-muted">รวม: {{ fmt(tooltip.total) }}</div>
                 <div class="small">
@@ -89,7 +40,7 @@
 
         <!-- HASHTAG CLOUD -->
         <b-col md="6">
-          <div class="wc-panel">
+          <div class="wc-panel h-100 w-100" >
             <div class="wc-panel-title">Hashtags</div>
 
             <div class="wc-wrap position-relative">
@@ -101,11 +52,8 @@
                 <b-spinner />
               </div>
 
-              <div
-                v-show="tooltip.show && tooltip.target === 'tags'"
-                class="wc-tooltip"
-                :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
-              >
+              <div v-show="tooltip.show && tooltip.target === 'tags'" class="wc-tooltip"
+                :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
                 <div class="font-weight-bold">{{ tooltip.name }}</div>
                 <div class="small text-muted">รวม: {{ fmt(tooltip.total) }}</div>
                 <div class="small">
@@ -133,61 +81,75 @@ export default {
   props: {
     token: { type: String, default: "" },
 
-    defaultDomainId: { type: [String, Number], default: "1" },
-    defaultStart: { type: String, default: "2026-01-12T00:00:00" },
-    defaultEnd: { type: String, default: "2026-01-12T23:59:59" },
+    // ✅ component ยิง API เอง ไม่มี filter UI ให้แก้ — กำหนดผ่าน prop ตอนเรียกใช้แทน
+    domainId: { type: [String, Number], default: "1" },
+    start: { type: String, default: "" },
+    end: { type: String, default: "" },
+    monitor: { type: [String, Boolean], default: "" },
 
     // ✅ key ของผลลัพธ์ใน apiData
     hashtagsKey: { type: String, default: "hashtags" },
     itemsKey: { type: String, default: "items" },
 
-    minHeight: { type: Number, default: 280 },
+    minHeight: { type: Number, default: 300 },
     limit: { type: Number, default: 100 },
 
-    minFont: { type: Number, default: 25 },
-    maxFont: { type: Number, default: 180 },
+    // ✅ ขนาด canvas คงที่สำหรับทำ layout/วาดคำ (ไม่อิงขนาดกล่องจริงบนจอ)
+    // ใช้ค่าตายตัวเพื่อให้ผลลัพธ์ระยะขอบ/การกระจายตัวสม่ำเสมอทุกครั้ง ส่วนการแสดงผลจริงยัง responsive ตาม container เพราะ svg ใช้ viewBox
+    fixedWidth: { type: Number, default: 720 },
+    fixedHeight: { type: Number, default: 480 },
+
+    minFont: { type: Number, default: 20 },
+    maxFont: { type: Number, default: 90 },
 
     disableRotate: { type: Boolean, default: true },
-    fontFamily: { type: String, default: '"TH Sarabun New"' },
 
+    // ✅ ฟอนต์เดียวกันทั้ง 2 wordcloud (บน/ล่าง) — ใช้ฟอนต์เดียวกับฝั่งเก่า
+    fontFamily: {
+      type: String,
+      default: " 'Sarabun', sans-serif",
+    },
+
+    useSpiralArch: { type: Boolean, default: true },
+
+    // ✅ กระจายคำให้เต็มกรอบ + ขอบเท่ากัน
+    // layout จะถูกคำนวณบนพื้นที่ที่ "ใหญ่กว่า" กรอบที่เห็นจริง (oversize) แล้วค่อยย่อ/จัดกลางให้พอดีกรอบทีหลัง (fitToDataBounds)
+    // ถ้ายังกระจายไม่พอ ลองเพิ่มค่านี้ (เช่น 1.8–2.2) หรือถ้าคำห่างกันเกินไป ลองลดค่าลง
+    layoutOversize: { type: Number, default: 1.3 },
+
+    // ✅ สีและพารามิเตอร์ blend ปรับให้ตรงกับ backend (lib/sentimentColor.js DEFAULTS)
+    // เดิมค่าพวกนี้เพี้ยนไปจาก backend มาก (domPow 8 vs 1.8, lightMin 0.8 vs 0.32 ฯลฯ)
+    // ทำให้สีที่ได้คนละโทนกับภาพที่ backend สร้าง
     colorPos: { type: String, default: "#0c2d0e" },
     colorNeu: { type: String, default: "#ffc107" },
     colorNeg: { type: String, default: "#380d0d" },
 
-    domPow: { type: Number, default: 1.8},
-    negBoost: { type: Number, default: 1.8 },
-    neuDampen: { type: Number, default: 0.4 },
-    dominanceKick: { type: Number, default: 0.22 },
+    domPow: { type: Number, default: 3 },        // จาก 1.8 — เพิ่มความ "เด็ดขาด" ของสัดส่วนสี
+    negBoost: { type: Number, default: 3 },
+    neuDampen: { type: Number, default: 0.5 },
+    dominanceKick: { type: Number, default: 0.55 }, // จาก 0.22 — ดันไปทางสีที่ครองเสียงข้างมากแรงขึ้น
 
-    satMin: { type: Number, default: 0.92 },
-    lightMin: { type: Number, default: 0.32 },
-    lightMax: { type: Number, default: 0.32 },
-
-    paddingBase: { type: Number, default: 1.4 },
-    paddingFactor: { type: Number, default: 0.03 },
+    satMin: { type: Number, default: 0.85 },
+    lightMin: { type: Number, default: 0.38 },    // จาก 0.32
+    lightMax: { type: Number, default: 0.58 },    // จาก 0.32 — เปิดช่วงให้กว้างขึ้น ไม่บังคับเท่ากันหมด
+    paddingBase: { type: Number, default: 1.8 },
+    paddingFactor: { type: Number, default: 0.045 },
   },
 
   data() {
     return {
-      domainId: String(this.defaultDomainId),
-      start: this.defaultStart,
-      end: this.defaultEnd,
-
       isLoading: false,
       error: "",
       apiData: null,
 
       _cancelSource: null,
-      useSpiralArch: true,
+      _lastFetchKey: "",
 
       // ✅ แยก svg/layout 2 ชุด
       _layoutWords: null,
       _layoutTags: null,
       _svgWords: null,
       _svgTags: null,
-
-      // ✅ กันยิงซ้ำเมื่อ param ไม่เปลี่ยน
-      _lastFetchKey: "",
 
       // ✅ resize observer
       _roWords: null,
@@ -214,6 +176,16 @@ export default {
       return this.token || localStorage.getItem("token") || "";
     },
 
+    resolvedStart() {
+      if (this.start) return this.start;
+      return new Date().toISOString().slice(0, 10) + "T00:00:00";
+    },
+
+    resolvedEnd() {
+      if (this.end) return this.end;
+      return new Date().toISOString().slice(0, 10) + "T23:59:59";
+    },
+
     wordItems() {
       if (!this.apiData) return [];
       if (Array.isArray(this.apiData)) return this.apiData;
@@ -227,9 +199,10 @@ export default {
     },
 
     subtitle() {
-      if (!this.apiData) return "";
+      if (!this.apiData || Array.isArray(this.apiData)) return "";
       const domains = (this.apiData.domain_names || []).join(", ");
-      return `${domains} • ${this.apiData.start} - ${this.apiData.end}`;
+      const range = this.apiData.start && this.apiData.end ? ` • ${this.apiData.start} - ${this.apiData.end}` : "";
+      return domains ? `${domains}${range}` : "";
     },
   },
 
@@ -240,10 +213,31 @@ export default {
     useSpiralArch() {
       this.renderBoth();
     },
+    layoutOversize() {
+      this.renderBoth();
+    },
+    fixedWidth() {
+      this.renderBoth();
+    },
+    fixedHeight() {
+      this.renderBoth();
+    },
+    domainId() {
+      this.loadWordCloud(true);
+    },
+    start() {
+      this.loadWordCloud(true);
+    },
+    end() {
+      this.loadWordCloud(true);
+    },
+    monitor() {
+      this.loadWordCloud(true);
+    },
   },
 
   mounted() {
-    this.loadWordCloud(false);
+    this.loadWordCloud();
 
     this.$nextTick(() => {
       const w1 = this.$refs.chartWrapWords;
@@ -253,7 +247,7 @@ export default {
         let t = null;
         return () => {
           clearTimeout(t);
-          t = setTimeout(() => this.renderBoth(), 120);
+          t = setTimeout(() => this.renderBoth(), 100);
         };
       })();
 
@@ -272,12 +266,18 @@ export default {
   beforeDestroy() {
     this.destroyAll();
 
+    if (this._cancelSource) {
+      try {
+        this._cancelSource.cancel("Component destroyed");
+      } catch (e) { }
+    }
+
     try {
       this._roWords && this._roWords.disconnect();
-    } catch (e) {}
+    } catch (e) { }
     try {
       this._roTags && this._roTags.disconnect();
-    } catch (e) {}
+    } catch (e) { }
 
     if (this._fallbackResize) {
       window.removeEventListener("resize", this._fallbackResize);
@@ -291,6 +291,54 @@ export default {
     },
     clamp(x, a, b) {
       return Math.min(b, Math.max(a, x));
+    },
+
+    async loadWordCloud(force = false) {
+      this.error = "";
+
+      if (!this.resolvedToken) {
+        this.error = "ไม่พบ token (ส่ง prop token หรือ set localStorage key: token)";
+        return;
+      }
+
+      const fetchKey = `${String(this.domainId)}|${String(this.resolvedStart)}|${String(this.resolvedEnd)}|${String(this.monitor)}`;
+
+      if (!force && this.apiData && this._lastFetchKey === fetchKey) {
+        this.renderBoth();
+        return;
+      }
+
+      if (this._cancelSource) this._cancelSource.cancel("Cancelled due to new request");
+      this._cancelSource = axios.CancelToken.source();
+
+      this.isLoading = true;
+      try {
+        const params = { domain_id: this.domainId, start: this.resolvedStart, end: this.resolvedEnd };
+        if (this.monitor) params.monitor = this.monitor;
+
+        const res = await axios.request({
+          method: "GET",
+          url: "https://api2.cognizata.com/api/v2/wordcloud/getWordCloud",
+          params,
+          headers: { Authorization: `Bearer ${this.resolvedToken}` },
+          cancelToken: this._cancelSource.token,
+        });
+
+        this.apiData = res.data;
+        this._lastFetchKey = fetchKey;
+
+        this.$emit("loaded", this.apiData);
+
+        this.renderBoth();
+      } catch (err) {
+        if (axios.isCancel(err)) return;
+        this.error =
+          (err.response && err.response.data && err.response.data.message) ||
+          err.message ||
+          "โหลดข้อมูลไม่สำเร็จ";
+      } finally {
+        this.isLoading = false;
+      }
     },
 
     async waitForStableSize(wrapEl, tries = 12) {
@@ -338,57 +386,10 @@ export default {
       const sy = (bh - pad * 2) / contentH;
       const s = Math.max(0.01, Math.min(sx, sy)); // ✅ พอดีกรอบ ไม่ล้น
 
-      // แปลงจาก centered coords -> svg coords (มี +bw/2,+bh/2 ตอนวาด)
       const tx = pad - (bw / 2 + minX) * s;
       const ty = pad - (bh / 2 + minY) * s;
 
       g.attr("transform", `translate(${tx},${ty}) scale(${s})`);
-    },
-
-    async loadWordCloud(force = false) {
-      this.error = "";
-
-      if (!this.resolvedToken) {
-        this.error = "ไม่พบ token (ส่ง prop token หรือ set localStorage key: token)";
-        return;
-      }
-
-      const fetchKey = `${String(this.domainId)}|${String(this.start)}|${String(this.end)}`;
-
-      if (!force && this.apiData && this._lastFetchKey === fetchKey) {
-        this.renderBoth();
-        return;
-      }
-
-      if (this._cancelSource) this._cancelSource.cancel("Cancelled due to new request");
-      this._cancelSource = axios.CancelToken.source();
-
-      this.isLoading = true;
-      try {
-        const res = await axios.request({
-          method: "GET",
-          url: "https://api2.cognizata.com/api/v2/wordcloud/getWordCloud",
-          params: { domain_id: this.domainId, start: this.start, end: this.end },
-          headers: { Authorization: `Bearer ${this.resolvedToken}` },
-          cancelToken: this._cancelSource.token,
-        });
-
-        this.apiData = res.data;
-        this._lastFetchKey = fetchKey;
-
-        this.$emit("loaded", this.apiData);
-
-        // ✅ render 2 อันจาก data ชุดเดียว
-        this.renderBoth();
-      } catch (err) {
-        if (axios.isCancel(err)) return;
-        this.error =
-          (err.response && err.response.data && err.response.data.message) ||
-          err.message ||
-          "โหลดข้อมูลไม่สำเร็จ";
-      } finally {
-        this.isLoading = false;
-      }
     },
 
     // -------- Sentiment helpers --------
@@ -397,10 +398,10 @@ export default {
         it?.count
           ? it
           : it?.__src?.count
-          ? it.__src
-          : it?.__src?.__src?.count
-          ? it.__src.__src
-          : it || {};
+            ? it.__src
+            : it?.__src?.__src?.count
+              ? it.__src.__src
+              : it || {};
 
       const c = Array.isArray(src.count) ? src.count : [];
 
@@ -417,6 +418,9 @@ export default {
       return (pos - neg) / (total || 1);
     },
 
+    // ✅ blend สีตามสัดส่วน บวก/กลาง/ลบ — สูตรเดียวกับ backend (lib/sentimentColor.js)
+    // colorPos/colorNeu/colorNeg + domPow/negBoost/neuDampen/dominanceKick + HSL clamp
+    // ใช้ค่า default เดียวกับ backend ทุกตัว ผลลัพธ์สีจึงตรงกับภาพที่ backend สร้าง
     colorBySentiment(it) {
       const { pos, neu, neg } = this.getCounts(it);
       const sum = (pos + neu + neg) || 1;
@@ -501,12 +505,12 @@ export default {
       if (this._layoutWords) {
         try {
           this._layoutWords.stop();
-        } catch (e) {}
+        } catch (e) { }
       }
       if (this._layoutTags) {
         try {
           this._layoutTags.stop();
-        } catch (e) {}
+        } catch (e) { }
       }
       this._layoutWords = null;
       this._layoutTags = null;
@@ -523,7 +527,6 @@ export default {
     },
 
     renderBoth() {
-      // ป้องกัน render ตอนยังไม่มีข้อมูล
       if (!this.apiData) return;
 
       this.renderOne({
@@ -542,12 +545,11 @@ export default {
     },
 
     async renderOne({ kind, wrapRef, chartRef, getItems }) {
-      // destroy เฉพาะตัวนั้น
       if (kind === "words") {
         if (this._layoutWords) {
           try {
             this._layoutWords.stop();
-          } catch (e) {}
+          } catch (e) { }
         }
         this._layoutWords = null;
         if (this._svgWords) this._svgWords.remove();
@@ -556,7 +558,7 @@ export default {
         if (this._layoutTags) {
           try {
             this._layoutTags.stop();
-          } catch (e) {}
+          } catch (e) { }
         }
         this._layoutTags = null;
         if (this._svgTags) this._svgTags.remove();
@@ -567,14 +569,15 @@ export default {
       const wrap = this.$refs[wrapRef];
       if (!el || !wrap) return;
 
-      // ✅ รอ column width/height ให้เสถียรก่อน (กันครั้งแรกแหว่ง/ไม่ครบ)
       await this.waitForStableSize(wrap, 14);
 
-      // ✅ รอฟอนต์พร้อม (ลดเพี้ยนรอบแรก)
-      if (document?.fonts?.ready) {
+      if (document?.fonts) {
         try {
+          // ✅ โหลดฟอนต์จริงที่ใช้วาดคำ (ไม่ใช่แค่รอ fonts.ready เฉยๆ ซึ่งผ่านได้แม้ฟอนต์ไม่โหลด)
+          await document.fonts.load(`500 16px ${this.fontFamily}`);
+          await document.fonts.load(`700 16px ${this.fontFamily}`);
           await document.fonts.ready;
-        } catch (e) {}
+        } catch (e) { }
       }
 
       const list0 = getItems?.() || [];
@@ -593,12 +596,22 @@ export default {
           size: Math.max(6, Number(w.size || 0) || 6),
         }));
 
-      const bw = Math.max(320, wrap.clientWidth || 0);
-      const bh = Math.max(this.minHeight || 280, wrap.clientHeight || 0);
+      // ✅ ใช้ขนาด canvas คงที่ (fixed) แทนการอิงขนาดกล่องจริง (wrap.clientWidth/clientHeight)
+      // เพื่อให้ผล layout/ระยะขอบเสมอกันทุกครั้งไม่ว่ากล่องจะถูกบีบ/ขยายแค่ไหน (เหมือนภาพ backend ที่ fix ขนาดไว้)
+      // ส่วนการแสดงผลจริงบนจอยังคง responsive ได้ตามปกติ เพราะ svg ใช้ viewBox + width/height: 100% อยู่แล้ว
+      const bw = this.fixedWidth;
+      const bh = this.fixedHeight;
+
+      // ✅ ขนาด "พื้นที่ทำ layout" ให้ใหญ่กว่ากรอบจริง (oversize)
+      // ทำให้ spiral ของ d3-cloud มีที่เดินกว้างขึ้นก่อนจะเจอที่ว่าง คำจึงกระจายตัวทั่วพื้นที่
+      // แทนที่จะกองอยู่ตรงกลาง — แล้วค่อยย่อ/จัดกลางให้พอดีกรอบจริงด้วย fitToDataBounds ทีหลัง
+      const oversize = Math.max(1, this.layoutOversize || 1.6);
+      const lw = bw * oversize;
+      const lh = bh * oversize;
 
       const svg = d3
         .select(el)
-        .html("") // ✅ เคลียร์ก่อนเสมอ
+        .html("")
         .append("svg")
         .attr("viewBox", `0 0 ${bw} ${bh}`)
         .attr("preserveAspectRatio", "xMidYMid meet")
@@ -613,7 +626,7 @@ export default {
 
       function mulberry32(seed) {
         return function () {
-          let t = (seed += 0x6D2B79F5);
+          let t = (seed += 0x6d2b79f5);
           t = Math.imul(t ^ (t >>> 15), t | 1);
           t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
           return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -631,16 +644,12 @@ export default {
         g.selectAll("*").remove();
         g.attr("transform", null);
 
-        const seedBase =
-          (Number(String(self.domainId).replace(/\D/g, "")) || 1) * 999 +
-          (Number(String(self.start).replace(/\D/g, "").slice(-6)) || 1) +
-          attempt * 97 +
-          (kind === "tags" ? 777 : 0);
+        const seedBase = attempt * 97 + (kind === "tags" ? 777 : 0);
 
         const rng = mulberry32(seedBase);
 
         const layout = cloud()
-          .size([bw, bh])
+          .size([lw, lh]) // ✅ ใช้พื้นที่ oversize แทนขนาดกรอบจริง เพื่อให้กระจายตัวทั่วถึง
           .random(rng)
           .words(
             words.map((w) => ({
@@ -664,10 +673,9 @@ export default {
           .font(self.fontFamily)
           .fontSize((d) => d.size)
           .on("end", (data) => {
-            // ✅ retry เมื่อวางไม่ครบ (ลด padding + ลด font)
             if (data.length < words.length && attempt < MAX_TRIES) {
               const nextPad = padMul * 0.82;
-              const nextFont = fontMul * (attempt <= 2 ? 0.90 : 0.94);
+              const nextFont = fontMul * (attempt <= 2 ? 0.9 : 0.94);
               return run(words, nextPad, nextFont);
             }
 
@@ -676,20 +684,24 @@ export default {
               .data(data, (d) => d.__id)
               .enter()
               .append("text")
-              .style("font-weight", 500)
+              .style("font-weight", 300)
               .style("font-family", self.fontFamily)
               .style("font-size", (d) => d.size + "px")
               .style("fill", (d) => self.colorBySentiment(d.__src))
               .style("cursor", "pointer")
               .attr("text-anchor", "middle")
               .attr("transform", (d) => {
+                // ⚠️ ต้องใช้ bw/bh (ไม่ใช่ lw/lh) ให้ตรงกับสูตรใน fitToDataBounds
+                // offset ตอนวาดกับตอน fit ต้องอิงฐานเดียวกัน ไม่งั้นจะเกิด offset เพี้ยน (เลื่อนขวา/ล่าง) ทำให้คำล้นออกนอกกรอบและโดน clip
+                // lw/lh มีหน้าที่แค่ "ให้พื้นที่ spiral เดินกว้างขึ้น" ตอน layout เท่านั้น ไม่เกี่ยวกับจุดอ้างอิงตอนวาด
                 const x = d.x + bw / 2;
                 const y = d.y + bh / 2;
                 return `translate(${x},${y})rotate(${d.rotate || 0})`;
               })
               .text((d) => d.text);
 
-            // ✅ fit-to-box แบบนิ่ง: อิง bounds ของ data (ไม่ใช้ getBBox)
+            // ✅ ย่อ/จัดกลาง bounding box จริงของคำทั้งหมดให้พอดีกรอบที่แสดงผล (bw, bh) เสมอ
+            // ทำให้ขอบซ้าย-ขวา-บน-ล่างเท่ากัน ไม่ว่าจะกระจายตัวกว้างแค่ไหนตอน layout
             self.fitToDataBounds(g, data, bw, bh, 6);
 
             texts
@@ -726,6 +738,8 @@ export default {
 </script>
 
 <style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+
 .wordcloud-card {
   border-radius: 14px;
   overflow: hidden;
@@ -739,10 +753,13 @@ export default {
 }
 
 .wc-panel-title {
-  font-weight: 600;
+  font-weight: 200;
   padding: 10px 12px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   background: #fafafa;
+  font-family: "Sarabun", sans-serif;
+  font-weight: 200;
+  font-style: normal;
 }
 
 .wc-wrap {
@@ -756,12 +773,16 @@ export default {
   padding: 0;
   position: relative;
 }
+
 .wc-chart-inner {
   width: 100%;
   height: 100%;
 }
+
 .wc-chart text {
-  font-family: "TH Sarabun New", "Prompt", sans-serif !important;
+  font-family: "Sarabun", sans-serif;
+  font-weight: 300;
+  font-style: italic;
 }
 
 .wc-empty {
@@ -771,6 +792,9 @@ export default {
   justify-content: center;
   color: #999;
   font-size: 14px;
+  font-family: "Sarabun", sans-serif;
+  font-weight: 200;
+  font-style: normal;
 }
 
 .wc-overlay {
@@ -792,6 +816,7 @@ export default {
   padding: 10px 12px;
   max-width: 260px;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+
 }
 
 @media (max-width: 768px) {
@@ -799,6 +824,7 @@ export default {
     height: 340px;
     min-height: 260px;
   }
+
   .wc-wrap {
     min-height: 260px;
   }

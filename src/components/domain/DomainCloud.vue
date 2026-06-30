@@ -94,9 +94,9 @@ export default {
     this.$store.dispatch("fetchWordCloud", {
       start_date: this.sdate,
       end_date: this.edate,
-      domain: this.getClickDomain,
+      // domain: this.getClickDomain,
       source_news: this.getSourceNews,
-      // domain_ids:this.getClickDomainId,
+      domain_id:this.getClickDomainId,
 
       //   monitor: this.selected
     });

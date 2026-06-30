@@ -30,8 +30,8 @@
   @select-word="onSelectWord"
 /> -->
     <!-- ✅ ส่ง tab ให้ WordcloudImg -->
-    <WordcloudImg :activeTab="activeTabMobile" />
-
+     <WordcloudImg :activeTab="activeTabMobile" @select="onSelectWord" />
+<!-- <WordcloudImg2 :activeTab="activeTabMobile"/> -->
     <!-- ✅ ส่ง tab ให้ WordcloudList -->
     <WordcloudList v-if="!getLoadWordCloud" class="mb-3" :activeTab="activeTabMobile" @select-word="onSelectWord" />
     <div class="mt-2">
@@ -49,6 +49,7 @@
 <script>
 import WordcloudMenu from "./WordcloudMenu";
 import WordcloudImg from "./WordcloudImg";
+// import WordcloudImg2 from "./WordcloudImg2";
 import WordcloudList from "./WordcloudList";
 import WordPost from "./WordPost";
 import { mapGetters } from "vuex";

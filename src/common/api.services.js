@@ -63,6 +63,7 @@ export const WordcloudService = {
     if (payload.domain) params.set("domain", payload.domain); // "สร้างรั้ว เปิดด่าน" -> "สร้างรั้ว+เปิดด่าน"
     if (payload.domain_id) params.set("domain_id", payload.domain_id);
     if (payload.keywords) params.set("keywords", payload.keywords);
+    if (payload.source_news) params.set("source_news", payload.source_news);
 
     return ApiService.get(`/v1/getwordcloud/?${params.toString()}`);
   },
@@ -880,7 +881,8 @@ export const DomainService = {
       source = "",
       dash = "",
       findkey = "",
-      mor = "";
+      mor = "",source_news="";
+
     if (payload.querySearch) {
       findkey = `&querySearch=${payload.querySearch}`;
     } else {
@@ -921,7 +923,7 @@ export const DomainService = {
         stm +
         dm +
         source +
-        source_news +
+       
         dash +
         findkey +
         mor

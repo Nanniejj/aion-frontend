@@ -42,7 +42,7 @@ export default {
     /** ถ้า true (ดีฟอลต์) โหมด posts จะยิงครั้งเดียวด้วย limit=count */
     preferSingleShot: { type: Boolean, default: true },
 
-    /** ใช้กับโหมด posts “เท่านั้น” เมื่อ preferSingleShot=false */
+    /** ใช้กับโหมด posts "เท่านั้น" เมื่อ preferSingleShot=false */
     apiPageHardLimit: { type: Number, default: 0 },
 
     /** โหมด daily: ดึงวันละครั้งเดียวด้วย limit=dailyCap */
@@ -113,8 +113,10 @@ export default {
       const p = {
         sentiment: Array.isArray(f.sentiment) ? f.sentiment.join(',') : f.sentiment,
         keyword: this.buildKeywordParam(f),
+        exclude: this.buildExcludeKeywordParam(f),
         start, end,
         source: this.sourceParam(f.source),
+        source_news: f.source_news === 'all' ? undefined : f.source_news,
         sort_by: f.sort_by === 'recent' ? undefined : f.sort_by
       };
       if (Array.isArray(f?.accounts) && f.accounts.length) p.account = f.accounts;
@@ -122,12 +124,20 @@ export default {
       Object.keys(p).forEach(k => (p[k] == null || p[k] === '') && delete p[k]);
       return p;
     },
+    buildExcludeKeywordParam(filters) {
+      const raw = (filters?.excludeKeywordInput || '').trim();
+      if (!raw) return '';
+      return raw
+        .split(',')
+        .map(g => g.trim().split(/[+\s]+/).filter(Boolean).join('+'))
+        .join(',');
+    },
 
     // ----- posts: single-shot with limit=count -----
     async fetchAllOnceByLimitCount() {
       const params = this.baseParams();
       params.page = 1;
-      params.limit = this.count > 0 ? this.count : 2000; // ใช้ count เป็นหลัก
+      params.limit = this.count > 0 ? this.count : 2000;
       const { data } = await axios.get(this.apiBase, { params });
       return data?.data || [];
     },
@@ -150,11 +160,9 @@ export default {
     },
 
     async fetchAllPostsOnce() {
-      // ถ้าอยากให้ limit ตาม count: ใช้ single-shot ก่อน
       if (this.preferSingleShot && this.count > 0) {
         return this.fetchAllOnceByLimitCount();
       }
-      // ไม่งั้นค่อยไปแบ่งหน้า
       return this.fetchAllOnceByPaging();
     },
 
@@ -173,7 +181,7 @@ export default {
         const params = {
           ...this.baseParams(),
           page: 1,
-          limit: cap, // ไม่อิง count รวม เพราะไม่ใช่ count ต่อวัน
+          limit: cap,
           start: `${ymd}T00:00:00`,
           end: `${ymd}T23:59:59`
         };
@@ -227,6 +235,8 @@ export default {
           engagement:     typeof p?.engagement === 'number' ? p.engagement : '',
           likes_count:    typeof p?.likes_count === 'number' ? p.likes_count : '',
           retweets_count: typeof p?.retweets_count === 'number' ? p.retweets_count : '',
+          shares_count:   typeof p?.shares_count === 'number' ? p.shares_count : '',
+          views_count:    typeof p?.views_count === 'number' ? p.views_count : '',
           comments_count: typeof p?.comments_count === 'number' ? p.comments_count : (Array.isArray(p?.comments) ? p.comments.length : ''),
           hashtags:       this.clampExcelCell(Array.isArray(p?.hashtags) ? p.hashtags.join(' ') : ''),
           photos:         this.clampExcelCell(Array.isArray(p?.photos) ? p.photos.join(' | ') : ''),
@@ -277,14 +287,29 @@ export default {
       const kpart = kw ? `_${kw.substring(0, 40)}` : '';
       const mode = this.isDaily ? 'daily' : 'posts';
       const inline = this.inlineComments !== 'none' ? `_with-comments-${this.inlineComments}` : '';
-      return `timeline_${mode}_${start}_to_${end}${kpart}${inline}.xlsx`;
+      const newsMap = { internal: '_internal', external: '_external' };
+      const newsPart = newsMap[this.filters?.source_news] || '';
+      return `timeline_${mode}_${start}_to_${end}${kpart}${newsPart}${inline}.xlsx`;
     },
     autosizePostsSheet(ws) {
       const hasInline = this.inlineComments !== 'none';
       ws['!cols'] = [
-        { wch: 20 }, { wch: 12 }, { wch: 24 }, { wch: 80 }, { wch: 50 },
-        { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 14 },
-        { wch: 40 }, { wch: 30 }, { wch: 45 }, { wch: 45 },
+        { wch: 20 }, // date
+        { wch: 12 }, // source
+        { wch: 24 }, // account_name
+        { wch: 80 }, // full_text
+        { wch: 50 }, // url_post
+        { wch: 10 }, // sentiment
+        { wch: 12 }, // engagement
+        { wch: 10 }, // likes_count
+        { wch: 12 }, // retweets_count
+        { wch: 12 }, // shares_count
+        { wch: 12 }, // views_count
+        { wch: 14 }, // comments_count
+        { wch: 40 }, // hashtags
+        { wch: 30 }, // photos
+        { wch: 45 }, // profile_image
+        { wch: 45 }, // uid
         ...(hasInline ? [{ wch: this.inlineComments === 'json' ? 60 : 90 }] : [])
       ];
     },
@@ -305,7 +330,7 @@ export default {
           if (this.isDaily) {
             allData = await this.fetchAllPostsDaily();
           } else {
-            allData = await this.fetchAllPostsOnce(); // จะใช้ limit=count ถ้า preferSingleShot=true
+            allData = await this.fetchAllPostsOnce();
           }
         } else {
           allData = this.posts;
