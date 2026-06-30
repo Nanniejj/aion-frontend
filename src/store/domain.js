@@ -186,6 +186,7 @@ export default {
     },
     // TopPost
     async fetchPostDomain({ commit }, payload) {
+      
       commit("setLoadTopPost", true);
       try {
         const res = await DomainService.getPostDomain(payload);
@@ -209,7 +210,7 @@ export default {
 
         commit("setLoadTopPost", false);
       } catch (error) {
-        console.log(error.response);
+        console.log(error);
       }
     },
     async fetchTopPostDomain({ commit }, payload) {

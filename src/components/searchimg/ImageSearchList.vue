@@ -5,7 +5,7 @@
       <b-button size="sm" :disabled="isDeleting(item._id)" variant="outline-danger"
         class="delete-btn d-flex align-items-center" title="ลบรายการนี้" @click.stop="onDelete(item)">
         <span class="" aria-hidden="true">
-          <i class="fa fa-trash-o" aria-hidden="true"></i>
+          <i class="fa fa-trash" aria-hidden="true"></i>
         </span>
         <!-- <span v-if="!isDeleting(item._id)"></span>
     <span v-else class="d-flex align-items-center">

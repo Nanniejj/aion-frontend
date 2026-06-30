@@ -1660,12 +1660,12 @@ export default {
     await this.infiniteScroll();
   },
   destroyed() {
-    this.$store.commit("setPostAllMonitor", "");
-    this.$store.commit("addPostAllMonitor", "");
-    this.$store.commit("setAllPostDomain", "");
-    this.$store.commit("addAllPost", "");
-    this.$store.commit("setPostLocation", "");
-    this.$store.commit("addPostLocation", "");
+    this.$store.commit("setPostAllMonitor", []);
+    this.$store.commit("addPostAllMonitor", []);
+    this.$store.commit("setAllPostDomain", []);
+    this.$store.commit("addAllPost", []);
+    this.$store.commit("setPostLocation", []);
+    this.$store.commit("addPostLocation", []);
   },
 };
 </script>

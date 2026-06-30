@@ -48,6 +48,7 @@
           {{ time }}
         </small>
       </div>
+
     </div>
   </b-card>
 </template>

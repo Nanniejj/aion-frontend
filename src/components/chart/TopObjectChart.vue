@@ -316,6 +316,9 @@ export default {
         this.subdomainChartType = 'bar'; // บังคับเป็น bar
       }
       // this.loadSubdomainChart();
+    },
+    getSourceNews() {
+      this.loadCharts();
     }
   },
 

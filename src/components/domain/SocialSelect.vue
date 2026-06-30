@@ -168,7 +168,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['getArrDate', 'getQuerySearch', 'getWordCloudHashtag']),
+    ...mapGetters(['getArrDate', 'getQuerySearch', 'getWordCloudHashtag','getSourceNews']),
 
     showLeftArrow() {
       return this.isDesktop && this.isOverflowing && !this.atStart
@@ -184,6 +184,9 @@ export default {
       this.resetActive()
     },
     getQuerySearch() {
+      this.resetActive()
+    },
+    getSourceNews() {
       this.resetActive()
     },
     getWordCloudHashtag() {

@@ -1,38 +1,20 @@
 <template>
   <div class="py-2 mx-0 box-spot-bg">
     <vue-element-loading :active="loading" size="80" background-color="rgba(255,255,255,0.5)" color="#b6ac9a" />
-    <div class="text-left d-none">
-      <b-form-select size="sm" v-model="localSort" :options="[
-        { value: 'descend', text: 'โพสต์เก่าสุด' },
-        { value: 'recent', text: 'โพสต์ล่าสุด' },
-        { value: 'engagement', text: 'Engagement' },
-      ]" class="mr-2 w-50" @change="emitChangeSort" />
-      <b-button size="sm" variant="outline-info" @click="emitLoadMore" :disabled="!hasMore">
-        <i class="fa fa-plus mr-1"></i> เพิ่มข้อมูล
-      </b-button>
-    </div>
-    <!-- <div class="text-left float-left">
-      <span class="h6 mr-1 d-inline-block">{{ title }}</span>
 
-    </div> -->
-    <div class="text-right position-absolute" style="right: 111px; z-index: 99; top: -27px; z-index: 99">
-      <!-- ปุ่ม sort เป็น icons -->
+    <div class="text-right position-absolute" style="right: 111px; z-index: 99; top: -27px;">
       <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'descend' }"
         @click="setSort('descend')" v-b-tooltip.hover title="โพสต์เก่าสุด" pill>
         <i class="fa fa-arrow-down-a-z"></i>
       </b-button>
-
       <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'recent' }"
         @click="setSort('recent')" v-b-tooltip.hover title="โพสต์ล่าสุด" pill>
         <i class="fa fa-arrow-up-a-z"></i>
       </b-button>
-
       <b-button size="sm" variant="outline-info" class="p-1 mr-2" :class="{ active: localSort === 'engagement' }"
         @click="setSort('engagement')" v-b-tooltip.hover title="Engagement" pill>
         <i class="fas fa-chart-line"></i>
       </b-button>
-
-      <!-- ปุ่ม load more -->
       <b-button size="sm" variant="outline-info" class="p-1" @click="emitLoadMore" :disabled="!hasMore"
         v-b-tooltip.hover title="โหลดเพิ่ม" pill>
         <i class="fa fa-plus"></i>
@@ -40,61 +22,26 @@
     </div>
 
     <div v-if="clusters && clusters.length">
-      <!-- Header -->
-
-      <!-- Slider -->
       <div class="slider-container">
         <b-button class="slider-button btn-left" @click="scrollLeft"><i class="fa fa-chevron-left"></i></b-button>
 
         <div class="slider" ref="slider">
           <b-row>
             <span class="d-flex box-flex-small">
-              <!-- {{ currentPosts }} -->
-
-              <!-- <CardPost
+              <CardPost
                 v-for="(post, index) in currentPosts"
-                :key="post._id || index"
+                :key="post._id || `${post.source}:${post.url_post}`"
                 :post="post"
                 :index="index"
-                :domain="currentDomain"
-                 @click.native="$emit('selectPost', post)"
+                @click.native="$emit('selectPost', post)"
                 class="mx-2"
-                :loading-card="
-                  dayLoading || selectingId === (post._id || post.url_post)
-                "
-              /> -->
-              <CardPost v-for="(post, index) in currentPosts" :key="post._id || `${post.source}:${post.url_post}`"
-                :post="post" :index="index"  @click.native="$emit('selectPost', post)"
-                class="mx-2" :loading-card="dayLoading || selectingId === (post._id || post.url_post)" />
-
-
+                :loading-card="dayLoading || selectingId === (post._id || post.url_post)" />
             </span>
           </b-row>
         </div>
 
         <b-button class="slider-button btn-right" @click="scrollRight"><i class="fa fa-chevron-right"></i></b-button>
       </div>
-
-      <!-- Date pills -->
-      <!-- <b-row class="mt-2" v-if="clusters.length > 1">
-        <b-col>
-          <div class="text-center box-date scroll-container">
-            <b-button
-              class="d-inline mx-1 btn-date-box"
-              v-for="(cluster, k) in clusters"
-              :key="cluster._id || k"
-              @click="selectIndex = k"
-              :variant="selectIndex === k ? 'dark' : 'light'"
-            >
-              <div v-if="cluster && cluster.data_date">
-                <div class="small py-0 my-0">{{ getMonth(cluster.data_date) }}</div>
-                <div class="h6 bold py-0 my-0">{{ getDay(cluster.data_date) }}</div>
-                <div class="small py-0">{{ getYear(cluster.data_date) }}</div>
-              </div>
-            </b-button>
-          </div>
-        </b-col>
-      </b-row> -->
     </div>
 
     <div v-else-if="!loading" class="py-8 text-center">ไม่พบข้อมูล</div>
@@ -108,47 +55,27 @@ export default {
   name: "CardPostSlider",
   components: { CardPost },
   props: {
-    dayLoading: { type: Boolean, default: false },
-    clusters: {
-      type: Array,
-      default: () => [],
-    },
-    title: {
-      type: String,
-      default: "",
-    },
-    loading: {
-      type: Boolean,
-      default: false,
-    },
-    // ค่าเริ่มต้น index ของชุด (วันที่)
+    dayLoading:  { type: Boolean, default: false },
+    clusters:    { type: Array,   default: () => [] },
+    title:       { type: String,  default: "" },
+    loading:     { type: Boolean, default: false },
     initialIndex: { type: Number, default: 0 },
-    initialSort: { type: String, default: "descend" }, // เริ่มจากค่าแม่
-    hasMore: { type: Boolean, default: false }, // แม่คำนวณมาให้
-    ymd: { type: String, required: true },
-  },
-  watch: {
-    initialSort(newVal) {
-      if (newVal && newVal !== this.localSort) this.localSort = newVal;
-    },
+    initialSort:  { type: String, default: "descend" },
+    hasMore:      { type: Boolean, default: false },
+    ymd:          { type: String, required: true },
   },
   data() {
     return {
       selectingId: null,
       selectIndex: this.initialIndex,
-      localSort: this.initialSort, // state การเรียงเฉพาะวันนี้
+      localSort:   this.initialSort,
+      _loadingMore: false, // ✅ flag: true = กำลัง load more อยู่ ห้าม reset scroll
     };
   },
   computed: {
-    currentCluster() {
-      return this.clusters || [];
-    },
-
     currentPosts() {
-      const arr = (this.currentCluster || []).filter(p => p && (p.full_text || (p.posts && p.posts.length)));
-
-      // dedupe โดยใช้ key เดิม
-      const keyOf = (p) => (p && (p._id || `${p.source}:${p.url_post}`));
+      const arr = (this.clusters || []).filter(p => p && (p.full_text || (p.posts && p.posts.length)));
+      const keyOf = p => p._id || `${p.source}:${p.url_post}`;
       const seen = new Set();
       const uniq = [];
       for (const p of arr) {
@@ -157,30 +84,36 @@ export default {
         seen.add(k);
         uniq.push(p);
       }
-
-      if (this.localSort === "engagement") {
-        return uniq.sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
-      }
-      if (this.localSort === "recent") {
-        return uniq.sort((a, b) => new Date(b.date) - new Date(a.date));
-      }
+      if (this.localSort === "engagement") return uniq.sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
+      if (this.localSort === "recent")     return uniq.sort((a, b) => new Date(b.date) - new Date(a.date));
       return uniq.sort((a, b) => new Date(a.date) - new Date(b.date));
     },
-
   },
   watch: {
+    initialSort(val) {
+      if (val && val !== this.localSort) this.localSort = val;
+    },
     selectIndex() {
       const slider = this.$refs.slider;
       if (slider) slider.scrollLeft = 0;
-      this.$emit("changeCluster", this.currentCluster);
+      this.$emit("changeCluster", this.clusters);
     },
-    clusters() {
-      // ปรับ index ให้ไม่เกินขอบเขตเมื่อชุดข้อมูลเปลี่ยน
-      if (this.selectIndex > this.clusters.length - 1) this.selectIndex = 0;
+    clusters(newVal, oldVal) {
+      if (this._loadingMore) {
+        this._loadingMore = false;
+        // ✅ เลื่อนไปขวานิดนึงเพื่อบอกว่ามีการ์ดใหม่
+        this.$nextTick(() => {
+          const slider = this.$refs.slider;
+          if (!slider) return;
+          slider.scrollBy({ left: 260, behavior: "smooth" });
+        });
+        return;
+      }
       this.$nextTick(() => {
         const slider = this.$refs.slider;
         if (slider) slider.scrollLeft = 0;
       });
+      if (this.selectIndex > newVal.length - 1) this.selectIndex = 0;
     },
   },
   methods: {
@@ -189,49 +122,20 @@ export default {
       this.$emit("requestChangeSort", { date: this.ymd, sort_by: val });
     },
     emitLoadMore() {
+      // ✅ set flag ก่อน emit เพื่อให้ watch clusters รู้ว่านี่คือ load more
+      this._loadingMore = true;
       this.$emit("requestLoadMore", { date: this.ymd });
     },
-    emitLoadMore() {
-      this.$emit("requestLoadMore", { date: this.ymd });
-    },
-    emitChangeSort() {
-      // แจ้งแม่ให้รีเฟรชของวันนี้ด้วย sort ใหม่ (page=1)
-      this.$emit("requestChangeSort", {
-        date: this.ymd,
-        sort_by: this.localSort,
-      });
-    },
-    scrollLeft() {
-      const slider = this.$refs.slider;
-      if (slider) slider.scrollLeft -= 300;
-    },
-    scrollRight() {
-      const slider = this.$refs.slider;
-      if (slider) slider.scrollLeft += 300;
-    },
-    getDay(dateString) {
-      return new Date(dateString).getUTCDate();
-    },
-    getMonth(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleString("en-US", { month: "short" });
-    },
-    getYear(dateString) {
-      const year = new Date(dateString).getUTCFullYear();
-      return year.toString();
-    },
-    onGoPost({ post, type }) {
-      // ส่งต่ออีเวนต์ให้พาเรนต์ไปเปิดหน้ารายละเอียด
-      this.$emit("goPost", {
-        post,
-        clusterId: this.currentCluster._id,
-        domain: this.currentDomain,
-        type,
-      });
-    },
+    scrollLeft()  { const s = this.$refs.slider; if (s) s.scrollLeft -= 300; },
+    scrollRight() { const s = this.$refs.slider; if (s) s.scrollLeft += 300; },
+    getDay(d)   { return new Date(d).getUTCDate(); },
+    getMonth(d) { return new Date(d).toLocaleString("en-US", { month: "short" }); },
+    getYear(d)  { return new Date(d).getUTCFullYear().toString(); },
   },
 };
 </script>
+
+
 <style scoped>
 .box-flex-small {
   width: 65vw;

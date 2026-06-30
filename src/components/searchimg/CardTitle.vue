@@ -164,7 +164,7 @@
                   <span> </span>
                 </b-col>
                 <b-col lg="11">
-                  <div>
+                  <div v-if="cmt">
                     <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
                       v-if="post.source == 'youtube'">
                       <span v-if="post.source == 'youtube'" class="bold">

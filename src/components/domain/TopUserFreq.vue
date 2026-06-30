@@ -447,13 +447,17 @@ export default {
       "getArrDate",
       "getClickDomain",
       "getLoadTopUserF",
-      "getClickDomainId"
+      "getClickDomainId",
+      "getSourceNews",
     ]),
   },
   watch: {
     getArrDate: function() {
       this.startd = this.getSdateDm.slice(0, 10);
       this.endd = this.getEdateDm.slice(0, 10);
+      this.selectDate();
+    },
+    getSourceNews: function() {
       this.selectDate();
     },
   },
@@ -468,7 +472,7 @@ export default {
   },
   methods: {
     linkToProfile(item) {
-      console.log("dddd", item);
+      // console.log("dddd", item);
       // let acc = item.account_name;
       // if (item.source == "youtube") {
       //   acc = item.account_name.replace("@", "");
@@ -486,6 +490,12 @@ export default {
       //today = moment(new Date()).format().slice(0, 10);
       sdate = "&start=" + this.getSdateDm;
       edate = "&end=" + this.getEdateDm;
+      let sourceNewsParam = '';
+      if (this.getSourceNews === 'internal') {
+        sourceNewsParam = '&source_news=internal';
+      } else if (this.getSourceNews === 'external') {
+        sourceNewsParam = '&source_news=external';
+      }
       //http://139.59.103.67:3000/api/v2/userposts/getInfluDomain?&domain=
       // "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain="
       var config = {
@@ -494,7 +504,8 @@ export default {
         "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain_id=" +
         this.getClickDomainId +'&source=news'+
         sdate +
-        edate,
+        edate +
+        sourceNewsParam,
         // +"&source="+this.source,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -527,6 +538,12 @@ export default {
       .slice(0, 10);
     sdate = "&start=" + today + "T00:00:00";
     edate = "&end=" + today + "T23:59:59";
+     let sourceNewsParam = '';
+      if (this.getSourceNews === 'internal') {
+        sourceNewsParam = '&source_news=internal';
+      } else if (this.getSourceNews === 'external') {
+        sourceNewsParam = '&source_news=external';
+      }
     this.$store.commit("setLoadTopUserF", true);
     var config = {
       method: "get",
@@ -534,7 +551,8 @@ export default {
         "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain_id=" +
         this.getClickDomainId +'&source=news'+
         sdate +
-        edate,
+        edate +
+        sourceNewsParam,
       // +"&source="+this.source,
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token"),

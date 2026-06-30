@@ -4,7 +4,7 @@
     <div class="p-1" v-if="datachart && datachart.totals">
       <b-card class="card-platform">
         <b-row align-v="start" class="stat-sm">
-          <b-col cols="12" sm="12" md="5">
+          <b-col cols="12" sm="12" md="6">
             <b-row class="small">
               <b-col cols="auto" md="">
                 <div><i class="far fa-comments "></i>
@@ -25,7 +25,20 @@
                 </div>
                 comments
               </b-col>
+             
               <b-col cols="auto" md="">
+                <div> <i class="far fa-eye "></i>
+                  <span class="h6 bold"> {{
+                    numFormat(datachart.totals.views_sum || 0 | numFormat) }}</span>
+                </div> views
+              </b-col>
+              <b-col cols="auto" md="">
+                <div> <i class="fas fa-share-alt "></i>
+                  <span class="h6 bold"> {{
+                    numFormat(datachart.totals.shares_sum || 0 | numFormat) }}</span>
+                </div> shares
+              </b-col>
+               <b-col cols="auto" md="">
                 <div> <i class="fas fa-chart-line "></i>
                   <span class="h6 bold"> {{
                     numFormat(datachart.totals.engagement_sum || 0 | numFormat) }}</span>
@@ -36,7 +49,7 @@
               :neutral="datachart.totals.neutralSentiment || 0" :negative="datachart.totals.negativeSentiment || 0"
               class="py-2 stm-sm" />
           </b-col>
-          <b-col cols="12" sm="12" md="7">
+          <b-col cols="12" sm="12" md="6">
             <!-- <div class="small text-left mb-2"> <span class="bold h6">Platform</span> (posts)</div> -->
             <b-row cols="9" class="mx-auto sm-pf">
               <!-- Facebook -->
@@ -253,7 +266,10 @@ export default {
 }
 </script>
 <style scoped>
-
+.h6 {
+  font-size: 14px;
+  font-weight: bold;
+}
 .small-sub {
   font-size: x-small;
 }
@@ -270,7 +286,14 @@ export default {
   width: 24px;
   height: 24px;
 }
-
+ .col-12  {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+.col-auto{
+   padding-left: 5px !important;
+    padding-right: 5px !important;
+}
 @media only screen and (min-width: 0px) and (max-width: 800px) {
   .card-body {
     flex: 1 1 auto;
