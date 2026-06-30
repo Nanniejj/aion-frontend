@@ -418,7 +418,7 @@ export default {
 
             try {
                 const response = await this.axios(config);
-                const data = response?.data;
+                const data = response.data;
 
                 console.log("[Analysis] first response:", data, "| myToken:", myToken, "| currentToken:", this.pollToken);
 
