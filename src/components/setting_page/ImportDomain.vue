@@ -436,7 +436,7 @@
           <b-button
             class="import-btn-submit px-1"
             :disabled="!selectedFile || previewRows.length === 0 || invalidRowCount > 0 || importing"
-            @click="importObjects"
+            @click="importDomains"
           >
             <b-spinner small v-if="importing" class="mr-1"></b-spinner>
             <i v-else class="fa fa-check-circle mr-1"></i>
@@ -1011,7 +1011,7 @@ export default {
 
       return { ok: true, warning: null };
     },
-    async importObjects() {
+    async importDomains() {
       if (!this.selectedFile) {
         this.$fire({
           title: "ไม่พบไฟล์ที่จะนำเข้า",
@@ -1065,12 +1065,11 @@ export default {
             },
           }
         );
-
-        this.$store.dispatch("resetDomainLastUpdate", this.domainId);
-        this.$emitter.emit("callApiListSubdomain");
-
         this.clearForm();
         this.closeModal();
+        // ✅ แจ้งให้หน้าที่แสดงรายการ domain (เช่น DomainSetting.vue) รู้ว่านำเข้าสำเร็จแล้ว
+        // เพื่อให้ไป fetch รายการใหม่ ข้อมูลที่เพิ่งนำเข้าจะได้ขึ้นในตารางทันที ไม่ต้องรีเฟรชหน้าเอง
+        this.$emitter.emit("domainImported");
         this.$fire({
           title: "นำเข้าข้อมูลสำเร็จ",
           type: "success",
