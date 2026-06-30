@@ -228,6 +228,26 @@
                             <b-row class="d-flex justify-content-between p-0">
                                 <b-col class="text-secondary d-flex p-0 align-items-center">
                                     <i class="fa fa-map-marker mr-1"/>
+                                    ประเทศ :
+                                </b-col>
+                                <div class="col-12 px-0">
+                                    <b-form-select
+                                        size="sm"
+                                        class="input"
+                                        :options="[{ country_code_num: null, country_name_th: 'เลือกประเทศ' }, ...country]"
+                                        v-model="selectedCountry"
+                                        value-field="country_code_num"
+                                        text-field="country_name_th"
+                                        placeholder="เลือกประเทศ"
+                                        @change="getLocation"
+                                    />
+                                </div>
+                            </b-row>
+                        </b-col>
+                        <b-col v-if="selectedCountry === 764" cols="12" class="pb-2">
+                            <b-row class="d-flex justify-content-between p-0">
+                                <b-col class="text-secondary d-flex p-0 align-items-center">
+                                    <i class="fa fa-map-marker mr-1"/>
                                     จังหวัด :
                                 </b-col>
                                 <div class="col-12 px-0">
@@ -242,7 +262,7 @@
                                 </div>
                             </b-row>
                         </b-col>
-                        <b-col cols="12" class="pb-2">
+                        <b-col v-if="selectedCountry === 764" cols="12" class="pb-2">
                             <b-row class="d-flex justify-content-between p-0">
                                 <b-col class="text-secondary d-flex p-0 align-items-center">
                                     <i class="fa fa-map-marker mr-1"/>
@@ -260,7 +280,7 @@
                                 </div>
                             </b-row>
                         </b-col>
-                        <b-col cols="12" class="pb-2">
+                        <b-col v-if="selectedCountry === 764" cols="12" class="pb-2">
                             <b-row class="d-flex justify-content-between p-0">
                                 <b-col class="text-secondary d-flex p-0 align-items-center">
                                     <i class="fa fa-map-marker mr-1"/>
@@ -436,7 +456,7 @@
                         <div class="col-12 px-0">
                             <div class="d-flex text-truncate text-14px">
                                 <i class="fas fa-map-marker-alt mr-2 text-info" />
-                                <span class="text-secondary mr-1">{{ selectedData.province ? selectedData.province : 'ไม่ระบุ'}}</span>
+                                <span class="text-secondary mr-1">{{ selectedData.province || selectedData.country_name || (typeof selectedData.country === 'string' ? selectedData.country : null) || 'ไม่ระบุ' }}</span>
                                 <span v-if="selectedData.district" class="text-secondary mr-1">, {{ selectedData.district ? selectedData.district : '' }}</span>
                                 <span v-if="selectedData.sub_district" class="text-secondary text-truncate d-inline-block">, {{ selectedData.sub_district ? selectedData.sub_district : '' }}</span>
                             </div>
@@ -504,6 +524,10 @@ export default {
             type: Array,
             default: () => ([])
         },
+        country: {
+            type: Array,
+            default: () => ([])
+        },
         influencerTypes: {
             type: Array,
             default: () => ([])
@@ -549,8 +573,10 @@ export default {
             selectedProvince: null,
             selectedDistrict: null,
             selectedSubDistrict: null,
+            selectedCountry: null,
             oldProvince: null,
             oldDistrict: null,
+            oldCountry: null,
             // provinces: [],
             districts: [],
             subDistricts: [],
@@ -643,6 +669,21 @@ export default {
         async mapTargetInfoToSelectedData() {
             const location = this.selectedData.location;
 
+            // selectedData.country อาจเป็น code_num (เลือกจาก dropdown) หรือชื่อประเทศแบบ string (มาจาก import)
+            const rawCountry = this.selectedData.country?.code_num
+                ?? this.selectedData.country
+                ?? null;
+
+            if (typeof rawCountry === 'string') {
+                // มาจาก import เป็นชื่อประเทศ → หา code_num ที่ตรงกันจากลิสต์ประเทศ
+                const matched = this.country.find(item => item.country_name_th === rawCountry);
+                this.selectedCountry = matched ? matched.country_code_num : null;
+                this.selectedData.country_name = rawCountry;
+            } else {
+                this.selectedCountry = rawCountry;
+            }
+            this.oldCountry = this.selectedCountry;
+
             // ไม่มี location → reset ทั้งหมด
             if (!Array.isArray(location) || location.length < 3) {
                 this.selectedProvince = null;
@@ -717,6 +758,23 @@ export default {
             // this.exportData();
         },
         async getLocation() {
+            // ตรวจสอบว่า country เปลี่ยนไหม
+            if (this.selectedCountry !== this.oldCountry) {
+                this.oldCountry = this.selectedCountry;
+
+                // เคลียร์ province/district/subDistrict เพราะ country เปลี่ยน
+                this.selectedProvince = null;
+                this.selectedDistrict = null;
+                this.selectedSubDistrict = null;
+                this.oldProvince = null;
+                this.oldDistrict = null;
+                this.districts = [];
+                this.subDistricts = [];
+
+                this.updateLocation();
+                return;
+            }
+
             // ตรวจสอบว่า province เปลี่ยนไหม
             if (this.selectedProvince !== this.oldProvince) {
                 this.oldProvince = this.selectedProvince;
@@ -743,6 +801,13 @@ export default {
             // this.exportData();
         },
         updateLocation() {
+            // อัปเดตประเทศ
+            this.selectedData.country = this.selectedCountry || null;
+            this.selectedData.country_name =
+                this.selectedCountry
+                    ? this.country.find(item => item.country_code_num === this.selectedCountry)?.country_name_th || null
+                    : null;
+
             // เก็บ location แบบ array 3 ค่า
             this.selectedData.location = [
                 this.selectedProvince || null,
@@ -750,11 +815,11 @@ export default {
                 this.selectedSubDistrict || null
             ];
 
-            // อัปเดตชื่อจังหวัด
+            // อัปเดตชื่อจังหวัด (สำหรับประเทศไทยเท่านั้น)
             this.selectedData.province =
                 this.selectedProvince
                     ? this.provinces.find(item => item.value === this.selectedProvince)?.text || null
-                    : null;
+                    : this.selectedData.country_name;
 
             // อัปเดตชื่ออำเภอ
             this.selectedData.district =

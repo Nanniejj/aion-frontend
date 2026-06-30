@@ -42,7 +42,7 @@
                                 </div>
                                 <div class="col-12 mt-3 p-0">
                                     <!-- {{ item }} -->
-                                    <CardInput class="" :provinces="provinces" :influencerTypes="influencerTypes"
+                                    <CardInput class="" :provinces="provinces" :country="country" :influencerTypes="influencerTypes"
                                         :targetInfo="item" source="facebook" :editable="item.editable"
                                         @update:targetInfo="(data) => handleLabelData(data, item)" />
                                 </div>
@@ -78,7 +78,7 @@
                                 </div>
                                 <div class="col-12 mt-3 p-0">
 
-                                    <CardInput class="" :targetInfo="item" :provinces="provinces"
+                                    <CardInput class="" :targetInfo="item" :provinces="provinces" :country="country"
                                         :influencerTypes="influencerTypes" source="twitter" :editable="item.editable"
                                         @update:targetInfo="(data) => handleLabelData(data, item)" />
                                 </div>
@@ -114,7 +114,7 @@
                                 </div>
                                 <div class="col-12 mt-3 p-0">
 
-                                    <CardInput class="" :targetInfo="item" :provinces="provinces"
+                                    <CardInput class="" :targetInfo="item" :provinces="provinces" :country="country"
                                         :influencerTypes="influencerTypes" source="instagram" :editable="item.editable"
                                         @update:targetInfo="(data) => handleLabelData(data, item)" />
                                 </div>
@@ -149,7 +149,7 @@
                                 </div>
                                 <div class="col-12 mt-3 p-0">
 
-                                    <CardInput class="" :targetInfo="item" :provinces="provinces"
+                                    <CardInput class="" :targetInfo="item" :provinces="provinces" :country="country"
                                         :influencerTypes="influencerTypes" source="tiktok" :editable="item.editable"
                                         @update:targetInfo="(data) => handleLabelData(data, item)" />
                                 </div>
@@ -185,7 +185,7 @@
                                 </div>
                                 <div class="col-12 mt-3 p-0">
 
-                                    <CardInput class="" :targetInfo="item" :provinces="provinces"
+                                    <CardInput class="" :targetInfo="item" :provinces="provinces" :country="country"
                                         :influencerTypes="influencerTypes" source="youtube" :editable="item.editable"
                                         @update:targetInfo="(data) => handleLabelData(data, item)" />
                                 </div>
@@ -220,7 +220,7 @@
                                 </div>
                                 <div class="col-12 mt-3 p-0">
 
-                                    <CardInput class="" :targetInfo="item" :provinces="provinces"
+                                    <CardInput class="" :targetInfo="item" :provinces="provinces" :country="country"
                                         :influencerTypes="influencerTypes" source="pantip" :editable="item.editable"
                                         @update:targetInfo="(data) => handleLabelData(data, item)" />
                                 </div>
@@ -255,7 +255,7 @@
                                     </b-button>
                                 </div>
                                 <div class="col-12 mt-3 p-0">
-                                    <CardInput :targetInfo="item" :provinces="provinces"
+                                    <CardInput :targetInfo="item" :provinces="provinces" :country="country"
                                         :influencerTypes="influencerTypes" source="blockdit" :editable="item.editable"
                                         @update:targetInfo="(data) => handleLabelData(data, item)" />
                                 </div>
@@ -365,6 +365,7 @@ export default {
             blockdit: [],
             targetLists: [],
             provinces: [],
+            country: [],
             influencerTypes: [],
             districts: [],
             subDistricts: [],
@@ -975,6 +976,7 @@ export default {
                                 sex: row.sex,
                                 age: row.age ? row.age : null,
                                 province: row.province,
+                                country: row.country || null,
                                 species: this.speciesTypes.find(s => s.text === row.species)?.value || null,
                                 influencer_condition: row.influencer_condition,
                                 influencer_type: this.influencerTypes.find(i => i.text === row.influencer_type)
@@ -1091,6 +1093,25 @@ export default {
             // }
 
         },
+        async apiGetCountry() {
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getCountry",
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+                .then((response) => {
+                    let result = response.data.data || [];
+                    this.country = result;
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        },
         async apiGetDistrict(id) {
             try {
                 const config = {
@@ -1179,6 +1200,7 @@ export default {
     },
     async mounted() {
         await this.apiGetProvinces();
+        await this.apiGetCountry();
         // await this.apiGetDistrict();
         // await this.apiGetSubDistrict();
         await this.apiGetInfluencerType();

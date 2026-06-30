@@ -25,9 +25,12 @@
                 <b-form-input id="filter-input" v-model="filter" type="search" placeholder="ค้นหาหัวเรื่อง..."></b-form-input>
             </b-input-group>
         </b-col>
-        <b-col sm="auto" class="pr-0">
+        <b-col cols="auto" class="pr-0">
           <TemplateAddDomain />
           <!-- <button class="btn btn-add" ><i class="fa fa-plus"/><span  style="font-size:16px;"> เพิ่ม Domain </span></button> -->
+        </b-col>
+        <b-col cols="auto">
+          <ImportDomain/>
         </b-col>
       </b-row>
       <!-- {{getItemsDomain}} -->
@@ -177,11 +180,12 @@
 <script>
 import { mapGetters } from "vuex";
 import TemplateAddDomain from "@/components/template/TemplateAddDomain.vue";
+import ImportDomain from "../setting_page/ImportDomain.vue";
 // import axios from "axios";
 // import { API_URL } from '@/common/config';
 
 export default {
-  components: { TemplateAddDomain },
+  components: { TemplateAddDomain,ImportDomain },
   data() {
     return {
       empData: "ไม่พบข้อมูล",

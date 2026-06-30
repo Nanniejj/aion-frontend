@@ -13,7 +13,7 @@
         <div class="import-topbar">
           <div class="import-topbar-title">
             <i class="fa fa-file-excel-o"></i>
-            <span>Import Keyword จากไฟล์ Excel</span>
+            <span>Import Domain จากไฟล์ Excel</span>
           </div>
           <button class="import-close-btn" @click="closeModal" aria-label="ปิดหน้าต่าง">
             <i class="fa fa-times"></i>
@@ -134,7 +134,7 @@
                   </div>
                   <div v-if="invalidRowCount > 0" class="import-preview-warning">
                     <i class="fa fa-exclamation-triangle"></i>
-                    {{ invalidRowCount }} แถวข้อมูลไม่สมบูรณ์ (จะถูกข้าม)
+                    {{ invalidRowCount }} แถวข้อมูลไม่สมบูรณ์ — กรุณาแก้ไขให้ครบก่อนจึงจะนำเข้าได้
                   </div>
                 </div>
 
@@ -435,7 +435,7 @@
           <b-button class="import-btn-cancel" @click="closeModal">ปิดหน้าต่าง</b-button>
           <b-button
             class="import-btn-submit px-1"
-            :disabled="!selectedFile || previewRows.length === 0 || importing"
+            :disabled="!selectedFile || previewRows.length === 0 || invalidRowCount > 0 || importing"
             @click="importObjects"
           >
             <b-spinner small v-if="importing" class="mr-1"></b-spinner>
@@ -620,6 +620,18 @@ export default {
       ];
       return allKeywords.some((k) => this.hasForbiddenChars(k));
     },
+    // เช็คว่าแถวนี้มีข้อมูลอยู่จริงไหม (มีอย่างน้อย 1 คอลัมน์ที่ไม่ว่าง)
+    // ใช้กรองแถวที่ไม่มีข้อมูลเลยทุกคอลัมน์ทิ้งไป ไม่ให้ขึ้นในตัวอย่างข้อมูล/นำเข้า
+    rowHasAnyData(row) {
+      if (!row) return false;
+      if (row.domain_name) return true;
+      if (row.subdomain_name) return true;
+      if (row.object_name) return true;
+      if ((row.keywords || []).length > 0) return true;
+      if ((row.and_keywords || []).length > 0) return true;
+      if ((row.not_keywords || []).length > 0) return true;
+      return false;
+    },
     // กำหนด class ให้แถวที่ข้อมูลไม่สมบูรณ์ (ใช้กับ b-table tbody-tr-class)
     rowClass(item) {
       if (!item) return "";
@@ -630,6 +642,9 @@ export default {
       if (!item) return "";
       if (!item.object_name || item.object_name.length === 0) {
         return "ต้องมี object_name";
+      }
+      if (!item.subdomain_known) {
+        return "ไม่ทราบว่า object นี้อยู่ใน subdomain ไหน (ไม่มีการระบุ subdomain_name ไว้ก่อนหน้าในกลุ่ม domain นี้)";
       }
       if (this.rowHasForbiddenChars(item)) {
         return "มีอักขระพิเศษต้องห้าม (เช่น @ _ # $ % , ) อยู่ใน object_name หรือ keyword";
@@ -698,9 +713,16 @@ export default {
       target.keywords = [...this.editDraft.keywords];
       target.and_keywords = [...this.editDraft.and_keywords];
       target.not_keywords = [...this.editDraft.not_keywords];
-      // ✅ ต้องมีแค่ object_name เท่านั้น keywords/and_keywords/not_keywords ไม่บังคับแล้ว
-      // และต้องไม่มีอักขระพิเศษต้องห้ามอยู่ใน object_name หรือ keyword ใดๆ
-      target.valid = target.object_name.length > 0 && !this.rowHasForbiddenChars(target);
+      // ✅ ถ้าผู้ใช้กรอก subdomain_name เองในฟอร์มแก้ไข ถือว่ารู้จัก subdomain นี้แล้วทันที
+      // แต่ถ้าลบออกจนว่าง ให้คงค่า subdomain_known เดิมไว้ (อาจ inherit มาจาก hierarchy ตอน parse ไฟล์)
+      if (target.subdomain_name.length > 0) {
+        target.subdomain_known = true;
+      }
+      // ✅ ต้องมี object_name เสมอ (ยกเว้นแถวไม่มีข้อมูลเลย ซึ่งจะถูกตัดออกจาก preview ไปแล้ว)
+      // ต้องไม่มีอักขระพิเศษต้องห้ามอยู่ใน object_name หรือ keyword ใดๆ
+      // และต้องรู้ว่า object นี้อยู่ subdomain ไหน (subdomain_known ต้องเป็น true)
+      target.valid =
+        target.object_name.length > 0 && !!target.subdomain_known && !this.rowHasForbiddenChars(target);
     },
     saveRowEdit(row) {
       const target = this.previewRows[row.index];
@@ -708,6 +730,10 @@ export default {
       this.applyEditDraftTo(target);
       this.editingRowIndex = null;
       row.toggleDetails();
+      // ✅ ถ้าแก้แล้วทุกคอลัมน์ว่างหมด ถือว่าไม่มีข้อมูล ให้ตัดแถวนี้ออกจากตัวอย่างข้อมูลไปเลย
+      if (!this.rowHasAnyData(target)) {
+        this.removeRow(row.index);
+      }
     },
     cancelRowEdit(row) {
       this.editingRowIndex = null;
@@ -720,6 +746,10 @@ export default {
       this.applyEditDraftTo(target);
       this.editingRowIndex = null;
       this.$set(target, "_showDetails", false);
+      // ✅ ถ้าแก้แล้วทุกคอลัมน์ว่างหมด ถือว่าไม่มีข้อมูล ให้ตัดแถวนี้ออกจากตัวอย่างข้อมูลไปเลย
+      if (!this.rowHasAnyData(target)) {
+        this.removeRow(idx);
+      }
     },
     cancelCardEdit(idx) {
       this.editingRowIndex = null;
@@ -779,8 +809,8 @@ export default {
     },
     downloadTemplate() {
       const link = document.createElement("a");
-      link.href = "/template_object.xlsx";
-      link.download = "template_object.xlsx";
+      link.href = "/template_domain.xlsx";
+      link.download = "template_domain.xlsx";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -844,32 +874,81 @@ export default {
 
           const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-          this.previewRows = rows.map((row) => {
-            const domain_name = String(row.domain_name || "").trim();
-            const subdomain_name = String(row.subdomain_name || "").trim();
-            const object_name = String(row.object_name || "").trim();
-            const keywords = this.splitKeywords(row.keywords);
-            const and_keywords = this.splitKeywords(row.and_keywords);
-            const not_keywords = this.splitKeywords(row.not_keywords);
+          // ✅ ไฟล์ Excel มักกรอก domain_name/subdomain_name แค่แถวแรกของแต่ละกลุ่ม
+          // (เหมือนตาราง merge cell) แถวถัดไปเว้นว่างไว้ — ต้อง "เติม" ค่าจากแถวบนลงมาให้
+          // เพื่อให้รู้ว่าแต่ละแถวอยู่ domain/subdomain ไหนจริงๆ
+          let currentDomainName = "";
+          let currentSubdomainName = "";
+          // ติดตามว่า subdomain ของ domain ปัจจุบัน "เคยถูกระบุมาก่อน" ไหม
+          // ถ้า domain หนึ่งขึ้นกลุ่มใหม่มาแล้วยังไม่เคยมี subdomain_name เลยสักแถว
+          // ถือว่าไม่รู้ว่า object อยู่ subdomain ไหน -> invalid ตั้งแต่แถวแรกของ domain นั้น
+          let subdomainKnownForCurrentDomain = false;
 
-            return {
-              domain_name,
-              subdomain_name,
-              object_name,
-              keywords,
-              and_keywords,
-              not_keywords,
-              // ✅ ต้องมีแค่ object_name เท่านั้น keywords/and_keywords/not_keywords ไม่บังคับแล้ว
-              // และต้องไม่มีอักขระพิเศษต้องห้ามอยู่ใน object_name หรือ keyword ใดๆ
-              valid:
-                object_name.length > 0 &&
-                !this.hasForbiddenChars(object_name) &&
-                ![...keywords, ...and_keywords, ...not_keywords].some((k) => this.hasForbiddenChars(k)),
-              // เริ่มต้นไว้ตั้งแต่แรกเพื่อให้ Vue 2 reactivity ตรวจจับการเปลี่ยนแปลงได้แน่นอน
-              // (ตาม BootstrapVue docs: ต้องมี property นี้อยู่แล้วใน item ถ้าจะแก้ไขตรงๆ)
-              _showDetails: false,
-            };
-          });
+          this.previewRows = rows
+            .map((row) => {
+              const rawDomainName = String(row.domain_name || "").trim();
+              const rawSubdomainName = String(row.subdomain_name || "").trim();
+              const object_name = String(row.object_name || "").trim();
+              const keywords = this.splitKeywords(row.keywords);
+              const and_keywords = this.splitKeywords(row.and_keywords);
+              const not_keywords = this.splitKeywords(row.not_keywords);
+
+              // ขึ้น domain ใหม่เมื่อมีการระบุ domain_name มาในแถวนี้ (ไม่ว่าง)
+              // -> รีเซ็ตสถานะ "รู้จัก subdomain" ใหม่ทุกครั้งที่เจอ domain ใหม่
+              if (rawDomainName.length > 0) {
+                currentDomainName = rawDomainName;
+                currentSubdomainName = "";
+                subdomainKnownForCurrentDomain = false;
+              }
+
+              // กรณี domain_name และ subdomain_name ของแถวนี้ว่างทั้งคู่ (เหมือน merge cell ต่อเนื่อง)
+              // -> inherit subdomain_name จากแถวก่อนหน้าได้
+              // แต่ถ้าแถวนี้มีการระบุ domain_name มาใหม่ (ขึ้นกลุ่มใหม่) แม้ subdomain_name จะว่าง
+              // ก็ไม่ inherit ของกลุ่มก่อนหน้ามาให้ ต้องถือว่ายังไม่รู้จัก subdomain จนกว่าจะมีการระบุจริง
+              let subdomain_name;
+              if (rawSubdomainName.length > 0) {
+                currentSubdomainName = rawSubdomainName;
+                subdomainKnownForCurrentDomain = true;
+                subdomain_name = rawSubdomainName;
+              } else if (rawDomainName.length === 0 && subdomainKnownForCurrentDomain) {
+                // ทั้ง domain_name และ subdomain_name ว่างคู่กัน และเคยรู้จัก subdomain ของกลุ่มนี้แล้ว
+                subdomain_name = currentSubdomainName;
+              } else {
+                // ยังไม่เคยรู้จัก subdomain ของ domain นี้เลย (รวมถึงแถวแรกของ domain ที่ไม่มี subdomain_name)
+                subdomain_name = "";
+              }
+
+              const domain_name = currentDomainName;
+              // ระบุไว้ในแต่ละแถวว่า ณ จุดนี้ subdomain ของ domain ปัจจุบัน รู้จักแล้วหรือยัง
+              // ใช้ตัดสิน valid ของแถวนี้ (ไม่ใช้ subdomain_name.length อย่างเดียว เพราะ subdomain_name
+              // ที่ inherit มาได้ก็ต้องนับว่ารู้จักด้วย ซึ่งจัดการไว้แล้วข้างบน)
+              const subdomain_known = subdomainKnownForCurrentDomain;
+
+              return {
+                domain_name,
+                subdomain_name,
+                subdomain_known,
+                object_name,
+                keywords,
+                and_keywords,
+                not_keywords,
+                // ✅ ต้องมี object_name เสมอ ยกเว้นแถวที่ไม่มีข้อมูลเลยทุกคอลัมน์
+                // (แถวไม่มีข้อมูลเลยจะถูกตัดออกด้วย .filter ด้านล่างอยู่แล้ว ไม่ถือว่า valid)
+                // ต้องไม่มีอักขระพิเศษต้องห้ามอยู่ใน object_name หรือ keyword ใดๆ
+                // และต้องรู้ว่า object นี้อยู่ subdomain ไหน (subdomain_known ต้องเป็น true)
+                valid:
+                  object_name.length > 0 &&
+                  subdomain_known &&
+                  !this.hasForbiddenChars(object_name) &&
+                  ![...keywords, ...and_keywords, ...not_keywords].some((k) => this.hasForbiddenChars(k)),
+                // เริ่มต้นไว้ตั้งแต่แรกเพื่อให้ Vue 2 reactivity ตรวจจับการเปลี่ยนแปลงได้แน่นอน
+                // (ตาม BootstrapVue docs: ต้องมี property นี้อยู่แล้วใน item ถ้าจะแก้ไขตรงๆ)
+                _showDetails: false,
+              };
+            })
+            // ✅ ตัดแถวที่ไม่มีข้อมูลเลยทุกคอลัมน์ออก (มักเป็นแถวว่างที่หลุดมาจากไฟล์ Excel)
+            // ถือว่า "ไม่มีข้อมูล" เมื่อทุกคอลัมน์ว่างหมด ไม่ใช่แค่ object_name ว่างอย่างเดียว
+            .filter((row) => this.rowHasAnyData(row));
 
           if (this.previewRows.length === 0) {
             this.statusMessage = "ไม่พบข้อมูลในไฟล์ที่อัปโหลด";
@@ -892,14 +971,13 @@ export default {
       };
       reader.readAsArrayBuffer(file);
     },
-    // ตรวจหัวคอลัมน์ของไฟล์ที่อัปโหลด เทียบกับคอลัมน์ของ template_object.xlsx แบบเป๊ะๆ
-    // - ต้องมีคอลัมน์ครบทุกตัวตาม template (object_name, keywords, and_keywords, not_keywords)
-    //   ถ้าขาดคอลัมน์ใดไป -> ไม่ให้นำเข้า (ok: false)
-    // - ถ้ามีคอลัมน์แปลกปลอมที่ไม่ได้อยู่ใน template ปนมาด้วย (เช่น คอลัมน์เกิน) -> ก็ถือว่าไฟล์ไม่ตรง
-    //   template เช่นกัน ไม่ให้นำเข้า (ok: false) ไม่ใช่แค่เตือนแล้วปล่อยผ่านเหมือนเดิม
+    // ตรวจหัวคอลัมน์ของไฟล์ที่อัปโหลด เทียบกับคอลัมน์ของ template_domain.xlsx แบบเป๊ะๆ
+    // - ต้องมีคอลัมน์ครบทุกตัวตาม template (domain_name, subdomain_name, object_name,
+    //   keywords, and_keywords, not_keywords) ถ้าขาดคอลัมน์ใดไป -> ไม่ให้นำเข้า (ok: false)
+    // - ถ้ามีคอลัมน์แปลกปลอมที่ไม่ได้อยู่ใน template ปนมาด้วย -> ก็ถือว่าไฟล์ไม่ตรง template เช่นกัน (ok: false)
     validateTemplateHeaders(headerRow) {
-      // ลำดับคอลัมน์อ้างอิงตาม template_object.xlsx — ใช้ทั้งเช็คคอลัมน์ที่ขาด/เกิน
-      const templateColumns = ["object_name", "keywords", "and_keywords", "not_keywords"];
+      // ลำดับคอลัมน์อ้างอิงตาม template_domain.xlsx — ใช้ทั้งเช็คคอลัมน์ที่ขาด/เกิน
+      const templateColumns = ["domain_name", "subdomain_name", "object_name", "keywords", "and_keywords", "not_keywords"];
 
       const headers = (headerRow || [])
         .map((h) => String(h || "").trim())
@@ -954,10 +1032,13 @@ export default {
         return;
       }
 
-      if (!this.objectData || !this.objectData.subdomain_id) {
+      // ✅ กันไว้อีกชั้นนอกเหนือจาก disabled ของปุ่ม — ห้ามนำเข้าถ้ายังมีแถวข้อมูลไม่สมบูรณ์อยู่
+      // ต้องแก้ไขให้ทุกแถว valid ก่อน ถึงจะนำเข้าทั้งไฟล์ได้
+      if (this.invalidRowCount > 0) {
         this.$fire({
-          title: "ไม่พบ Subdomain ID",
-          type: "error",
+          title: "มีข้อมูลไม่สมบูรณ์",
+          text: `พบ ${this.invalidRowCount} แถวที่ข้อมูลไม่ครบหรือไม่ถูกต้อง กรุณาแก้ไขให้ครบก่อนนำเข้า`,
+          type: "warning",
           confirmButtonText: "ตกลง",
         });
         return;
@@ -972,8 +1053,6 @@ export default {
 
       const formData = new FormData();
       formData.append("file", fileToUpload);
-      formData.append("domain_id", this.domainId);
-      formData.append("subdomain_id", this.objectData.subdomain_id);
 
       try {
         await axios.post(
@@ -1742,12 +1821,18 @@ export default {
 }
 
 /* Tablet */
-@media only screen and (max-width: 991px) {
+@media only screen and (min-width: 769px) and (max-width: 991px) {
   .import-side {
     width: 280px;
   }
   .import-main-inner {
     padding: 24px 20px 8px;
+  }
+  .import-table-view {
+    display: none;
+  }
+  .import-card-view {
+    display: block;
   }
 }
 

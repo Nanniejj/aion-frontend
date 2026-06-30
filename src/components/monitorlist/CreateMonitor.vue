@@ -19,7 +19,8 @@
         :visible="open"
         @hide="hideModal"
         :animation-panel="'modal-slide-top'"
-        :resize-width="{ 3000: '80%', 1350: '90%', 768: '90%' }"
+        :resize-width="{ 3000: '100%', 1350: '90%', 768: '90%' }"
+        class="h-100"
     >
       <!-- :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }" -->
         <div v-if="tabsMonitor == 'targetlist'">
@@ -124,6 +125,7 @@
                                             <CardInput 
                                                 :targetInfo="item"
                                                 :provinces="provinces"
+                                                :country="country"
                                                 :influencerTypes="influencerTypes"
                                                 source="blockdit"
                                                 :editable="item.editable" 
@@ -343,6 +345,7 @@ export default {
                 // { value: "tiktok", text: "Tiktok" },
             ],
             provinces: [],
+            country: [],
             influencerTypes:[]
         };
     },
@@ -707,6 +710,25 @@ export default {
             // }
 
         },
+        async apiGetCountry() {
+            const config = {
+                method: "get",
+                url: "https://api2.cognizata.com/api/v2/monitor/getCountry",
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            this.axios(config)
+            .then((response) => {
+                let result = response.data.data || [];
+                this.country = result;
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+        },
         async apiGetInfluencerType() {
             this.load = true;
             const config = {
@@ -866,6 +888,7 @@ export default {
         //     this.targetLists = []
         // }
         await this.apiGetProvinces();
+        await this.apiGetCountry();
         await this.apiGetInfluencerType();
     },
     // watch() {
