@@ -1,5 +1,5 @@
 <template>
-  <b-card class="wordcloud-card" no-body>
+  <b-card class="" no-body>
 
 
     <!-- <b-alert v-if="error" show variant="danger" class="mx-3 mb-2">
@@ -7,21 +7,26 @@
     </b-alert> -->
 
     <!-- ✅ 2 cloud ใน 1 component (component ยิง API เอง ไม่มี filter ในตัว) -->
-    <div class="px-2 pb-3">
+    <div class=" pb-3">
       <b-row>
         <!-- WORD CLOUD -->
-        <b-col md="6" >
-          <div class="wc-panel h-100 w-100">
-            <div class="wc-panel-title">Words</div>
+        <b-col lg="6" >
+          <div class=" h-100 w-100">
+            <!-- <div class="wc-panel-title">Words</div> -->
 
             <div class="wc-wrap position-relative">
-              <div ref="chartWrapWords" class="wc-chart">
+              <div ref="chartWrapWords" class="wc-chart" :style="chartAspectStyle">
                 <div ref="chartWords" class="wc-chart-inner"></div>
               </div>
 
               <div v-if="isLoading" class="wc-overlay">
-                <b-spinner />
+                <div class="text-center">
+                  <b-spinner />
+                  <div class="mt-2 small text-muted">กำลังโหลดข้อมูล...</div>
+                </div>
               </div>
+
+            
 
               <div v-show="tooltip.show && tooltip.target === 'words'" class="wc-tooltip"
                 :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
@@ -33,25 +38,48 @@
                   <span>ลบ: {{ fmt(tooltip.neg) }}</span>
                 </div>
                 <div class="small text-muted">score: {{ tooltip.score.toFixed(3) }}</div>
+                <div class="small text-muted font-italic mt-1">คลิกขวาที่คำนี้เพื่อซ่อนออกจากภาพ</div>
+              </div>
+
+              <!-- ✅ เมนูคลิกขวา: กด "ซ่อนคำนี้" เพื่อลบออกจากภาพ -->
+              <div v-show="contextMenu.show && contextMenu.kind === 'words'" class="wc-context-menu"
+                :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }">
+                <div class="wc-context-menu-label">{{ contextMenu.name }}</div>
+                <button type="button" class="wc-context-menu-item" @click="hideFromContextMenu">
+                  ซ่อนคำนี้ออกจากภาพ
+                </button>
               </div>
             </div>
+            
           </div>
+           <button
+                v-if="excludedWordsCount > 0"
+                type="button"
+                class="wc-reset-badge"
+                @click="resetExcluded('words')"
+              >
+                ซ่อนไว้ {{ excludedWordsCount }} คำ · เอากลับมา
+              </button>
         </b-col>
 
         <!-- HASHTAG CLOUD -->
-        <b-col md="6">
-          <div class="wc-panel h-100 w-100" >
-            <div class="wc-panel-title">Hashtags</div>
+        <b-col lg="6">
+          <div class=" h-100 w-100" >
+            <!-- <div class="wc-panel-title">Hashtags</div> -->
 
             <div class="wc-wrap position-relative">
-              <div ref="chartWrapTags" class="wc-chart">
+              <div ref="chartWrapTags" class="wc-chart" :style="chartAspectStyle">
                 <div ref="chartTags" class="wc-chart-inner"></div>
               </div>
 
               <div v-if="isLoading" class="wc-overlay">
-                <b-spinner />
+                <div class="text-center">
+                  <b-spinner />
+                  <div class="mt-2 small text-muted">กำลังโหลดข้อมูล...</div>
+                </div>
               </div>
 
+             
               <div v-show="tooltip.show && tooltip.target === 'tags'" class="wc-tooltip"
                 :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
                 <div class="font-weight-bold">{{ tooltip.name }}</div>
@@ -62,12 +90,31 @@
                   <span>ลบ: {{ fmt(tooltip.neg) }}</span>
                 </div>
                 <div class="small text-muted">score: {{ tooltip.score.toFixed(3) }}</div>
+                <div class="small text-muted font-italic mt-1">คลิกขวาที่แท็กนี้เพื่อซ่อนออกจากภาพ</div>
+              </div>
+
+              <div v-show="contextMenu.show && contextMenu.kind === 'tags'" class="wc-context-menu"
+                :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }">
+                <div class="wc-context-menu-label">{{ contextMenu.name }}</div>
+                <button type="button" class="wc-context-menu-item" @click="hideFromContextMenu">
+                  ซ่อนแท็กนี้ออกจากภาพ
+                </button>
               </div>
             </div>
           </div>
+ 
+               <button
+                v-if="excludedTagsCount > 0"
+                type="button"
+                class="wc-reset-badge"
+                @click="resetExcluded('tags')"
+              >
+                ซ่อนไว้ {{ excludedTagsCount }} แท็ก · เอากลับมา
+              </button>
         </b-col>
       </b-row>
     </div>
+ 
   </b-card>
 </template>
 
@@ -91,8 +138,10 @@ export default {
     hashtagsKey: { type: String, default: "hashtags" },
     itemsKey: { type: String, default: "items" },
 
-    minHeight: { type: Number, default: 300 },
-    limit: { type: Number, default: 100 },
+    minHeight: { type: Number, default: 480 },
+    // ⚡ ลดจำนวนคำที่วาด: ยิ่งคำเยอะ ยิ่งชนกันเยอะ → d3-cloud ต้อง retry บ่อย (ดู MAX_TRIES ด้านล่าง)
+    // ลดเพิ่มอีกนิด (80→60) ให้ภาพโปร่งขึ้น ไม่แน่นจนอ่านยาก ใกล้เคียงตัวอย่างที่กระจายตัวดี
+    limit: { type: Number, default: 60 },
 
     // ✅ ขนาด canvas คงที่สำหรับทำ layout/วาดคำ (ไม่อิงขนาดกล่องจริงบนจอ)
     // ใช้ค่าตายตัวเพื่อให้ผลลัพธ์ระยะขอบ/การกระจายตัวสม่ำเสมอทุกครั้ง ส่วนการแสดงผลจริงยัง responsive ตาม container เพราะ svg ใช้ viewBox
@@ -100,7 +149,8 @@ export default {
     fixedHeight: { type: Number, default: 480 },
 
     minFont: { type: Number, default: 20 },
-    maxFont: { type: Number, default: 90 },
+    // ⚡ ลดจาก 180 → 140: ฟอนต์ใหญ่ทำให้ sprite mask ที่ d3-cloud ใช้เช็ค collision แพงขึ้นมาก (พื้นที่ bitmap โตแบบ O(size^2))
+    maxFont: { type: Number, default: 140 },
 
     disableRotate: { type: Boolean, default: true },
 
@@ -115,30 +165,33 @@ export default {
     // ✅ กระจายคำให้เต็มกรอบ + ขอบเท่ากัน
     // layout จะถูกคำนวณบนพื้นที่ที่ "ใหญ่กว่า" กรอบที่เห็นจริง (oversize) แล้วค่อยย่อ/จัดกลางให้พอดีกรอบทีหลัง (fitToDataBounds)
     // ถ้ายังกระจายไม่พอ ลองเพิ่มค่านี้ (เช่น 1.8–2.2) หรือถ้าคำห่างกันเกินไป ลองลดค่าลง
-    layoutOversize: { type: Number, default: 1.3 },
+    // ⚡ ปรับกลับเป็น 1.6 (จากที่เคยลดเหลือ 1 ในไฟล์เดิม): พื้นที่ layout แคบเกินไปทำให้ d3-cloud
+    //    หาที่ว่างไม่เจอบ่อย ต้อง retry (ดู run()) ซึ่งแต่ละรอบคือ full recompute ที่แพงมาก
+    layoutOversize: { type: Number, default: 1.8 },
 
     // ✅ สีและพารามิเตอร์ blend ปรับให้ตรงกับ backend (lib/sentimentColor.js DEFAULTS)
-    // เดิมค่าพวกนี้เพี้ยนไปจาก backend มาก (domPow 8 vs 1.8, lightMin 0.8 vs 0.32 ฯลฯ)
-    // ทำให้สีที่ได้คนละโทนกับภาพที่ backend สร้าง
-    colorPos: { type: String, default: "#0c2d0e" },
+    colorPos: { type: String, default: "#005905" },
     colorNeu: { type: String, default: "#ffc107" },
-    colorNeg: { type: String, default: "#380d0d" },
+    colorNeg: { type: String, default: "#820000" },
 
-    domPow: { type: Number, default: 3 },        // จาก 1.8 — เพิ่มความ "เด็ดขาด" ของสัดส่วนสี
+    domPow: { type: Number, default: 3 },
     negBoost: { type: Number, default: 3 },
     neuDampen: { type: Number, default: 0.5 },
-    dominanceKick: { type: Number, default: 0.55 }, // จาก 0.22 — ดันไปทางสีที่ครองเสียงข้างมากแรงขึ้น
+    dominanceKick: { type: Number, default: 0.55 },
 
     satMin: { type: Number, default: 0.85 },
-    lightMin: { type: Number, default: 0.38 },    // จาก 0.32
-    lightMax: { type: Number, default: 0.58 },    // จาก 0.32 — เปิดช่วงให้กว้างขึ้น ไม่บังคับเท่ากันหมด
-    paddingBase: { type: Number, default: 1.8 },
-    paddingFactor: { type: Number, default: 0.045 },
+    lightMin: { type: Number, default: 0.38 },
+    lightMax: { type: Number, default: 0.6 },
+    // ⚡ ปรับกลับให้มีระยะห่างจริงระหว่างคำ (รอบก่อนลดค่านี้ลงเพื่อให้ "ชิดขอบ" แต่ทำให้คำชนกันแทน)
+    // ตอนนี้แก้ต้นตอ (font-style italic ไม่ตรงกับที่ d3-cloud ใช้คำนวณ) ไปแล้ว แต่ยังคงเว้น padding พอสมควรไว้กันคำชนกันเวลาปัดเศษ/ฟอนต์โหลดคนละรอบ
+    paddingBase: { type: Number, default: 2 },
+    paddingFactor: { type: Number, default: 0.08 },
   },
 
   data() {
     return {
       isLoading: false,
+      hasLoaded: false,
       error: "",
       apiData: null,
 
@@ -156,6 +209,18 @@ export default {
       _roTags: null,
       _fallbackResize: null,
 
+      // ⚡ track ว่าแต่ละ chart เคย render สำเร็จ (มีขนาดจริง) ไปแล้วหรือยัง
+      // เพราะ layout ใช้ fixedWidth/fixedHeight คงที่ + svg ใช้ viewBox ทำ responsive เอง
+      // จึงไม่จำเป็นต้องรัน d3-cloud (ของแพง) ใหม่ทุกครั้งที่ container resize
+      _renderedWords: false,
+      _renderedTags: false,
+
+      // ✅ คำ/แฮชแท็กที่ผู้ใช้กดลบออก (ไม่เกี่ยวข้อง/สแปม) — key คือชื่อคำ (normalize แล้ว)
+      // เก็บแยกกันระหว่าง words กับ hashtags และ persist ลง localStorage ต่อ domain
+      // เพื่อให้กดลบครั้งเดียว แล้วครั้งต่อไปที่เปิดหน้าเดิม (domain เดิม) คำนั้นจะถูกซ่อนไว้เหมือนเดิม
+      excludedWords: {},
+      excludedTags: {},
+
       tooltip: {
         show: false,
         target: "", // "words" | "tags"
@@ -167,6 +232,16 @@ export default {
         neu: 0,
         neg: 0,
         score: 0,
+      },
+
+      // ✅ เมนูคลิกขวาเล็กๆ สำหรับกด "ซ่อนคำนี้ออกจากภาพ"
+      contextMenu: {
+        show: false,
+        kind: "", // "words" | "tags"
+        x: 0,
+        y: 0,
+        name: "",
+        word: null, // อ็อบเจกต์คำที่ถูกคลิกขวา (มี .key/.text/.__src)
       },
     };
   },
@@ -204,6 +279,24 @@ export default {
       const range = this.apiData.start && this.apiData.end ? ` • ${this.apiData.start} - ${this.apiData.end}` : "";
       return domains ? `${domains}${range}` : "";
     },
+
+    // ⚡ ทั้งสองฝั่ง (words / hashtags) ต้องมีขนาดกล่องเท่ากันเป๊ะเสมอ ไม่ว่าเนื้อหาข้างในจะกระจายตัวต่างกันแค่ไหน
+    // ใช้ CSS aspect-ratio บังคับสัดส่วนของกล่องโดยตรง (คำนวณความสูงจากความกว้างจริงของแต่ละคอลัมน์)
+    // แทนที่จะพึ่งพา flex "stretch" ของแถว หรือการวัดขนาดด้วย JS ซึ่งมีโอกาสวัดได้ไม่พร้อมกันระหว่าง 2 ฝั่ง
+    // เพราะ props fixedWidth/fixedHeight ใช้ค่าเดียวกันทั้งคู่ ผลลัพธ์คือทั้งสองกล่องจะสูงเท่ากันเสมอเมื่อกว้างเท่ากัน (ซึ่ง bootstrap col lg="6" การันตีให้อยู่แล้ว)
+    chartAspectStyle() {
+      return { aspectRatio: `${this.fixedWidth} / ${this.fixedHeight}` };
+    },
+
+    excludedWordsCount() {
+      return Object.keys(this.excludedWords).length;
+    },
+    excludedTagsCount() {
+      return Object.keys(this.excludedTags).length;
+    },
+    _excludeStorageKey() {
+      return `wc_excluded::${String(this.domainId)}`;
+    },
   },
 
   watch: {
@@ -223,6 +316,7 @@ export default {
       this.renderBoth();
     },
     domainId() {
+      this.loadExcluded();
       this.loadWordCloud(true);
     },
     start() {
@@ -237,26 +331,76 @@ export default {
   },
 
   mounted() {
+    this.loadExcluded();
     this.loadWordCloud();
+
+    // ✅ ปิดเมนูคลิกขวาเมื่อคลิกที่อื่น / เลื่อนหน้าจอ / กด Esc
+    // เช็ค closest('.wc-context-menu') กันไม่ให้การคลิกปุ่ม "ซ่อนคำนี้" ในเมนูเอง โดนปิดเมนูตัดหน้าก่อน handler ของปุ่มจะทำงาน
+    this._closeContextMenu = (e) => {
+      if (!this.contextMenu.show) return;
+      if (e && e.target && e.target.closest && e.target.closest(".wc-context-menu")) return;
+      this.contextMenu.show = false;
+    };
+    this._closeContextMenuOnEsc = (e) => {
+      if (e.key === "Escape") this._closeContextMenu();
+    };
+    document.addEventListener("click", this._closeContextMenu);
+    document.addEventListener("contextmenu", this._closeContextMenu);
+    document.addEventListener("scroll", this._closeContextMenu, true);
+    document.addEventListener("keydown", this._closeContextMenuOnEsc);
 
     this.$nextTick(() => {
       const w1 = this.$refs.chartWrapWords;
       const w2 = this.$refs.chartWrapTags;
 
-      const debounced = (() => {
-        let t = null;
-        return () => {
-          clearTimeout(t);
-          t = setTimeout(() => this.renderBoth(), 100);
-        };
-      })();
+      // ⚡ เดิม: debounced เรียก renderBoth() (รัน d3-cloud ใหม่ทั้งคู่ ของแพง) ทุกครั้งที่มีการ resize
+      // ใหม่: ResizeObserver มีหน้าที่แค่ "จับจังหวะที่กล่องมีขนาดจริงครั้งแรก" (กรณี mount ตอนกล่องยังเป็น 0)
+      // เพราะ layout คำนวณจาก fixedWidth/fixedHeight คงที่อยู่แล้ว ส่วนการ responsive จริงบนจอ
+      // เป็นหน้าที่ของ svg viewBox (scale ฟรี ไม่ต้องคำนวณ layout ใหม่) — ไม่จำเป็นต้อง re-render ซ้ำ
+      const ensureRenderedWords = () => {
+        if (this._renderedWords) return;
+        if (w1 && w1.clientWidth > 50 && w1.clientHeight > 50) {
+          this._renderedWords = true;
+          this.renderOne({
+            kind: "words",
+            wrapRef: "chartWrapWords",
+            chartRef: "chartWords",
+            getItems: () => this.wordItems,
+          });
+          if (this._roWords) this._roWords.disconnect();
+        }
+      };
+
+      const ensureRenderedTags = () => {
+        if (this._renderedTags) return;
+        if (w2 && w2.clientWidth > 50 && w2.clientHeight > 50) {
+          this._renderedTags = true;
+          this.renderOne({
+            kind: "tags",
+            wrapRef: "chartWrapTags",
+            chartRef: "chartTags",
+            getItems: () => this.hashtagItems,
+          });
+          if (this._roTags) this._roTags.disconnect();
+        }
+      };
 
       if (window.ResizeObserver) {
-        this._roWords = new ResizeObserver(debounced);
-        this._roTags = new ResizeObserver(debounced);
+        this._roWords = new ResizeObserver(ensureRenderedWords);
+        this._roTags = new ResizeObserver(ensureRenderedTags);
         if (w1) this._roWords.observe(w1);
         if (w2) this._roTags.observe(w2);
       } else {
+        const debounced = (() => {
+          let t = null;
+          return () => {
+            clearTimeout(t);
+            t = setTimeout(() => {
+              ensureRenderedWords();
+              ensureRenderedTags();
+            }, 100);
+          };
+        })();
         window.addEventListener("resize", debounced);
         this._fallbackResize = debounced;
       }
@@ -282,6 +426,11 @@ export default {
     if (this._fallbackResize) {
       window.removeEventListener("resize", this._fallbackResize);
     }
+
+    document.removeEventListener("click", this._closeContextMenu);
+    document.removeEventListener("contextmenu", this._closeContextMenu);
+    document.removeEventListener("scroll", this._closeContextMenu, true);
+    document.removeEventListener("keydown", this._closeContextMenuOnEsc);
   },
 
   methods: {
@@ -298,6 +447,7 @@ export default {
 
       if (!this.resolvedToken) {
         this.error = "ไม่พบ token (ส่ง prop token หรือ set localStorage key: token)";
+        this.hasLoaded = true;
         return;
       }
 
@@ -312,6 +462,7 @@ export default {
       this._cancelSource = axios.CancelToken.source();
 
       this.isLoading = true;
+      this.hasLoaded = false;
       try {
         const params = { domain_id: this.domainId, start: this.resolvedStart, end: this.resolvedEnd };
         if (this.monitor) params.monitor = this.monitor;
@@ -338,10 +489,14 @@ export default {
           "โหลดข้อมูลไม่สำเร็จ";
       } finally {
         this.isLoading = false;
+        this.hasLoaded = true;
       }
     },
 
-    async waitForStableSize(wrapEl, tries = 12) {
+    // ⚡ ลดจำนวนรอบรอ (12 → 3) เพราะ layout อิง fixedWidth/fixedHeight คงที่อยู่แล้ว
+    // ไม่ได้ผูกกับขนาดจริงของกล่องเวลาคำนวณ layout จึงไม่จำเป็นต้องรอกล่อง "เสถียร" นาน
+    // เก็บไว้แค่กันเคส container ยังเป็น 0 ตอน mount ครั้งแรกจริง ๆ
+    async waitForStableSize(wrapEl, tries = 3) {
       for (let i = 0; i < tries; i++) {
         if (wrapEl && wrapEl.clientWidth > 50 && wrapEl.clientHeight > 50) return true;
         await new Promise((r) => requestAnimationFrame(r));
@@ -349,47 +504,42 @@ export default {
       return false;
     },
 
-    fitToDataBounds(g, data, bw, bh, pad = 6) {
-      if (!Array.isArray(data) || !data.length) return;
+    // ✅ Fit ข้อความจริงให้เต็มกรอบ โดยใช้ SVG bbox จริงหลัง render แล้ว
+    // แก้ปัญหา: ข้อมูลน้อยแล้ว wordcloud ลอยอยู่กลาง/ใช้พื้นที่น้อย
+    // - ใช้ getBBox() ของ <g> หลังวาด text จริง ไม่เดาจาก d3-cloud width/height
+    // - ข้อมูลน้อยจะอนุญาตให้ขยายแกนที่ว่างได้มากขึ้นเล็กน้อย เพื่อให้เต็มเหมือนภาพตัวอย่าง
+    // - ข้อมูลเยอะจะคุม distortion ไว้ต่ำ เพื่อไม่ให้ตัวอักษรบีบ/ยืดผิดรูป
+    fitToDataBounds(g, bw, bh, pad = 12, itemCount = 0) {
+      if (!g || !g.node) return;
 
-      let minX = Infinity,
-        minY = Infinity,
-        maxX = -Infinity,
-        maxY = -Infinity;
-
-      for (const d of data) {
-        const w = Number(d.width || 0);
-        const h = Number(d.height || 0);
-        if (!w || !h) continue;
-
-        const rot = ((d.rotate || 0) % 180 + 180) % 180;
-        const ww = rot === 90 ? h : w;
-        const hh = rot === 90 ? w : h;
-
-        const left = d.x - ww / 2;
-        const right = d.x + ww / 2;
-        const top = d.y - hh / 2;
-        const bottom = d.y + hh / 2;
-
-        minX = Math.min(minX, left);
-        maxX = Math.max(maxX, right);
-        minY = Math.min(minY, top);
-        maxY = Math.max(maxY, bottom);
+      let bbox;
+      try {
+        bbox = g.node().getBBox();
+      } catch (e) {
+        return;
       }
 
-      if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) return;
+      if (!bbox || !bbox.width || !bbox.height) return;
 
-      const contentW = Math.max(1, maxX - minX);
-      const contentH = Math.max(1, maxY - minY);
+      const safePad = Math.max(4, Number(pad || 0));
+      const targetW = Math.max(1, bw - safePad * 2);
+      const targetH = Math.max(1, bh - safePad * 2);
 
-      const sx = (bw - pad * 2) / contentW;
-      const sy = (bh - pad * 2) / contentH;
-      const s = Math.max(0.01, Math.min(sx, sy)); // ✅ พอดีกรอบ ไม่ล้น
+      let sx = targetW / bbox.width;
+      let sy = targetH / bbox.height;
 
-      const tx = pad - (bw / 2 + minX) * s;
-      const ty = pad - (bh / 2 + minY) * s;
+      // ข้อมูลน้อย เช่น hashtag 5-10 คำ ถ้าใช้ scale เดียวจะเหลือพื้นที่ว่างมาก
+      // จึงยอมให้ sx/sy ต่างกันได้มากขึ้น แต่ยัง clamp กันบีบเกินไป
+      const count = Number(itemCount || 0);
+      const maxDistortion = count <= 8 ? 2.8 : count <= 15 ? 2.25 : count <= 25 ? 1.75 : 1.35;
 
-      g.attr("transform", `translate(${tx},${ty}) scale(${s})`);
+      if (sx / sy > maxDistortion) sx = sy * maxDistortion;
+      else if (sy / sx > maxDistortion) sy = sx * maxDistortion;
+
+      const tx = safePad - bbox.x * sx + (targetW - bbox.width * sx) / 2;
+      const ty = safePad - bbox.y * sy + (targetH - bbox.height * sy) / 2;
+
+      g.attr("transform", `translate(${tx},${ty}) scale(${sx},${sy})`);
     },
 
     // -------- Sentiment helpers --------
@@ -419,8 +569,6 @@ export default {
     },
 
     // ✅ blend สีตามสัดส่วน บวก/กลาง/ลบ — สูตรเดียวกับ backend (lib/sentimentColor.js)
-    // colorPos/colorNeu/colorNeg + domPow/negBoost/neuDampen/dominanceKick + HSL clamp
-    // ใช้ค่า default เดียวกับ backend ทุกตัว ผลลัพธ์สีจึงตรงกับภาพที่ backend สร้าง
     colorBySentiment(it) {
       const { pos, neu, neg } = this.getCounts(it);
       const sum = (pos + neu + neg) || 1;
@@ -462,8 +610,9 @@ export default {
     },
 
     // -------- build words from list --------
-    buildWordsFromList(list0) {
+    buildWordsFromList(list0, excludedMap) {
       const raw = Array.isArray(list0) ? list0 : [];
+      const excluded = excludedMap || {};
 
       const list = raw
         .filter(Boolean)
@@ -480,6 +629,9 @@ export default {
           };
         })
         .filter((d) => d.key.length > 0)
+        // ✅ ตัดคำที่ถูกลบออกไปแล้วตั้งแต่ก่อน sort/slice
+        // เพื่อให้คำอันดับถัดไปเลื่อนขึ้นมาแทนที่ (ไม่ใช่แค่ซ่อนแล้วเหลือที่ว่าง)
+        .filter((d) => !excluded[this._normKey(d.key)])
         .sort((a, b) => b.value - a.value)
         .slice(0, Math.max(0, this.limit));
 
@@ -490,7 +642,14 @@ export default {
       const vMax = Math.max(...values);
       const domainMax = vMax === vMin ? vMax + 1 : vMax;
 
-      const scale = d3.scaleLog().domain([vMin, domainMax]).range([this.minFont, this.maxFont]);
+      // ✅ ข้อมูลน้อยต้องขยาย font range ให้กินพื้นที่มากขึ้น
+      // เช่น hashtag มีแค่ไม่กี่คำ ถ้าใช้ maxFont เดิมจะเหลือพื้นที่ว่างเหมือนภาพแรก
+      const n = list.length;
+      const sparseBoost = n <= 5 ? 2.1 : n <= 8 ? 1.85 : n <= 12 ? 1.6 : n <= 20 ? 1.35 : 1;
+      const minF = Math.max(8, Math.round(this.minFont * (n <= 12 ? 1.35 : n <= 20 ? 1.15 : 1)));
+      const maxF = Math.max(minF + 4, Math.round(this.maxFont * sparseBoost));
+
+      const scale = d3.scaleLog().domain([vMin, domainMax]).range([minF, maxF]);
 
       return list.map((d, i) => ({
         ...d,
@@ -526,8 +685,90 @@ export default {
       if (et) et.innerHTML = "";
     },
 
+    // ✅ helper กลาง สำหรับสั่ง render กล่องใดกล่องหนึ่งซ้ำ (ใช้ตอนลบ/กู้คืนคำ ไม่ต้อง render อีกฝั่งที่ไม่เกี่ยวข้องใหม่)
+    renderKind(kind) {
+      if (kind === "words") {
+        this.renderOne({
+          kind: "words",
+          wrapRef: "chartWrapWords",
+          chartRef: "chartWords",
+          getItems: () => this.wordItems,
+        });
+      } else {
+        this.renderOne({
+          kind: "tags",
+          wrapRef: "chartWrapTags",
+          chartRef: "chartTags",
+          getItems: () => this.hashtagItems,
+        });
+      }
+    },
+
+    // -------- Exclude (ลบคำ/แฮชแท็กที่ไม่เกี่ยวข้องออกจากภาพ) --------
+    _normKey(text) {
+      return String(text || "").trim().toLowerCase();
+    },
+
+    loadExcluded() {
+      this.excludedWords = {};
+      this.excludedTags = {};
+      try {
+        const raw = localStorage.getItem(this._excludeStorageKey);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        this.excludedWords = parsed?.words || {};
+        this.excludedTags = parsed?.tags || {};
+      } catch (e) { }
+    },
+
+    persistExcluded() {
+      try {
+        localStorage.setItem(
+          this._excludeStorageKey,
+          JSON.stringify({ words: this.excludedWords, tags: this.excludedTags })
+        );
+      } catch (e) { }
+    },
+
+    // เรียกตอนคลิกคำในภาพ — ลบคำนั้นออกจากรายการที่ใช้วาด แล้ว re-render เฉพาะฝั่งนั้น
+    excludeItem(kind, d) {
+      const key = this._normKey(d.key || d.text);
+      if (!key) return;
+
+      const map = kind === "words" ? this.excludedWords : this.excludedTags;
+      this.$set(map, key, true);
+      this.persistExcluded();
+
+      this.tooltip.show = false;
+      this.$emit("exclude", { kind, key, text: d.text, data: d.__src });
+
+      this.renderKind(kind);
+    },
+
+    // ปุ่ม "เอากลับมาทั้งหมด" — ล้างรายการที่ซ่อนไว้ของฝั่งนั้น แล้ว re-render ใหม่
+    resetExcluded(kind) {
+      if (kind === "words") this.excludedWords = {};
+      else this.excludedTags = {};
+      this.persistExcluded();
+      this.$emit("exclude-reset", { kind });
+      this.renderKind(kind);
+    },
+
+    // ปุ่ม "ซ่อนคำนี้ออกจากภาพ" ในเมนูคลิกขวา
+    hideFromContextMenu() {
+      const { kind, word } = this.contextMenu;
+      this.contextMenu.show = false;
+      if (!kind || !word) return;
+      this.excludeItem(kind, word);
+    },
+
     renderBoth() {
       if (!this.apiData) return;
+
+      // ⚡ นับว่า render แล้วเมื่อถูกเรียกจาก path หลัก (data/props เปลี่ยน) ด้วย
+      // กัน ResizeObserver ยิงซ้ำสั่ง render ทับอีกรอบหลังจากนี้โดยไม่จำเป็น
+      this._renderedWords = true;
+      this._renderedTags = true;
 
       this.renderOne({
         kind: "words",
@@ -569,21 +810,27 @@ export default {
       const wrap = this.$refs[wrapRef];
       if (!el || !wrap) return;
 
-      await this.waitForStableSize(wrap, 14);
+      await this.waitForStableSize(wrap, 3);
 
       if (document?.fonts) {
         try {
-          // ✅ โหลดฟอนต์จริงที่ใช้วาดคำ (ไม่ใช่แค่รอ fonts.ready เฉยๆ ซึ่งผ่านได้แม้ฟอนต์ไม่โหลด)
-          await document.fonts.load(`500 16px ${this.fontFamily}`);
-          await document.fonts.load(`700 16px ${this.fontFamily}`);
-          await document.fonts.ready;
+          // ⚡ เช็คก่อนว่าฟอนต์โหลดแล้วหรือยัง (fonts.check เป็น sync, เร็วมาก)
+          // ถ้าโหลดแล้วข้าม await ไปเลย ลดดีเลย์ทุกครั้งที่ re-render (เดิม await ทุกครั้งแม้โหลดไปแล้ว)
+          const need500 = !document.fonts.check(`500 16px ${this.fontFamily}`);
+          const need700 = !document.fonts.check(`700 16px ${this.fontFamily}`);
+          if (need500) await document.fonts.load(`500 16px ${this.fontFamily}`);
+          if (need700) await document.fonts.load(`700 16px ${this.fontFamily}`);
+          if (need500 || need700) await document.fonts.ready;
         } catch (e) { }
       }
 
       const list0 = getItems?.() || [];
-      const raw = this.buildWordsFromList(list0);
+      const excludedMap = kind === "words" ? this.excludedWords : this.excludedTags;
+      const raw = this.buildWordsFromList(list0, excludedMap);
       if (!raw.length) {
-        el.innerHTML = `<div class="wc-empty">ไม่พบข้อมูล</div>`;
+        el.innerHTML = this.isLoading || !this.hasLoaded
+          ? ""
+          : `<div class="wc-empty">ไม่พบข้อมูล</div>`;
         return;
       }
 
@@ -596,16 +843,16 @@ export default {
           size: Math.max(6, Number(w.size || 0) || 6),
         }));
 
-      // ✅ ใช้ขนาด canvas คงที่ (fixed) แทนการอิงขนาดกล่องจริง (wrap.clientWidth/clientHeight)
-      // เพื่อให้ผล layout/ระยะขอบเสมอกันทุกครั้งไม่ว่ากล่องจะถูกบีบ/ขยายแค่ไหน (เหมือนภาพ backend ที่ fix ขนาดไว้)
-      // ส่วนการแสดงผลจริงบนจอยังคง responsive ได้ตามปกติ เพราะ svg ใช้ viewBox + width/height: 100% อยู่แล้ว
+      // ✅ ใช้ fixedWidth/fixedHeight ตรงๆ ได้แล้ว เพราะฝั่ง CSS (chartAspectStyle) บังคับให้กล่องจริง
+      // มีสัดส่วนตรงกับค่านี้เป๊ะอยู่แล้วเสมอ (ไม่มี letterbox) และค่าเดียวกันนี้ใช้ทั้ง words/hashtags
+      // จึงการันตีว่าทั้งสองฝั่งจะได้ box ขนาดเท่ากันทุกครั้ง ไม่ขึ้นกับจังหวะการวัดขนาดจริงของ DOM
       const bw = this.fixedWidth;
       const bh = this.fixedHeight;
 
-      // ✅ ขนาด "พื้นที่ทำ layout" ให้ใหญ่กว่ากรอบจริง (oversize)
-      // ทำให้ spiral ของ d3-cloud มีที่เดินกว้างขึ้นก่อนจะเจอที่ว่าง คำจึงกระจายตัวทั่วพื้นที่
-      // แทนที่จะกองอยู่ตรงกลาง — แล้วค่อยย่อ/จัดกลางให้พอดีกรอบจริงด้วย fitToDataBounds ทีหลัง
-      const oversize = Math.max(1, this.layoutOversize || 1.6);
+      // ✅ ถ้าข้อมูลน้อย ไม่ต้องใช้ canvas layout ใหญ่มาก เพราะจะดูหลวม/กระจายไม่เต็ม
+      // ข้อมูลเยอะยังใช้ oversize ตาม prop เพื่อลดการชนกัน
+      const itemCount = words0.length;
+      const oversize = itemCount <= 8 ? 1.05 : itemCount <= 15 ? 1.15 : itemCount <= 25 ? 1.3 : Math.max(1, this.layoutOversize || 1.6);
       const lw = bw * oversize;
       const lh = bh * oversize;
 
@@ -633,7 +880,9 @@ export default {
         };
       }
 
-      const MAX_TRIES = 8;
+      // ⚡ ลดจาก 8 → 6: แต่ละรอบ retry คือรัน d3-cloud ใหม่ทั้งชุด (แพงมาก) แต่เผื่อไว้มากกว่า 5 นิดหน่อย
+      // เพราะ padding เพิ่มขึ้น (ต้องการที่ว่างมากขึ้น) อาจต้อง retry มากกว่าตอน padding แน่นๆ
+      const MAX_TRIES = 6;
       let attempt = 0;
 
       const ROTATE_BIG_CUTOFF = 60;
@@ -649,7 +898,7 @@ export default {
         const rng = mulberry32(seedBase);
 
         const layout = cloud()
-          .size([lw, lh]) // ✅ ใช้พื้นที่ oversize แทนขนาดกรอบจริง เพื่อให้กระจายตัวทั่วถึง
+          .size([lw, lh])
           .random(rng)
           .words(
             words.map((w) => ({
@@ -691,21 +940,17 @@ export default {
               .style("cursor", "pointer")
               .attr("text-anchor", "middle")
               .attr("transform", (d) => {
-                // ⚠️ ต้องใช้ bw/bh (ไม่ใช่ lw/lh) ให้ตรงกับสูตรใน fitToDataBounds
-                // offset ตอนวาดกับตอน fit ต้องอิงฐานเดียวกัน ไม่งั้นจะเกิด offset เพี้ยน (เลื่อนขวา/ล่าง) ทำให้คำล้นออกนอกกรอบและโดน clip
-                // lw/lh มีหน้าที่แค่ "ให้พื้นที่ spiral เดินกว้างขึ้น" ตอน layout เท่านั้น ไม่เกี่ยวกับจุดอ้างอิงตอนวาด
                 const x = d.x + bw / 2;
                 const y = d.y + bh / 2;
                 return `translate(${x},${y})rotate(${d.rotate || 0})`;
               })
               .text((d) => d.text);
 
-            // ✅ ย่อ/จัดกลาง bounding box จริงของคำทั้งหมดให้พอดีกรอบที่แสดงผล (bw, bh) เสมอ
-            // ทำให้ขอบซ้าย-ขวา-บน-ล่างเท่ากัน ไม่ว่าจะกระจายตัวกว้างแค่ไหนตอน layout
-            self.fitToDataBounds(g, data, bw, bh, 6);
+            self.fitToDataBounds(g, bw, bh, itemCount <= 15 ? 16 : 10, data.length);
 
             texts
               .on("mousemove", function (event, d) {
+                if (self.contextMenu.show) return; // อย่าขยับ tooltip ทับเมนูขวาที่เปิดอยู่
                 const { pos, neu, neg, total } = self.getCounts(d.__src);
                 const score = self.sentimentScore(d.__src);
 
@@ -722,7 +967,20 @@ export default {
                 self.tooltip.score = score;
               })
               .on("mouseleave", () => (self.tooltip.show = false))
-              .on("click", (event, d) => self.$emit("select", { kind, data: d.__src }));
+              .on("click", (event, d) => self.$emit("select", { kind, data: d.__src }))
+              // ✅ คลิกขวา = เปิดเมนูเล็กๆ ให้เลือก "ซ่อนคำนี้ออกจากภาพ" แทนการลบทันทีตอนคลิกซ้าย
+              .on("contextmenu", function (event, d) {
+                event.preventDefault();
+                event.stopPropagation();
+                const rect = wrap.getBoundingClientRect();
+                self.tooltip.show = false;
+                self.contextMenu.show = true;
+                self.contextMenu.kind = kind;
+                self.contextMenu.x = event.clientX - rect.left;
+                self.contextMenu.y = event.clientY - rect.top;
+                self.contextMenu.name = d.text;
+                self.contextMenu.word = d;
+              });
           });
 
         if (kind === "words") self._layoutWords = layout;
@@ -764,11 +1022,14 @@ export default {
 
 .wc-wrap {
   background: #fff;
-  min-height: 320px;
+  /* min-height: 320px; */
 }
 
 .wc-chart {
-  height: 480px;
+  width: 100%;
+  /* aspect-ratio ถูก bind แบบ inline ผ่าน chartAspectStyle (ตรงกับ fixedWidth/fixedHeight)
+     ทำให้ words/hashtags ได้ box สูงเท่ากันเป๊ะเสมอ เพราะทั้งคู่กว้างเท่ากัน (bootstrap col lg="6")
+     และคำนวณความสูงจากสัดส่วนเดียวกัน แทนที่จะพึ่ง flex stretch หรือ min-height ลอยๆ */
   overflow: hidden;
   padding: 0;
   position: relative;
@@ -782,7 +1043,9 @@ export default {
 .wc-chart text {
   font-family: "Sarabun", sans-serif;
   font-weight: 300;
-  font-style: italic;
+  /* ⚡ เอา italic ออก: d3-cloud คำนวณ collision (เว้นที่ว่างระหว่างคำ) จากฟอนต์ตัวตรงเท่านั้น
+     ถ้า render จริงเป็น italic ตัวอักษรจะเอียง/กว้างกว่ากรอบที่จองไว้ ทำให้คำข้างเคียงทับกันแม้ layout จะไม่ชนกันจริง */
+  font-style: normal;
 }
 
 .wc-empty {
@@ -804,6 +1067,68 @@ export default {
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.65);
+}
+
+.wc-reset-badge {
+  /* position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 11; */
+  border: none;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.75);
+  color: #fff;
+  font-family: "Sarabun", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.wc-reset-badge:hover {
+  background: rgba(20, 20, 20, 0.92);
+}
+
+.wc-context-menu {
+  position: absolute;
+  z-index: 20;
+  transform: translate(-6px, -6px);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  padding: 6px;
+  min-width: 168px;
+  font-family: "Sarabun", sans-serif;
+}
+
+.wc-context-menu-label {
+  padding: 6px 10px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wc-context-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: #b3261e;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.wc-context-menu-item:hover {
+  background: #fdeceb;
 }
 
 .wc-tooltip {
