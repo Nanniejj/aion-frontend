@@ -117,12 +117,13 @@
 <script>
 import ScrollText from "./ScrollText.vue";
 import ReadMoreBox from "./ReadMore.vue";
+import TranslateText from "../TranslateText.vue";
 import moment from "moment";
 import "moment/locale/th";
 import { mapGetters } from "vuex";
 export default {
   name: "CardPost",
-  components: { ReadMoreBox,ScrollText },
+  components: { ReadMoreBox,ScrollText,TranslateText },
   props: {
     loadingCard: { type: Boolean, default: false },
     post: {
