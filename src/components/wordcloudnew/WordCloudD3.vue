@@ -82,7 +82,7 @@ export default {
     token: { type: String, default: "" },
 
     // ✅ component ยิง API เอง ไม่มี filter UI ให้แก้ — กำหนดผ่าน prop ตอนเรียกใช้แทน
-    domainId: { type: [String, Number], default: "1" },
+    domainId: { type: [String, Number], default: "" },
     start: { type: String, default: "" },
     end: { type: String, default: "" },
     monitor: { type: [String, Boolean], default: "" },
