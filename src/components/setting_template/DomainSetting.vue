@@ -398,9 +398,22 @@ export default {
       console.log("item", filteredItems);
       this.currentPage = 1;
     },
+    // ✅ เรียก fetch รายการ domain ใหม่ ใช้ทั้งตอนโหลดหน้าครั้งแรกและตอนนำเข้าไฟล์สำเร็จ
+    fetchDomainList() {
+      this.$store.dispatch("fetchTemplateDomain").then(() => {
+        this.totalRows = this.getItemsDomain.length;
+      });
+    },
   },
   created() {
-    this.$store.dispatch("fetchTemplateDomain");
+    this.fetchDomainList();
+    // ✅ ฟัง event จาก ImportDomain.vue — พอนำเข้าไฟล์สำเร็จแล้ว ให้ดึงรายการ domain มาใหม่
+    // เพื่อให้ข้อมูลที่เพิ่งนำเข้าขึ้นในตารางทันที ไม่ต้องรีเฟรชหน้าเอง
+    this.$emitter.on("domainImported", this.fetchDomainList);
+  },
+  beforeDestroy() {
+    // เลิกฟัง event ตอน component ถูกทำลาย กัน listener ค้างซ้อนกันถ้าเข้าออกหน้านี้หลายรอบ
+    this.$emitter.off("domainImported", this.fetchDomainList);
   },
 };
 </script>
