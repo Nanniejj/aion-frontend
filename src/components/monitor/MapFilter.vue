@@ -60,55 +60,66 @@
       </b-row>
       <b-row>
         <b-col md="6" lg="6" class="p-2">
-          <b-input-group class="mb-2 my-0">
+          <b-input-group class="mb-2 my-0 kw-group">
             <b-input-group-prepend is-text>
-              <i class="fa fa-pen mr-2" aria-hidden="true"></i> keyword
+              <i class="fa fa-search mr-2" aria-hidden="true"></i> คำค้นหา
             </b-input-group-prepend>
-            <b-form-tags
-              input-id="tags-pills"
+            <b-form-input
               v-model="addKeyword"
-              tag-variant="light"
-              tag-pills
-              size="md"
-              placeholder="Enter เพื่อพิมพ์คำใหม่"
-              remove-on-delete
+              placeholder="เช่น คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย"
               :disabled="!select_changwats.length"
-            ></b-form-tags>
+            ></b-form-input>
           </b-input-group>
+          <small class="kw-hint" v-if="!excludeOnly">
+            เว้นวรรค หรือ + = AND, จุลภาค (,) = OR
+          </small>
         </b-col>
         <b-col md="6" lg="6" class="p-2">
-          <b-row>
-            <b-col md="9" lg="9" class="m-0">
-              <section id="date-picker" class="d-inline-block w-100">
-                <date-picker
-                  id="date-map"
-                  style="width: 100% !important;height:40px"
-                  v-model="valueDate"
-                  type="date"
-                  range
-                  @change="checkDateRange"
-                  placeholder="เลือกช่วงเวลา"
-                  :disabled-date="(date) => date >= new Date()"
-                  value-type="format"
-                  format="YYYY-MM-DD"
-                  >{{ valueDate }}</date-picker
-                >
-              </section>
-            </b-col>
-            <b-col md="3" lg="3">
-              <div class="text-right">
-                <b-button
-                  @click="submit"
-                  id="search-btn"
-                  variant="warning"
-                  block
-                  :disabled="!select_Region.length && !loadStat"
-                >
-                  ค้นหา</b-button
-                >
-              </div>
-            </b-col>
-          </b-row>
+          <b-input-group class="mb-2 my-0 kw-group kw-exclude">
+            <b-input-group-prepend is-text>
+              <i class="fa fa-ban mr-2" aria-hidden="true"></i> คำที่ไม่เอา
+            </b-input-group-prepend>
+            <b-form-input
+              v-model="excludeKeyword"
+              placeholder="เช่น กทม, ร้านปิด"
+              :disabled="!select_changwats.length"
+            ></b-form-input>
+          </b-input-group>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col md="9" lg="9" class="p-2">
+          <section id="date-picker" class="d-inline-block w-100">
+            <date-picker
+              id="date-map"
+              style="width: 100% !important;height:40px"
+              v-model="valueDate"
+              type="date"
+              range
+              @change="checkDateRange"
+              placeholder="เลือกช่วงเวลา"
+              :disabled-date="(date) => date >= new Date()"
+              value-type="format"
+              format="YYYY-MM-DD"
+              >{{ valueDate }}</date-picker
+            >
+          </section>
+        </b-col>
+        <b-col md="3" lg="3" class="p-2 d-flex align-items-center">
+          <b-button
+            @click="submit"
+            id="search-btn"
+            variant="warning"
+            block
+            :disabled="!select_Region.length && !loadStat"
+          >
+            <b-spinner
+              small
+              v-show="loadStat"
+              style="width: 1rem; height: 1rem;"
+            ></b-spinner>
+            ค้นหา</b-button
+          >
         </b-col>
       </b-row>
       <!-- <b-alert show variant="danger" class="w-100 p-1" v-if="alert"
@@ -126,13 +137,15 @@
 
         <div class="box-filter2" v-if="showFilter">
           <div
-            class="h5 float-right"
+            class="h5 float-right close-btn"
             style="cursor: pointer;"
             @click="showFilter = false"
           >
-            X
+            <i class="fa fa-times"></i>
           </div>
-          <div class="h5 mt-2">FILTER</div>
+          <div class="h6 mt-2 filter-title">
+            <i class="fa fa-sliders-h mr-2"></i>FILTER
+          </div>
           <b-row>
             <b-col md="12" lg="12" class="p-2">
               <v-select
@@ -195,20 +208,33 @@
           </b-row>
           <b-row>
             <b-col md="12" lg="12" class="p-2">
-              <b-input-group class="mb-2 my-0">
+               <small class="kw-hint" style="font-size: 15px;">
+               <b>เว้นวรรค</b>  หรือ <span > <i class="fa fa-plus"></i> </span> = AND | <b>จุลภาค ( , )</b> = OR
+              </small>
+              <b-input-group class="mb-1 my-0 kw-group">
                 <b-input-group-prepend is-text>
-                  <i class="fa fa-search mr-2" aria-hidden="true"></i> keyword
+                  <i class="fa fa-search mr-2" aria-hidden="true"></i> คำค้นหา
                 </b-input-group-prepend>
-                <b-form-tags
-                  input-id="tags-pills"
+                <b-form-input
                   v-model="addKeyword"
-                  tag-variant="light"
-                  tag-pills
                   size="sm"
-                  placeholder="Enter เพื่อพิมพ์คำใหม่"
-                  remove-on-delete
+                  placeholder="เช่น คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย"
                   :disabled="!select_Region.length"
-                ></b-form-tags>
+                ></b-form-input>
+              </b-input-group>
+             
+            </b-col>
+            <b-col md="12" lg="12" class="p-2">
+              <b-input-group class="mb-2 my-0 kw-group kw-exclude">
+                <b-input-group-prepend is-text>
+                  <i class="fa fa-ban mr-2" aria-hidden="true"></i> คำที่ไม่เอา
+                </b-input-group-prepend>
+                <b-form-input
+                  v-model="excludeKeyword"
+                  size="sm"
+                  placeholder="เช่น กทม, ร้านปิด"
+                  :disabled="!select_Region.length"
+                ></b-form-input>
               </b-input-group>
             </b-col>
             <b-col md="12" lg="12" class="p-2">
@@ -266,6 +292,7 @@
           :sdate="start_date"
           :edate="end_date"
           :keyword="keyword"
+          :exclude="exclude"
           :typeMap="typeMap"
         />
       </div>
@@ -280,6 +307,7 @@
           :sdate="start_date"
           :edate="end_date"
           :keyword="keyword"
+          :exclude="exclude"
           :typeMap="typeMap"
         />
       </div>
@@ -297,7 +325,13 @@
               v-if="keyword && keyword.length"
               class="font-weight-light  m-3"
               id="bg-user"
-              ><i class="fa fa-search" /> {{ keyword.toString() }}</span
+              ><i class="fa fa-search" /> {{ keyword }}</span
+            >
+            <span
+              v-if="exclude && exclude.length"
+              class="font-weight-light  m-3"
+              id="bg-exclude"
+              ><i class="fa fa-ban" /> {{ exclude }}</span
             >
           </h5>
         </b-col>
@@ -318,6 +352,7 @@
           <div class="mb-5">
             <MapLocationPost
               :keyword="keyword"
+              :exclude="exclude"
               :loc="locPost"
               :sdate="start_date"
               :edate="end_date"
@@ -364,8 +399,10 @@ export default {
           .slice(0, 10),
       ],
       locPost: [],
-      addKeyword: [],
-      keyword: [],
+      addKeyword: "",
+      excludeKeyword: "",
+      keyword: "",
+      exclude: "",
       code_id: [],
       select_tumbon: "",
       dataTumbon: [],
@@ -811,7 +848,9 @@ console.log('diffDays',diffDays);
           this.code_id = this.dataChagwats;
         }
       }
-      this.keyword = this.addKeyword;
+      // คำค้นหารูปแบบ AND/OR: เว้นวรรคหรือ + = AND, จุลภาค (,) = OR
+      this.keyword = (this.addKeyword || "").trim();
+      this.exclude = (this.excludeKeyword || "").trim();
       console.log("code_id", this.code_id);
       this.locPost = [...this.code_id].map((x) => x.name);
       console.log("locPost", this.locPost);
@@ -821,7 +860,8 @@ console.log('diffDays',diffDays);
         start: this.start_date,
         end: this.end_date,
         location: strLoc,
-        keyword: String(this.addKeyword),
+        keyword: this.keyword,
+        exclude: this.exclude,
         sentiment: "1,0,-1",
         type:this.typeMap,
         source:
@@ -840,7 +880,8 @@ console.log('diffDays',diffDays);
         start: this.start_date,
         end: this.end_date,
         location: String(this.locPost),
-        keyword: String(this.addKeyword),
+        keyword: this.keyword,
+        exclude: this.exclude,
         sort_by: "",
         sentiment: "1,0,-1",
         type:this.typeMap,
@@ -852,7 +893,8 @@ console.log('diffDays',diffDays);
         start: this.start_date,
         end: this.end_date,
         location: String(this.locPost),
-        keyword: String(this.addKeyword),
+        keyword: this.keyword,
+        exclude: this.exclude,
         sort_by: "",
         sentiment: "1,0,-1",
         type:this.typeMap,
@@ -962,17 +1004,72 @@ console.log('diffDays',diffDays);
   overflow: auto;
   max-height: 50px;
 }
+.vs__dropdown-toggle {
+  border-radius: 10px !important;
+  border-color: #e3d9c4 !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.vs__dropdown-toggle:hover {
+  border-color: #d9c393 !important;
+}
+.vs--open .vs__dropdown-toggle {
+  border-color: #fed16e !important;
+  box-shadow: 0 0 0 3px rgba(254, 209, 110, 0.25);
+}
 </style>
 
 <style scoped>
 .mx-input {
   height: 38px;
+  border-radius: 10px;
+  border-color: #e3d9c4;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.mx-input:hover,
+.mx-input:focus {
+  border-color: #fed16e;
+  box-shadow: 0 0 0 3px rgba(254, 209, 110, 0.25);
 }
 .box-filter {
   display: none;
 }
 .input-group-text {
   font-size: 14px;
+  background: #fbf6ea;
+  border-color: #e3d9c4;
+  color: #7a6c4f;
+  font-weight: 500;
+}
+.kw-group .form-control {
+  border-radius: 0 10px 10px 0;
+  border-color: #e3d9c4;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.kw-group .form-control:focus {
+  border-color: #fed16e;
+  box-shadow: 0 0 0 3px rgba(254, 209, 110, 0.25);
+}
+.kw-group .input-group-text {
+  border-radius: 10px 0 0 10px;
+}
+.kw-exclude .input-group-text {
+  color: #a15c4a;
+  background: #fbf0ec;
+  border-color: #ecd6cf;
+}
+.kw-exclude .form-control {
+  border-color: #ecd6cf;
+}
+.kw-exclude .form-control:focus {
+  border-color: #e0997f;
+  box-shadow: 0 0 0 3px rgba(224, 153, 127, 0.2);
+}
+.kw-hint {
+  color: #9b8f76;
+  font-size: 11.5px;
+  padding-left: 4px;
+  display: inline-block;
+  margin-top: -2px;
 }
 .btn-secondary {
   border-radius: 7px;
@@ -988,6 +1085,18 @@ console.log('diffDays',diffDays);
   z-index: 99;
   margin: 5px 150px;
 }
+.btn-map .btn {
+  border-radius: 20px;
+  background: #4c412d;
+  border-color: #4c412d;
+  color: #f4ecd8;
+  box-shadow: rgba(60, 64, 67, 0.25) 0px 2px 8px 0px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-map .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: rgba(60, 64, 67, 0.35) 0px 4px 12px 0px;
+}
 
 .box-filter2 {
   border-radius: 20px;
@@ -998,9 +1107,23 @@ console.log('diffDays',diffDays);
     rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
   position: absolute;
   z-index: 99;
-  background: rgba(255, 255, 255, 0.856);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
   width: 377px;
   margin: 45px 51px;
+  border: 1px solid rgba(230, 216, 180, 0.6);
+}
+.filter-title {
+  color: #4c412d;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.close-btn {
+  color: #9b8f76;
+  transition: color 0.15s ease;
+}
+.close-btn:hover {
+  color: #4c412d;
 }
 .box-filter {
   border-radius: 20px;
@@ -1008,18 +1131,34 @@ console.log('diffDays',diffDays);
   padding: 30px 40px;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
     rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  background: rgba(255, 255, 255, 0.6);
 }
 #search-btn {
   background: #fed16ebf;
+  border-color: #fed16edb;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #4c412d;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
-#search-btn:hover {
+#search-btn:hover:not(:disabled) {
   background: rgb(243, 190, 76);
+  transform: translateY(-1px);
+}
+#search-btn:disabled {
+  opacity: 0.6;
 }
 .vs__dropdown-menu {
   z-index: 9999999 !important;
 }
 #bg-user {
   background: #e9ecef;
+  padding: 1px 10px;
+  border-radius: 20px;
+}
+#bg-exclude {
+  background: #f7e3dc;
+  color: #a15c4a;
   padding: 1px 10px;
   border-radius: 20px;
 }
@@ -1036,11 +1175,12 @@ console.log('diffDays',diffDays);
 
 .form-control {
   display: block;
-  height: calc(1.5em + 0.75rem + -1px);
+  height: calc(1.5em + 0.95rem + -1px);
 }
 
 @media only screen and (min-width: 0px) and (max-width: 600px) {
-  #bg-user {
+  #bg-user,
+  #bg-exclude {
     display: inline-block;
     padding: 4px 10px;
   }

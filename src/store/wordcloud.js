@@ -475,8 +475,7 @@ export default {
       state.sentimenthashtag = payload;
     },
     setSentimentHashtagChart: (state, payload) => {
-      console.log("in set sentimentss");
-      console.log(payload);
+
       state.sentimenthashtagchart = payload;
     },
     setSentimentHashtagAll: (state, payload) => {
@@ -630,14 +629,16 @@ export default {
     //     console.log(error.response);
     //   }
     // },
+
     async fetchDomain({ commit }) {
       commit("setLoadStatus", true);
       try {
-        const res = await WordcloudService.getDomain({ limit: 100000 });
-        res.data.results.sort(function(a, b) {
+        const res = await WordcloudService.getDomain();
+        res.data.data.sort(function(a, b) {
           return parseFloat(a.id) - parseFloat(b.id);
         });
-        commit("setDomain", res.data.results);
+        // console.log("res.data", res.data.data);
+        commit("setDomain", res.data.data);
         commit("setLoadStatus", false);
       } catch (error) {
         console.log(error.response);

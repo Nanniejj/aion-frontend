@@ -103,24 +103,34 @@ export default {
     };
   },
   destroyed() {
+
     this.$store.commit('setWordCloudImg','')
     this.$store.commit('setWordCloudHash','')
   },
   created() {
-    console.log('dddddd',this.getNamePlatform);
+    // console.log('dddddd',this.getNamePlatform);
     this.startd = moment(new Date()).format().slice(0,10);
     this.endd = moment(new Date()).format().slice(0,10);
     this.sdate = moment(new Date()).format().slice(0,10) + "T00:00:00";
     this.edate = moment(new Date()).format().slice(0,10) + "T23:59:59";
-
-    this.$store.dispatch("fetchWordCloud", {
-       start_date: this.sdate,
-      end_date: this.edate,
+    
+    this.$store.dispatch("apiWordCloud", {
+       start: this.sdate,
+      end: this.edate,
       source:this.getNamePlatform,
       // domain: 'All',
       dashboard:true
       
     });
+
+    // this.$store.dispatch("fetchWordCloud", {
+    //    start_date: this.sdate,
+    //   end_date: this.edate,
+    //   source:this.getNamePlatform,
+    //   // domain: 'All',
+    //   dashboard:true
+      
+    // });
   },
   //   destroyed(){
   //   this.$store.commit("setWordCloudImg", "")

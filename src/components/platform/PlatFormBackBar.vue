@@ -228,13 +228,14 @@ export default {
       }
       //wordcloud
       objword = {
-        start_date: this.start_date,
-        end_date: this.end_date,
+        start: this.start_date,
+        end: this.end_date,
         source: this.getNamePlatform,
         // domain: 'All',
-        dashboard: true,
+        // dashboard: true,
       };
-      this.$store.dispatch("fetchWordCloud", objword);
+      this.$store.dispatch("apiWordcloud", objword);
+      // this.$store.dispatch("fetchWordCloud", objword);
 
       //TopPost
       this.$store.dispatch("fetchPostDomain", objtop);

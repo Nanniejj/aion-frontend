@@ -1590,9 +1590,9 @@ export default {
             })
             .flat(1);
           this.heightword = splitarr.concat(wordarr);
-          console.log("highlight1",splitarr);
-          console.log("highlight", heightarr, andarr, wordarr, this.heightword,splitarr);
-          console.log("Toppp response.data", response.data[0]);
+          // console.log("highlight1",splitarr);
+          // console.log("highlight", heightarr, andarr, wordarr, this.heightword,splitarr);
+          // console.log("Toppp response.data", response.data[0]);
           if (response.data[0].count.length) {
             this.datacount = response.data[0].count[0].total;
           } else {

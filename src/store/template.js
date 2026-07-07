@@ -336,7 +336,7 @@ export default {
           (sd) => sd.id === payload.id
         );
         console.log(index, state.itemsSubDomain);
-        console.log(payload);
+     
         state.itemsSubDomain.splice(index, 1);
         commit("updateSubDomain", res.data);
       } catch (error) {

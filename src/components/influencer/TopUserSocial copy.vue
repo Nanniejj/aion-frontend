@@ -582,7 +582,7 @@ export default {
       };
       this.axios(config)
         .then((response) => {
-          console.log("Toppp response.data", response.data);
+         
           this.topuser = response.data.slice(0, 10);
           this.$store.commit("setLoadTopUserPf", false);
         })

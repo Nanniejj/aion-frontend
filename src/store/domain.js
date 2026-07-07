@@ -23,8 +23,16 @@ export default {
     exportTopPostNeg: [],
     sourceNews: "all",
     sourceNewsTimeline: "all",
+    dataWordcloud: [],
+    loadDataWordcloud: false,
   },
   getters: {
+    getLoadDataWordcloud: (state) => {
+      return state.loadDataWordcloud;
+    },
+    getDataWordcloud: (state) => {
+      return state.dataWordcloud;
+    },
     getShowReport: (state) => {
       return state.showReort;
     },
@@ -97,6 +105,12 @@ export default {
     }
   },
   mutations: {
+    setLoadDataWordcloud: (state, payload) => {
+      state.loadDataWordcloud = payload;
+    },
+    setDataWordcloud: (state, payload) => {
+      state.dataWordcloud = payload;
+    },
     setClickDomainId: (state, payload) => {
       state.clickDomainId = payload;
     },
@@ -341,5 +355,34 @@ export default {
         console.log(error.response);
       }
     },
+      async apiWordcloud({ commit }, payload) {
+         var axios = require("axios");
+       commit("setLoadDataWordcloud", true);
+      var config = {
+        method: "get",
+        url: "https://api2.cognizata.com/api/v2/wordcloud/getWordCloud",
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        params: payload,
+      };
+      axios(config)
+        .then((response) => {
+         commit("setDataWordcloud", response.data);
+         commit("setLoadDataWordcloud", false);
+        })
+        .catch(function(error) {
+          commit("setLoadDataWordcloud", false);
+          // this.$fire({
+          //   title: "กรุณาลองอีกครั้ง",
+          //   type: "error",
+          //   showConfirmButton: false,
+          //   timer: 1000,
+          // });
+          console.log(error);
+        });
+    },
   },
+    
 };

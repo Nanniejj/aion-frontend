@@ -1,6 +1,7 @@
 <template>
   <div class="container mt-3">
     <div>
+
       <!-- {{ loc }}{{ keyword }} -->
       <!-- {{ getLoadMapPost }} -->
       <!-- {{ payloadpost }} -->
@@ -1396,8 +1397,10 @@ export default {
       type: String,
     },
     keyword: {
-      type: Array,
-      default: [],
+      // อาจได้รับเป็น string เดียว (รูปแบบ AND/OR: เว้นวรรค/+ = AND, , = OR)
+      // หรือเป็น array ของคำ (กรณีเก่า) ก็ยังรองรับได้
+      type: [String, Array],
+      default: "",
     },
     loc: {
       type: Array,
@@ -1541,24 +1544,23 @@ export default {
       "getKeywordName",
     ]),
     arrKeyword() {
-      let arr = [];
-      if (this.checked) {
-        if (
-          (this.getLocationPost &&
-            this.getLocationPost.static.keyword.length) ||
-          this.keyword.length
-        ) {
-          if (this.keyword) {
-            arr = [...this.getLocationPost.static.keyword, ...this.keyword];
-            // arr.push(this.keyword);
-          } else {
-            arr = [...this.getLocationPost.static.keyword];
-          }
-        }
-      } else {
-        arr = [];
+      if (!this.checked) {
+        return [];
       }
-      console.log("arr", arr, this.getLocationPost.static.keyword);
+      const staticKeyword =
+        (this.getLocationPost &&
+          this.getLocationPost.static &&
+          this.getLocationPost.static.keyword) ||
+        [];
+      const keywordTerms = this.parseKeywordTerms(this.keyword);
+      const locTerms = this.parseLocTerms(this.loc);
+
+      // รวมทุกแหล่งคำที่ต้องไฮไลท์ และตัดคำซ้ำ/คำว่างออก
+      const merged = [...staticKeyword, ...keywordTerms, ...locTerms]
+        .map((w) => (w == null ? "" : String(w).trim()))
+        .filter((w) => w.length > 0);
+      const arr = [...new Set(merged)];
+      console.log("arr", arr, staticKeyword, keywordTerms, locTerms);
       return arr;
     },
 
@@ -1593,6 +1595,37 @@ export default {
     },
   },
   methods: {
+    // แปลงค่า keyword ที่อาจเป็น string รูปแบบ AND/OR
+    // (เว้นวรรค หรือ + = AND, จุลภาค (,) = OR) ให้เป็น array ของ "คำ" เดี่ยวๆ
+    // สำหรับใช้ไฮไลท์ในเนื้อหา (ไม่ใช่การ spread string เป็นตัวอักษร)
+    parseKeywordTerms(kw) {
+      if (!kw) return [];
+      if (Array.isArray(kw)) {
+        // กรณีเดิมที่ส่งมาเป็น array อยู่แล้ว ก็ยังรองรับ แต่กันเคสที่แต่ละ
+        // element ยังเป็นประโยค AND/OR อยู่ด้วยการ parse ซ้ำอีกชั้น
+        return kw.flatMap((k) => this.parseKeywordTerms(k));
+      }
+      if (typeof kw !== "string") return [];
+      return kw
+        .split(",")
+        .flatMap((group) => group.split(/[+\s]+/))
+        .map((w) => w.trim())
+        .filter((w) => w.length > 0);
+    },
+    // แปลง loc (province/district/subdistrict names ที่เลือกไว้) ให้เป็น
+    // array ของชื่อสถานที่แบบเรียบ เพื่อนำไปไฮไลท์ในเนื้อหาโพสต์ด้วย
+    parseLocTerms(loc) {
+      if (!loc) return [];
+      const arr = Array.isArray(loc) ? loc : [loc];
+      return arr
+        .map((l) => {
+          if (l == null) return "";
+          if (typeof l === "object") return l.name || "";
+          return String(l);
+        })
+        .map((w) => w.trim())
+        .filter((w) => w.length > 0);
+    },
   filterNumbers(numbers) {
       // ✅ PRE-PROCESS
       const filtered = [

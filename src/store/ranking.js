@@ -322,8 +322,9 @@ export default {
     async fetchDomainRanking({ commit }) {
       commit("setLoadStatus", true);
       try {
-        const res = await RankingService.getDomainRanking({ limit: 100000 });
-        commit("setDomainRanking", res.data.results);
+        const res = await RankingService.getDomainRanking();
+        console.log("Domain Ranking Response:", res.data.data);
+        commit("setDomainRanking", res.data.data);
         commit("setLoadStatus", false);
       } catch (error) {
         console.log(error);

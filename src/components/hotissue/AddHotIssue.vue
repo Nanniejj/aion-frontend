@@ -157,7 +157,7 @@ export default {
       };
       axios(config)
         .then((response) => {
-          console.log("Toppp response.data", response.data);
+          // console.log("Toppp response.data", response.data);
 
           var config = {
             method: "get",

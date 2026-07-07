@@ -404,7 +404,7 @@ export default {
       state.loCount = payload;
     },
     addPostLocation: (state, payload) => {
-      console.log(payload);
+      // console.log(payload);
       state.postMonitor = [
         ...normalizePosts(state.postMonitor),
         ...normalizePosts(payload),
@@ -439,7 +439,7 @@ export default {
       state.currentPage = payload;
     },
     addAllPost: (state, payload) => {
-      console.log(payload);
+    
 
       let temp = [
         ...normalizePosts(state.postMonitor),
@@ -720,8 +720,7 @@ export default {
       axios(config)
         .then((response) => {
           commit("setKeyword", response.data);
-          console.log("Toppp response.data", response.data[0].TopHashtags);
-          console.log("response", response.data);
+    
           // this.$store.commit("setLoadHashIssue", false);
         })
         .catch((error) => {

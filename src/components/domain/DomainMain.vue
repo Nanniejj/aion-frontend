@@ -4,7 +4,7 @@
     <div v-show="!getShowReport">
       <DomainBackBar />
       <!-- <RankTable/> -->
-
+     
       <!-- <ExportDocx/> -->
       <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
         <DomainGraph class="mt-1" id="statgraph" />
@@ -21,12 +21,22 @@
           <TopObjectChart />
 
         <!-- <SlideSpotNews class="mt-5" /> -->
-        <DomainCloud class="mt-5" />
-        <TopUser class="mt-5" />
+          <WordcloudDomain
+        v-if="getDataWordcloud"
+        :data="getDataWordcloud"
+        :is-loading="getLoadDataWordcloud"
+        :error="errorMsg"
+        :start="getSdateDm"
+        :end="getEdateDm"
+        storage-key="dashboard-a"
+        @select="onSelectWord"
+      />
+        <!-- <DomainCloud class="mt-5" /> -->
+        <TopUser class="mt-2" />
         <TopUserFreq class="mt-1" />
         <!-- <TopUser2 class="mt-5" /> -->
-        <TopPostDomain class="mt-5" />
-        <AllPostDomain class="mt-5" />
+        <TopPostDomain class="mt-2" />
+        <AllPostDomain class="mt-2" />
       </div>
     </div>
   </div>
@@ -36,7 +46,7 @@
 import DomainBackBar from "@/components/domain/DomainBackBar.vue";
 import DomainGraph from "@/components/domain/DomainGraph.vue";
 import StaticDomain from "@/components/domain/StaticDomain.vue";
-import DomainCloud from "@/components/domain/DomainCloud.vue";
+// import DomainCloud from "@/components/domain/DomainCloud.vue";
 import TopPostDomain from "@/components/domain/TopPostDomain.vue";
 import AllPostDomain from "@/components/domain/AllPostDomain.vue";
 import TopUser from "@/components/domain/TopUser.vue";
@@ -46,25 +56,33 @@ import SlideSpotNews from "./SlideSpotNews.vue";
 import SlideSpotSocial from "./SlideSpotSocial.vue";
 import RankTable from "@/components/chart/RankTable.vue";
 import TopObjectChart from "@/components/chart/TopObjectChart.vue";
-
+import WordcloudDomain from "./WordcloudDomain.vue";
 // import ExportDomainDocx from "@/components/domain/ExportDomainDocx.vue";
 import ExportDocx from "./ExportDocx.vue";
 import { mapGetters } from "vuex";
 
 export default {
   computed: {
-    ...mapGetters(["getShowReport"]),
+    ...mapGetters(["getShowReport", "getDataWordcloud", "getLoadDataWordcloud", "getSdateDm", "getEdateDm"]),
+    // ✅ ใช้วันที่จาก store (ที่ DomainBackBar commit ไว้ตอน selectData) มาโชว์บน wordcloud
+    startDate() {
+      return this.getSdateDm;
+    },
+    endDate() {
+      return this.getEdateDm;
+    },
   },
   data() {
     return {
-      username: ""
+      username: "",
+      errorMsg: "",
     }
   },
   components: {
     DomainBackBar,
     DomainGraph,
     StaticDomain,
-    DomainCloud,
+    // DomainCloud,
     TopPostDomain,
     AllPostDomain,
     TopUser,
@@ -75,9 +93,21 @@ export default {
     ExportDocx,
     SlideSpotNews,
     RankTable,
-    TopObjectChart
+    TopObjectChart,
+    WordcloudDomain
   },
-  methods: {},
+  methods: {
+    onSelectWord(word) {
+      // const selectedWord = String(word || "").trim();
+      // if (!selectedWord) return;
+
+      // this.$emitter.emit("domainKeyword2", selectedWord);
+      // this.$nextTick(() => {
+      //   const postSection = document.getElementById("filter-input") || document.getElementById("profile-page");
+      //   if (postSection) postSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      // });
+    },
+  },
   created() {
     this.username = localStorage.getItem("username");
 
