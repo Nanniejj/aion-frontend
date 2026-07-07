@@ -100,7 +100,6 @@ export default {
         applyFilters(filters) {
             // Handle the applied filters here
             this.filters = filters;
-            console.log('Filters applied:', filters);
             this.influencers = [];
             this.apiGetInfluencer();
         },
@@ -134,13 +133,11 @@ export default {
 
                 const response = await this.axios(config);
                 const result = response.data.data || [];
-                console.log("res influencer ==== ",response);
                 
                 this.influencers = result
                 this.currentPage = response.data.page;
                 this.perPage = response.data.limit;
                 this.totalRows = response.data.total;
-                console.log(this.influencers);
                 
             } catch (error) {
                 console.error("apiGetInfluencers error:", error);

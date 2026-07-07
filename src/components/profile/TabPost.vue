@@ -203,7 +203,12 @@
               </div>
             </div>
             <div v-if="profilePost.title" class="title-news text-left my-2">
-              {{ profilePost.title }}
+              {{ profilePost.showTranslated && profilePost.translatedTitle ? profilePost.translatedTitle : profilePost.title }}
+            </div>
+            <div class="text-left mb-1">
+              <TranslateText combined :post-id="profilePost._id" :title="profilePost.title"
+                :full-text="cleanFullText(profilePost)"
+                @update="(payload) => onTranslateUpdate(profilePost, payload)" />
             </div>
             <div v-if="pageCheck == 'Domain'" class="box-contents">
               <Highlighter v-if="profilePost.full_text" class="my-highlight" :style="{
@@ -212,8 +217,8 @@
                 padding: '10px',
               }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
                 :textToHighlight="profilePost.read
-                  ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
-                  : profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
+                  ? getBaseFullText(profilePost).slice(0, 450)
+                  : getBaseFullText(profilePost)
                   " />
               <div v-if="profilePost.full_text && profilePost.full_text.length > 450"
                 @click="profilePost.read = !profilePost.read" id="readmore">
@@ -226,8 +231,8 @@
                 fontSize: '17px',
                 padding: '10px',
               }" highlightClassName="highlight2" :searchWords="highlightText2" :autoEscape="true" :textToHighlight="profilePost.read
-                ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
-                : profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
+                ? getBaseFullText(profilePost).slice(0, 450)
+                : getBaseFullText(profilePost)
                 " />
               <div v-if="profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
                 id="readmore">
@@ -236,8 +241,9 @@
             </div>
             <div v-else>
               <div id="txt-cmt" class="font-weight-normal" v-if="profilePost.full_text">
-                <read-more more-str="อ่านต่อ" :text="profilePost.full_text" link="#" less-str="ย่อบทความ"
-                  :max-chars="450"></read-more>
+                <read-more more-str="อ่านต่อ"
+                  :text="profilePost.showTranslated && profilePost.translatedFullText ? profilePost.translatedFullText : profilePost.full_text"
+                  link="#" less-str="ย่อบทความ" :max-chars="450"></read-more>
                 <!-- {{ profilePost.full_text }} -->
               </div>
             </div>
@@ -790,6 +796,8 @@ import locationData from "@/components/monitor/geocode.json"; // Import ไฟ�
 import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
+import TranslateText from "@/components/TranslateText.vue";
+
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -799,6 +807,7 @@ export default {
   components: {
     VueGallerySlideshow,
     Highlighter,
+    TranslateText,
   },
   props: {
     domainKeyword: {
@@ -1114,6 +1123,26 @@ export default {
       return (domain || []).filter(item =>
         (this.domainArr || []).includes(item)
       );
+    },
+    // ตัด marker ที่ปนมากับเนื้อหา (เหมือนที่ CardTitle.vue ทำ) ก่อนนำไปใช้แสดงผล/ส่งไปแปล
+    cleanFullText(profilePost) {
+      return profilePost && profilePost.full_text
+        ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
+        : '';
+    },
+    // ข้อความที่จะใช้แสดงจริง — สลับไปมาระหว่างต้นฉบับกับคำแปลตามสถานะของโพสต์นั้นๆ
+    getBaseFullText(profilePost) {
+      if (profilePost && profilePost.showTranslated && profilePost.translatedFullText) {
+        return profilePost.translatedFullText;
+      }
+      return this.cleanFullText(profilePost);
+    },
+    // เรียกตอน TranslateText (โหมด combined) แปล/สลับเสร็จ — เก็บผลไว้ที่ตัวโพสต์นั้นๆ โดยตรง
+    // ใช้ $set เพื่อให้ Vue 2 ตรวจจับ property ใหม่ได้ (title/full_text แปลแล้วไม่มีอยู่ในโครงสร้างเดิม)
+    onTranslateUpdate(profilePost, payload) {
+      this.$set(profilePost, 'translatedTitle', payload.title);
+      this.$set(profilePost, 'translatedFullText', payload.fullText);
+      this.$set(profilePost, 'showTranslated', payload.showTranslated);
     },
     highlightText(full_text) {
       var word = [];

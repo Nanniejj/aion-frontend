@@ -355,16 +355,13 @@ export default {
             this.resetTargetList();
         },
         handleLabelData(data, itemPlatform) {
-            console.log("data === ",data);
             // คัดลอกทุก key จาก data ไปยัง itemPlatform (รวมทั้งเพิ่ม key ใหม่)
             Object.keys(data).forEach(key => {
                 itemPlatform[key] = data[key];
             });
-            // console.log('itemPlatform ==== ',itemPlatform);
             this.checkLableData(itemPlatform)
         },
         checkLableData(item) {
-            console.log("check === ", item);
             
             // ถ้าไม่มี url → false ทันที
             if (!item.url || item.url.trim() === '') {
@@ -418,7 +415,6 @@ export default {
             return 'news';
         },
         onTagsInput(tags) {
-            console.log("url ==== ",tags);
             
             // ✨ 1. Normalize URLs
             let normalizedTags = tags.map(tag => this.normalizeUrl(tag));
@@ -438,7 +434,6 @@ export default {
                 normalizedTags = normalizedTags.slice(0, 100);
             }
             // 🚫 ห้ามลิงก์ Facebook group (ตรวจทุก subdomain เช่น www, web, m, business ฯลฯ)
-            console.log("normalizedTags ------ ",normalizedTags);
             
             // 🚫 ลบลิงก์ Facebook group ออกไปเลย
             normalizedTags = normalizedTags.filter(tag => {
@@ -467,7 +462,6 @@ export default {
             if (this.tabsMonitor === 'targetlist') {
                 // ✨ 2. Sync addTarget
                 this.addTarget = normalizedTags;
-                console.log(normalizedTags);
                 
                 // ✨ 3. map เป็น object พร้อมระบุ source (platform)
                 const newEntries = normalizedTags.map(tag => {
@@ -516,7 +510,6 @@ export default {
                 // this.targetLists = Array.from(uniqueMap.values());
 
             } else if (this.tabsMonitor === 'hashtaglist') {
-                console.log('addHashtag === ',this.addHashtag);
                 const newEntries = this.addHashtag.map(tag => {
                     // const platform = this.detectPlatformName(tag); // ✅ ใช้ helper ด้านล่าง
                     return {
@@ -532,7 +525,6 @@ export default {
                         : null
                     };
                 });
-                console.log('newEntries === ',newEntries);
                 this.hashtagLists = newEntries;
             }
         },
@@ -638,7 +630,6 @@ export default {
             this.validTags = valid;
             this.invalidTags = invalid;
             this.duplicateTags = duplicate;
-            // console.log(valid);        
         },
         async addRowTarget() {
             if (this.tabsMonitor == "tabProfile") {
@@ -683,7 +674,6 @@ export default {
                     "Content-Type": "application/json",
                 },
             };
-            // console.log("length ==== ",this.provinces.length);
             
             // if (this.provinces.length === 0) {
                 this.axios(config)
@@ -693,7 +683,6 @@ export default {
                         text: province.name_th,
                         value: province.id
                     }));
-                    // console.log('this.provinces ', this.provinces);
                     this.load = false;
                     // if (this.provinces.length !== 0) {
                     //     this.mapTargetInfoToSelectedData();
@@ -704,7 +693,6 @@ export default {
                     console.error(error);
                 });
             // }
-            // console.log("length ==== ",this.provinces.length);
             // if (this.provinces.length !== 0) {
             //     await this.mapTargetInfoToSelectedData();
             // }
@@ -747,7 +735,6 @@ export default {
 
             this.axios(config)
             .then((response) => {
-                console.log(response);
                 let result = response.data || [];
                 
                 this.influencerTypes = result.map(type => ({
@@ -783,7 +770,6 @@ export default {
                 URL: url,
                 influencer_type: influencer_type ? influencer_type.map(item => item.value) : null
             }));
-            // console.log("cleanLists",cleanLists);
             
             return cleanLists
             // this.targetLists = this.targetLists.map(({ editable, url, ...rest })=> ({
@@ -825,8 +811,6 @@ export default {
             let rawData = {
                 "data": this.collectAllTargets(list)
             }
-            console.log(list);
-            console.log("raw === ", rawData);
             const config = {
                 method: "post",
                 url: "https://api2.cognizata.com/api/v2/monitor/targetandhashtag",
@@ -836,10 +820,8 @@ export default {
                     "Content-Type": "application/json",
                 },
             };
-            console.log(config);
             this.axios(config)
             .then((response) => {
-                console.log(response);
                 let result = response.data || [];
                 
                 // this.load = false;

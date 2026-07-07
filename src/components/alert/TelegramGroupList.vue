@@ -389,7 +389,7 @@ export default {
         const res = await axios.get("https://api2.cognizata.com/api/v2/alert_telegram/getgrouptelegram");
             let telegram = res.data || [];
             this.groups = this.checkUserGroup(telegram);
-            console.log('fetched groups', telegram);
+            //console.log('fetched groups', telegram);
         //   this.groups = res.data || [];
       } catch (err) {
         this.error = "ไม่สามารถโหลดข้อมูลกลุ่ม Telegram ได้";

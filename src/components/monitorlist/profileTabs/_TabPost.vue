@@ -133,6 +133,10 @@
 
                         <!-- card body  -->
                         <b-card-text>
+                            <div v-if="post.full_text" class="text-left mb-1">
+                                <TranslateText combined :post-id="post._id" title="" :full-text="cleanFullText(post)"
+                                    @update="(payload) => onTranslateUpdate(post, payload)" />
+                            </div>
                             <p v-if="post.full_text" class="text-left" style="font-size: 16px;">
                                 <span :class="{ 'truncate-text-3': !post.showAll }">
                                     <!-- {{ post.full_text }} -->
@@ -150,8 +154,8 @@
                                         :searchWords="highlightWords"
                                         :autoEscape="true"
                                         :textToHighlight="post.showAll 
-                                        ? post.full_text 
-                                        : post.full_text.substring(0, 450)"
+                                        ? getBaseFullText(post) 
+                                        : getBaseFullText(post).substring(0, 450)"
                                     />
                                 </span>
                                 <span v-if="post.full_text.length > 450 && !post.showAll" @click="post.showAll = true"
@@ -551,6 +555,7 @@ import Highlighter from "vue-highlight-words";
 import moment from "moment";
 import SentimentButton from "./_SentimentButton.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
+import TranslateText from "@/components/TranslateText.vue";
 
 // import "@justinribeiro/lite-tiktok";
 // import { debounce } from 'lodash';
@@ -560,6 +565,7 @@ export default {
         SentimentButton,
         VueGallerySlideshow,
         Highlighter,
+        TranslateText,
         // Timeline
     },
     props: {
@@ -669,6 +675,31 @@ export default {
     methods: {
         exportSource() {
             this.$emit('update-source', this.source)
+        },
+        // ตัด marker ที่ปนมากับเนื้อหาก่อนนำไปใช้แสดงผล/ส่งไปแปล
+        cleanFullText(post) {
+            return post && post.full_text
+                ? post.full_text.replace('...___...', '').replace('.#.##.', '')
+                : '';
+        },
+        // ข้อความที่จะใช้แสดงจริง — สลับไปมาระหว่างต้นฉบับกับคำแปลตามสถานะของโพสต์นั้นๆ
+        getBaseFullText(post) {
+            if (post && post.showTranslated && post.translatedFullText) {
+                return post.translatedFullText;
+            }
+            return this.cleanFullText(post);
+        },
+        // เรียกตอน TranslateText (โหมด combined) แปล/สลับเสร็จ — เก็บผลไว้ที่ตัวโพสต์นั้นๆ โดยตรง
+        onTranslateUpdate(post, payload) {
+            if (this.$set) {
+                // Vue 2
+                this.$set(post, "translatedFullText", payload.fullText);
+                this.$set(post, "showTranslated", payload.showTranslated);
+            } else {
+                // Vue 3
+                post.translatedFullText = payload.fullText;
+                post.showTranslated = payload.showTranslated;
+            }
         },
         handleSentimentChanged({ uid, sentiment }) {
             const index = this.posts.findIndex(p => p.uid === uid)

@@ -1,5 +1,6 @@
 <template>
     <div class="w-custom">
+        <!-- header -->
         <div class="">
             <b-button-toolbar key-nav aria-label="Toolbar with button groups my-2">
                 <b-button-group class="" size="lg">
@@ -45,11 +46,14 @@
                 </b-button-group>
             </b-button-toolbar>
         </div>
+        <!-- stat content -->
         <MonitorStat v-if="activeButton == 'profile'" :type="'targetlist'" :reface="refaceStat"  @setReface="handleReface"/>
         <!-- <MonitorStat v-if="activeButton == 'hashtag'" :type="'hashtaglist'" :reface="refaceStat" :total="total" @setReface="handleReface"/> -->
-
-        <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'"  @setReface="handleReface"/>
-        <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'"  @setReface="handleReface" @total="(data) => total = data"/>
+        <MonitorSuggestTarget v-if="activeButton == 'profile'" :reface="refaceStat" @setReface="handleReface"/>
+        
+        <!-- table -->
+        <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'" :reface="tableRefreshKey" @setReface="handleReface"/>
+        <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'" :reface="tableRefreshKey" @setReface="handleReface" @total="(data) => total = data"/>
         <MonitorGroupTable v-if="activeButton == 'group'" :type="'grouplist'"  @setReface="handleReface" @total="(data) => total = data"/>
         <MonitorCommunity v-if="activeButton == 'community'" :type="'communitylist'"/>
     </div>
@@ -59,15 +63,17 @@
 import MonitorStat from "@/components/monitorlist/MonitorStat.vue";
 import MonitorTable from "@/components/monitorlist/MonitorTable.vue";
 import MonitorGroupTable from "@/components/monitorlist/MonitorGroupTable.vue";
+import MonitorSuggestTarget from "@/components/monitorlist/MonitorSuggestTarget.vue" 
 import MonitorCommunity from "./MonitorCommunity.vue";
 export default {
     components: {
-        MonitorStat,MonitorTable,MonitorGroupTable, MonitorCommunity
+        MonitorStat,MonitorTable,MonitorGroupTable, MonitorSuggestTarget, MonitorCommunity
     },
     data() {
         return {
             activeButton: "profile", // ค่าเริ่มต้น
             refaceStat: false,
+            tableRefreshKey: 0,
             total: 0
         };
     },
@@ -78,6 +84,10 @@ export default {
         handleReface() {
             console.log('setReface emitted!');
             this.refaceStat = !this.refaceStat
+            // ใช้ counter แยกต่างหากสำหรับตาราง กัน edge case ที่ handleReface ถูกเรียก
+            // มากกว่า 1 ครั้งในติ๊กเดียวกัน (เช่น emit 2 event พร้อมกัน) จน boolean toggle ไป-กลับ
+            // แล้วค่าสุดท้ายเท่าค่าเดิม ทำให้ watcher ฝั่ง MonitorTable ไม่ทำงาน
+            this.tableRefreshKey++
             console.log("reface stat ==== ", this.refaceStat);
         }
     }

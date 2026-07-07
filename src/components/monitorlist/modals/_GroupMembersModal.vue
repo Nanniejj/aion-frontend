@@ -198,4 +198,8 @@ export default {
         color: #2c3e50; /* ให้ตัวอักษรอ่านง่าย */
         font-weight: bold;
     }
+     ::v-deep .modal-vue--content-panel.space-content{
+        overflow: auto !important;
+    }
+
 </style>

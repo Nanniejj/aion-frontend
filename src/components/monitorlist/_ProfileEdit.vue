@@ -449,7 +449,6 @@ export default {
                 allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    console.log("update profile === ", this.profile);
                     this.apiUpdateProfile();
                 }
             })
@@ -467,7 +466,6 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                // console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
                 // console.error("apiGetInfluencers error:", error);
@@ -491,7 +489,6 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                // console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
                 // console.error("apiGetInfluencers error:", error);
@@ -515,7 +512,6 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                // console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
                 // console.error("apiGetInfluencers error:", error);
@@ -543,16 +539,13 @@ export default {
             this.axios(config)
             .then((response) => {
                 let result = response.data.data || [];
-                // console.log(result);
                 this.country = result;
                 // this.provinces = result.map(province => ({
                 //     text: province.name_th,
                 //     value: province.id
                 // }));
-                // console.log('this.provinces ', this.provinces);
                 
                 // this.profile = response.data?.profile
-                // console.log('this.profile ', this.profile);
                 this.load = false;
             })
             .catch((error) => {
@@ -581,16 +574,13 @@ export default {
             this.axios(config)
             .then((response) => {
                 let result = response.data.data || [];
-                // console.log(result);
                 
                 this.provinces = result.map(province => ({
                     text: province.name_th,
                     value: province.id
                 }));
-                // console.log('this.provinces ', this.provinces);
                 
                 // this.profile = response.data?.profile
-                // console.log('this.profile ', this.profile);
                 this.load = false;
             })
             .catch((error) => {
@@ -619,7 +609,6 @@ export default {
                     text: district.name_th,
                     value: district.id
                 }));
-                // console.log(this.districts);
                 
             } catch (error) {
                 // console.error("apiGetDistrict error:", error);
@@ -647,7 +636,6 @@ export default {
                     value: subDistrict.id
                 }));
 
-                // console.log(this.subDistricts);
                 
             } catch (error) {
                 // console.error("apiGetDistrict error:", error);
@@ -669,7 +657,6 @@ export default {
 
             this.axios(config)
             .then((response) => {
-                // console.log(response);
                 let result = response.data || [];
                 this.influencerTypes = result.map(type => ({
                     value: type.id,
@@ -711,7 +698,6 @@ export default {
 
                 }]
             };
-            console.log("data ==== ", rawData);
             
             const config = {
                 method: "put",
@@ -764,7 +750,6 @@ export default {
 
         // ถ้ามี location array เช่น [10, 1001]
         if (Array.isArray(this.item.location)) {
-            console.log("Location array === ", this.item.location);
             
             this.province_id     = this.item.location[0] ?? null;
             this.district_id     = this.item.location[1] ?? null;
@@ -776,7 +761,6 @@ export default {
             this.subDistrict_id = null;
         }
 
-        console.log("profile edit === ", this.profile);
     },
     watch: {
         province_id(newVal) {

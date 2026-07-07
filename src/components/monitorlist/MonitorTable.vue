@@ -294,7 +294,11 @@ export default {
         EditProfileModal
     },
     props: {
-        type: String
+        type: String,
+        reface: {
+            type: [Boolean, Number],
+            default: false
+        }
     },
     data() {
         return {
@@ -382,6 +386,10 @@ export default {
     watch: {
         type(val) {
             this.filters.type = val;
+            this.apiMonitorList();
+        },
+        // เวลา parent สลับค่า reface (เช่น หลังกดเพิ่มเป้าหมายจาก MonitorSuggestTarget) ให้ดึงลิสต์ใหม่
+        reface() {
             this.apiMonitorList();
         },
         filters: {

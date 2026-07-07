@@ -4,8 +4,8 @@
         <b-row class="mx-0 mb-5">
             <b-col lg="4" class="px-0 pr-lg-3 mb-2">
                 <div class="gradient-bg h-100 p-2" style="">
-                    <b-avatar class="shadow-sm rounded badge-light rounded-circle" size="90px">
-                        <i class="fa fa-group" style="font-size:36px; color: #776167;"></i>
+                    <b-avatar  style="font-size:36px; color: #776167;" class="shadow-sm rounded badge-light rounded-circle" size="90px">
+                        <i class="fa fa-users" style="font-size:36px; color: #776167;"></i>
                     </b-avatar>
                     <b-col v-if="groupDetails" class="text-center px-0">
                         <h4 class="mt-2 mb-0" style="color: #776167;">{{ groupDetails.group_name || 'N/A' }}</h4>

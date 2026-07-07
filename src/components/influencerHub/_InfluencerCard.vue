@@ -132,7 +132,6 @@ export default {
             window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
         },
         getSexText(val) {
-            console.log(val);
             if (!val) {
                 return 'ไม่ระบุเพศ'
             } else {
@@ -161,7 +160,6 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
                 console.error("apiGetInfluencers error:", error);
@@ -185,7 +183,6 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
                 console.error("apiGetInfluencers error:", error);
@@ -209,7 +206,6 @@ export default {
                 };
                 const response = await this.axios(config);
                 let result = response.data.data[0] || [];
-                console.log("procince === ",result.name_th);
                 return result.name_th;
             }catch (error) {
                 console.error("apiGetInfluencers error:", error);

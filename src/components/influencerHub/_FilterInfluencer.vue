@@ -546,7 +546,6 @@ export default {
                 this.setFollowersByLevel(level);
                 // this.resetFollower = false;
             }
-            console.log("filter rules === ", this.filterRules);
         },
         setFollowersByLevel(level) {
             switch (level) {
@@ -570,7 +569,6 @@ export default {
                 this.followers = [] // เคลียร์ถ้าไม่ได้เลือก
                 break
             }
-            console.log("filter ==== ", this.filterRules);
             
         },
         updateInfluencerType(selected) {
@@ -594,16 +592,13 @@ export default {
             this.axios(config)
             .then((response) => {
                 let result = response.data.data || [];
-                console.log(result);
                 
                 this.provinces = result.map(province => ({
                     text: province.name_th,
                     value: province.id
                 }));
-                console.log('this.provinces ', this.provinces);
                 
                 // this.profile = response.data?.profile
-                // console.log('this.profile ', this.profile);
                 this.load = false;
             })
             .catch((error) => {
@@ -632,7 +627,6 @@ export default {
                     text: district.name_th,
                     value: district.id
                 }));
-                console.log(this.districts);
                 
             } catch (error) {
                 console.error("apiGetDistrict error:", error);
@@ -660,7 +654,6 @@ export default {
                     value: subDistrict.id
                 }));
 
-                console.log(this.subDistricts);
                 
             } catch (error) {
                 console.error("apiGetDistrict error:", error);
@@ -682,18 +675,12 @@ export default {
 
             this.axios(config)
             .then((response) => {
-                // console.log(response);
                 let result = response.data || [];
                 this.icon = result;
                 this.influencerTypes = result.map(type => ({
                     value: type.id,
                     text: type.name
-                }));
-                
-                console.log(this.icon);
-                
-                console.log('this.influencerTypes ===== ', this.influencerTypes);
-                
+                }));                
             })
             .catch((error) => {
                 this.load = false;

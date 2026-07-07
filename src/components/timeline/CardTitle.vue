@@ -67,9 +67,17 @@
  
             <div class="mt-md-2 pb-1" v-if="post.full_text">
                <div v-if="post.title" class="text-left small bold" style="font-size: 14px;">
-                <span class="name-ellipsis-11">{{ post.title }}</span></div>
-              <ReadMoreBox :text="post.full_text.replace('...___...', '').replace('.#.##.', '')" :limit="300" :mobileLimit="110"
-                :breakpoint="800" />
+                <span class="name-ellipsis-11">{{ translationState.showTranslated && translationState.title ? translationState.title : post.title }}</span>
+               </div>
+
+               <!-- ปุ่มเดียว ควบคุมการแปล + สลับดูต้นฉบับ/คำแปล ทั้ง title และเนื้อหาพร้อมกัน (logic ทั้งหมดอยู่ใน TranslateText.vue) -->
+               <div class="d-flex align-items-center mb-1">
+                <TranslateText combined :post-id="post._id" :title="post.title" :full-text="cleanFullText"
+                  @update="onTranslateUpdate" />
+               </div>
+
+                <ReadMoreBox :text="cleanFullText" :translated-text="translationState.fullText" :show-translated="translationState.showTranslated"
+                :limit="300" :mobileLimit="110" :breakpoint="800" />
             </div>
             <div v-else> <br> </div>
 
@@ -231,6 +239,7 @@
 
 <script>
 import ReadMoreBox from "./ReadMore2.vue";
+import TranslateText from "../TranslateText.vue";
 import moment from "moment";
 import "moment/locale/th";
 import CommentsAllModal from "./CommentsAllModal.vue";
@@ -238,7 +247,7 @@ import VueGallerySlideshow from "vue-gallery-slideshow";
 import { post } from "jquery";
 export default {
   name: "CardPost",
-  components: { ReadMoreBox, CommentsAllModal,VueGallerySlideshow },
+  components: { ReadMoreBox, TranslateText, CommentsAllModal,VueGallerySlideshow },
   props: {
     post: {
       type: Object,
@@ -271,20 +280,30 @@ export default {
       showComments: false,
         showAllComments: false,
         hidePreview: false, // ใช้ควบคุมการซ่อนรูป
+      // เก็บผลลัพธ์ล่าสุดที่ TranslateText (โหมด combined) emit กลับมาให้ผ่าน @update
+      translationState: { showTranslated: false, title: "", fullText: "" },
     };
   },
-  computed: {},
+  computed: {
+    cleanFullText() {
+      return this.post && this.post.full_text
+        ? this.post.full_text.replace('...___...', '').replace('.#.##.', '')
+        : '';
+    },
+  },
     methods: {
-       onClick(i, data) {
-      console.log(data);
-      this.index = i;
-      this.dataPhoto = data;
+      onClick(i, data) {
+        this.index = i; 
+        this.dataPhoto = data;
+      },
+    // เรียกตอน TranslateText (โหมด combined) แปล/สลับเสร็จ — เอาผลมาแสดงแทนต้นฉบับทันที
+    onTranslateUpdate(payload) {
+      this.translationState = payload;
     },
     setAltImg(event) {
         // 
         this.hidePreview = true;
         event.target.src = this.default_avatar;
-        console.log("setAltImg hide ==== ", this.hidePreview);
         
     },
     getImageSrc(post) {
@@ -421,6 +440,11 @@ ul {
 }
 </style>
 <style scoped>
+.badge-warning {
+  color: #ffffff;
+  background-color: #dca708;
+}
+
 #picmore {
   background: #000000ad;
   color: white;

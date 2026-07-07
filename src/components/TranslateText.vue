@@ -1,54 +1,76 @@
 <template>
   <span>
-    <!-- ปุ่มแบบเล็ก (icon-only) สำหรับวางในการ์ด/แถบไอคอน เช่น ReadMore2.vue -->
-    <span v-if="compact" class="d-inline-block box-link translate-trigger-compact"
-      :class="{ 'is-loading': isTranslating, 'is-disabled': disabled }"
-      v-b-tooltip.hover :title="triggerTitle" @click.stop="translateNow">
-      <b-spinner v-if="isTranslating" small></b-spinner>
-      <i v-else class="fa fa-language" aria-hidden="true"></i>
+    <!-- โหมด combined: ปุ่มเดียวแปล+สลับ title และ full_text ของโพสต์พร้อมกัน (ใช้ใน CardTitle.vue) -->
+    <span v-if="combined">
+      <span v-if="shouldShowCombinedButton" class="d-inline-block box-link translate-trigger-compact combined"
+        :class="{ 'is-loading': isTranslating }"
+        v-b-tooltip.hover :title="combinedTooltip" @click="translateOrToggle">
+        <b-spinner v-if="isTranslating" small></b-spinner>
+        <i v-else :class="hasTranslatedCombined ? 'fa fa-exchange' : 'fa fa-language'" aria-hidden="true"></i>
+        <span class="translate-trigger-label"> {{ combinedLabel }}</span>
+      </span>
     </span>
 
-    <!-- ปุ่มแบบเต็ม (ค่าเริ่มต้น) -->
-    <b-button v-else size="md" class="w-100 w-md-auto btn-importobj" pill
-      style="background-color: #50c1d0; color: #2c3e50;" :disabled="isTranslating || disabled" @click="translateNow">
-      <b-spinner small v-if="isTranslating" class="mr-1"></b-spinner>
-      <i v-else class="fa fa-language" style="font-size: 18px; line-height: 1;"></i>
-      {{ isTranslating ? "กำลังแปล..." : "translate to thai" }}
-    </b-button>
+    <template v-else>
+      <!-- ปุ่มแบบเล็ก (icon + ข้อความ) สำหรับวางในการ์ด/แถบไอคอน เช่น ReadMore2.vue -->
+      <span v-if="compact" class="d-inline-block box-link translate-trigger-compact"
+        :class="{ 'is-loading': isTranslating, 'is-disabled': disabled }" v-b-tooltip.hover :title="triggerTitle"
+        @click.stop="translateNow">
+        <b-spinner v-if="isTranslating" small></b-spinner>
+        <i v-else class="fa fa-language" aria-hidden="true"></i>
+        <span class="translate-trigger-label"> {{ triggerLabel }}</span>
+      </span>
+
+      <!-- ปุ่มแบบเต็ม (ค่าเริ่มต้น) -->
+      <b-button v-else size="md" class="w-100 w-md-auto btn-importobj" pill
+        style="background-color: #50c1d0; color: #2c3e50;" :disabled="isTranslating || disabled" @click="translateNow">
+        <b-spinner small v-if="isTranslating" class="mr-1"></b-spinner>
+        <i v-else class="fa fa-language" style="font-size: 18px; line-height: 1;"></i>
+        {{ isTranslating ? "กำลังแปล..." : "translate to thai" }}
+      </b-button>
+    </template>
   </span>
 </template>
 
 <script>
+import axios from "axios";
+
+// ✅ ใช้ axios instance แยกต่างหากสำหรับ component นี้โดยเฉพาะ ไม่ใช้ instance กลางของแอป
+// กัน interceptor ที่อื่นในโปรเจกต์ (ถ้ามี เช่นเช็ค token หมดอายุ) ไปอ่าน error.response.status ตรงๆ
+// แล้ว crash ตอนเจอ network/CORS error ที่ไม่มี error.response เลย
+const translateClient = axios.create();
+
 export default {
   name: "TranslateText",
   props: {
-    // ข้อความต้นฉบับที่จะนำมาแปล — เป็นค่าที่ component แม่ส่งเข้ามา (เช่น post.full_text)
+    // เก็บไว้เพื่อ backward-compat กับ usage เดิม (ไม่ได้ใช้แล้วหลังเปลี่ยนมาใช้ backend endpoint)
     initialText: { type: String, default: "" },
     // true = แสดงปุ่มแบบไอคอนเล็กๆ (ใช้วางในการ์ด/แถบไอคอน), false = ปุ่มแบบเต็ม
     compact: { type: Boolean, default: false },
-    // Gemini API key จาก https://aistudio.google.com/apikey
-    // แนะนำให้ส่งมาจาก env variable ของโปรเจกต์ เช่น process.env.VUE_APP_GEMINI_API_KEY
-    // แทนการ hardcode ในโค้ด เพราะ key ที่ฝังใน frontend จะมองเห็นได้จากฝั่ง client เสมอ
-    apiKey: { type: String, default: "" },
-    sourceLang: { type: String, default: "auto" },
-    targetLang: { type: String, default: "th" },
-    // true = ปิดปุ่มไว้ ไม่ให้กดแปลซ้ำ (เช่น กรณีแปลไปแล้วครั้งหนึ่ง ไม่อยากยิง API ซ้ำ)
+    // true = ปิดปุ่มไว้ ไม่ให้กดแปลซ้ำ (โหมดปกติ/ไม่ combined เท่านั้น)
     disabled: { type: Boolean, default: false },
+    // ✅ _id ของโพสต์ — ใช้ยิง backend endpoint /getTranslate/{postId} เพื่อดึงคำแปลของโพสต์นี้
+    postId: { type: String, required: true },
+    // ฟิลด์ที่จะดึงจากผลลัพธ์ที่แปลแล้ว (โหมดปกติเท่านั้น): 'title' หรือ 'full_text'
+    field: {
+      type: String,
+      default: "full_text",
+      validator: (v) => ["title", "full_text"].includes(v),
+    },
+    // ✅ โหมด combined: ปุ่มเดียวแปล + สลับ title และ full_text พร้อมกัน แล้ว emit ผลรวมออกไปให้ parent
+    combined: { type: Boolean, default: false },
+    // title/fullText ต้นฉบับ — ใช้เช็คว่าเป็นภาษาต่างประเทศหรือยัง (โหมด combined เท่านั้น)
+    title: { type: String, default: "" },
+    fullText: { type: String, default: "" },
   },
   data() {
     return {
       isTranslating: false,
-      // ปรับ endpoint ได้จากตรงนี้จุดเดียว
-      apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-      // ชื่อภาษาแบบเต็ม ใช้สร้าง prompt ส่งให้ Gemini (โมเดลเข้าใจชื่อภาษาได้ดีกว่ารหัสภาษาสั้นๆ)
-      langNames: {
-        auto: null,
-        en: "English",
-        th: "Thai",
-        ja: "Japanese",
-        zh: "Chinese",
-        ko: "Korean",
-      },
+      apiUrl: "https://api2.cognizata.com/api/v2/userposts/getTranslate",
+      // state ของโหมด combined เท่านั้น
+      combinedTitle: "",
+      combinedFullText: "",
+      combinedShowTranslated: false,
     };
   },
   computed: {
@@ -57,71 +79,113 @@ export default {
       if (this.disabled) return "แปลไปแล้ว";
       return "แปลข้อความ";
     },
+    triggerLabel() {
+      if (this.isTranslating) return "กำลังแปล...";
+      if (this.disabled) return "แปลแล้ว";
+      return "แปลภาษา";
+    },
+    // ---- โหมด combined ----
+    titleHasNoThai() {
+      const t = this.title || "";
+      return t.trim().length > 0 && !/[\u0E00-\u0E7F]/.test(t);
+    },
+    bodyHasNoThai() {
+      const t = this.fullText || "";
+      return t.trim().length > 0 && !/[\u0E00-\u0E7F]/.test(t);
+    },
+    // แสดงปุ่มก็ต่อเมื่อ "ทั้งคู่" เป็นภาษาต่างประเทศเท่านั้น (ไม่ใช่แค่อันใดอันหนึ่ง)
+    // ถ้าไม่มี title เลย ให้เช็คแค่เนื้อหาอย่างเดียว
+    shouldShowCombinedButton() {
+      const hasTitle = !!(this.title && this.title.trim());
+      if (hasTitle) return this.titleHasNoThai && this.bodyHasNoThai;
+      return this.bodyHasNoThai;
+    },
+    hasTranslatedCombined() {
+      return !!(this.combinedTitle || this.combinedFullText);
+    },
+    combinedLabel() {
+      if (this.isTranslating) return "กำลังแปล...";
+      if (this.hasTranslatedCombined) return this.combinedShowTranslated ? "ต้นฉบับ" : "คำแปล";
+      return "แปลภาษา";
+    },
+    combinedTooltip() {
+      if (this.isTranslating) return "กำลังแปล...";
+      if (this.hasTranslatedCombined) return this.combinedShowTranslated ? "ดูข้อความต้นฉบับ" : "ดูคำแปล";
+      return "แปลข้อความ";
+    },
+  },
+  watch: {
+    // ถ้า postId เปลี่ยน (เช่น การ์ดถูกสลับข้อมูลใหม่) ให้เคลียร์คำแปลเก่าทิ้งทั้งหมด (โหมด combined)
+    // แล้วแจ้ง parent ให้เคลียร์ค่าที่ cache ไว้ด้วย ผ่าน event เดียวกัน
+    postId() {
+      if (!this.combined) return;
+      this.combinedTitle = "";
+      this.combinedFullText = "";
+      this.combinedShowTranslated = false;
+      this.emitCombinedUpdate();
+    },
   },
   methods: {
-    // กดปุ่มแล้วแปล initialText ทันที ไม่ต้องเปิด modal ใดๆ
+    // ✅ ดึงคำแปลของโพสต์นี้จาก backend — 1 call เดียวได้ทั้ง title และ full_text ที่แปลแล้ว
+    async fetchTranslation() {
+      const response = await translateClient.get(`${this.apiUrl}/${this.postId}`, {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+        timeout: 30000,
+      });
+
+      const payload = response.data;
+      // ✅ รองรับทั้ง 2 รูปแบบ: แบบห่อด้วย data (ตามสเปกแรก) และแบบแบน (โครงสร้างจริงที่ backend ส่งมา)
+      const translated = payload?.translated || payload?.data?.translated;
+
+      if (!payload?.success || !translated) {
+        throw new Error("ไม่พบผลการแปล กรุณาลองใหม่อีกครั้ง");
+      }
+      return translated; // { title, full_text }
+    },
+    handleTranslateError(error) {
+      console.error("Translation error:", error);
+
+      // axios: timeout จะได้ error.code === "ECONNABORTED"
+      // ส่วน network/CORS error จะไม่มี error.response เลย (ต่างจาก error ที่ server ตอบกลับมาจริงๆ)
+      // เช็ค isAxiosError ก่อน เพื่อไม่ให้ error ที่เรา throw new Error(...) เอง (เช่น "ไม่พบผลการแปล")
+      // โดนตีความผิดว่าเป็น network/CORS error ไปด้วย (มันก็ไม่มี error.response เหมือนกัน)
+      const isAxiosError = !!error.isAxiosError;
+      const isTimeout = isAxiosError && error.code === "ECONNABORTED";
+      const isNetworkOrCorsError = isAxiosError && !error.response && !isTimeout;
+
+      let message =
+        error.response?.data?.error?.message ||
+        error.message ||
+        "กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง";
+
+      if (isTimeout) {
+        message = "บริการแปลภาษาตอบสนองช้าเกินไป กรุณาลองใหม่อีกครั้ง";
+      } else if (isNetworkOrCorsError) {
+        message = "ไม่สามารถเชื่อมต่อบริการแปลภาษาได้ กรุณาลองใหม่อีกครั้ง";
+      }
+
+      this.$fire({
+        title: "แปลภาษาไม่สำเร็จ",
+        text: message,
+        type: "error",
+        confirmButtonText: "ตกลง",
+      });
+    },
+    // กดปุ่มแล้วดึงคำแปลของโพสต์นี้จาก backend ทันที (โหมดปกติ)
     // แปลเสร็จแล้ว emit ผลลัพธ์กลับไปให้ component แม่เอาไปแสดงแทนต้นฉบับเอง
     async translateNow() {
       if (this.disabled || this.isTranslating) return;
-
-      const text = (this.initialText || "").trim();
-      if (!text) return;
-
-      if (!this.apiKey) {
-        this.$fire({
-          title: "ยังไม่ได้ตั้งค่า API key",
-          text: "ต้องมี Gemini API key ถึงจะแปลได้ ขอฟรีได้ที่ https://aistudio.google.com/apikey แล้วส่งเข้ามาทาง prop api-key",
-          type: "warning",
-          confirmButtonText: "ตกลง",
-        });
-        return;
-      }
+      if (!this.postId) return;
 
       this.isTranslating = true;
-
-      // กันไม่ให้ค้างตลอดไปถ้า endpoint ไม่ตอบสนอง
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
       try {
-        const targetName = this.langNames[this.targetLang] || this.targetLang;
-        const sourceName = this.sourceLang !== "auto" ? this.langNames[this.sourceLang] : null;
-        const prompt =
-          (sourceName ? `Translate the following ${sourceName} text to ${targetName}. ` : `Translate the following text to ${targetName}. `) +
-          `Only output the translated text with no explanation, no quotes, and no extra formatting.\n\n` +
-          `Text:\n${text}`;
+        const translated = await this.fetchTranslation();
+        const value = translated[this.field] || "";
 
-        const response = await fetch(this.apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Gemini API รับ key ผ่าน header นี้ (ตาม docs ทางการ)
-            "x-goog-api-key": this.apiKey,
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [{ text: prompt }],
-              },
-            ],
-            // ✅ ปิด "thinking" ของโมเดล เพราะงานแปลภาษาตรงไปตรงมา ไม่จำเป็นต้อง reasoning ยาวๆ ก่อนตอบ
-            // ช่วยลดจำนวน token ที่ใช้ลงมาก (thinking token มักกินมากกว่าคำตอบจริงหลายเท่า)
-            generationConfig: {
-              thinkingConfig: { thinkingBudget: 0 },
-            },
-          }),
-          signal: controller.signal,
-        });
-
-        const data = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(data?.error?.message || `เซิร์ฟเวอร์ตอบกลับผิดพลาด (${response.status})`);
-        }
-
-        const translated = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
-
-        if (!translated) {
+        if (!value) {
           this.$fire({
             title: "ไม่พบผลการแปล",
             text: "กรุณาลองใหม่อีกครั้ง",
@@ -131,34 +195,49 @@ export default {
           return;
         }
 
-        // ✅ ส่งผลแปลกลับไปให้ component แม่ ใช้แสดงแทนข้อความต้นฉบับได้เลย
-        this.$emit("translated", translated);
+        this.$emit("translated", value);
       } catch (error) {
-        console.error("Translation error:", error);
-
-        const isAbort = error.name === "AbortError";
-        // TypeError: Failed to fetch = โดน CORS บล็อกหรือเชื่อมต่อเซิร์ฟเวอร์ไม่ได้เลย
-        const isNetworkOrCorsError = error instanceof TypeError;
-
-        let message = error.message || "กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง";
-        if (isAbort) {
-          message = "บริการแปลภาษาตอบสนองช้าเกินไป กรุณาลองใหม่อีกครั้ง";
-        } else if (isNetworkOrCorsError) {
-          message =
-            "ไม่สามารถเชื่อมต่อบริการแปลภาษาได้ (อาจโดน browser extension เช่น ad-blocker/CORS-unlocker บล็อก request " +
-            "ลองปิด extension แล้วรีเฟรชใหม่ หรือตรวจสอบ API key ว่าถูกต้อง)";
-        }
-
-        this.$fire({
-          title: "แปลภาษาไม่สำเร็จ",
-          text: message,
-          type: "error",
-          confirmButtonText: "ตกลง",
-        });
+        this.handleTranslateError(error);
       } finally {
-        clearTimeout(timeoutId);
         this.isTranslating = false;
       }
+    },
+    // ปุ่มเดียว (โหมด combined): ถ้ายังไม่เคยแปล -> ยิง backend ครั้งเดียวได้คำแปลทั้ง title และเนื้อหา
+    // ถ้าแปลไปแล้ว -> แค่สลับดูต้นฉบับ/คำแปล (ไม่ยิง API ซ้ำ)
+    async translateOrToggle() {
+      if (this.isTranslating) return;
+
+      if (this.hasTranslatedCombined) {
+        this.combinedShowTranslated = !this.combinedShowTranslated;
+        this.emitCombinedUpdate();
+        return;
+      }
+
+      if (!this.postId) return;
+
+      this.isTranslating = true;
+      try {
+        const translated = await this.fetchTranslation();
+
+        this.combinedTitle = translated.title || "";
+        this.combinedFullText = (translated.full_text || "")
+          .replace("...___...", "")
+          .replace(".#.##.", "");
+        this.combinedShowTranslated = true;
+
+        this.emitCombinedUpdate();
+      } catch (error) {
+        this.handleTranslateError(error);
+      } finally {
+        this.isTranslating = false;
+      }
+    },
+    emitCombinedUpdate() {
+      this.$emit("update", {
+        showTranslated: this.combinedShowTranslated,
+        title: this.combinedTitle,
+        fullText: this.combinedFullText,
+      });
     },
   },
 };
@@ -170,8 +249,19 @@ export default {
   color: inherit;
 }
 
+/* ยังไม่แปล -> ฟ้า, แปลไปแล้ว (disabled) -> เทา */
 .translate-trigger-compact i {
   color: #50c1d0;
+}
+
+.translate-trigger-label {
+  font-size: 14px;
+  color: #50c1d0;
+}
+
+.translate-trigger-compact.is-disabled i,
+.translate-trigger-compact.is-disabled .translate-trigger-label {
+  color: #9aa0a6;
 }
 
 .translate-trigger-compact:hover {
@@ -190,5 +280,21 @@ export default {
 
 .translate-trigger-compact.is-disabled:hover {
   opacity: .45;
+}
+
+/* โหมด combined (ใช้ใน CardTitle.vue) ใช้โทนสีของตัวเอง แยกจากโหมดปกติ */
+.translate-trigger-compact.combined i,
+.translate-trigger-compact.combined .translate-trigger-label {
+  color: #1293a4;
+  font-size: 14px;
+}
+
+.translate-trigger-compact.combined:hover i,
+.translate-trigger-compact.combined:hover .translate-trigger-label {
+  color: #086672;
+}
+
+.translate-trigger-compact.combined:hover {
+  opacity: 1;
 }
 </style>

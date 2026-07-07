@@ -83,16 +83,14 @@
                                 </a> 
                             </b-col>
                         </b-row>
-                        <!-- <b-button v-if="!isThai(item.full_text)" 
-                            class="zigzag-btn p-2"  
-                            @click="translateToThai(item.full_text)" size="sm">
-                           <img width="25" height="25" src="https://img.icons8.com/?size=100&id=ISUnogtpbXDv&format=png" />
-                            
-                        </b-button> -->
                         
                         <!-- <b-icon :icon="item.icon" font-scale="1.5" class="mr-2"></b-icon> -->
                     </template>
                     <b-card-text class="p-1">
+                        <div v-if="item.full_text" class="text-left mb-1">
+                            <TranslateText combined :post-id="item._id" title="" :full-text="cleanFullText(item)"
+                                @update="(payload) => onTranslateUpdate(item, payload)" />
+                        </div>
                         <p v-if="item.full_text" class="text-left" style="font-size: 16px;">
                             <!-- <span>
                                 {{ item.showAll ? item.full_text : item.full_text.substring(0, 200) }}
@@ -103,7 +101,7 @@
                                 highlightClassName="highlight2"
                                 :searchWords="keywordArray"
                                 :autoEscape="true"
-                                :textToHighlight="item.showAll ? item.full_text.replace('...___...','').replace('.#.##.', '') : item.full_text.replace('...___...','').replace('.#.##.', '').substring(0, 200)"
+                                :textToHighlight="item.showAll ? getBaseFullText(item) : getBaseFullText(item).substring(0, 200)"
                                 />
                             </span>
                             <span 
@@ -224,11 +222,13 @@
 <script>
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import Highlighter from "vue-highlight-words";
+import TranslateText from "@/components/TranslateText.vue";
 
 export default {
     components: {
         VueGallerySlideshow,
-        Highlighter
+        Highlighter,
+        TranslateText
     },
     props: {
         keyword: {
@@ -293,9 +293,32 @@ export default {
         window.removeEventListener("scroll", this.handleScroll);
     },
     methods: {
+        // ตัด marker ที่ปนมากับเนื้อหาก่อนนำไปใช้แสดงผล/ส่งไปแปล
+        cleanFullText(item) {
+            return item && item.full_text
+                ? item.full_text.replace('...___...', '').replace('.#.##.', '')
+                : '';
+        },
+        // ข้อความที่จะใช้แสดงจริง — สลับไปมาระหว่างต้นฉบับกับคำแปลตามสถานะของ item นั้นๆ
+        getBaseFullText(item) {
+            if (item && item.showTranslated && item.translatedFullText) {
+                return item.translatedFullText;
+            }
+            return this.cleanFullText(item);
+        },
+        // เรียกตอน TranslateText (โหมด combined) แปล/สลับเสร็จ — เก็บผลไว้ที่ตัว item นั้นๆ โดยตรง
+        onTranslateUpdate(item, payload) {
+            if (this.$set) {
+                // Vue 2
+                this.$set(item, "translatedFullText", payload.fullText);
+                this.$set(item, "showTranslated", payload.showTranslated);
+            } else {
+                // Vue 3
+                item.translatedFullText = payload.fullText;
+                item.showTranslated = payload.showTranslated;
+            }
+        },
         openGallery(i, data) {
-            console.log("openGallery ==== ",data);
-            console.log("index ==== ",i);
             this.photoIndex = 0;
             this.dataPhoto = data;
         },
@@ -306,30 +329,10 @@ export default {
         isThai(text) {
             // ตรวจสอบว่ามีตัวอักษรไทยอย่างน้อย 1 ตัวหรือไม่
             const thaiRegex = /[\u0E00-\u0E7F]/;
-            console.log(thaiRegex.test(text));
             
             return thaiRegex.test(text);
         },
-        async translateToThai(text) {
-            // try {
-            //     const res = await fetch("https://libretranslate.com/translate", {
-            //         method: "POST",
-            //         body: JSON.stringify({
-            //             q: "",
-            //             source: "auto",
-            //             target: "en",
-            //             format: "text",
-            //             alternatives: 3,
-            //             api_key: ""
-            //         }),
-            //         headers: { "Content-Type": "application/json" }
-            //     });
-
-            //     console.log("Translated:", res.data.translatedText);
-            // } catch (err) {
-            //     console.error("Translate error:", err.response ? err.response.status : err.message);
-            // }
-        },
+        
         formatNumber(num) {
             if (num == null) {
                 return '0';

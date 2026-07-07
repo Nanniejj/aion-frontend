@@ -639,7 +639,6 @@ export default {
     },
     methods: {
         addTag (tag) {
-            console.log("tag input:", tag);
             // const newId = Date.now()
             // const newItem = { value: newId, text: tag }
             // this.influencerTypes.push(newItem)
@@ -701,11 +700,6 @@ export default {
             this.oldProvince = this.selectedProvince;
             this.oldDistrict = this.selectedDistrict;
 
-            console.log(
-                "province:", this.selectedProvince,
-                "district:", this.selectedDistrict,
-                "subdistrict:", this.selectedSubDistrict
-            );
 
             // 2) Load districts เมื่อมี province
             if (this.selectedProvince) {
@@ -734,9 +728,7 @@ export default {
 
         },
         getInfluencerTypeName(id) {
-            console.log(id);
             let text = this.influencerTypes.find(item => item.value === id).text;
-            console.log(text);
             return text ? text : 'ไม่ระบุหมวดหมู่ Influencer';
         },
         getInfluConditionName(id) {
@@ -833,7 +825,6 @@ export default {
                     ? this.subDistricts.find(item => item.value === this.selectedSubDistrict)?.text || null
                     : null;
 
-            console.log("selectedData.location =", this.selectedData.location);
 
             this.exportData();
         },
@@ -843,10 +834,8 @@ export default {
         editProfile() {
             this.editable = !this.editable;
 
-            // console.log('editable ', this.editable);
         },
         exportData() {
-            console.log("data : ", this.selectedData);
             if (this.selectedData.influencer_condition =='none') {
                 this.selectedData.influencer_type = []
             }
@@ -922,7 +911,6 @@ export default {
                     pageId = pageId.split('?')[0]; // ตัด query ออก
 
                     this.img = `https://graph.facebook.com/${pageId}/picture?type=large`;
-                    console.log("Facebook image ==", this.img);
                     this.selectedData.profile_image = this.img;
                 } catch (err) {
                     console.warn("ไม่สามารถแยก page ID จาก Facebook URL ได้", err);
@@ -941,7 +929,6 @@ export default {
                 //     if (data.category) {
                 //         // ✅ เป็นเพจ → ใช้ภาพจาก Graph API
                 //         this.img = `https://graph.facebook.com/${pageId}/picture?type=large`;
-                //         console.log("✅ Facebook Page Image ==", this.img);
                 //         this.selectedData.profile_image = this.img;
                 //     } else {
                 //         // ❌ ไม่ใช่เพจ
@@ -972,7 +959,6 @@ export default {
                     };
                     
                     this.img = data.data.image?.url || fallbackImage;
-                    console.log("Microlink previews ==== ", previews);
                     this.selectedData.profile_image = data.data.image?.url || null;
                     if (this.selectedData.source === 'news') {
                         this.selectedData.name = 

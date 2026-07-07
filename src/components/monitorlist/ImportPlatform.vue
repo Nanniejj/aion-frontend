@@ -431,16 +431,13 @@ export default {
         },
 
         handleLabelData(data, itemPlatform) {
-            // console.log(data);
             // คัดลอกทุก key จาก data ไปยัง itemPlatform (รวมทั้งเพิ่ม key ใหม่)
             Object.keys(data).forEach(key => {
                 itemPlatform[key] = data[key];
             });
-            // console.log('itemPlatform ==== ',itemPlatform);
             this.checkLableData(itemPlatform)
         },
         checkLableData(item) {
-            // console.log("check === ", item);
 
             // ถ้าไม่มี url → false ทันที
             if (!item.url || item.url.trim() === '') {
@@ -464,7 +461,6 @@ export default {
             item.editable = !item.editable
         },
         downloadCSVFromPublicFile(filename) {
-            // console.log("filename ==== ",filename);
 
             // fetch("/" + filename)
             //     .then((response) => response.text())
@@ -521,23 +517,16 @@ export default {
             return text.replace(/^(อ\. |ต\. |แขวง |เขต )/, ''); // ลบเฉพาะถ้าอยู่ต้นคำ
         },
         // async checkLocation(item) {
-        //     // console.log("checkLocation === ", item);
         //     let province = item.province? (this.provinces.find(p => p.text === item.province)?.value || null): null
-        //     // console.log("province === ", province);
         //     if (province) {
         //         let amphure = await this.apiGetDistrict(province);
         //         if (item.district) {
         //             let curren_district = this.cleanedText(item.district);
-        //             // console.log("item.district === ", item.district);
         //             let district = curren_district ? (amphure.find(d => d.text === curren_district)?.value || null) : null;
-        //             // console.log("district === ", district);
         //             let tumbon = await this.apiGetSubDistrict(district);
-        //             // console.log("tumbon === ", tumbon);
         //             if (item.sub_district) {
         //                 let curren_sub_district = this.cleanedText(item.sub_district);
-        //                 // console.log("item.sub_district === ", item.sub_district);
         //                 let subDistrict = curren_sub_district ? (tumbon.find(s => s.text === curren_sub_district)?.value || null) : null;
-        //                 // console.log("subDistrict === ", subDistrict);
         //                return subDistrict ? subDistrict : null;
         //             } else {
         //                 return district
@@ -707,7 +696,6 @@ export default {
                 ...cleanedPantip,
                 ...cleanedBlockdit
             ];
-            // console.log(this.targetLists);
 
         },
         confirmSave() {
@@ -743,8 +731,6 @@ export default {
             let rawData = {
                 "data": this.targetLists
             }
-            // console.log(this.targetLists);
-            // console.log("raw === ", rawData);
             const config = {
                 method: "post",
                 url: "https://api2.cognizata.com/api/v2/monitor/targetandhashtag",
@@ -754,10 +740,8 @@ export default {
                     "Content-Type": "application/json",
                 },
             };
-            // console.log(config);
             this.axios(config)
                 .then((response) => {
-                    // console.log(response);
                     let result = response.data || [];
 
                     // this.load = false;
@@ -902,9 +886,6 @@ export default {
         //             .map(r => ({ ...r, editable: false, source: platform }));
         //         });
 
-        //         console.log("✅ Twitter:", this.twitter);
-        //         console.log("✅ Facebook:", this.facebook);
-        //         console.log("✅ Blockdit:", this.blockdit);
         //         }
         //     });
         // },
@@ -913,7 +894,6 @@ export default {
             if (!file) return;
 
             const fileName = file.name.toLowerCase();
-            console.log("File name:", fileName);
             const processData = async (rawData) => {
                 const headers = Object.keys(rawData[0]).map(f => f.trim());
                 const requiredFields = ["url"];
@@ -967,7 +947,6 @@ export default {
                                 .split("/posts/")[0];
 
                             const location = row.province ? await this.checkLocation(row) : null;
-                            console.log("row ====", row.followers);
                             return {
                                 key: 'account',
                                 bot_level: 1,
@@ -1002,7 +981,6 @@ export default {
                         return acc;
                     }, {})
                 );
-                    console.log("uniqueByUrl === ", uniqueByUrl);
                     
                 const platforms = ["twitter", "facebook", "tiktok", "instagram", "youtube", "pantip", "blockdit"];
 
@@ -1017,9 +995,6 @@ export default {
                     }));
                 });
 
-                console.log("✅ Twitter:", this.twitter);
-                console.log("✅ Facebook:", this.facebook);
-                console.log("✅ Blockdit:", this.blockdit);
             };
 
             if (fileName.endsWith(".csv")) {
@@ -1066,7 +1041,6 @@ export default {
                     "Content-Type": "application/json",
                 },
             };
-            // console.log("length ==== ",this.provinces.length);
 
             // if (this.provinces.length === 0) {
             this.axios(config)
@@ -1076,7 +1050,6 @@ export default {
                         text: province.name_th,
                         value: province.id
                     }));
-                    // console.log('this.provinces ', this.provinces);
                     this.load = false;
                     // if (this.provinces.length !== 0) {
                     //     this.mapTargetInfoToSelectedData();
@@ -1087,7 +1060,6 @@ export default {
                     console.error(error);
                 });
             // }
-            // console.log("length ==== ",this.provinces.length);
             // if (this.provinces.length !== 0) {
             //     await this.mapTargetInfoToSelectedData();
             // }
@@ -1182,7 +1154,6 @@ export default {
 
             this.axios(config)
                 .then((response) => {
-                    // console.log(response);
                     let result = response.data || [];
 
                     this.influencerTypes = result.map(type => ({
