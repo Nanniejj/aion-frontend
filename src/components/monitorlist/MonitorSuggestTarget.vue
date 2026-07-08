@@ -48,7 +48,7 @@
                 </svg>
             </button>
 
-            <div class="suggest-track" ref="track" @scroll="updateScrollState">
+            <div class="suggest-track py-3" ref="track" @scroll="updateScrollState">
                 <div v-for="(item, index) in suggestList" :key="item.id" class="suggest-card">
                 <div class="d-flex align-items-center suggest-header-row">
                         <div class="suggest-avatar-wrap" @click="linkToProfile(item)">
