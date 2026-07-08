@@ -14,6 +14,7 @@
     </div>
 
     <div class="mt-1 mb-1 ">
+      <!-- {{getNamePlatform}} -->
       <!-- ✅ component นี้ไม่ยิง API เองแล้ว — รับ data/isLoading/error มาจาก parent ล้วนๆ
            parent ยิง API ที่ไหนก็ได้ แล้วส่ง response เข้ามาตรงนี้ -->
       <WordCloudD3 :data="data" :is-loading="isLoading" :error="error" :limit="limit" :min-font="minFont"
@@ -75,7 +76,7 @@ export default {
     this.$store.commit('setLoadDataWordcloud', false)
   },
   computed: {
-        ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getClickDomainId", "getSourceNews"]),
+        ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getClickDomainId", "getSourceNews", "getNamePlatform"]),
 
     startd() {
       return String(this.start).slice(0, 10);
@@ -122,8 +123,11 @@ onSelectWord({ kind, text, data }) {
         start: this.getSdateDm || this.sdate || "",
         end: this.getEdateDm || this.edate || "",
         source_news: this.getSourceNews || "",
+        source: this.getNamePlatform|| "",
       };
-
+if (this.$route?.query?.monitor) {
+        query.monitor = this.$route.query.monitor;
+      }
       // ตัด key ที่ค่าว่างทิ้ง กัน URL รก
       Object.keys(query).forEach((k) => {
         if (query[k] === "" || query[k] == null) delete query[k];

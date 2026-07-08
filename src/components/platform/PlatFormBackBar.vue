@@ -298,6 +298,12 @@ export default {
       }
     },
   },
+  destroyed() {
+    this.$store.commit("setToPlatform", true);
+    this.$store.commit("setNamePlatform", "");
+    this.$store.commit("setPostAllMonitor", "");
+    this.$store.commit("setTopPostDomain", "");
+  },
   mounted() {
      this.selectData();
     this.$emitter.on("clickSelect", async (val) => {

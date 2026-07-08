@@ -37,7 +37,7 @@
                 </b-col>
 
                 <b-col v-b-tooltip.hover :title="platform.likes_count + ' likes'">
-                  <i class="fa fa-thumbs-o-up mr-1" aria-hidden="true"></i>
+                  <i class="fa fa-thumbs-up mr-1" aria-hidden="true"></i>
                   <div >
                     {{ platform.likes_count | shortNumber }}
                   </div>
@@ -1055,7 +1055,10 @@ export default {
       selectedStm: this.status,
       selected: [1, 0, -1],
       selectedSort: "",
+      // เดิม: ค่า default เป็น "all platform" เสมอ
+      // ตอนนี้: ถ้ามี this.$route.query.source ส่งมา ให้ใช้ค่านั้นเป็นค่าเริ่มต้นแทน
       select_social:
+        this.$route.query.source ||
         "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram",
       itemSocial: [
         {
@@ -1096,7 +1099,7 @@ export default {
 
   },
   computed: {
-    ...mapGetters(["getClickDomain", "getClickDomainId", "getSdateDm", "getEdateDm", "getArrDate","getMonitorSelect"]),
+    ...mapGetters(["getClickDomain", "getClickDomainId", "getSdateDm", "getEdateDm", "getArrDate","getMonitorSelect","getNamePlatform"]),
 
     paginate() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
@@ -1460,14 +1463,14 @@ export default {
         params.querySearch = keyword;
       }
       if (this.$route.query.domain_id) {
-        params.domain = this.$route.query.domain_id
+        params.domain_id = this.$route.query.domain_id
       }
       if (this.$route.query.source_news) {
         params.source_news = this.$route.query.source_news
       }
       this.axios({
         method: "get",
-        url: "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain",
+        url: "https://api2.cognizata.com/api/v2/wordcloud/getSentimentdetailWordcloud",
         params,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -1538,6 +1541,12 @@ export default {
       this.offset = 0;
       this.currentPage = 1;
       this.apiSpotNewsPost(0);
+      // priority: route query "source" > store getNamePlatform
+      if (this.$route.query.source) {
+        this.select_social = this.$route.query.source;
+      } else if (this.getNamePlatform) {
+        this.select_social = this.getNamePlatform
+      }
     });
   },
   beforeDestroy() {

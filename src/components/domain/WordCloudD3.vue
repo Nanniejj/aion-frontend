@@ -127,6 +127,61 @@
 <script>
 import * as d3 from "d3"; // ✅ ใช้ d3 สำหรับ scaleLog + สี (d3.rgb/hsl) เท่านั้น ไม่ใช้ d3-cloud
 
+// ✅ URL ฟอนต์ Sarabun (ตัวเดียวกับที่ @import ไว้ใน <style> ด้านล่าง)
+const WC_FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap";
+
+// ⚡ module-level singleton — ฉีด <link rel="stylesheet"> เข้า <head> "ครั้งเดียว" ไม่ว่าจะมี
+//    instance ของ component นี้กี่ตัวบนหน้าเดียวกัน แล้วคืน promise ที่ resolve เมื่อไฟล์ CSS
+//    โหลดเสร็จจริง (ต่างจาก @import ใน <style scoped> ที่เป็น async แบบไม่มีใครรอ)
+let _wcFontStylesheetPromise = null;
+function ensureFontStylesheetLoaded(href) {
+  if (typeof document === "undefined") return Promise.resolve();
+  if (_wcFontStylesheetPromise) return _wcFontStylesheetPromise;
+
+  _wcFontStylesheetPromise = new Promise((resolve) => {
+    const existing = document.querySelector('link[data-wc-font="sarabun"]');
+
+    const safetyTimer = setTimeout(resolve, 3000); // ✅ กันค้างถ้า network ช้า/โดนบล็อก CDN ฟอนต์
+
+    if (existing) {
+      if (existing.dataset.loaded === "1") {
+        clearTimeout(safetyTimer);
+        resolve();
+        return;
+      }
+      existing.addEventListener(
+        "load",
+        () => {
+          clearTimeout(safetyTimer);
+          resolve();
+        },
+        { once: true }
+      );
+      existing.addEventListener("error", () => resolve(), { once: true });
+      return;
+    }
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.dataset.wcFont = "sarabun";
+    link.addEventListener(
+      "load",
+      () => {
+        link.dataset.loaded = "1";
+        clearTimeout(safetyTimer);
+        resolve();
+      },
+      { once: true }
+    );
+    link.addEventListener("error", () => resolve(), { once: true });
+    document.head.appendChild(link);
+  });
+
+  return _wcFontStylesheetPromise;
+}
+
 export default {
   name: "WordCloudD3",
   props: {
@@ -240,6 +295,9 @@ export default {
                      // แล้ว undefined++ = NaN ซึ่งทำให้ (myGen !== this._renderGen) เป็น true ตลอดกาล (NaN !== NaN)
                      // และ render pipeline จะ bail ทิ้งทุกครั้งก่อนถึงขั้นตอนสร้าง canvas
 
+      // ⚡ กันโหลดฟอนต์ซ้ำซ้อน: cache ผลลัพธ์ของ ensureFontLoaded ต่อ "text signature" ที่เคยโหลดแล้ว
+      _fontReadySignature: "",
+
       popup: {
         show: false,
         pinned: false,
@@ -331,6 +389,15 @@ export default {
     letterSpacing() {
       this.renderBoth();
     },
+  },
+
+  created() {
+    // ⚡ เริ่มโหลด stylesheet ของฟอนต์ให้เร็วที่สุดเท่าที่ทำได้ (ก่อน mounted/render ด้วยซ้ำ)
+    //    ยิงแบบ fire-and-forget ตรงนี้ เพื่อให้พอถึงตอน renderKind() เรียก ensureFontLoaded()
+    //    ไฟล์ CSS ส่วนใหญ่น่าจะโหลดมาถึง browser แล้ว ลดโอกาสที่ canvas จะวาดด้วย fallback font
+    if (typeof document !== "undefined") {
+      ensureFontStylesheetLoaded(WC_FONT_HREF).catch(() => {});
+    }
   },
 
   mounted() {
@@ -468,15 +535,59 @@ export default {
       return this._WC;
     },
 
-    async ensureFontLoaded() {
-      if (!document?.fonts) return;
+    // ✅ โหลดฟอนต์ให้ "พร้อมจริง" ก่อนวาด canvas — แก้ปัญหาโหลดฟอนต์ไม่ทัน 2 จุด:
+    //    1) รอ stylesheet ของ Google Fonts โหลดเสร็จจริง (ไม่พึ่ง @import อย่างเดียว)
+    //    2) ส่ง sampleText (คำไทยจริงที่กำลังจะวาด) เข้า document.fonts.load() เพราะถ้าไม่ส่ง
+    //       browser จะใช้ test-string default ซึ่งอาจโหลดแค่ subset ละติน ไม่ใช่ subset ไทย
+    //       ทำให้ check()/load() "ผ่าน" ทั้งที่ตัวอักษรไทยยังไม่มา แล้วก็วาดด้วย fallback font
+    async ensureFontLoaded(sampleText) {
+      if (typeof document === "undefined") return;
+
       try {
-        const need300 = !document.fonts.check(`300 16px ${this.fontFamily}`);
-        const need700 = !document.fonts.check(`700 16px ${this.fontFamily}`);
-        if (need300) await document.fonts.load(`300 16px ${this.fontFamily}`);
-        if (need700) await document.fonts.load(`700 16px ${this.fontFamily}`);
-        if (need300 || need700) await document.fonts.ready;
+        await ensureFontStylesheetLoaded(WC_FONT_HREF);
       } catch (e) { }
+
+      if (!document.fonts) return;
+
+      const text =
+        (sampleText && String(sampleText).trim()) ||
+        "กขคงจฉชซญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ ๅๆ฿0123456789";
+
+      // ⚡ ถ้าโหลด "ชุดคำเดิม" ไปแล้วในรอบก่อนหน้า ไม่ต้องรอซ้ำ (fonts ที่โหลดแล้วจะ resolve ทันทีอยู่แล้ว
+      //    แต่เช็ก signature ไว้ช่วยข้ามการเรียก document.fonts.load ที่ไม่จำเป็นได้เร็วขึ้นอีกนิด)
+      const weight = String(this.fontWeight || "300").trim();
+      const signature = `${weight}::${text}`;
+      if (this._fontReadySignature === signature) return;
+
+      try {
+        const specs = [
+          `${weight} 16px ${this.fontFamily}`,
+          `700 16px ${this.fontFamily}`, // ✅ เผื่อ browser fallback ไป bold ตอน weight ที่ขอไม่ตรง
+        ];
+
+        const loaders = specs.map((spec) => {
+          try {
+            return document.fonts.load(spec, text);
+          } catch (e) {
+            return Promise.resolve([]);
+          }
+        });
+
+        await Promise.race([
+          Promise.all(loaders),
+          new Promise((resolve) => setTimeout(resolve, 2500)), // ✅ กันค้างถ้าเน็ต/CDN ฟอนต์ช้า
+        ]);
+
+        await Promise.race([
+          document.fonts.ready,
+          new Promise((resolve) => setTimeout(resolve, 800)),
+        ]);
+
+        this._fontReadySignature = signature;
+      } catch (e) {
+        // ✅ เงียบไว้ — ถ้าฟอนต์โหลดไม่สำเร็จจริงๆ ให้ตกไปใช้ fallback font ของ fontFamily
+        //    (เช่น sans-serif) ดีกว่าค้างทั้งหน้าไม่วาดอะไรเลย
+      }
     },
 
     async waitForStableSize(wrapEl, tries = 3) {
@@ -692,10 +803,19 @@ export default {
       if (!host || !wrap) return;
 
       await this.waitForStableSize(wrap, 3);
-      await this.ensureFontLoaded();
-      if (myGen !== (Number(this._renderGen) || 0)) return;
 
       const list0 = getItems?.() || [];
+
+      // ✅ ส่งคำจริงที่กำลังจะวาด (ไม่ใช่ค่า default) เข้าไปให้ ensureFontLoaded เพื่อบังคับให้
+      //    browser โหลด unicode-range subset ภาษาไทยของฟอนต์ ไม่ใช่แค่ subset ละติน
+      const sampleTextForFont = list0
+        .slice(0, 20)
+        .map((x) => x?.name ?? x?.text ?? x?.key ?? "")
+        .filter(Boolean)
+        .join(" ");
+      await this.ensureFontLoaded(sampleTextForFont);
+      if (myGen !== (Number(this._renderGen) || 0)) return;
+
       const excludedMap = kind === "words" ? this.excludedWords : this.excludedTags;
       const raw = this.buildWordsFromList(list0, excludedMap);
 

@@ -249,6 +249,10 @@ export default {
   destroyed() {
     // this.$store.commit("setSourceNews", "");
     localStorage.removeItem("updated_until");
+    this.$store.commit("setSdateDm", "");
+    this.$store.commit("setEdateDm", ""); 
+    this.$store.commit("setArrDate", []);
+    this.$store.commit("setClickDomainId", "");  
   },
   mounted() {
     this.$store.commit("setSourceNews", getSavedNewsSource());
