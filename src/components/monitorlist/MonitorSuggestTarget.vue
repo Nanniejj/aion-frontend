@@ -119,8 +119,8 @@
                         <span class="pl-1">กำลังเพิ่ม...</span>
                     </template>
                     <template v-else>
-                        <b-icon font-scale="1" :icon="item.added ? 'check2' : 'plus'"></b-icon>
-                        <span class="pl-1">{{ item.added ? 'เพิ่มแล้ว' : 'เพิ่มเป็นเป้าหมาย' }}</span>
+                        <b-icon font-scale="1.5" :icon="item.added ? 'check2' : 'plus'"></b-icon>
+                        <span class="pl-1">{{ item.added ? 'เพิ่มแล้ว' : 'เพิ่มเป้าหมาย' }}</span>
                     </template>
                 </button>
                 </div>
@@ -634,8 +634,8 @@ export default {
     border: none;
     border-radius: 999px;
     padding: 7px 10px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 14px;
+    /* font-weight: 600; */
     color: #fff;
     background: linear-gradient(135deg, #17a3b8, #0f8a9c);
     transition: filter 0.15s ease, transform 0.05s ease;

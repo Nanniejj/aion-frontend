@@ -147,7 +147,12 @@
                   | <span v-if="postDomain.news_info.nation">{{ postDomain.news_info.nation }}</span>
                 </div>
                 <div v-if="postDomain && postDomain.title" class="title-news text-left my-2">
-                  {{ postDomain.title }}
+                  {{ postDomain.showTranslated && postDomain.translatedTitle ? postDomain.translatedTitle : postDomain.title }}
+                </div>
+                <div v-if="postDomain.full_text" class="text-left mb-1">
+                  <TranslateText combined :post-id="postDomain._id" :title="postDomain.title || ''"
+                    :full-text="cleanFullText(postDomain)"
+                    @update="(payload) => onTranslateUpdate(postDomain, payload)" />
                 </div>
 
                 <div id="txt-cmt" class="font-weight-normal" v-if="postDomain.full_text">
@@ -158,8 +163,8 @@
                       padding: '10px',
                     }" highlightClassName="highlight2" :searchWords="highlightText(postDomain.full_text)"
                       :autoEscape="true" :textToHighlight="postDomain.read
-                        ? postDomain.full_text.replace('...___...', '').replace('.#.##.', '').slice(0, 450)
-                        : postDomain.full_text.replace('...___...', '').replace('.#.##.', '')
+                        ? getBaseFullText(postDomain).slice(0, 450)
+                        : getBaseFullText(postDomain)
                         " />
                     <div v-if="postDomain.full_text.length > 450" @click="postDomain.read = !postDomain.read"
                       id="readmore">
@@ -695,8 +700,9 @@ import subdistricts from "@/components/map/subdistricts.json";
 
 import PostCard from './PostCard.vue';
 import SummarizeCommentChart from "../chart/SummarizeCommentChart.vue";
+import TranslateText from "@/components/TranslateText.vue";
 export default {
-  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart, PostCard },
+  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart, PostCard, TranslateText },
   props: {
     tpyeCard: {
       type: String,
@@ -940,6 +946,33 @@ export default {
         ).catch(function () {
           //   console.log("errrrrrr", response.message);
         });
+    },
+    // ตัด marker ที่ปนมากับเนื้อหาก่อนนำไปใช้แสดงผล/ส่งไปแปล
+    cleanFullText(postDomain) {
+      return postDomain && postDomain.full_text
+        ? postDomain.full_text.replace('...___...', '').replace('.#.##.', '')
+        : '';
+    },
+    // ข้อความที่จะใช้แสดงจริง — สลับไปมาระหว่างต้นฉบับกับคำแปลตามสถานะของโพสต์นั้นๆ
+    getBaseFullText(postDomain) {
+      if (postDomain && postDomain.showTranslated && postDomain.translatedFullText) {
+        return postDomain.translatedFullText;
+      }
+      return this.cleanFullText(postDomain);
+    },
+    // เรียกตอน TranslateText (โหมด combined) แปล/สลับเสร็จ — เก็บผลไว้ที่ตัวโพสต์นั้นๆ โดยตรง
+    onTranslateUpdate(postDomain, payload) {
+      if (this.$set) {
+        // Vue 2
+        this.$set(postDomain, "translatedTitle", payload.title);
+        this.$set(postDomain, "translatedFullText", payload.fullText);
+        this.$set(postDomain, "showTranslated", payload.showTranslated);
+      } else {
+        // Vue 3
+        postDomain.translatedTitle = payload.title;
+        postDomain.translatedFullText = payload.fullText;
+        postDomain.showTranslated = payload.showTranslated;
+      }
     },
     highlightText(full_text) {
       var word = [];
