@@ -485,7 +485,10 @@ export default {
       }
     });
   },
-
+destroyed() {
+    this.destroyAll();
+    this.apiData = null;
+  },
   beforeDestroy() {
     this.destroyAll();
 

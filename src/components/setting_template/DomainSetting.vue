@@ -3,6 +3,7 @@
     <b-container fluid id="tp-size">
       <vue-element-loading :active="getLoadStatus" size="80" background-color="rgba(255, 255, 255, 0.4)"
         color="#b6ac9a" />
+        <!-- {{ getItemsDomain }} -->
       <!-- https://bootstrap-vue.org/docs/components/table#custom-data-rendering   \ Complete example -->
       <!-- Page header -->
       <b-row id="input-btn" class="m-0 align-items-center justify-content-lg-between flex-md-nowrap page-header-row">
