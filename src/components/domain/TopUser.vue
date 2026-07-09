@@ -569,7 +569,7 @@ export default {
       };
       this.axios(config)
         .then((response) => {
-          console.log("Toppp response.data", response.data);
+          // console.log("Toppp response.data", response.data);
           this.topuser = response.data.slice(0, 5);
           this.$store.commit("setLoadTopUser", false);
         })

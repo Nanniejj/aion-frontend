@@ -228,13 +228,14 @@ export default {
       }
       //wordcloud
       objword = {
-        start_date: this.start_date,
-        end_date: this.end_date,
+        start: this.start_date,
+        end: this.end_date,
         source: this.getNamePlatform,
         // domain: 'All',
-        dashboard: true,
+        // dashboard: true,
       };
-      this.$store.dispatch("fetchWordCloud", objword);
+      this.$store.dispatch("apiWordcloud", objword);
+      // this.$store.dispatch("fetchWordCloud", objword);
 
       //TopPost
       this.$store.dispatch("fetchPostDomain", objtop);
@@ -296,6 +297,12 @@ export default {
         console.log(err);
       }
     },
+  },
+  destroyed() {
+    this.$store.commit("setToPlatform", true);
+    this.$store.commit("setNamePlatform", "");
+    this.$store.commit("setPostAllMonitor", "");
+    this.$store.commit("setTopPostDomain", "");
   },
   mounted() {
      this.selectData();

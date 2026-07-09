@@ -179,13 +179,21 @@ export default {
       this.$store.commit("setArrDate", this.valueDate);
 
       //wordcloud
-      this.$store.dispatch("fetchWordCloud", {
-        start_date: this.start_date,
-        end_date: this.end_date,
+      // this.$store.dispatch("fetchWordCloud", {
+      //   start_date: this.start_date,
+      //   end_date: this.end_date,
+      //   domain_id: this.getClickDomainId,
+      //   source_news: this.getSourceNews,
+      //   //   monitor: this.selected
+      // });
+          this.$store.dispatch("apiWordcloud", {
+        start: this.start_date,
+        end: this.end_date,
         domain_id: this.getClickDomainId,
         source_news: this.getSourceNews,
         //   monitor: this.selected
       });
+
 
       //TopPost
       this.$store.dispatch("fetchTopPostDomain", {
@@ -241,6 +249,10 @@ export default {
   destroyed() {
     // this.$store.commit("setSourceNews", "");
     localStorage.removeItem("updated_until");
+    this.$store.commit("setSdateDm", "");
+    this.$store.commit("setEdateDm", ""); 
+    this.$store.commit("setArrDate", []);
+    this.$store.commit("setClickDomainId", "");  
   },
   mounted() {
     this.$store.commit("setSourceNews", getSavedNewsSource());
@@ -258,7 +270,11 @@ export default {
     // let datetime = datearr[0] + " " + datearr[1].slice(0, 5);
    // console.log('date',datearr,datearr2);
     this.updated_until = datearr;
-   
+
+    // ✅ เรียก API ครั้งแรกตอนเข้าหน้า (wordcloud/topPost/allPost ฯลฯ) ด้วยช่วงวันที่ default
+    //    (valueDate เริ่มต้นเป็นวันนี้-วันนี้ จาก data()) — เดิมมีแค่ตอน checkDateRange()
+    //    จากการเปลี่ยนวันที่เอง เลยไม่มีข้อมูลตั้งต้นให้ก่อนหน้านี้
+    this.selectData();
   },
 };
 </script>

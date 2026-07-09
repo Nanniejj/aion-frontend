@@ -119,6 +119,10 @@ import moment from "moment";
 
 export default {
   components: { DefaultCloud },
+  props: {
+    // If true, don't dispatch legacy store fetch; only emit filters-changed to parent
+    emitOnly: { type: Boolean, default: false },
+  },
   data() {
     return {
       // ✅ ใช้ boolean ชัดเจน
@@ -209,6 +213,59 @@ export default {
       }
     },
 
+    // ✅ ดึงค่าเริ่มต้นทั้งหมด (วันที่/monitor/domain) จาก $route.query
+    //    เรียกครั้งเดียวตอน mounted เพื่อกู้ค่าที่เคยเลือกไว้กลับมาแสดงในช่อง filter หลังรีเฟรช
+    //    (ก่อนหน้านี้ mounted() เซ็ตแต่ default เสมอ ไม่เคยอ่าน query เลย ค่าที่เลือกไว้เลยหายไป
+    //     ทั้งที่ query string ยังอยู่ และ parent ก็ยังใช้ query ไปยิง API ถูกต้อง)
+    restoreFromQuery(q) {
+      // -------- วันที่ --------
+      if (q.start && q.end) {
+        this.valueDate = [String(q.start).slice(0, 10), String(q.end).slice(0, 10)];
+        this.start_date = q.start;
+        this.end_date = q.end;
+        this.$store.commit("setArrDate", this.valueDate);
+      }
+      this.$store.commit("setWordCloudStartDate", this.start_date || (moment(new Date()).format().slice(0, 10) + "T00:00:00"));
+      this.$store.commit("setWordCloudEndDate", this.end_date || (moment(new Date()).format().slice(0, 10) + "T23:59:59"));
+
+      // -------- monitor --------
+      // ถ้า query มี monitor ให้ query เป็นตัวตัดสิน (ตรงกับสิ่งที่ parent ใช้ยิง API จริง)
+      // ถ้าไม่มีเลยค่อย fallback ไปตาม store เดิม
+      const hasMonitorInQuery = q.monitor !== undefined;
+      const init = hasMonitorInQuery ? (q.monitor === "true" || q.monitor === true) : this.getSelectedMonitor === true;
+      this.selectedMonitorDraft = init;
+      this.appliedMonitor = init;
+      this.$store.commit("setSelectedMonitor", init);
+
+      // -------- domain --------
+      this.restoreDomainFromQuery(q.domain_id);
+    },
+
+    // ✅ domain_id ใน query ถูกสร้างจาก summitform() ด้วย `.map(n => n.id).toLocaleString()`
+    //    ซึ่งได้ string คั่นด้วย comma (หรือ "" / "All" สำหรับ Alls/All) ต้อง map กลับเป็น object
+    //    โดยจับคู่กับ getShowDomain ที่โหลดมาจาก store (ต้องรอ fetchDomain เสร็จก่อน ดู mounted())
+    restoreDomainFromQuery(domainIdParam) {
+      if (domainIdParam === undefined) return; // ไม่มี query เรื่อง domain เลย ปล่อยว่างตามเดิม
+
+      if (domainIdParam === "") {
+        this.domain_name = [{ id: "Alls", name: "เลือกทั้งระบบ" }];
+        this.domain_title = "";
+        return;
+      }
+      if (domainIdParam === "All") {
+        this.domain_name = [{ id: "All", name: "เลือกทุก Domain" }];
+        this.domain_title = "เลือกทุก Domain";
+        return;
+      }
+
+      const ids = String(domainIdParam).split(",").map((s) => s.trim()).filter(Boolean);
+      const matched = (this.getShowDomain || []).filter((d) => ids.includes(String(d.id)));
+      if (matched.length) {
+        this.domain_name = matched;
+        this.domain_title = matched.map((n) => n.name).toLocaleString();
+      }
+    },
+
     summitform() {
       const todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
       const todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
@@ -251,7 +308,7 @@ export default {
         ...(monitorParam ? { monitor: monitorParam } : {}),
       };
 
-      this.$store.dispatch("fetchWordCloud", payload);
+      // legacy store dispatch removed — this component now only emits filters to parent
 
       this.$store.commit("setWordCloudStartDate", start_date);
       this.$store.commit("setWordCloudEndDate", end_date);
@@ -266,17 +323,13 @@ export default {
       });
     },
   },
-  mounted() {
-    // ✅ init state จาก store (ถ้า store เป็น boolean)
-    const init = this.getSelectedMonitor === true;
-    this.selectedMonitorDraft = init;
-    this.appliedMonitor = init;
+  async mounted() {
+    // ✅ โหลดรายชื่อ domain ก่อน (ต้องรอให้เสร็จ เพราะ restoreDomainFromQuery ต้องจับคู่ id กับรายการนี้)
+    await this.$store.dispatch("fetchDomain");
 
-    const todays = moment(new Date()).format().slice(0, 10) + "T00:00:00";
-    const todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
-    this.$store.commit("setWordCloudStartDate", todays);
-    this.$store.commit("setWordCloudEndDate", todaye);
-    this.$store.dispatch("fetchDomain");
+    // ✅ กู้ค่า filter ทั้งหมดกลับจาก query string (ถ้ามี) — แก้ปัญหารีเฟรชแล้วช่องว่าง
+    //    ทั้งที่ path ยังมี query อยู่ (parent อ่าน query ไปยิง API ถูกอยู่แล้ว แต่ UI ไม่เคย sync)
+    this.restoreFromQuery(this.$route.query || {});
   },
 };
 </script>

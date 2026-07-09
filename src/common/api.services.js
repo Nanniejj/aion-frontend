@@ -44,9 +44,9 @@ export const WordcloudService = {
   //   return ApiService.put(`v1/EditSentiment/`,{'sentiment':payload.sentiment,'uid':payload.uid});
   // },
   getDomain(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.get(`/v1/domain/?limit=${payload.limit}`);
+    return ApiService.get(`/v2/domain/getDomainlist`);
   },
   getWordCloud(payload) {
     Vue.axios.defaults.baseURL = API_URL;
@@ -69,7 +69,6 @@ export const WordcloudService = {
   },
   getWordCloud2(payload) {
     console.log(payload.domain);
-
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();
     var dom = "",
@@ -111,12 +110,12 @@ export const WordcloudService = {
 
     return ApiService.get(
       `/v1/getwordcloud/?start_date=${payload.start_date}&end_date=${payload.end_date}` +
-        key +
-        dom +
-        mo +
-        src +
-        dash +
-        domId
+      key +
+      dom +
+      mo +
+      src +
+      dash +
+      domId
     );
   },
 
@@ -151,10 +150,10 @@ export const WordcloudService = {
     }
     return ApiService.get(
       `/v1/getsentimentstat/?start_date=${payload.start_date}&end_date=${payload.end_date}` +
-        dom +
-        key +
-        search +
-        mo
+      dom +
+      key +
+      search +
+      mo
     );
   },
   getSentimentHashtag(payload) {
@@ -188,10 +187,10 @@ export const WordcloudService = {
     }
     return ApiService.get(
       `/v1/getsentimentstat/?start_date=${payload.start_date}&end_date=${payload.end_date}` +
-        dom +
-        key +
-        hash +
-        mo
+      dom +
+      key +
+      hash +
+      mo
     );
   },
   getSentimentDetail(payload) {
@@ -278,13 +277,13 @@ export const WordcloudService = {
     }
     return ApiService.get(
       `/v1/getsentimentdetail/?start_date=${payload.start_date}&end_date=${payload.end_date}&offset=${payload.offset}&sort_by=${payload.sort_by}` +
-        dom +
-        key +
-        search +
-        mo +
-        stm +
-        hash +
-        src
+      dom +
+      key +
+      search +
+      mo +
+      stm +
+      hash +
+      src
     );
   },
   getSentimentHashtagDetail(payload) {
@@ -320,9 +319,9 @@ export const WordcloudService = {
 };
 export const RankingService = {
   getDomainRanking(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.get(`/v1/domain/?limit=${payload.limit}`);
+    return ApiService.get(`/v2/domain/getDomainlist`);
   },
   getSubDomainRanking(payload) {
     Vue.axios.defaults.baseURL = API_URL;
@@ -340,10 +339,10 @@ export const RankingService = {
       rankingtype: payload.rankingtype ?? "",
     });
 
-     if (payload.domain) {
+    if (payload.domain) {
       params.set("domain", payload.domain);
     }
-    if (payload.subdomain&&payload.subdomain.length) {
+    if (payload.subdomain && payload.subdomain.length) {
       params.set("subdomain", payload.subdomain);
     }
 
@@ -361,7 +360,7 @@ export const RankingService = {
     if (payload.domain) {
       params.set("domain", payload.domain);
     }
-    if (payload.subdomain&&payload.subdomain.length) {
+    if (payload.subdomain && payload.subdomain.length) {
       params.set("subdomain", payload.subdomain);
     }
 
@@ -386,10 +385,10 @@ export const RankingService = {
       source: payload.source ?? "",
     });
 
-     if (payload.domain) {
+    if (payload.domain) {
       params.set("domain", payload.domain);
     }
-    if (payload.subdomain&&payload.subdomain.length) {
+    if (payload.subdomain && payload.subdomain.length) {
       params.set("subdomain", payload.subdomain);
     }
 
@@ -397,7 +396,7 @@ export const RankingService = {
       params.set("objects", payload.objects);
     }
 
-     if (payload.sentiment) {
+    if (payload.sentiment) {
       params.set("sentiment", payload.sentiment);
     }
     // add(params, "sentiment", payload.sentiment); // จะไม่แนบถ้าเป็น '' หรือ null/undefined
@@ -699,11 +698,11 @@ export const MonitorService = {
     ApiService.setHeader();
     return ApiService.get(
       `v1/searchLocation/?sort_by=${payload.sort_by}&offset=${payload.offset}&source=${payload.source}` +
-        query +
-        account +
-        sentiment +
-        sdate +
-        edate
+      query +
+      account +
+      sentiment +
+      sdate +
+      edate
     );
   },
   delMonitor(payload) {
@@ -808,15 +807,15 @@ export const MonitorService = {
     }
     return ApiService.get(
       `/v1/getsentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}` +
-        stm +
-        dm +
-        hash +
-        acc +
-        retweet +
-        sd +
-        ed +
-        src +
-        dash
+      stm +
+      dm +
+      hash +
+      acc +
+      retweet +
+      sd +
+      ed +
+      src +
+      dash
     );
 
     //return ApiService.get(`v1/getsentimentdetail/?account=${payload.account}&sentiment=${payload.sentiment}&sort_by=${payload.sort_by}&domain=${payload.domain}`);
@@ -866,11 +865,11 @@ export const DomainService = {
     }
     return ApiService.get(
       `/v1/getsentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
-        stm +
-        dm +
-        source +
-        dash +
-        findkey
+      stm +
+      dm +
+      source +
+      dash +
+      findkey
     );
   },
   getPostDomain(payload) {
@@ -881,7 +880,7 @@ export const DomainService = {
       source = "",
       dash = "",
       findkey = "",
-      mor = "",source_news="";
+      mor = "", source_news = "";
 
     if (payload.querySearch) {
       findkey = `&querySearch=${payload.querySearch}`;
@@ -920,13 +919,13 @@ export const DomainService = {
     }
     return ApiService.get(
       `/v2/userposts/getSentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
-        stm +
-        dm +
-        source +
-       
-        dash +
-        findkey +
-        mor
+      stm +
+      dm +
+      source +
+
+      dash +
+      findkey +
+      mor
     );
   },
   getTopPostDomain(payload) {
@@ -938,7 +937,7 @@ export const DomainService = {
       dash = "",
       findkey = "",
       mor = "",
-      source_news="";
+      source_news = "";
     if (payload.querySearch) {
       findkey = `&querySearch=${payload.querySearch}`;
     } else {
@@ -976,13 +975,13 @@ export const DomainService = {
     }
     return ApiService.get(
       `/v2/userposts/getSentimentdetailDomain/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}` +
-        stm +
-        dm +
-        source +
-        source_news +
-        dash +
-        findkey +
-        mor
+      stm +
+      dm +
+      source +
+      source_news +
+      dash +
+      findkey +
+      mor
     );
   },
   getPostDomain2(payload) {
@@ -1014,10 +1013,10 @@ export const DomainService = {
     // Vue.axios.defaults.baseURL = 'http://139.59.103.67:3000'
     return ApiService.get(
       `/v2/domain/getSentimentPost/?sort_by=${payload.sort_by}&offset=${payload.offset}&start=${payload.start_date}&end=${payload.end_date}` +
-        stm +
-        dm +
-        source +
-        dash
+      stm +
+      dm +
+      source +
+      dash
     );
     // return ApiService.get(`/v1/getsentimentdetail/?sort_by=${payload.sort_by}&offset=${payload.offset}&start_date=${payload.start_date}&end_date=${payload.end_date}`+stm+dm+source+dash);
   },

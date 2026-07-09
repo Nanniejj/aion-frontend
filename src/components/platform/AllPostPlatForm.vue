@@ -82,6 +82,7 @@ export default {
      this.$store.commit('setSocialPlatform',this.getNamePlatform)
      this.$emitter.on("crawdash", (val) => {
       this.selected = val;
+      this.$store.commit('setMonitorSelect',val)
     //   console.log('selected',this.selected);
     });
   },

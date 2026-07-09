@@ -200,10 +200,10 @@ export default {
       commit("setLoadStatus", true);
       try {
         const res = await WordcloudService.getDomain({ limit: 100000 });
-        res.data.results.sort(function(a, b) {
+        res.data.data.sort(function(a, b) {
           return parseFloat(a.id) - parseFloat(b.id);
         });
-      let domainlist =  res.data.results.filter((x)=> x.display==true)
+      let domainlist =  res.data.data.filter((x)=> x.display==true)
         // console.log(' res.data.results', domainlist);
         commit("setDomainItem", domainlist);
         commit("setLoadStatus", false);
@@ -336,7 +336,7 @@ export default {
           (sd) => sd.id === payload.id
         );
         console.log(index, state.itemsSubDomain);
-        console.log(payload);
+     
         state.itemsSubDomain.splice(index, 1);
         commit("updateSubDomain", res.data);
       } catch (error) {

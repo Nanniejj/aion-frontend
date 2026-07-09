@@ -1493,7 +1493,7 @@ export default {
             })
             .flat(1);
           this.heightword = splitarr.concat(wordarr);
-          console.log("Toppp response.data", response.data);
+  
           var post = response.data[0].data;
           var pair = { read: true };
           var posts = post.map((result) => {

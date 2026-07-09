@@ -7,10 +7,14 @@ export default {
     sdatedmp:"",
     edatedmp:"",
     domainArr:'',
-    newslt:''
+    newslt:'',
+    monitorSelect:false,
 
   },
   getters: {
+    getMonitorSelect: (state) => {
+      return state.monitorSelect;
+    },
     getNewslt: (state) => {
       return state.newslt;
     },
@@ -37,6 +41,9 @@ export default {
       },
   },
   mutations: {
+    setMonitorSelect: (state, payload) => {
+      state.monitorSelect = payload;
+    },
     setNewslt: (state,payload) => {
       state.newslt=payload;
     },

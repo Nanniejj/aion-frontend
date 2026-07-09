@@ -92,7 +92,7 @@ export default {
           // handle error
           console.log(error);
         });
-      console.log(payload);
+   
       commit("setUserList", "");
     },
     async statusUser({ commit }, valuex) {
@@ -118,7 +118,7 @@ export default {
           // handle error
           console.log(error);
         });
-      console.log(payload);
+   
       commit("setUserList", "");
     },
     async addUser({ commit,dispatch }, payload) {
@@ -144,7 +144,7 @@ export default {
         .catch(function(error) {
           console.log("Error handler", error);
         });
-      console.log(payload);
+  
     },
     async addUserAdmin({ commit,dispatch }, payload) {
         axios
@@ -162,7 +162,6 @@ export default {
           .catch(function(error) {
             console.log("Error handler", error);
           });
-        console.log(payload);
       },
     async addNameToProject({ commit ,dispatch}, payload) {
       axios
@@ -177,7 +176,7 @@ export default {
           // handle error
           console.log(error);
         });
-      console.log(payload);
+
       //    commit('setUserList', '')
     },
     async addNameToProjectAdmin({ commit }, payload) {
@@ -193,7 +192,7 @@ export default {
             // handle error
             console.log(error);
           });
-        console.log(payload);
+   
         //    commit('setUserList', '')
       },
     async fetchTemplateUser({ commit }) {

@@ -349,7 +349,7 @@ export default {
       axios(config)
         .then(() => {
           this.open = false;
-          console.log("Toppp response.data", response.data);
+          // console.log("Toppp response.data", response.data);
           var config = {
             method: "get",
             url: "https://api2.cognizata.com/api/v2/userposts/getHotissue",

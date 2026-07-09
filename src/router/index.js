@@ -581,6 +581,18 @@ const routes = [
         /* webpackChunkName: "targetprofile" */ "../views/BotActive.vue"
       )
   },
+     {
+    path: "/wordcloudpage",
+    name: "WordcloudPage",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/WordcloudPage.vue"
+      ),
+      meta: { requiresAuth: true },
+  },
    // {
   //   path: "/home",
   //   name: "Section",
@@ -604,7 +616,7 @@ axios.interceptors.response.use(
   function(error) {
     const originalRequest = error.config;
     //when refresh token expired go to login to get access token first
-    console.log(originalRequest.url);
+    // console.log(originalRequest.url);
     if (
       error.response.status === 401 &&
       originalRequest.url === "https://api2.cognizata.com/api/auth/reftoken"

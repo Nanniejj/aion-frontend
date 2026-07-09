@@ -131,6 +131,9 @@ export default {
       this.closeShow();
     }
   },
+  destroyed() {
+    this.$store.commit("setPushDomainStat", false);
+  },
   created() {
     this.$store.dispatch("fetchListIssue");
     // let ar = []

@@ -555,7 +555,7 @@ export default {
     };
     this.axios(config)
       .then((response) => {
-        console.log("Toppp response.data", response.data);
+      
 
         this.topuser = response.data.slice(0, 5);
         console.log('top5',this.topuser);

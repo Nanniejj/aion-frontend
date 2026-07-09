@@ -111,7 +111,6 @@ export default {
       };
       this.axios(config)
         .then((response) => {
-          console.log("Toppp response.data", response.data[0].TopHashtags);
           if (response.data[0]) {
             this.hash = response.data[0].TopHashtags;
           } else {

@@ -1,24 +1,23 @@
 <template>
   <div>
 
-    <!-- ✅ แจ้งเตือนตอนโหลดข้อมูลไม่สำเร็จ — ทั้งกรณี component ยิงเอง หรือ parent ยิงแล้วส่ง externalError ลงมา
-         โชว์แทนที่ภาพเก่า เพราะ clearClouds() ล้าง apiData/canvas ทิ้งไปแล้วตอนเริ่ม fetch ใหม่ -->
-  
-    <div v-if="resolvedError" class="wc-error-banner">
+    <!-- ✅ แจ้งเตือน error — รับมาจาก parent ผ่าน prop `error` เท่านั้น (component นี้ไม่ fetch เองแล้ว)
+         ปุ่ม "ลองใหม่" ยิง event retry ให้ parent (คนที่ยิง API จริง) ไปจัดการเอง -->
+    <div v-if="error" class="wc-error-banner">
       <i class="fa fa-triangle-exclamation"></i>
-      <span>{{ resolvedError }} โปรดลองอีกครั้ง</span>
-      <button v-if="usingOwnFetch" type="button" class="wc-retry-btn" @click="loadWordCloud(true)">ลองใหม่</button>
+      <span>{{ error }} โปรดลองอีกครั้ง</span>
+      <button type="button" class="wc-retry-btn" @click="$emit('retry')">ลองใหม่</button>
     </div>
 
-    <!-- ✅ 2 cloud ใน 1 component (component ยิง API เอง หรือรับ external data ก็ได้)
+    <!-- ✅ 2 cloud ใน 1 component
          Engine: wordcloud2.js (timdream) — วางคำแบบ grid-based ทำให้ "เต็มกรอบสี่เหลี่ยม"
          ได้ดีกว่า d3-cloud (ซึ่งวางแบบ spiral รอบจุดกลาง จึงเหลือมุมว่างเสมอ) -->
     <div class="">
-      <b-row class="mb-1" >
+      <b-row class="mb-1">
         <!-- WORD CLOUD -->
         <!-- ✅ mobile: โชว์ทีละอันตาม activeTab (word/hash) ด้วย d-none + d-lg-block
              desktop (lg ขึ้นไป): โชว์คู่กันเสมอ ไม่สนใจ activeTab -->
-        <b-col lg="6" :class="{ 'd-none': activeTab !== 'word', 'd-lg-block': true }">
+        <b-col cols="12" lg="6" class="px-0">
           <div class="h-100 w-100 px-2">
             <div class="wc-wrap  box-domain position-relative ">
               <!-- ⚡ chartWords คือ "host div" — เราจะสร้าง <canvas> ยัดเข้าไปข้างในตอน render
@@ -27,42 +26,38 @@
                 <div ref="chartWords" class="wc-chart-inner"></div>
               </div>
 
-              <div v-if="resolvedIsLoading" class="wc-overlay">
+              <div v-if="isLoading" class="wc-overlay">
                 <div class="text-center">
-                  <vue-element-loading :active="resolvedIsLoading" size="50" background-color="rgba(255,255,255,0)"
+                  <vue-element-loading :active="isLoading" size="50" background-color="rgba(255,255,255,0)"
                     color="#17a2b891" />
                 </div>
               </div>
             </div>
           </div>
-         
         </b-col>
 
         <!-- HASHTAG CLOUD -->
-        <b-col lg="6" :class="{ 'd-none': activeTab !== 'hash', 'd-lg-block': true }">
+        <b-col cols="12" lg="6" class="px-0">
           <div class="h-100 w-100 px-2">
             <div class="wc-wrap  box-domain position-relative">
               <div ref="chartWrapTags" class="wc-chart" :style="chartAspectStyle">
                 <div ref="chartTags" class="wc-chart-inner"></div>
               </div>
 
-              <div v-if="resolvedIsLoading" class="wc-overlay">
+              <div v-if="isLoading" class="wc-overlay">
                 <div class="text-center">
-                  <vue-element-loading :active="resolvedIsLoading" size="50" background-color="rgba(255,255,255,0)"
+                  <vue-element-loading :active="isLoading" size="50" background-color="rgba(255,255,255,0)"
                     color="#17a2b891" />
                 </div>
               </div>
             </div>
           </div>
-
-         
         </b-col>
       </b-row>
     </div>
 
     <!-- ✅ Popup แสดงข้อมูลคำ/แฮชแท็ก
-         - hover = แสดงตัวอย่างชั่วคราว ณ จุดที่เมาส์เข้าคำ (wordcloud2.js hover ยิงตอน enter/leave region เท่านั้น
-           จึงไม่กระพริบ แต่ตำแหน่ง popup จะ "ตรึง" ที่จุดที่เมาส์เข้าคำ ไม่วิ่งตามเมาส์เหมือน svg เวอร์ชันเดิม)
+         - hover = แสดงตัวอย่างชั่วคราว ณ จุดที่เมาส์เข้าคำ
          - คลิก = ปักหมุดค้างไว้ พร้อมปุ่มดูโพสต์/ซ่อนคำ
          - position: fixed อิงพิกัด viewport ตรง ๆ ไม่โดน overflow ของกล่องบีบ -->
     <div v-if="popup.show" ref="wordPopup" class="wc-word-popup" :class="{ 'wc-word-popup-pinned': popup.pinned }"
@@ -110,41 +105,93 @@
         </b-row>
       </div>
     </div>
-<div>
-  <b-row>
-    <!-- ✅ badge "เอากลับมา" ก็โชว์ตามแท็บที่ active บนมือถือเช่นกัน -->
-    <b-col :class="{ 'd-none': activeTab !== 'word', 'd-lg-block': true }">
-       <button v-if="excludedWordsCount > 0" type="button" class="wc-reset-badge" @click="resetExcluded('words')">
+
+    <div>
+      <b-row>
+        <!-- ✅ badge "เอากลับมา" ก็โชว์ตามแท็บที่ active บนมือถือเช่นกัน -->
+        <b-col cols="6" lg="6">
+          <button v-if="excludedWordsCount > 0" type="button" class="wc-reset-badge" @click="resetExcluded('words')">
             ซ่อนไว้ {{ excludedWordsCount }} คำ · เอากลับมา
           </button>
-    </b-col>
-    <b-col :class="{ 'd-none': activeTab !== 'hash', 'd-lg-block': true }">
-       <button v-if="excludedTagsCount > 0" type="button" class="wc-reset-badge" @click="resetExcluded('tags')">
+        </b-col>
+        <b-col cols="6" lg="6">
+          <button v-if="excludedTagsCount > 0" type="button" class="wc-reset-badge" @click="resetExcluded('tags')">
             ซ่อนไว้ {{ excludedTagsCount }} แท็ก · เอากลับมา
           </button>
-    </b-col>
-  </b-row>
-  
-</div>
-</div>
+        </b-col>
+      </b-row>
+    </div>
+  </div>
 </template>
 
 <script>
-import axios from "axios";
-import * as d3 from "d3"; // ✅ ยังใช้ d3 สำหรับ scaleLog + สี (d3.rgb/hsl) เท่านั้น ไม่ใช้ d3-cloud แล้ว
+import * as d3 from "d3"; // ✅ ใช้ d3 สำหรับ scaleLog + สี (d3.rgb/hsl) เท่านั้น ไม่ใช้ d3-cloud
+
+// ✅ URL ฟอนต์ Sarabun (ตัวเดียวกับที่ @import ไว้ใน <style> ด้านล่าง)
+const WC_FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap";
+
+// ⚡ module-level singleton — ฉีด <link rel="stylesheet"> เข้า <head> "ครั้งเดียว" ไม่ว่าจะมี
+//    instance ของ component นี้กี่ตัวบนหน้าเดียวกัน แล้วคืน promise ที่ resolve เมื่อไฟล์ CSS
+//    โหลดเสร็จจริง (ต่างจาก @import ใน <style scoped> ที่เป็น async แบบไม่มีใครรอ)
+let _wcFontStylesheetPromise = null;
+function ensureFontStylesheetLoaded(href) {
+  if (typeof document === "undefined") return Promise.resolve();
+  if (_wcFontStylesheetPromise) return _wcFontStylesheetPromise;
+
+  _wcFontStylesheetPromise = new Promise((resolve) => {
+    const existing = document.querySelector('link[data-wc-font="sarabun"]');
+
+    const safetyTimer = setTimeout(resolve, 3000); // ✅ กันค้างถ้า network ช้า/โดนบล็อก CDN ฟอนต์
+
+    if (existing) {
+      if (existing.dataset.loaded === "1") {
+        clearTimeout(safetyTimer);
+        resolve();
+        return;
+      }
+      existing.addEventListener(
+        "load",
+        () => {
+          clearTimeout(safetyTimer);
+          resolve();
+        },
+        { once: true }
+      );
+      existing.addEventListener("error", () => resolve(), { once: true });
+      return;
+    }
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.dataset.wcFont = "sarabun";
+    link.addEventListener(
+      "load",
+      () => {
+        link.dataset.loaded = "1";
+        clearTimeout(safetyTimer);
+        resolve();
+      },
+      { once: true }
+    );
+    link.addEventListener("error", () => resolve(), { once: true });
+    document.head.appendChild(link);
+  });
+
+  return _wcFontStylesheetPromise;
+}
 
 export default {
-  name: "WordCloudFull",
+  name: "WordCloudD3",
   props: {
-    token: { type: String, default: "" },
+    // ✅ ข้อมูลดิบจาก API — parent เป็นคนยิง fetch เองแล้วส่งเข้ามาตรงนี้
+    //    รูปแบบเดียวกับ response เดิม เช่น { wordCloud: [...], hashtags: [...] } หรือ array ตรงๆ
+    data: { type: [Object, Array], default: null },
+    isLoading: { type: Boolean, default: false },
+    error: { type: String, default: "" },
 
-    // ✅ component ยิง API เอง — กำหนดผ่าน prop
-    domainId: { type: [String, Number], default: "" },
-    start: { type: String, default: "" },
-    end: { type: String, default: "" },
-    monitor: { type: [String, Boolean], default: "" },
-
-    // ✅ key ของผลลัพธ์ใน apiData
+    // ✅ key ของผลลัพธ์ใน data
     hashtagsKey: { type: String, default: "hashtags" },
     itemsKey: { type: String, default: "items" },
 
@@ -158,19 +205,16 @@ export default {
     fixedHeight: { type: Number, default: 480 },
 
     // ✅ ความคมของ canvas: canvas จริง = fixedWidth*renderScale (แล้ว CSS ย่อ/ขยายเต็ม container)
-    //    2 = คมบนจอ retina, ไม่ต้อง re-render ตอน container resize (ต่างจาก svg viewBox แต่ผลลัพธ์ใกล้เคียง)
     renderScale: { type: Number, default: 2 },
 
-    // ⚡ ปรับขนาดฟอนต์ให้ "คำเด่น" ไม่ครองจอทั้งหมด (ตรงกับภาพตัวอย่างมากกว่า maxFont 140 ของ d3 เวอร์ชันเดิม)
+    // ⚡ ปรับขนาดฟอนต์ให้ "คำเด่น" ไม่ครองจอทั้งหมด
     minFont: { type: Number, default: 14 },
     maxFont: { type: Number, default: 72 },
 
     // ⚡ gridSize เล็ก = อุดช่องว่างแน่นขึ้น/เต็มกรอบขึ้น แต่ช้าลงและคำเล็กเบียดกัน
-    //    (หน่วยเป็น "logical px" จะถูกคูณ renderScale ให้เป็น canvas px ภายใน)
     gridSize: { type: Number, default: 4 },
 
-    // ✅ หมุนคำบางส่วน (แนวตั้ง ±90°) เพื่ออุดช่องว่าง → เต็มกรอบเหมือนภาพตัวอย่าง
-    //    disableRotate = true จะ override ให้ rotateRatio = 0
+    // ✅ หมุนคำบางส่วน (แนวตั้ง ±90°) เพื่ออุดช่องว่าง
     disableRotate: { type: Boolean, default: false },
     rotateRatio: { type: Number, default: 0.28 },
 
@@ -178,15 +222,15 @@ export default {
     fontFamily: { type: String, default: "'Sarabun', sans-serif" },
     fontWeight: { type: [String, Number], default: "300" },
 
-    // ✅ สีพื้นหลัง canvas — ตั้งให้ตรงกับสีพื้นของการ์ด (wordcloud2.js เติมสีนี้ก่อนวาด)
+    // ✅ สีพื้นหลัง canvas
     backgroundColor: { type: String, default: "#ffffff" },
 
-    // ✅ สีและพารามิเตอร์ blend sentiment (เหมือน backend lib/sentimentColor.js)
+    // ✅ สีและพารามิเตอร์ blend sentiment
     colorPos: { type: String, default: "#124D1C" },
     colorNeu: { type: String, default: "#FFC107" },
     colorNeg: { type: String, default: "#5E0006" },
-    
-   domPow: { type: Number, default: 2.2 },
+
+    domPow: { type: Number, default: 2.2 },
     negBoost: { type: Number, default: 3.35 },
     neuDampen: { type: Number, default: 1.15 },
     dominanceKick: { type: Number, default: 0.35 },
@@ -195,36 +239,31 @@ export default {
     lightMin: { type: Number, default: 0.34 },
     lightMax: { type: Number, default: 0.56 },
 
-    // ✅ ระยะห่างตัวอักษร: wordcloud2.js วาดคำด้วย fillText เป็นก้อนเดียว ไม่มี option
-    //    letter-spacing ให้ตรงๆ เลยจำลองด้วยการแทรก hair-space (U+200A) คั่นตัวอักษร
-    //    0 = ปิด (ปกติ), 1 = ห่างนิดหน่อย, 2 = ห่างขึ้นอีก ฯลฯ
+    // ✅ ระยะห่างตัวอักษร (จำลองด้วย hair-space เพราะ wordcloud2.js ไม่มี option ตรงๆ)
     letterSpacing: { type: Number, default: 1 },
 
-    // ✅ Optional: parent fetch once and pass down
-    externalApiData: { type: [Object, Array], default: null },
-    externalLoading: { type: Boolean, default: false },
-    externalFetch: { type: Boolean, default: false },
-    // ✅ ถ้า parent เป็นคนยิง fetch เอง (external-fetch) แล้วพัง ให้ส่ง message ลงมาทางนี้
-    //    เพื่อให้ banner error ด้านล่างโชว์ได้ (ไม่งั้น error ฝั่ง parent จะไม่มีทางเห็นใน component นี้เลย)
-    externalError: { type: String, default: "" },
-
     // ✅ คุมว่าบนมือถือ (< lg) ให้โชว์ฝั่งไหน: "word" | "hash"
-    //    ไม่มีผลกับ desktop (lg ขึ้นไปโชว์คู่กันเสมอ ผ่าน d-lg-block)
     activeTab: { type: String, default: "word" },
+
+    // ⚠️ storageKey ไม่ได้ถูกใช้อ้างอิง localStorage แล้ว (เก็บ prop ไว้เผื่อ parent ยังส่งมา
+    //    เพื่อไม่ให้ต้องแก้ parent, แต่ค่านี้ไม่มีผลอะไรกับ component นี้อีกต่อไป)
+    storageKey: { type: String, default: "default" },
+
+    // ⚡ เมื่อทุกคำ/แท็กมี "ความถี่เท่ากันหมด" (เช่น hashtag ที่นับได้ครั้งละ 1)
+    //    ให้ไล่ระดับขนาดฟอนต์แบบปลอม (rank-based) เพื่อให้กระจายเต็มกรอบแทนที่จะกระจุกตัวกลางจอ
+    //    เปิดไว้เป็นค่า default เพราะเป็น UX ที่ดีกว่าเสมอในกรณีนี้ ปิดได้ถ้าต้องการขนาดเท่ากันจริงๆ
+    equalFreqSpread: { type: Boolean, default: true },
+    // ⚡ ความชันของการไล่ระดับตอนความถี่เท่ากันหมด (ยิ่งมาก = มีคำใหญ่น้อยคำ + คำเล็กเยอะ กระจายเต็มกรอบกว่า)
+    equalFreqPow: { type: Number, default: 1.8 },
   },
 
   data() {
     return {
-      isLoading: false,
-      hasLoaded: false,
-      error: "",
       apiData: null,
-
-      _cancelSource: null,
-      _lastFetchKey: "",
 
       // ✅ wordcloud2.js module (dynamic import กัน SSR พัง)
       _WC: null,
+      _wcLoadError: "",
 
       // ✅ canvas ปัจจุบันของแต่ละฝั่ง (ใช้ตอน destroy/stop)
       _canvasWords: null,
@@ -237,27 +276,27 @@ export default {
       _renderedWords: false,
       _renderedTags: false,
 
-      // ⚡ debounce re-render ตอน container resize (canvas ไม่ scale ฟรีเหมือน svg viewBox)
+      // ⚡ debounce re-render ตอน container resize
       _resizeTimerWords: null,
       _resizeTimerTags: null,
       _lastRenderWidthWords: 0,
       _lastRenderWidthTags: 0,
 
+      // ⚠️ คำ/แท็กที่ถูกซ่อนไว้ — เก็บใน memory (component state) เท่านั้น ไม่ persist ลง localStorage แล้ว
+      //    ผลคือ: ออกจากหน้า (component ถูก destroy) หรือเปลี่ยนช่วงวันที่ (data prop ใหม่เข้ามา) → รายการนี้หายไปเอง
       excludedWords: {},
       excludedTags: {},
 
       // ⚡ คิวกลาง: บังคับให้วาด words/tags "ทีละก้อน" เท่านั้น
-      //    wordcloud2.js ใช้ flag "stopped" ระดับ module เดียว (ไม่แยกต่อ canvas)
-      //    ถ้าปล่อยให้วาด 2 ฝั่งพร้อมกัน (เช่นตอน resize ที่ ResizeObserver ยิงทั้งคู่)
-      //    การเรียก stop() ของฝั่งหนึ่งจะไปตัดจบการวาดของอีกฝั่งกลางคัน → canvas ว่างเปล่า
-      //    เข้าคิวรอให้ก้อนก่อนหน้า "วาดจบจริง" ก่อน ค่อยเริ่มก้อนถัดไป
       _renderChain: null,
 
-      // ⚡ generation counter: กันงานวาดที่ค้างคิวอยู่ (จากข้อมูล/filter เก่า) ดันภาพเก่า
-      //    ทับข้อมูลใหม่หลัง clearClouds() ถูกเรียก (เช่นตอนเปลี่ยน filter/ดึงข้อมูลใหม่)
-      //    ทุกครั้งที่ clearClouds() เรียก เลข gen จะขยับ งานวาดที่ถือ gen เก่าจะรู้ตัวว่า
-      //    "ล้าสมัยแล้ว" แล้วไม่แตะ DOM
-      _renderGen: 0,
+      // ⚡ generation counter: กันงานวาดที่ค้างคิวอยู่ดันภาพเก่าทับข้อมูลใหม่
+      _renderGen: 0, // ต้องเป็นตัวเลข 0 เสมอ — ถ้าหายไปจาก data() ตรงนี้ this._renderGen จะเป็น undefined
+                     // แล้ว undefined++ = NaN ซึ่งทำให้ (myGen !== this._renderGen) เป็น true ตลอดกาล (NaN !== NaN)
+                     // และ render pipeline จะ bail ทิ้งทุกครั้งก่อนถึงขั้นตอนสร้าง canvas
+
+      // ⚡ กันโหลดฟอนต์ซ้ำซ้อน: cache ผลลัพธ์ของ ensureFontLoaded ต่อ "text signature" ที่เคยโหลดแล้ว
+      _fontReadySignature: "",
 
       popup: {
         show: false,
@@ -276,26 +315,9 @@ export default {
   },
 
   computed: {
-    usingOwnFetch() {
-      return (!this.externalFetch) && (this.externalApiData === null || this.externalApiData === undefined);
-    },
-    resolvedIsLoading() {
-      return this.externalLoading ? this.externalLoading : this.isLoading;
-    },
-    // ✅ error ที่โชว์จริง — ของตัวเอง (usingOwnFetch) หรือที่ parent ส่งมาทาง externalError
-    resolvedError() {
-      return this.usingOwnFetch ? this.error : this.externalError;
-    },
-    resolvedToken() {
-      return this.token || localStorage.getItem("token") || "";
-    },
-    resolvedStart() {
-      if (this.start) return this.start;
-      return new Date().toISOString().slice(0, 10) + "T00:00:00";
-    },
-    resolvedEnd() {
-      if (this.end) return this.end;
-      return new Date().toISOString().slice(0, 10) + "T23:59:59";
+    // ✅ ยังไม่มีข้อมูลเลย vs มีแล้วแต่ว่างเปล่า ใช้แยกข้อความ "ไม่พบข้อมูล"
+    hasLoaded() {
+      return this.apiData !== null && this.apiData !== undefined;
     },
     wordItems() {
       if (!this.apiData) return [];
@@ -322,24 +344,25 @@ export default {
   },
 
   watch: {
-    apiData() {
-      this.renderBoth();
-    },
-    externalApiData: {
+    // ✅ จุดเดียวที่รับข้อมูลเข้ามา — parent เปลี่ยน prop data เมื่อไหร่ ก็วาดใหม่ทันที
+    data: {
       immediate: true,
       handler(val) {
-        if (val !== null && val !== undefined) {
-          // ⚠️ parent ส่ง data ก้อนใหม่ลงมา (เช่นเปลี่ยนช่วงวันที่แล้วยิง API รอบใหม่) → เคลียร์คำที่เคยซ่อนไว้ทิ้ง
-          this.excludedWords = {};
-          this.excludedTags = {};
-          this.apiData = val;
+        this._renderGen = (Number(this._renderGen) || 0) + 1; // กัน NaN ถ้า _renderGen หลุดหายจาก data()
+        this.apiData = (val !== undefined) ? val : null;
+
+        // ⚠️ ทุกครั้งที่ parent ส่ง data ก้อนใหม่เข้ามา (เช่นตอนเปลี่ยนช่วงวันที่แล้วยิง API รอบใหม่)
+        //    ให้เคลียร์รายการคำ/แท็กที่เคยซ่อนไว้ทิ้งทั้งหมด เพราะไม่ persist ข้ามช่วงข้อมูลแล้ว
+        this.excludedWords = {};
+        this.excludedTags = {};
+
+        if (this.apiData === null) {
+          this.clearClouds();
+        } else {
           this.renderBoth();
         }
       },
     },
-    // ✅ พอสลับแท็บบนมือถือ (word <-> hash) column ที่เพิ่งโผล่จาก d-none -> block
-    //    อาจมีขนาด 0 ตอน mounted ครั้งแรก (ยังไม่เคยถูกวาด) หรือบาง browser ไม่ fire ResizeObserver
-    //    ตอน display:none -> block ทันที เลย re-render กันเหนียวไว้ตรงนี้
     activeTab() {
       this.$nextTick(() => {
         const kind = this.activeTab === "hash" ? "tags" : "words";
@@ -348,7 +371,6 @@ export default {
         this.renderKind(kind);
       });
     },
-    layoutOversizeIgnored() {}, // no-op kept for template stability
     fixedWidth() {
       this.renderBoth();
     },
@@ -367,51 +389,22 @@ export default {
     letterSpacing() {
       this.renderBoth();
     },
-    domainId() {
-      if (this.usingOwnFetch) this.loadWordCloud(true);
-      else {
-        // ⚠️ external-fetch: parent เป็นคนยิง API เอง แต่เปลี่ยน domain แล้วต้องเคลียร์คำที่เคยซ่อนไว้ด้วย
-        this.excludedWords = {};
-        this.excludedTags = {};
-        this.apiData = this.externalApiData;
-        this.renderBoth();
-      }
-    },
-    start() {
-      if (this.usingOwnFetch) this.loadWordCloud(true);
-      else {
-        this.excludedWords = {};
-        this.excludedTags = {};
-        this.apiData = this.externalApiData;
-        this.renderBoth();
-      }
-    },
-    end() {
-      if (this.usingOwnFetch) this.loadWordCloud(true);
-      else {
-        this.excludedWords = {};
-        this.excludedTags = {};
-        this.apiData = this.externalApiData;
-        this.renderBoth();
-      }
-    },
-    monitor() {
-      if (this.usingOwnFetch) this.loadWordCloud(true);
-      else {
-        this.excludedWords = {};
-        this.excludedTags = {};
-        this.apiData = this.externalApiData;
-        this.renderBoth();
-      }
-    },
+  },
+
+  created() {
+    // ⚡ เริ่มโหลด stylesheet ของฟอนต์ให้เร็วที่สุดเท่าที่ทำได้ (ก่อน mounted/render ด้วยซ้ำ)
+    //    ยิงแบบ fire-and-forget ตรงนี้ เพื่อให้พอถึงตอน renderKind() เรียก ensureFontLoaded()
+    //    ไฟล์ CSS ส่วนใหญ่น่าจะโหลดมาถึง browser แล้ว ลดโอกาสที่ canvas จะวาดด้วย fallback font
+    if (typeof document !== "undefined") {
+      ensureFontStylesheetLoaded(WC_FONT_HREF).catch(() => {});
+    }
   },
 
   mounted() {
-    // ⚠️ ไม่โหลดคำที่ซ่อนไว้จาก localStorage แล้ว — excludedWords/excludedTags เริ่มต้นเป็น {} เสมอ
-    //    (ดู data() ด้านบน) ทุกครั้งที่ component ถูก mount ใหม่ (เช่น กลับเข้าหน้านี้อีกครั้ง) รายการจะว่างเปล่า
-    if (this.usingOwnFetch) this.loadWordCloud();
-    else {
-      this.apiData = this.externalApiData;
+    // ⚠️ ไม่ต้อง loadExcluded() จาก localStorage อีกต่อไป — excludedWords/excludedTags เริ่มต้นเป็น {} เสมอ
+    //    (ดู data() ด้านบน) ทุกครั้งที่ component ถูก mount ใหม่ (เช่น กลับเข้าหน้านี้อีกครั้ง)
+    if (this.data !== null && this.data !== undefined) {
+      this.apiData = this.data;
       this.renderBoth();
     }
 
@@ -435,10 +428,6 @@ export default {
       const w2 = this.$refs.chartWrapTags;
 
       // ⚡ ResizeObserver: (1) จับจังหวะกล่องมีขนาดจริงครั้งแรก (2) re-render เมื่อ "ความกว้างเปลี่ยนจริง"
-      //    ต่างจาก svg viewBox — canvas ต้องวาดใหม่ถ้าอยากคมตอน container ขยาย/หด
-      //    (debounce + เทียบ width เดิม กันวาดซ้ำถี่ ๆ ระหว่าง drag resize)
-      //    ⚡ ยังใช้จับจังหวะตอนสลับแท็บมือถือด้วย: column ที่โผล่จาก d-none -> block
-      //    จะมี clientWidth > 50 ครั้งแรก แล้ว onResizeWords/Tags จะ trigger renderKind ให้เอง
       const onResizeWords = () => {
         if (!(w1 && w1.clientWidth > 50 && w1.clientHeight > 50)) return;
         if (!this._renderedWords) {
@@ -485,18 +474,10 @@ export default {
       }
     });
   },
-destroyed() {
-    this.destroyAll();
-    this.apiData = null;
-  },
+
   beforeDestroy() {
     this.destroyAll();
 
-    if (this._cancelSource) {
-      try {
-        this._cancelSource.cancel("Component destroyed");
-      } catch (e) { }
-    }
     try { this._roWords && this._roWords.disconnect(); } catch (e) { }
     try { this._roTags && this._roTags.disconnect(); } catch (e) { }
     if (this._fallbackResize) window.removeEventListener("resize", this._fallbackResize);
@@ -509,7 +490,7 @@ destroyed() {
     document.removeEventListener("keydown", this._closePopupOnEsc);
     window.removeEventListener("resize", this._closePopupOnResize);
 
-    // ⚠️ กันเหนียว: เคลียร์คำที่ซ่อนไว้ในหน่วยความจำทิ้งตอนออกจากหน้า (ไม่มี localStorage ให้กลับมาอ่านอีกแล้ว)
+    // ⚠️ กันเหนียว: เคลียร์ในหน่วยความจำทิ้งด้วยตอนออกจากหน้า (แม้ปกติ component instance จะถูกทิ้งไปเองอยู่แล้ว)
     this.excludedWords = {};
     this.excludedTags = {};
   },
@@ -523,6 +504,19 @@ destroyed() {
       return Math.min(b, Math.max(a, x));
     },
 
+    // ⚡ hash string → เลข ใช้ทำ "ลำดับปลอมแบบ deterministic"
+    //    เหตุผลที่ไม่ใช้ Math.random(): ถ้าสุ่มจริง ทุกครั้งที่ re-render (เช่นตอน resize จอ)
+    //    ลำดับ/ขนาดของแต่ละคำจะสลับไปมา ทำให้ภาพกระพริบเปลี่ยนหน้าตาเอง
+    //    ใช้ hash ของ "ข้อความคำนั้นเอง" แทน จะได้ผลลัพธ์เดิมทุกครั้งตราบใดที่คำเดิม
+    _pseudoRank(key) {
+      let h = 0;
+      const s = String(key || "");
+      for (let i = 0; i < s.length; i++) {
+        h = (h * 31 + s.charCodeAt(i)) >>> 0;
+      }
+      return h;
+    },
+
     // ✅ dynamic import wordcloud2.js ครั้งเดียว (กัน SSR: window/document ไม่มีตอน build)
     async ensureWC() {
       if (this._WC) return this._WC;
@@ -530,22 +524,70 @@ destroyed() {
       try {
         const m = await import("wordcloud");
         this._WC = m.default || m;
+        this._wcLoadError = "";
       } catch (e) {
-        this.error = "โหลด wordcloud2.js ไม่สำเร็จ (npm i wordcloud)";
         this._WC = null;
+        // ✅ เดิมพอ import พังจะเงียบไปเลย ไม่มีอะไรโชว์บนจอ ผู้ใช้เห็นแค่กล่องว่างๆ
+        //    ทั้งที่ data มาถึงแล้ว — เก็บ error ไว้โชว์ในกล่องแทน "ไม่พบข้อมูล"
+        console.error("[WordCloudD3] โหลด wordcloud module ไม่สำเร็จ:", e);
+        this._wcLoadError = "โหลด wordcloud module ไม่สำเร็จ (ตรวจสอบว่าติดตั้ง npm package \"wordcloud\" แล้ว)";
       }
       return this._WC;
     },
 
-    async ensureFontLoaded() {
-      if (!document?.fonts) return;
+    // ✅ โหลดฟอนต์ให้ "พร้อมจริง" ก่อนวาด canvas — แก้ปัญหาโหลดฟอนต์ไม่ทัน 2 จุด:
+    //    1) รอ stylesheet ของ Google Fonts โหลดเสร็จจริง (ไม่พึ่ง @import อย่างเดียว)
+    //    2) ส่ง sampleText (คำไทยจริงที่กำลังจะวาด) เข้า document.fonts.load() เพราะถ้าไม่ส่ง
+    //       browser จะใช้ test-string default ซึ่งอาจโหลดแค่ subset ละติน ไม่ใช่ subset ไทย
+    //       ทำให้ check()/load() "ผ่าน" ทั้งที่ตัวอักษรไทยยังไม่มา แล้วก็วาดด้วย fallback font
+    async ensureFontLoaded(sampleText) {
+      if (typeof document === "undefined") return;
+
       try {
-        const need300 = !document.fonts.check(`300 16px ${this.fontFamily}`);
-        const need700 = !document.fonts.check(`700 16px ${this.fontFamily}`);
-        if (need300) await document.fonts.load(`300 16px ${this.fontFamily}`);
-        if (need700) await document.fonts.load(`700 16px ${this.fontFamily}`);
-        if (need300 || need700) await document.fonts.ready;
+        await ensureFontStylesheetLoaded(WC_FONT_HREF);
       } catch (e) { }
+
+      if (!document.fonts) return;
+
+      const text =
+        (sampleText && String(sampleText).trim()) ||
+        "กขคงจฉชซญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ ๅๆ฿0123456789";
+
+      // ⚡ ถ้าโหลด "ชุดคำเดิม" ไปแล้วในรอบก่อนหน้า ไม่ต้องรอซ้ำ (fonts ที่โหลดแล้วจะ resolve ทันทีอยู่แล้ว
+      //    แต่เช็ก signature ไว้ช่วยข้ามการเรียก document.fonts.load ที่ไม่จำเป็นได้เร็วขึ้นอีกนิด)
+      const weight = String(this.fontWeight || "300").trim();
+      const signature = `${weight}::${text}`;
+      if (this._fontReadySignature === signature) return;
+
+      try {
+        const specs = [
+          `${weight} 16px ${this.fontFamily}`,
+          `700 16px ${this.fontFamily}`, // ✅ เผื่อ browser fallback ไป bold ตอน weight ที่ขอไม่ตรง
+        ];
+
+        const loaders = specs.map((spec) => {
+          try {
+            return document.fonts.load(spec, text);
+          } catch (e) {
+            return Promise.resolve([]);
+          }
+        });
+
+        await Promise.race([
+          Promise.all(loaders),
+          new Promise((resolve) => setTimeout(resolve, 2500)), // ✅ กันค้างถ้าเน็ต/CDN ฟอนต์ช้า
+        ]);
+
+        await Promise.race([
+          document.fonts.ready,
+          new Promise((resolve) => setTimeout(resolve, 800)),
+        ]);
+
+        this._fontReadySignature = signature;
+      } catch (e) {
+        // ✅ เงียบไว้ — ถ้าฟอนต์โหลดไม่สำเร็จจริงๆ ให้ตกไปใช้ fallback font ของ fontFamily
+        //    (เช่น sans-serif) ดีกว่าค้างทั้งหน้าไม่วาดอะไรเลย
+      }
     },
 
     async waitForStableSize(wrapEl, tries = 3) {
@@ -556,76 +598,14 @@ destroyed() {
       return false;
     },
 
-    // ✅ เคลียร์ข้อมูล/ภาพเก่าทิ้งทันที — เรียกตอน "กำลังจะยิง fetch ใหม่จริงๆ" เท่านั้น
-    //    (ไม่ใช่ทุกครั้งที่ loadWordCloud ถูกเรียก เพราะบางครั้งแค่ reuse cache เดิม)
-    //    ขยับ _renderGen ด้วย เพื่อบอกงานวาดที่ค้างคิวอยู่ว่า "ข้อมูลนี้เก่าแล้ว อย่าดันเข้า DOM"
+    // ✅ ล้าง canvas ทันที เช่นตอนที่ parent ส่ง data เป็น null (เคลียร์ก่อน fetch รอบใหม่)
     clearClouds() {
-      this._renderGen++;
-      this.error = "";
-      this.apiData = null;
-
-      // ⚠️ กำลังจะดึงข้อมูลก้อนใหม่จริงๆ (domain/ช่วงวันที่/monitor เปลี่ยน) → เคลียร์คำ/แท็กที่เคยซ่อนไว้ทิ้งทั้งหมด
-      //    เพราะไม่ persist ข้ามช่วงข้อมูลแล้ว (ไม่มี localStorage อีกต่อไป)
-      this.excludedWords = {};
-      this.excludedTags = {};
-
       const ew = this.$refs.chartWords;
       const et = this.$refs.chartTags;
       if (ew) ew.innerHTML = "";
       if (et) et.innerHTML = "";
       this._canvasWords = null;
       this._canvasTags = null;
-    },
-
-    async loadWordCloud(force = false) {
-      this.error = "";
-      if (!this.resolvedToken) {
-        this.error = "ไม่พบ token (ส่ง prop token หรือ set localStorage key: token)";
-        this.hasLoaded = true;
-        return;
-      }
-
-      const fetchKey = `${String(this.domainId)}|${String(this.resolvedStart)}|${String(this.resolvedEnd)}|${String(this.monitor)}`;
-      if (!force && this.apiData && this._lastFetchKey === fetchKey) {
-        this.renderBoth();
-        return;
-      }
-
-      // ✅ กำลังจะยิง fetch ใหม่จริงๆ (filter เปลี่ยน/force) — ล้างข้อมูล+ภาพเก่าทิ้งก่อนเลย
-      //    กันเคส error แล้วภาพ/ข้อมูล domain หรือช่วงเวลาเก่าค้างอยู่ทำให้เข้าใจผิดว่าเป็นข้อมูลปัจจุบัน
-      this.clearClouds();
-
-      if (this._cancelSource) this._cancelSource.cancel("Cancelled due to new request");
-      this._cancelSource = axios.CancelToken.source();
-
-      this.isLoading = true;
-      this.hasLoaded = false;
-      try {
-        const params = { domain_id: this.domainId, start: this.resolvedStart, end: this.resolvedEnd };
-        if (this.monitor) params.monitor = this.monitor;
-
-        const res = await axios.request({
-          method: "GET",
-          url: "https://api2.cognizata.com/api/v2/wordcloud/getWordCloud",
-          params,
-          headers: { Authorization: `Bearer ${this.resolvedToken}` },
-          cancelToken: this._cancelSource.token,
-        });
-
-        this.apiData = res.data;
-        this._lastFetchKey = fetchKey;
-        this.$emit("loaded", this.apiData);
-        this.renderBoth();
-      } catch (err) {
-        if (axios.isCancel(err)) return;
-        this.error =
-          (err.response && err.response.data && err.response.data.message) ||
-          err.message || "โหลดข้อมูลไม่สำเร็จ";
-        this._lastFetchKey = ""; // ✅ กัน cache key ค้าง เผื่อกด retry ด้วย filter เดิม
-      } finally {
-        this.isLoading = false;
-        this.hasLoaded = true;
-      }
     },
 
     // -------- build words from list (ให้ size เป็น px แล้ว) --------
@@ -651,7 +631,10 @@ destroyed() {
       const values = list.map((d) => Math.max(1, d.value));
       const vMin = Math.min(...values);
       const vMax = Math.max(...values);
-      const domainMax = vMax === vMin ? vMax + 1 : vMax;
+      // ⚡ ทุกคำ/แท็กมีค่าเท่ากันหมด (เช่น hashtag ที่นับได้ครั้งละ 1) → scaleLog ปกติจะให้ size
+      //    ทุกคำเท่ากันหมด (=minFont) ทำให้ wordcloud2.js วางแบบกระจุกตัวแน่นกลางจอ ไม่เต็มกรอบ
+      const allEqual = vMax === vMin;
+      const domainMax = allEqual ? vMax + 1 : vMax;
 
       // ✅ ข้อมูลน้อย → ขยาย font range ให้กินพื้นที่มากขึ้นเล็กน้อย
       const n = list.length;
@@ -659,16 +642,31 @@ destroyed() {
       const minF = Math.max(8, Math.round(this.minFont * (n <= 12 ? 1.15 : n <= 20 ? 1.05 : 1)));
       const maxF = Math.max(minF + 4, Math.round(this.maxFont * sparseBoost));
 
-      const scale = d3.scaleLog().domain([vMin, domainMax]).range([minF, maxF]);
+      let orderedList = list;
+      let getSize;
 
-      return list.map((d, i) => ({
+      if (allEqual && this.equalFreqSpread && n > 1) {
+        // ✅ จัดลำดับ "ปลอมแบบ deterministic" ตามคำ/แท็กเอง (ไม่ใช่สุ่มจริง กันภาพกระพริบตอน re-render)
+        //    แล้วไล่ระดับขนาดจาก maxF ลงมา minF ด้วย power scale (โค้งลาดชัน)
+        //    ผลคือ: มีคำใหญ่ไม่กี่คำอยู่กลาง + คำเล็กจำนวนมากกระจายออกไปเต็มกรอบ
+        //    เหมือน hashtagcloud ต้นแบบ แทนที่จะกระจุกตัวเล็กๆ กลางจอเหมือนเดิม
+        orderedList = [...list].sort((a, b) => this._pseudoRank(a.key) - this._pseudoRank(b.key));
+        const pow = Math.max(1, Number(this.equalFreqPow) || 1.8);
+        const scale = d3.scalePow().exponent(pow).domain([0, n - 1]).range([maxF, minF]);
+        getSize = (d, i) => scale(i);
+      } else {
+        const scale = d3.scaleLog().domain([vMin, domainMax]).range([minF, maxF]);
+        getSize = (d) => scale(Math.max(1, d.value));
+      }
+
+      return orderedList.map((d, i) => ({
         ...d,
         __id: `${d.key}__${i}`,
-        size: Math.round(scale(Math.max(1, d.value))),
+        size: Math.round(getSize(d, i)),
       }));
     },
 
-    // -------- Sentiment helpers (เหมือนเดิม) --------
+    // -------- Sentiment helpers --------
     getCounts(it) {
       const src =
         it?.count ? it
@@ -687,18 +685,18 @@ destroyed() {
       const { pos, neu, neg } = this.getCounts(it);
       const sum = (pos + neu + neg) || 1;
 
-      // ✅ ใช้ชื่อ weight ให้ตรงความหมาย: p = positive, u = neutral, n = negative
-      //    แล้วผสมสีใน HSL แบบ hue vector เพื่อให้เฉดกลางนุ่ม ไม่กลายเป็นสีดำ/ตุ่นง่าย
+      // ✅ สัดส่วน sentiment เริ่มต้น
       let p = pos / sum;
       let u = neu / sum;
       let n = neg / sum;
 
+      // ✅ ทำให้สีเด่นขึ้น แต่ไม่กระชากจนสีดำ/ทึบ
       const pow = Number(this.domPow) || 2.2;
       p = Math.pow(p, pow);
       u = Math.pow(u, pow) / (this.neuDampen || 1);
       n = Math.pow(n, pow) * (this.negBoost || 1);
 
-      const totalW = (p + u + n) || 1;
+      const totalW = p + u + n || 1;
       p /= totalW;
       u /= totalW;
       n /= totalW;
@@ -707,17 +705,18 @@ destroyed() {
       const neuCol = d3.hsl(this.colorNeu);
       const negCol = d3.hsl(this.colorNeg);
 
+      // ✅ ผสม hue แบบ vector เพื่อกันปัญหาสีตัดกันแล้วกลายเป็นตุ่น/ดำ
       const mixHue = (...items) => {
         let x = 0;
         let y = 0;
 
         items.forEach(([h, w]) => {
-          const rad = ((Number(h) || 0) * Math.PI) / 180;
+          const rad = (Number(h) || 0) * Math.PI / 180;
           x += Math.cos(rad) * w;
           y += Math.sin(rad) * w;
         });
 
-        return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+        return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
       };
 
       const h = mixHue(
@@ -729,17 +728,17 @@ destroyed() {
       let s = (posCol.s * p) + (neuCol.s * u) + (negCol.s * n);
       let l = (posCol.l * p) + (neuCol.l * u) + (negCol.l * n);
 
-      // ✅ ถ้า sentiment ฝั่งใดฝั่งหนึ่งชัดมาก ให้ดึงกลับไปทางสีนั้นนิดเดียว
-      //    แต่ไม่กระชากจนสีแข็งเหมือน RGB blend เดิม
+      // ✅ ถ้า sentiment ฝั่งใดฝั่งหนึ่งชัด ให้ดึงไปทางสีนั้นอย่างนุ่มนวล
       const maxW = Math.max(p, u, n);
       const dom = maxW === p ? posCol : maxW === u ? neuCol : negCol;
 
-      if (this.dominanceKick > 0 && maxW > 0.55) {
-        const k = this.clamp((maxW - 0.55) * 1.5, 0, this.dominanceKick);
+      if (maxW > 0.55) {
+        const k = this.clamp((maxW - 0.55) * 1.5, 0, this.dominanceKick || 0.35);
         s = s * (1 - k) + dom.s * k;
         l = l * (1 - k) + dom.l * k;
       }
 
+      // ✅ คุม saturation/lightness ให้ภาพรวมดูสว่าง อ่านง่าย และเกลี่ยกันสวย
       s = this.clamp(s, this.satMin, 0.78);
       l = this.clamp(l, this.lightMin, this.lightMax);
 
@@ -747,10 +746,6 @@ destroyed() {
     },
 
     // -------- Letter spacing --------
-    // wordcloud2.js วาดคำเป็น string เดียวด้วย canvas fillText ไม่มี option letter-spacing ให้ตรงๆ
-    // เลยจำลองด้วยการแทรก hair-space (U+200A) คั่นตัวอักษร
-    // ⚠️ ต้องข้ามการแทรกก่อนสระ/วรรณยุกต์ไทยที่เป็น combining mark (ลอยบน/ล่างพยัญชนะ)
-    //    ไม่งั้นสระ/วรรณยุกต์จะหลุดออกจากพยัญชนะที่มันควบอยู่
     spacedText(str) {
       if (!this.letterSpacing || !str) return str;
       const THAI_COMBINING = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/;
@@ -774,15 +769,11 @@ destroyed() {
       this.renderKind("tags");
     },
 
-    // ✅ Entry point เดิม (ที่ template/watch/resize/exclude ทั้งหมดเรียกอยู่)
-    //    แต่ตอนนี้แค่ "ต่อคิว" เข้า _renderChain แทนที่จะยิงวาดทันที
-    //    กันไม่ให้ words/tags วาดพร้อมกันจนไปขัดจังหวะกันเอง (ดูหมายเหตุที่ _renderChain)
     renderKind(kind) {
       const job = kind === "words"
         ? () => this._doRenderOne({ kind: "words", wrapRef: "chartWrapWords", chartRef: "chartWords", getItems: () => this.wordItems })
         : () => this._doRenderOne({ kind: "tags", wrapRef: "chartWrapTags", chartRef: "chartTags", getItems: () => this.hashtagItems });
 
-      // .catch(()=>{}) กันไม่ให้ error ของก้อนก่อนหน้าทำให้คิวทั้งหมดค้าง
       this._renderChain = (this._renderChain || Promise.resolve()).catch(() => {}).then(job);
       return this._renderChain;
     },
@@ -794,18 +785,16 @@ destroyed() {
       }
     },
 
-    // ✅ ตัวจริงที่วาด — รันผ่านคิวเสมอ (renderKind เป็นคนเรียก) จึงมั่นใจได้ว่า
-    //    ไม่มีการวาด words/tags ทับซ้อนกันในเวลาเดียวกัน
-    //    ⚡ วาดแบบ "double-buffer": สร้าง canvas ใหม่แบบยังไม่ต่อเข้า DOM ก่อน วาดจนจบ
-    //    แล้วค่อยสลับเข้าไปทีเดียว — ภาพเก่ายังค้างอยู่ระหว่างรอ ไม่มีช่วงจอขาว/กระพริบ
-    //    ⚡ เช็ค _renderGen ก่อนแตะ DOM ทุกจุด กันงานวาดที่ค้างคิวจากข้อมูล/filter เก่า
-    //    ดันภาพเก่าทับข้อมูลใหม่ที่เพิ่งมาถึง (ดูหมายเหตุที่ clearClouds)
     async _doRenderOne({ kind, wrapRef, chartRef, getItems }) {
-      const myGen = this._renderGen;
+      const myGen = Number(this._renderGen) || 0; // กัน NaN — ถ้า _renderGen พังเป็น NaN จะ fallback เป็น 0 แทน
 
       const WC = await this.ensureWC();
-      if (!WC) return;
-      if (myGen !== this._renderGen) return; // ล้าสมัยแล้วระหว่างรอโหลด wordcloud module
+      if (!WC) {
+        const host0 = this.$refs[chartRef];
+        if (host0) host0.innerHTML = `<div class="wc-empty">${this._wcLoadError || "โหลด wordcloud module ไม่สำเร็จ"}</div>`;
+        return;
+      }
+      if (myGen !== (Number(this._renderGen) || 0)) return;
 
       this._stopCanvas(kind);
 
@@ -814,10 +803,19 @@ destroyed() {
       if (!host || !wrap) return;
 
       await this.waitForStableSize(wrap, 3);
-      await this.ensureFontLoaded();
-      if (myGen !== this._renderGen) return; // ล้าสมัยแล้วระหว่างรอ font/ขนาดกล่อง
 
       const list0 = getItems?.() || [];
+
+      // ✅ ส่งคำจริงที่กำลังจะวาด (ไม่ใช่ค่า default) เข้าไปให้ ensureFontLoaded เพื่อบังคับให้
+      //    browser โหลด unicode-range subset ภาษาไทยของฟอนต์ ไม่ใช่แค่ subset ละติน
+      const sampleTextForFont = list0
+        .slice(0, 20)
+        .map((x) => x?.name ?? x?.text ?? x?.key ?? "")
+        .filter(Boolean)
+        .join(" ");
+      await this.ensureFontLoaded(sampleTextForFont);
+      if (myGen !== (Number(this._renderGen) || 0)) return;
+
       const excludedMap = kind === "words" ? this.excludedWords : this.excludedTags;
       const raw = this.buildWordsFromList(list0, excludedMap);
 
@@ -833,8 +831,6 @@ destroyed() {
       const cw = Math.round(W * RS);
       const ch = Math.round(H * RS);
 
-      // ⚡ canvas ใหม่นี้ "ยังไม่ append เข้า host" — วาดแบบลอยไว้ก่อน (offscreen)
-      //    ของเก่าใน host ยังโชว์อยู่ปกติจนกว่าจะวาดเสร็จ
       const canvas = document.createElement("canvas");
       canvas.width = cw;
       canvas.height = ch;
@@ -842,30 +838,18 @@ destroyed() {
       canvas.style.height = "100%";
       canvas.style.display = "block";
 
-      // ⚡ สี sentiment ต้อง lookup ราย "คำ" (wordcloud2 color callback ให้แค่ word string ไม่ให้ metadata)
-      //    → precompute เป็น Map<text, color> + Map<text, dataObj>
-      //    key ต้องเป็น "ข้อความที่วาดจริง" (หลังแทรก letter-spacing) เพราะ wordcloud2 ส่ง string
-      //    ตัวนั้นกลับมาให้ใน color callback ตรงๆ
       const colorByText = new Map();
       raw.forEach((w) => colorByText.set(this.spacedText(w.text), this.colorBySentiment(w.__src)));
 
-      // ✅ list item = [text, fontSizePx, dataObj]  → hover/click callback จะได้ dataObj กลับที่ item[2]
-      //    ใช้ spacedText(w.text) เฉพาะตำแหน่งที่ 0 (ตัวที่ถูกวาด) ส่วน dataObj (w) ยังเก็บ w.text เดิมไว้
-      //    ให้ popup/ชื่อคำที่โชว์ผู้ใช้ยังสะอาด ไม่มีช่องว่างแปลกๆ ปน
       const list = raw.map((w) => [this.spacedText(w.text), w.size, w]);
 
       const gridSize = Math.max(2, Math.round((Number(this.gridSize) || 4) * RS));
       const rr = this.disableRotate ? 0 : this.clamp(Number(this.rotateRatio) || 0, 0, 1);
       const self = this;
 
-      // ✅ ellipticity = สัดส่วนแกน y/x ของ "วงรี" ที่ scan วางคำ
-      //    ตั้งให้ตรง aspect ของกล่อง (H/W) → วงรีจะแบนตามกรอบ อุดเต็มแนวนอนได้ดีขึ้น
       const ellipticity = this.clamp(H / W, 0.2, 1);
       const total = list.length;
 
-      // ⚡ รอให้วาด "จบจริง" ก่อนสลับเข้า DOM — นับ event 'wordclouddrawn' (คำที่วาดสำเร็จ)
-      //    รวมกับ option abort (คำที่ใส่ไม่ได้แม้ shrink แล้ว) ให้ครบเท่าจำนวนคำทั้งหมด
-      //    มี timeout กันเหนียว เผื่อ event ไม่ครบ/ค้าง จะได้ไม่บล็อกคิวถาวร
       let drawFailed = false;
       await new Promise((resolve) => {
         let settled = false;
@@ -891,23 +875,21 @@ destroyed() {
           WC(canvas, {
             list,
             gridSize,
-            // weightFactor: map "น้ำหนัก" (ที่เราใส่เป็น px logical) → px จริงบน canvas
             weightFactor: (s) => Math.max(1, s * RS),
             fontFamily: this.fontFamily,
             fontWeight: String(this.fontWeight),
             color: (word) => colorByText.get(word) || "#333333",
             backgroundColor: this.backgroundColor,
             rotateRatio: rr,
-            rotationSteps: 2,               // ±90° เท่านั้น (แนวตั้ง/แนวนอน)
+            rotationSteps: 2,
             minRotation: -Math.PI / 2,
             maxRotation: Math.PI / 2,
-            shuffle: false,                 // ผลลัพธ์คงที่ (deterministic) ต่อชุดข้อมูลเดิม
-            drawOutOfBound: false,          // ห้ามวาดล้นกรอบ
-            shrinkToFit: true,              // ⚡ คำที่ไม่พอดี → "ย่อ" แทนที่จะทิ้ง (กันคำหาย!)
+            shuffle: false,
+            drawOutOfBound: false,
+            shrinkToFit: true,
             ellipticity,
-            minSize: 4,                     // font เล็กสุด (canvas px) — ต่ำกว่านี้ไม่วาด
+            minSize: 4,
             abort: () => {
-              // คำที่วางไม่ได้เลย (นับรวมเป็น "จบแล้ว" ของคำนั้น กันคิวค้างรอครบจำนวน)
               doneCount++;
               if (doneCount >= total) finish();
             },
@@ -925,13 +907,12 @@ destroyed() {
             },
           });
         } catch (e) {
-          // เช่น canvas ขนาด 0 / getImageData error → แสดงข้อความแทนการพัง
           drawFailed = true;
           finish();
         }
       });
 
-      if (myGen !== this._renderGen) return; // ล้าสมัยแล้วระหว่างวาด — อย่าดันภาพเก่าเข้า DOM
+      if (myGen !== (Number(this._renderGen) || 0)) return;
 
       if (drawFailed) {
         host.innerHTML = `<div class="wc-empty">วาดไม่สำเร็จ</div>`;
@@ -939,7 +920,6 @@ destroyed() {
         return;
       }
 
-      // ✅ วาดเสร็จสมบูรณ์แล้ว — ค่อยสลับภาพเก่า -> ใหม่ทีเดียว ไม่มีช่วงว่าง/กระพริบ
       host.innerHTML = "";
       host.appendChild(canvas);
 
@@ -955,8 +935,8 @@ destroyed() {
     destroyAll() {
       this.closePopup();
       try { this._WC && this._WC.stop && this._WC.stop(); } catch (e) { }
-      this._renderGen++; // ✅ กันงานวาดค้างคิวพยายามแตะ DOM หลังถูก destroy
-      this._renderChain = null; // ✅ เคลียร์คิว กันงานเก่าพยายามวาดใส่ canvas ที่ถูก destroy ไปแล้ว
+      this._renderGen = (Number(this._renderGen) || 0) + 1; // กัน NaN
+      this._renderChain = null;
       this._canvasWords = null;
       this._canvasTags = null;
       const ew = this.$refs.chartWords;
@@ -965,7 +945,7 @@ destroyed() {
       if (et) et.innerHTML = "";
     },
 
-    // -------- Exclude --------
+    // -------- Exclude (in-memory only, no localStorage) --------
     _normKey(text) {
       return String(text || "").trim().toLowerCase();
     },
@@ -976,18 +956,12 @@ destroyed() {
       this.$set(map, key, true);
       this.closePopup();
       this.$emit("exclude", { kind, key, text: d.text, data: d.__src });
-      try {
-        this.$root.$emit("wc-excluded-changed", { domainId: String(this.domainId), kind: kind === "words" ? "words" : "tags", key, source: "img" });
-      } catch (e) { }
       this.renderKind(kind);
     },
     resetExcluded(kind) {
       if (kind === "words") this.excludedWords = {};
       else this.excludedTags = {};
       this.$emit("exclude-reset", { kind });
-      try {
-        this.$root.$emit("wc-excluded-changed", { domainId: String(this.domainId), kind: kind === "words" ? "words" : "tags", source: "img" });
-      } catch (e) { }
       this.renderKind(kind);
     },
 
@@ -1047,11 +1021,15 @@ destroyed() {
       this.popup.pinned = false;
       this.popup.word = null;
     },
-    popupViewPosts() {
-      if (!this.popup.word) return;
-      this.$emit("select", { kind: this.popup.kind, data: this.popup.word.__src });
-      this.closePopup();
-    },
+  popupViewPosts() {
+  if (!this.popup.word) return;
+  this.$emit("select", {
+    kind: this.popup.kind,          // "words" | "tags"
+    text: this.popup.word.text,     // ✅ คำ/แฮชแท็กที่แสดงจริง (plain text)
+    data: this.popup.word.__src,
+  });
+  this.closePopup();
+},
     popupHide() {
       if (!this.popup.word || !this.popup.kind) return;
       this.excludeItem(this.popup.kind, this.popup.word);
@@ -1096,10 +1074,6 @@ destroyed() {
   height: 100%;
 }
 
-/* ⚡ canvas ของ wordcloud2.js — ให้เต็มกล่องเสมอ
-     object-fit: contain กัน "ตัวอักษรบีบ" ตอนกล่องข้างนอกสัดส่วนไม่ตรงกับ
-     fixedWidth/fixedHeight (เช่น จอมือถือที่ min-height ด้านล่างดัน aspect-ratio ให้เพี้ยน)
-     — ถ้าไม่ใส่ browser จะ stretch คนละอัตราส่วนต่อแกน ทำให้ฟอนต์แคบ/กว้างผิดปกติ */
 .wc-chart-inner canvas {
   display: block;
   width: 100% !important;
@@ -1252,9 +1226,6 @@ destroyed() {
 }
 
 @media (max-width: 768px) {
-  /* ⚠️ ไม่ตั้ง min-height ให้ .wc-chart เพราะมันไปชนกับ aspect-ratio (inline style)
-     ถ้าตั้งพร้อมกัน กล่องจะเตี้ยกว่าที่สัดส่วนจริงกำหนด ทำให้ canvas ถูก stretch
-     ไม่เท่ากันทั้งสองแกน → ตัวอักษรบีบ ให้ aspect-ratio เป็นคนคุมความสูงแต่ผู้เดียว */
   .wc-wrap {
     min-height: 260px;
   }
