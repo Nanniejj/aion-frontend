@@ -581,7 +581,7 @@ const routes = [
         /* webpackChunkName: "targetprofile" */ "../views/BotActive.vue"
       )
   },
-     {
+  {
     path: "/wordcloudpage",
     name: "WordcloudPage",
     // route level code-splitting
@@ -590,6 +590,18 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "targetprofile" */ "../views/WordcloudPage.vue"
+      ),
+      meta: { requiresAuth: true },
+  },
+  {
+    path: "/projectmanagement",
+    name: "ProjectManagement",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/ProjectManagement.vue"
       ),
       meta: { requiresAuth: true },
   },

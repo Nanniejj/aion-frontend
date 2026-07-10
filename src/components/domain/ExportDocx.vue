@@ -11,24 +11,30 @@
       <div id="exportContent" class="export-bg">
         <div class="h2 ex-title text-left mt-4">
           ด้าน{{ getClickDomain }}
+
           <span class="float-right no-print">
-            <vue-element-loading :active="loadding" size="38" background-color="rgba(255,255,255,0.5)" color="#fed16e" />
+            <vue-element-loading :active="loadding" size="38" background-color="rgba(255,255,255,0.5)"
+              color="#fed16e" />
             <b-dropdown size="sm" class="d-down" variant="secondary">
               <template #button-content>
-                <i class="fas fa-file-download" style="font-size:20px;margin-right:7px;cursor:pointer" v-b-tooltip.hover title="Export Report"></i>
+                <i class="fas fa-file-download" style="font-size:20px;margin-right:7px;cursor:pointer" v-b-tooltip.hover
+                  title="Export Report"></i>
                 Export
               </template>
               <b-dropdown-item @click="exportFile">
-                <i class="fas fa-file-word" style="font-size:18px;margin-right:7px;cursor:pointer" v-b-tooltip.hover title="Export Report"></i>
-                Word (.doc)
+                <i class="fas fa-file-word" style="font-size:18px;margin-right:7px;cursor:pointer" v-b-tooltip.hover
+                  title="Export Report"></i>
+                Word (.docx)
               </b-dropdown-item>
               <b-dropdown-item @click="exportToPowerPoint">
-                <i class="fas fa-file-powerpoint" style="font-size:18px;margin-right:7px;cursor:pointer" v-b-tooltip.hover title="Export Report"></i>
+                <i class="fas fa-file-powerpoint" style="font-size:18px;margin-right:7px;cursor:pointer"
+                  v-b-tooltip.hover title="Export Report"></i>
                 PowerPoint (.pptx)
               </b-dropdown-item>
             </b-dropdown>
 
-            <i class="fas fa-print fa-2x d-inline ml-2 mr-2" style="font-size:25px;margin-right:7px;cursor:pointer" @click="printWindow()"></i>
+            <i class="fas fa-print fa-2x d-inline ml-2 mr-2" style="font-size:25px;margin-right:7px;cursor:pointer"
+              @click="printWindow()"></i>
           </span>
         </div>
 
@@ -42,7 +48,7 @@
             <StaticDomain class="mt-3 export-bg" id="statcap" />
           </b-col>
           <b-col cols="12" md="6">
-            <BarChart id="statbar" class="export-bg"/>
+            <BarChart id="statbar" class="export-bg" />
           </b-col>
           <b-col cols="12" md="6">
             <div id="ex-hashcloud" class="export-bg">
@@ -56,15 +62,18 @@
 
         <div class="posts export-bg">
           <div class="text-left d-block h5 py-3 px-4"
-               style="background:#cfe7de8a; padding:8px 10px; border-radius:10px; color:rgb(84,198,157)">
+            style="background:#cfe7de8a; padding:8px 10px; border-radius:10px; color:rgb(84,198,157)">
             <img class="text-left" src="@/assets/Pos.png" style="width:22px;" />
             <span class="ml-2 text-left"> Positive Posts</span>
             <span class="float-right no-print">
-              <b-button size="sm" v-if="showPost" class="mx-2" variant="danger" @click="showAllPost('pos')">ยกเลิก</b-button>
-              <b-button size="sm" v-if="showPost" variant="success" @click="showAllPost('pos','submit')">ยืนยัน</b-button>
+              <b-button size="sm" v-if="showPost" class="mx-2" variant="danger"
+                @click="showAllPost('pos')">ยกเลิก</b-button>
+              <b-button size="sm" v-if="showPost" variant="success"
+                @click="showAllPost('pos', 'submit')">ยืนยัน</b-button>
               <span v-else>
                 <b-button size="sm" variant="outline-success" @click="showAllPost('pos')">เลือกโพสต์</b-button>
-                <i class="fa fa-refresh mx-2" style="cursor:pointer" aria-hidden="true" @click="forceRerender('pos')"></i>
+                <i class="fa fa-refresh mx-2" style="cursor:pointer" aria-hidden="true"
+                  @click="forceRerender('pos')"></i>
               </span>
             </span>
           </div>
@@ -72,19 +81,22 @@
           <div v-if="showPost">
             <PostPositive :stmpost="1" />
           </div>
-          <ExportTopPostCrad v-show="!showPost" class="mt-3 page-break export-bg" :typeStm="'pos'"
-                             id="post-pos" ref="captureDiv" />
+          <ExportTopPostCrad v-show="!showPost" class="mt-3 page-break export-bg" :typeStm="'pos'" id="post-pos"
+            ref="captureDiv" />
 
           <div class="text-left d-block h5 py-3 px-4 mt-3"
-               style="background:rgb(247 119 106 / 17%); padding:8px 10px; border-radius:10px; color:rgb(247,119,106)">
+            style="background:rgb(247 119 106 / 17%); padding:8px 10px; border-radius:10px; color:rgb(247,119,106)">
             <img src="@/assets/Nag.png" style="width:22px;" />
             <span class="ml-2 text-left">Negative Posts</span>
             <span class="float-right no-print">
-              <b-button size="sm" v-if="showPostNeg" class="mx-2" variant="danger" @click="showAllPost('neg')">ยกเลิก</b-button>
-              <b-button size="sm" v-if="showPostNeg" variant="success" @click="showAllPost('neg','submit')">ยืนยัน</b-button>
+              <b-button size="sm" v-if="showPostNeg" class="mx-2" variant="danger"
+                @click="showAllPost('neg')">ยกเลิก</b-button>
+              <b-button size="sm" v-if="showPostNeg" variant="success"
+                @click="showAllPost('neg', 'submit')">ยืนยัน</b-button>
               <span v-else>
                 <b-button size="sm" variant="outline-danger" @click="showAllPost('neg')">เลือกโพสต์</b-button>
-                <i class="fa fa-refresh mx-2" style="cursor:pointer" aria-hidden="true" @click="forceRerender('neg')"></i>
+                <i class="fa fa-refresh mx-2" style="cursor:pointer" aria-hidden="true"
+                  @click="forceRerender('neg')"></i>
               </span>
             </span>
           </div>
@@ -92,8 +104,7 @@
           <div v-if="showPostNeg">
             <PostPositive :stmpost="-1" />
           </div>
-          <ExportTopPostCrad v-show="!showPostNeg" class="my-3 export-bg"
-                             :typeStm="'neg'" id="post-neg" />
+          <ExportTopPostCrad v-show="!showPostNeg" class="my-3 export-bg" :typeStm="'neg'" id="post-neg" />
         </div>
       </div>
     </b-container>
@@ -149,16 +160,16 @@ export default {
       "getWordCloud",
       "getExportTopPostDomainNeg",
       "getExportTopPostDomain",
+      "getDataWordcloud"
     ]),
     getHashtag() {
       let hash = [];
       if (
-        this.getWordCloud &&
-        this.getWordCloud.data &&
-        this.getWordCloud.data.hashtag &&
-        this.getWordCloud.data.hashtag.data
+        this.getDataWordcloud &&
+        this.getDataWordcloud.hashtags
+
       ) {
-        hash = this.getWordCloud.data.hashtag.data.slice(0, 10).map((d, k) => ({ ...d, idx: k + 1 }));
+        hash = this.getDataWordcloud.hashtags.slice(0, 10).map((d, k) => ({ ...d, idx: k + 1 }));
       }
       return hash;
     },
@@ -266,9 +277,9 @@ export default {
       this.loadding = true;
 
       // ✅ จับภาพทั้งหมดพื้นหลังขาว
-
+// #exportContent > div.row.page-break > div:nth-child(2)
       // #statcap > span > div > div.text-left.col-lg-7 > div
-      this.imgData1 = await this.captureScreenshot("#statbar > span > div");
+      this.imgData1 = await this.captureScreenshot("#exportContent > div.row.page-break > div:nth-child(2)");
       this.imgData2 = await this.captureScreenshot("#statcap > span > div > div.text-left.col-lg-7");
       this.imgData3 = await this.captureScreenshot("#statcap > span > div > div:nth-child(2) > div");
       this.imgData4 = await this.captureScreenshot("#post-pos");
@@ -278,7 +289,7 @@ export default {
         const pptx = new pptxgen();
 
 
- const slide1 = pptx.addSlide();
+        const slide1 = pptx.addSlide();
 
         slide1.addText(`ด้าน${this.getClickDomain}`, {
           x: 0.5, y: 0, w: "80%", h: 1, fontSize: 25, color: "363636", bold: true, fontFace: "TH Sarabun New",
@@ -291,7 +302,7 @@ export default {
         if (this.imgData2) slide1.addImage({ data: this.imgData2, x: 0.7, y: 2, w: 4.5, h: 1.6 });
         if (this.imgData3) slide1.addImage({ data: this.imgData3, x: 5.4, y: 2, w: 3.4, h: 1.4 });
 
-      
+
         const slide = pptx.addSlide();
 
         slide.addText(`ด้าน${this.getClickDomain}`, {
@@ -302,7 +313,7 @@ export default {
         });
         slide.addShape(pptx.shapes.LINE, { x: 0.5, y: 0.7, w: 9, h: 0, line: "000000" });
 
-        if (this.imgData1) slide.addImage({ data: this.imgData1, x: 0.5, y: 1.3, w:4, h: 4 });
+        if (this.imgData1) slide.addImage({ data: this.imgData1, x: 0.5, y: 1.3, w: 4, h: 4 });
         // if (this.imgData2) slide.addImage({ data: this.imgData2, x: 3.5, y: 1.4, w: 3.5, h: 1.4 });
         // if (this.imgData3) slide.addImage({ data: this.imgData3, x: 3.5, y: 3.4, w: 3.5, h: 1.2 });
 
@@ -380,7 +391,7 @@ export default {
       this.loadding = true;
 
       // ✅ จับภาพแบบพื้นหลังขาวและปรับขนาดพอดี Word
-      this.imgData1 = await this.captureAndResize("#statbar > span > div", null, 300);
+      this.imgData1 = await this.captureAndResize("#statbar", null, 300);
       this.imgData2 = await this.captureAndResize("#statcap > span > div > div.text-left.col-lg-7 > div", 300, null);
       this.imgData3 = await this.captureAndResize("#statcap > span > div > div:nth-child(2) > div", 340, null);
       this.imgData4 = await this.captureAndResize("#post-pos", null, 500);
@@ -592,12 +603,13 @@ export default {
 
 <style scoped>
 @media only screen and (min-width: 0px) and (max-width: 760px) {
-  .posts > .h5 { font-size: 14px !important; }
+  .posts>.h5 {
+    font-size: 14px !important;
+  }
 }
 </style>
 
 <style>
-
 /* ปุ่ม export */
 .d-down .btn-secondary {
   background-color: #4c412d !important;
@@ -611,10 +623,21 @@ export default {
 
 /* ✅ ให้พิมพ์สีตรงกับจอ */
 @media print {
-  .print-text.d-none { display: inline; }
-  .no-print { display: none; }
-  #ex-hashcloud { column-count: 2; }
-  .page-break { page-break-after: always; }
+  .print-text.d-none {
+    display: inline;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  #ex-hashcloud {
+    column-count: 2;
+  }
+
+  .page-break {
+    page-break-after: always;
+  }
 
   .progress {
     background-image: none;

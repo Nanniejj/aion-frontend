@@ -119,7 +119,8 @@ td{
 .btn-add {
     margin: auto;
     display: block;
-    margin-top: 20px;
+    /* margin-top: 10px;
+    margin-bottom: 20px; */
 }
 }
 

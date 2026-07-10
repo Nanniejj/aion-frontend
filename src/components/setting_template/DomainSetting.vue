@@ -6,8 +6,8 @@
         <!-- {{ getItemsDomain }} -->
       <!-- https://bootstrap-vue.org/docs/components/table#custom-data-rendering   \ Complete example -->
       <!-- Page header -->
-      <b-row id="input-btn" class="m-0 align-items-center justify-content-lg-between flex-md-nowrap page-header-row">
-        <b-col md="auto" class="pl-0 mb-3 ">
+      <b-row id="input-btn" class="m-0 align-items-center justify-content-lg-between flex-lg-nowrap page-header-row">
+        <b-col lg="auto" class="pl-0 mb-3 ">
           <div class="page-header">
             <div class="page-header-icon">
               <i class="fa fa-folder-open"></i>
@@ -21,16 +21,16 @@
             </div>
           </div>
         </b-col>
-        <b-col sm="" lg="auto" class="px-0 ml-0 ml-lg-auto mb-3 mb-lg-0">
+        <b-col cols="12" md="" lg="auto" class="px-0 ml-0 ml-lg-auto mb-3 mb-lg-0">
             <b-input-group size="md">
                 <b-form-input id="filter-input" v-model="filter" type="search" placeholder="ค้นหาหัวเรื่อง..."></b-form-input>
             </b-input-group>
         </b-col>
-        <b-col cols="auto" class="pr-0">
+        <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0">
           <TemplateAddDomain />
           <!-- <button class="btn btn-add" ><i class="fa fa-plus"/><span  style="font-size:16px;"> เพิ่ม Domain </span></button> -->
         </b-col>
-        <b-col cols="auto">
+        <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0">
           <ImportDomain/>
         </b-col>
       </b-row>
@@ -480,7 +480,7 @@ table>thead>tr>th:nth-child(3) {
 .domain-table-card ::v-deep thead th {
   color: #8a7d68;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 16px;
   text-transform: uppercase;
   letter-spacing: .03em;
   border-bottom: 2px solid #ece6da !important;

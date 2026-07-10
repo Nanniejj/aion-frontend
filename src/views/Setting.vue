@@ -24,7 +24,7 @@
                         Alert
                     </div>
                     </div>
-                    <div class="icon-monitor1" @click="$router.push({ name: 'FaceRecognition' })" v-b-tooltip.hover
+                    <!-- <div class="icon-monitor1" @click="$router.push({ name: 'FaceRecognition' })" v-b-tooltip.hover
                     title="Face Recognition">
                     <b-iconstack font-scale="2">
                         <b-icon stacked icon="circle"></b-icon>
@@ -33,8 +33,8 @@
                     <div class="d-blocktext-center h6  my-2 d-none">
                         Face Recognition
                     </div>
-                    </div>
-                    <div class="icon-monitor1" @click="$router.push({ name: 'SearchKeywordSetting' })" v-b-tooltip.hover
+                    </div> -->
+                    <!-- <div class="icon-monitor1" @click="$router.push({ name: 'SearchKeywordSetting' })" v-b-tooltip.hover
                     title="Search Keyword">
                     <b-iconstack font-scale="2">
                         <b-icon stacked icon="circle"></b-icon>
@@ -43,7 +43,7 @@
                     <div class="h6 text-center my-2 d-none">
                         Search Keyword
                     </div>
-                    </div>
+                    </div> -->
                     <div class="icon-monitor1" @click="printWindow()" v-b-tooltip.hover
                     title="Print">
                     <b-iconstack font-scale="2">

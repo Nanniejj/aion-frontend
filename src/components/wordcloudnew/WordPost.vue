@@ -418,7 +418,12 @@
                   | <span v-if="datas.news_info.nation">{{ datas.news_info.nation }}</span>
                 </div>
                 <div v-if="datas && datas.title" class="title-news text-left my-2">
-                  {{ datas.title }}
+                  {{ datas.showTranslated && datas.translatedTitle ? datas.translatedTitle : datas.title }}
+                </div>
+                <div v-if="datas.full_text" class="text-left mb-1">
+                  <TranslateText combined :post-id="datas._id" :title="datas.title || ''"
+                    :full-text="cleanFullText(datas)"
+                    @update="(payload) => onTranslateUpdate(datas, payload)" />
                 </div>
 
                 <!-- <Highlighter
@@ -440,7 +445,7 @@
                   fontSize: '17px',
                   padding: '10px',
                 }" highlightClassName="highlight4" :searchWords="highlightText(datas.full_text)" :autoEscape="true"
-                  :textToHighlight="datas.read ? datas.full_text.slice(0, 450) : datas.full_text
+                  :textToHighlight="datas.read ? getBaseFullText(datas).slice(0, 450) : getBaseFullText(datas)
                     "></Highlighter>
 
                 <div v-if="datas.full_text.length > 450" @click="datas.read = !datas.read" id="readmore">
@@ -990,6 +995,7 @@ import subdistricts from "@/components/map/subdistricts.json";
 import SentimentBar from "@/components/wordcloudnew/SentimentBar.vue";
 import PlatformBarChart from "@/components/chart/PlatformBarChart.vue";
 import Vue from "vue";
+import TranslateText from "@/components/TranslateText.vue";
 
 Vue.filter("shortNumber", function (value, digits = 1) {
   const n = Number(value);
@@ -1160,6 +1166,7 @@ export default {
     VueGallerySlideshow,
     SentimentBar,
     PlatformBarChart,
+    TranslateText,
 
   },
   computed: {
@@ -1327,6 +1334,33 @@ export default {
 
       // Return the found location or a fallback message
       return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
+    // ตัด marker ที่ปนมากับเนื้อหาก่อนนำไปใช้แสดงผล/ส่งไปแปล
+    cleanFullText(datas) {
+      return datas && datas.full_text
+        ? datas.full_text.replace('...___...', '').replace('.#.##.', '')
+        : '';
+    },
+    // ข้อความที่จะใช้แสดงจริง — สลับไปมาระหว่างต้นฉบับกับคำแปลตามสถานะของโพสต์นั้นๆ
+    getBaseFullText(datas) {
+      if (datas && datas.showTranslated && datas.translatedFullText) {
+        return datas.translatedFullText;
+      }
+      return this.cleanFullText(datas);
+    },
+    // เรียกตอน TranslateText (โหมด combined) แปล/สลับเสร็จ — เก็บผลไว้ที่ตัวโพสต์นั้นๆ โดยตรง
+    onTranslateUpdate(datas, payload) {
+      if (this.$set) {
+        // Vue 2
+        this.$set(datas, "translatedTitle", payload.title);
+        this.$set(datas, "translatedFullText", payload.fullText);
+        this.$set(datas, "showTranslated", payload.showTranslated);
+      } else {
+        // Vue 3
+        datas.translatedTitle = payload.title;
+        datas.translatedFullText = payload.fullText;
+        datas.showTranslated = payload.showTranslated;
+      }
     },
     highlightText(full_text) {
 
