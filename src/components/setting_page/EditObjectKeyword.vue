@@ -28,7 +28,7 @@
             <b-form-input v-model="objectName" maxlength="50" required></b-form-input>
             <small class="text-muted">{{ objectName.length }} / 50 ตัวอักษร</small>
             <div v-if="hasForbiddenChars(objectName)" class="text-danger small mt-1">
-              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ  & 
             </div>
           </b-form-group>
 
@@ -127,7 +127,7 @@ export default {
     // (กฎเดียวกับ ImportObject.vue / CreateObject.vue / ฯลฯ ทั้งแอป)
     // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
     hasForbiddenChars(value) {
-      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      const forbiddenPattern = /&/
       return forbiddenPattern.test(String(value || ""));
     },
     // ใช้กับ b-form-tags prop tag-validator — return false จะปฏิเสธไม่ให้เพิ่ม tag นั้นเลย

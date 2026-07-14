@@ -62,8 +62,8 @@
 </template>
 
 <script>
-import AvatarStack from "./AvatarStack.vue";
-import { resolveUsers, formatDate } from "./mock.js";
+import AvatarStack from "../AvatarStack.vue";
+import { resolveUsers, formatDate } from "../mock.js";
 
 const THEMES = [{ grad: "linear-gradient(135deg, #d2e2e3, #e8dff6)", border: "#e8dff6" }];
 

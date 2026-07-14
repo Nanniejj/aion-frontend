@@ -49,9 +49,9 @@
             </button>
 
             <div class="suggest-track py-3" ref="track" @scroll="updateScrollState">
-                <div v-for="(item, index) in suggestList" :key="item.id" class="suggest-card">
-                <div class="d-flex align-items-center suggest-header-row">
-                        <div class="suggest-avatar-wrap" @click="linkToProfile(item)">
+                <div v-for="(item, index) in suggestList" :key="item.id" class="suggest-card" @click="openLink(item.url)">
+                <div @click.stop="openLink(item.url)" class="d-flex align-items-center suggest-header-row">
+                        <div class="suggest-avatar-wrap">
                             <b-avatar
                                 :src="item.avatar"
                                 :text="avatarInitial(item.name)"
@@ -59,15 +59,15 @@
                                 class="suggest-avatar"
                                 :style="avatarStyle(index)"
                             ></b-avatar>
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'facebook'" src="@/assets/Facebook.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'twitter' || item.source == 'x'" src="@/assets/Twitter.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'pantip'" src="@/assets/board.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'blockdit'" src="@/assets/Blockdit.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'instagram'" src="@/assets/Instagram.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'youtube'" src="@/assets/Youtube.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'news'" src="@/assets/News.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'tiktok'" src="@/assets/Tiktok.png" class="suggest-social-icon" />
-                            <img @click.stop="openLink(item.url)" v-if="item.source == 'threads'" src="@/assets/Threads.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'facebook'" src="@/assets/Facebook.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'twitter' || item.source == 'x'" src="@/assets/Twitter.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'pantip'" src="@/assets/board.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'blockdit'" src="@/assets/Blockdit.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'instagram'" src="@/assets/Instagram.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'youtube'" src="@/assets/Youtube.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'news'" src="@/assets/News.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'tiktok'" src="@/assets/Tiktok.png" class="suggest-social-icon" />
+                            <img v-if="item.source == 'threads'" src="@/assets/Threads.png" class="suggest-social-icon" />
                         </div>
                     <div class="flex-grow-1 min-w-0 pl-2">
                         <div class="suggest-name text-truncate" :title="item.name">{{ item.name }}</div>
@@ -76,14 +76,14 @@
                 </div>
 
                 <div class="suggest-meta-row">
-                    <span
+                    <!-- <span
                         class="suggest-meta-item"
                         v-if="item.followers !== undefined"
                         :title="`${fullNumber(item.followers)} ผู้ติดตาม`"
                     >
                         <b-icon icon="people-fill" font-scale="1" class="mr-1"></b-icon>
                         {{ formatNumber(item.followers) }}
-                    </span>
+                    </span> -->
                     <span
                         class="suggest-meta-item"
                         v-if="item.engagement !== undefined"
@@ -112,7 +112,7 @@
                     class="suggest-add-btn"
                     :class="{ 'is-added': item.added, 'is-adding': item.adding }"
                     :disabled="item.adding || item.added"
-                    @click="addTarget(item)"
+                    @click.stop="addTarget(item)"
                 >
                     <template v-if="item.adding">
                         <!-- <b-spinner small></b-spinner> -->
@@ -574,6 +574,10 @@ export default {
     justify-content: flex-start;
     text-align: left;
     width: 100%;
+    cursor: pointer;
+}
+.suggest-header-row:hover .suggest-name {
+    text-decoration: underline;
 }
 .suggest-name {
     font-weight: 700;

@@ -16,7 +16,7 @@
             </b-input-group-prepend>
             <b-form-input v-model="query" placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."></b-form-input>
           </b-input-group> -->
-          <b-input-group size="md" class="search-box">
+          <b-input-group size="lg" class="search-box">
             <b-form-input
               id="filter-input"
               v-model="query"
@@ -47,14 +47,14 @@
         </div>
 
         <div class="d-flex align-items-center flex-wrap tab-actions">
-          <CreateProjectModal :users="users" @created="addProject" />
-          <CreateUserModal :projects="projects" @created="addUser" />
+          <CreateProjectModal v-if="tab === 'projects'" :users="users" @created="addProject" />
+          <CreateUserModal v-if="tab === 'users'" :projects="projects" @created="addUser" />
         </div>
       </div>
 
-      <ProjectGrid v-if="tab === 'projects'" :projects="filteredProjects" :query="query" @open="openProject" />
+      <ProjectMain v-if="tab === 'projects'" :projects="filteredProjects" :query="query" @open="openProject" />
 
-      <UserTable v-if="tab === 'users'" :users="filteredUsers" :query="query" />
+      <UserMain v-if="tab === 'users'" :users="filteredUsers" :query="query" />
     </div>
 
     <!-- ============ DETAIL (FULL PAGE) VIEW ============ -->
@@ -64,16 +64,16 @@
 
 <script>
 import HomeNav from '@/components/HomeNav.vue';
-import ProjectGrid from "../components/projectmanagement/ProjectGrid.vue";
-import UserTable from "../components/projectmanagement/UserTable.vue";
-import ProjectDetail from "../components/projectmanagement/ProjectDetail.vue";
-import CreateProjectModal from "../components/projectmanagement/CreateProjectModal.vue";
-import CreateUserModal from "../components/projectmanagement/CreateUserModal.vue";
+import ProjectMain from "../components/projectmanagement/ProjectMain.vue";
+import UserMain from "../components/projectmanagement/UserMain.vue";
+import ProjectDetail from "../components/projectmanagement/project/ProjectDetail.vue";
+import CreateProjectModal from "../components/projectmanagement/project/CreateProjectModal.vue";
+import CreateUserModal from "../components/projectmanagement/users/CreateUserModal.vue";
 import { PROJECTS, USERS } from "../components/projectmanagement/mock.js";
 
 export default {
   name: "ProjectManagementView",
-  components: { HomeNav, ProjectGrid, UserTable, ProjectDetail, CreateProjectModal, CreateUserModal },
+  components: { HomeNav, ProjectMain, UserMain, ProjectDetail, CreateProjectModal, CreateUserModal },
   data() {
     return {
       tab: "projects", // 'projects' | 'users'
@@ -121,14 +121,14 @@ export default {
 
 <style scoped>
 /*
-  Self-contained styling for the header + tab row, with fallback values on
-  every var(--token, fallback) so it still looks right even if the shared
+  Self-contained styling for the header + tab row, with colors hard-coded
+  directly (no CSS variables) so it still looks right even if the shared
   theme.css / :root tokens aren't loaded elsewhere in the project.
 */
 
 #dash-app {
-  /* background: var(--bg, #f6f5f0); */
-  /* color: var(--text, #1c1e24); */
+  /* background: #f6f5f0; */
+  /* color: #1c1e24; */
   min-height: 100%;
 }
 
@@ -141,32 +141,31 @@ export default {
 }
 
 .eyebrow {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.12em;
-  color: var(--muted, #6b7280);
+  color: #6b7280;
   margin-bottom: 4px;
 }
 
 .page-title {
-  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  text-align: start;
   font-weight: 700;
   font-size: 28px;
   margin: 0;
-  /* color: var(--text, #1c1e24); */
+  /* color: #1c1e24; */
 }
 
-.search-box {
-  max-width: 400px;
-}
+/* .search-box {
+  width: 300px;
+} */
 .search-box >>> .input-group-text {
-  background: var(--surface, #ffffff);
-  border-color: var(--border, #e4e1d8);
-  color: var(--muted, #6b7280);
+  background: #ffffff;
+  border-color: #e4e1d8;
+  color: #6b7280;
 }
 .search-box >>> .form-control {
-  background: var(--surface, #ffffff);
-  border-color: var(--border, #e4e1d8);
+  background: #ffffff;
+  border-color: #e4e1d8;
   font-size: 13px;
 }
 .search-box >>> .form-control:focus {
@@ -210,8 +209,21 @@ export default {
   color: #5a3f04;
 }
 .tab-btn .count {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11px;
   opacity: 0.75;
 }
+
+@media (max-width: 640px) {
+  .header-actions {
+    width: 100% !important;
+  }
+
+  .page-title {
+    text-align: start;
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0;
+  }
+}
+
 </style>

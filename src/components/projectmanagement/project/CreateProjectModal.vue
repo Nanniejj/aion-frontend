@@ -8,8 +8,9 @@
       :visible="open"
       @hide="closeModal"
       :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '460px', 1200: '460px', 768: '92vw', 480: '92vw' }"
+      :resize-width="{ 3000: '660px', 1200: '460px', 768: '92vw', 480: '92vw' }"
       class="create-modal"
+     
     >
       <div class="modal-shell">
         <div class="modal-topbar">
@@ -18,7 +19,7 @@
             สร้างโปรเจกต์ใหม่
           </div>
           <button class="modal-close-btn" @click="closeModal" aria-label="ปิดหน้าต่าง">
-            <b-icon icon="x"></b-icon>
+            <b-icon icon="x" scale="2"></b-icon>
           </button>
         </div>
 
@@ -44,8 +45,15 @@
           <div class="form-field">
             <label>
               ผู้ใช้ในโปรเจกต์
-              <span class="selected-count" v-if="form.userIds.length">({{ form.userIds.length }} คน)</span>
+              <span class="selected-count" v-if="selectedUsers.length">({{ selectedUsers.length }} คน)</span>
             </label>
+
+            <div v-if="selectedUsers.length" class="selected-chips">
+              <span v-for="u in selectedUsers" :key="u._id" class="chip">
+                {{ u.name }}
+                <button type="button" class="chip-remove" @click="removeUser(u._id)" aria-label="เอาออก">×</button>
+              </span>
+            </div>
 
             <input
               v-model.trim="userSearch"
@@ -68,10 +76,14 @@
           </div>
         </div>
 
-        <div class="modal-footer">
+        <!-- <div class="modal-footer">
           <button class="btn-cancel" @click="closeModal">ยกเลิก</button>
           <button class="btn-submit" @click="submit">สร้างโปรเจกต์</button>
-        </div>
+        </div> -->
+        <b-row class=" justify-content-end mx-3">
+          <button class="btn-submit mx-3" @click="submit">สร้างโปรเจกต์</button>
+          <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
+        </b-row>
       </div>
     </vue-modaltor>
   </span>
@@ -101,6 +113,9 @@ export default {
     };
   },
   computed: {
+    selectedUsers() {
+      return this.users.filter((u) => this.form.userIds.includes(u._id));
+    },
     filteredUsers() {
       const q = this.userSearch.toLowerCase();
       if (!q) return this.users;
@@ -117,6 +132,9 @@ export default {
     },
   },
   methods: {
+    removeUser(id) {
+      this.form.userIds = this.form.userIds.filter((existingId) => existingId !== id);
+    },
     closeModal() {
       this.open = false;
       this.error = "";
@@ -149,14 +167,14 @@ export default {
 </script>
 
 <style scoped>
-/* Self-contained, with fallback values on every var(--token, fallback). */
+/* Self-contained, with colors hard-coded directly (no CSS variables). */
 
 .create-btn {
-  background: var(--teal, #128189) !important;
-  border-color: var(--teal, #128189) !important;
+  background: #128189 !important;
+  border-color: #128189 !important;
   color: #ffffff !important;
   font-weight: 500;
-  font-size: 13.5px;
+  font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -167,29 +185,33 @@ export default {
 }
 
 .modal-shell {
-  background: var(--surface, #ffffff);
+  background: #ffffff;
   border-radius: 16px;
   width: 100%;
+  /* font-family: "Inter", ui-sans-serif, system-ui, sans-serif; */
+  display: flex;
+  flex-direction: column;
+  height: 85vh;
   overflow: hidden;
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 .modal-topbar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border, #e4e1d8);
+  border-bottom: 1px solid #e4e1d8;
 }
 
 .modal-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  /* font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif; */
   font-weight: 700;
-  font-size: 16px;
-  color: var(--text, #1c1e24);
+  font-size: 18px;
+  color: #1c1e24;
 }
 
 .modal-close-btn {
@@ -198,18 +220,21 @@ export default {
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
-  color: var(--muted, #6b7280);
+  color: #6b7280;
   display: flex;
 }
 .modal-close-btn:hover {
-  background: var(--bg, #f6f5f0);
+  background: #f6f5f0;
 }
 
 .modal-body {
-  padding: 20px;
+  /* padding: 20px; */
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .form-field {
@@ -218,47 +243,80 @@ export default {
   gap: 6px;
 }
 .form-field label {
-  font-size: 12.5px;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
 }
 .req {
   color: #c0392b;
 }
 
 .form-input {
-  border: 1px solid var(--border, #e4e1d8);
+  border: 1px solid #e4e1d8;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 14px;
-  color: var(--text, #1c1e24);
-  background: var(--surface, #ffffff);
+  color: #1c1e24;
+  background: #ffffff;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .form-input:focus {
-  border-color: var(--teal, #128189);
+  border-color: #128189;
   box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
 }
 
 .form-error {
-  font-size: 12px;
+  font-size: 14px;
   color: #c0392b;
 }
 
 .selected-count {
   font-weight: 400;
-  color: var(--muted, #6b7280);
-  font-size: 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(18, 129, 137, 0.1);
+  color: #0e5157;
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.chip-remove {
+  background: transparent;
+  border: none;
+  color: #0e5157;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 50%;
+}
+.chip-remove:hover {
+  background: rgba(18, 129, 137, 0.2);
 }
 
 .user-search-input {
   margin-bottom: 8px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .user-picklist {
-  border: 1px solid var(--border, #e4e1d8);
+  border: 1px solid #e4e1d8;
   border-radius: 8px;
   max-height: 190px;
   overflow-y: auto;
@@ -270,19 +328,19 @@ export default {
   gap: 10px;
   padding: 8px 12px;
   cursor: pointer;
-  border-bottom: 1px solid var(--border-soft, #edebe3);
+  border-bottom: 1px solid #edebe3;
   margin: 0;
 }
 .user-pick-row:last-child {
   border-bottom: none;
 }
 .user-pick-row:hover {
-  background: var(--bg, #f6f5f0);
+  background: #f6f5f0;
 }
 
 .user-pick-row input[type="checkbox"] {
   flex-shrink: 0;
-  accent-color: var(--teal, #128189);
+  accent-color: #128189;
   width: 15px;
   height: 15px;
 }
@@ -291,13 +349,13 @@ export default {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: var(--bg, #f6f5f0);
-  border: 1px solid var(--border, #e4e1d8);
-  color: var(--teal, #128189);
+  background: #f6f5f0;
+  border: 1px solid #e4e1d8;
+  color: #128189;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -308,22 +366,22 @@ export default {
   min-width: 0;
 }
 .pick-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .pick-role {
-  font-size: 11.5px;
-  color: var(--muted, #6b7280);
+  font-size: 14px;
+  color: #6b7280;
 }
 
 .pick-empty {
   padding: 16px 12px;
-  font-size: 12.5px;
-  color: var(--muted, #6b7280);
+  font-size: 14px;
+  color: #6b7280;
   font-style: italic;
   text-align: center;
 }
@@ -345,7 +403,7 @@ export default {
   width: 36px;
   height: 20px;
   border-radius: 999px;
-  background: var(--border, #e4e1d8);
+  background: #e4e1d8;
   position: relative;
   transition: background 0.15s ease;
   flex-shrink: 0;
@@ -362,46 +420,47 @@ export default {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .switch-input:checked + .switch-track {
-  background: var(--teal, #128189);
+  background: #128189;
 }
 .switch-input:checked + .switch-track .switch-thumb {
   transform: translateX(16px);
 }
 .switch-text {
-  font-size: 13.5px;
-  color: var(--text, #1c1e24);
+  font-size: 14px;
+  color: #1c1e24;
 }
 
 .modal-footer {
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   padding: 16px 20px;
-  border-top: 1px solid var(--border, #e4e1d8);
+  border-top: 1px solid #e4e1d8;
 }
 
 .btn-cancel {
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #e4e1d8);
-  color: var(--text, #1c1e24);
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  color: #1c1e24;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
 .btn-cancel:hover {
-  background: var(--bg, #f6f5f0);
+  background: #f6f5f0;
 }
 
 .btn-submit {
-  background: var(--teal, #128189);
-  border: 1px solid var(--teal, #128189);
+  background: #128189;
+  border: 1px solid #128189;
   color: #ffffff;
   border-radius: 8px;
   padding: 8px 18px;
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
 }
 .btn-submit:hover {
@@ -413,70 +472,5 @@ export default {
    which is why the dialog was pinned to the top-left instead of centered,
    and why a second "×" (the library's own close button) floated in the
    corner on top of our custom one. */
-::v-deep .create-modal {
-  z-index: 2000 !important;
-}
-::v-deep .create-modal .modaltor__overlay {
-  z-index: 2000 !important;
-  background: rgba(28, 30, 36, 0.45) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 20px !important;
-}
-::v-deep .create-modal .modaltor__panel {
-  position: relative !important;
-  top: auto !important;
-  left: auto !important;
-  right: auto !important;
-  bottom: auto !important;
-  margin: 0 !important;
-  width: auto !important;
-  max-width: 100% !important;
-  max-height: 90vh !important;
-  overflow-y: auto !important;
-  border-radius: 16px !important;
-  padding: 0 !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
-  z-index: 2001 !important;
-}
-::v-deep .create-modal .modaltor__content {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-::v-deep .create-modal .modaltor__header,
-::v-deep .create-modal .modaltor__close {
-  display: none !important;
-}
-::v-deep .create-modal [class*="close" i]:not(.modal-close-btn) {
-  display: none !important;
-}
-</style>
 
-<style>
-/* Safety net in case the scoped ::v-deep rules above don't reach these
-   elements (same pattern used in ImportDomain.vue's own modal). */
-.create-modal .modaltor__header,
-.create-modal .modaltor__close {
-  display: none !important;
-}
-.create-modal [class*="close" i]:not(.modal-close-btn) {
-  display: none !important;
-}
-.create-modal {
-  z-index: 2000 !important;
-}
-.create-modal .modaltor__overlay {
-  z-index: 2000 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-.create-modal .modaltor__panel {
-  position: relative !important;
-  top: auto !important;
-  left: auto !important;
-  margin: 0 !important;
-  z-index: 2001 !important;
-}
 </style>

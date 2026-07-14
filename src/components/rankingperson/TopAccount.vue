@@ -38,7 +38,7 @@
         </b-form-group>
       </b-col>
 
-      <b-col class="text-right col-card" cols="12" md="auto">
+      <b-col class="text-right col-card no-print" cols="12" md="auto">
         <b-button-group size="sm" class="ml-1 btn-sw">
           <b-button size="sm" @click="onCardClick({ name: '', uid: '', source: '' })" variant="text">
             <i class="fa fa-arrows-rotate"></i>
@@ -68,7 +68,7 @@
     <!-- ===== CARDS VIEW (SLIDER) ===== -->
     <div v-if="view === 'cards'">
       <div v-if="rows.length" class="slider-container">
-        <b-button class="slider-button btn-left" @click="scrollLeft" v-b-tooltip.hover title="เลื่อนซ้าย">
+        <b-button class="slider-button btn-left no-print" @click="scrollLeft" v-b-tooltip.hover title="เลื่อนซ้าย">
           <i class="fa fa-chevron-left"></i>
         </b-button>
 
@@ -130,7 +130,7 @@
           </div>
         </div>
 
-        <b-button class="slider-button btn-right" @click="scrollRight" v-b-tooltip.hover title="เลื่อนขวา">
+        <b-button class="slider-button btn-right no-print" @click="scrollRight" v-b-tooltip.hover title="เลื่อนขวา">
           <i class="fa fa-chevron-right"></i>
         </b-button>
       </div>

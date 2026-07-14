@@ -1,5 +1,5 @@
 <template>
-  <b-card class="box-spotnews black slider-item mx-2 p-1 position-relative" v-if="post" style="overflow: hidden;">
+  <b-card class="box-spotnews black mx-2 p-1 position-relative" v-if="post" style="overflow: hidden;">
     <!-- {{ post }} -->
     <!-- {{loadingCard}} -->
     <vue-element-loading :active="getLoadCardPost" size="80" background-color="rgba(255, 255, 255, 0.5)"

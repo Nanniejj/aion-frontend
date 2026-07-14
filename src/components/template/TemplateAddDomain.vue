@@ -17,7 +17,7 @@
               <b-form-input id="input-small1" placeholder="" v-model="addDomain"  maxlength="50" ></b-form-input>
               <small class="text-muted">{{ addDomain.length }} / 50 ตัวอักษร</small>
               <div v-if="hasForbiddenChars(addDomain)" class="text-danger small mt-1">
-                <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+                <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ  & 
               </div>
             </b-col>
           </b-row>
@@ -52,7 +52,7 @@ methods: {
    // เป็น "-" ให้สองตัวนี้ใน addRowDomain() — แต่เมื่อ disable ปุ่มบันทึกไว้ก่อนแล้ว
    // ผู้ใช้จะพิมพ์ผ่านไปกดบันทึกไม่ได้ตั้งแต่แรก โค้ด replace เดิมจึงไม่มีโอกาสถูกใช้งานอีก
    hasForbiddenChars(value) {
-     const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+     const forbiddenPattern = /&/
      return forbiddenPattern.test(String(value || ""));
    },
    addRowDomain() {

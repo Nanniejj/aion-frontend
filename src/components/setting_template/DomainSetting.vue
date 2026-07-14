@@ -112,7 +112,7 @@
               <small class="text-muted">{{ textDomain.length }} / 50
               ตัวอักษร</small>
             <div v-if="hasForbiddenChars(textDomain)" class="text-danger small mt-1">
-              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ  & 
             </div>
             <label class="modal-field-label mt-3">สถานะการแสดงผล</label>
             <b-form-group v-slot="{ ariaDescribedby }" class="m-0">
@@ -145,7 +145,7 @@
             </b-form-input>
             <small class="text-muted">{{ domainClone.new_domain_name.length }} / 50 ตัวอักษร</small>
             <div v-if="hasForbiddenChars(domainClone.new_domain_name)" class="text-danger small mt-1">
-              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ  & 
             </div>
 
             <label class="modal-field-label mt-3">คำต่อท้ายชื่อ SubDomain เดิม</label>
@@ -153,7 +153,7 @@
             </b-form-input>
             <small class="text-muted">{{ domainClone.subdomain_suffix.length }} / 20 ตัวอักษร (เว้นว่างได้)</small>
             <div v-if="hasForbiddenChars(domainClone.subdomain_suffix)" class="text-danger small mt-1">
-              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ  & 
             </div>
 
             <label class="modal-field-label mt-3">คำต่อท้ายชื่อ Object เดิม</label>
@@ -161,7 +161,7 @@
             </b-form-input>
             <small class="text-muted">{{ domainClone.object_suffix.length }} / 20 ตัวอักษร (เว้นว่างได้)</small>
             <div v-if="hasForbiddenChars(domainClone.object_suffix)" class="text-danger small mt-1">
-              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ  & 
             </div>
 
             <div class="modal-actions">
@@ -258,7 +258,7 @@ export default {
     // (กฎเดียวกับ ImportObject.vue / AddSubDomain.vue / SubdomainCard.vue / TemplateAddDomain.vue)
     // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
     hasForbiddenChars(value) {
-      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      const forbiddenPattern = /&/
       return forbiddenPattern.test(String(value || ""));
     },
     removeRow: function (index, item) {
@@ -470,7 +470,9 @@ table>thead>tr>th:nth-child(3) {
   border-radius: 14px;
   padding: 6px 14px;
   box-shadow: 0 2px 10px rgba(76, 65, 43, 0.06);
-  overflow: hidden;
+  /* เดิม overflow: hidden ทำให้เมนู dropdown ของคอลัมน์ "การจัดการ" ถูกตัดขอบ/บังตารางตอนเปิดเมนู
+     เปลี่ยนเป็น visible เพื่อให้เมนูลอยเหนือตารางได้ตามปกติ มุมโค้งยังคงเดิมเพราะพื้นหลังตารางเป็นสีขาวเหมือนการ์ด */
+  overflow: visible;
 }
 
 .domain-table-card ::v-deep table {
@@ -654,6 +656,34 @@ table>thead>tr>th:nth-child(3) {
 .action-dropdown-toggle:focus {
   background: #ede7dd;
   color: #4c412b;
+}
+
+/* ===== Action dropdown menu (คอลัมน์ "การจัดการ") ===== */
+.domain-table-card ::v-deep .dropdown-menu {
+  z-index: 1050;
+  min-width: 170px;
+  padding: 6px;
+  border: 1px solid #ece6da;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(76, 65, 43, 0.15);
+}
+
+.domain-table-card ::v-deep .dropdown-item {
+  border-radius: 6px;
+  font-size: 14px;
+  padding: 8px 10px;
+}
+
+.domain-table-card ::v-deep .dropdown-item:hover,
+.domain-table-card ::v-deep .dropdown-item:focus {
+  background-color: #f5f1e8;
+  color: #4c412b;
+}
+
+/* กันแถวสุดท้ายในตารางถูกเมนูบัง ให้ dropdown มีที่ล้นลงมาด้านล่างได้ */
+.domain-table-card ::v-deep .table-responsive,
+.domain-table-card ::v-deep tbody tr:last-child td {
+  overflow: visible;
 }
 
 #filter-input {

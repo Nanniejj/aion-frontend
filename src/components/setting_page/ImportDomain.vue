@@ -602,7 +602,7 @@ export default {
     // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
     // บล็อกสัญลักษณ์พิเศษอื่นๆ เช่น @ _ # $ ฿ % ^ & * , ฯลฯ
     hasForbiddenChars(value) {
-      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      const forbiddenPattern = /&/
       return forbiddenPattern.test(String(value || ""));
     },
     // ใช้กับ b-form-tags prop tag-validator — return false จะปฏิเสธไม่ให้เพิ่ม tag นั้นเลย

@@ -7,7 +7,7 @@
       </button>
       <div class="topbar-id">
         <b-icon icon="fingerprint"></b-icon>
-        _id: {{ shortId(project._id.$oid) }}
+        <!-- _id: {{ shortId(project._id.$oid) }} -->
       </div>
     </div>
 
@@ -97,7 +97,7 @@
 </template>
 
 <script>
-import AvatarStack from "./AvatarStack.vue";
+import AvatarStack from "../AvatarStack.vue";
 import {
   oids,
   shortId,
@@ -108,7 +108,7 @@ import {
   TARGET_LOOKUP,
   HOTISSUE_LOOKUP,
   GROUP_LOOKUP,
-} from "./mock.js";
+} from "../mock.js";
 
 export default {
   name: "ProjectDetail",
@@ -193,7 +193,7 @@ export default {
 
 <style scoped>
 /*
-  Self-contained styling (with var(--token, fallback) on every color) so
+  Self-contained styling (colors hard-coded directly, no CSS variables) so
   this page renders correctly even without the shared theme.css loaded.
 */
 
@@ -201,7 +201,7 @@ export default {
   position: fixed;
   inset: 0;
   overflow-y: auto;
-  background: var(--bg, #f6f5f0);
+  background: #f6f5f0;
   z-index: 50;
 }
 
@@ -212,9 +212,9 @@ export default {
   align-items: center;
   gap: 16px;
   padding: 16px 28px;
-  background: var(--bg, #f6f5f0);
-  border-bottom: 1px solid var(--border, #e4e1d8);
-  z-index: 1;
+  background: #f6f5f0;
+  border-bottom: 1px solid #e4e1d8;
+  z-index: 2;
 }
 
 .back-btn {
@@ -224,9 +224,9 @@ export default {
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 13px;
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #e4e1d8);
-  color: var(--text, #1c1e24);
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  color: #1c1e24;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -241,7 +241,7 @@ export default {
   gap: 6px;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11px;
-  color: var(--muted, #6b7280);
+  color: #6b7280;
 }
 
 .detail-body {
@@ -254,7 +254,7 @@ export default {
   font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
   font-size: 30px;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
   margin: 0;
   text-align: left;
 }
@@ -271,11 +271,11 @@ export default {
 }
 .mion-on {
   background: rgba(18, 129, 137, 0.12);
-  color: var(--teal, #128189);
+  color: #128189;
 }
 .mion-off {
   background: rgba(107, 114, 128, 0.12);
-  color: var(--muted, #6b7280);
+  color: #6b7280;
 }
 
 .meta-chip {
@@ -285,9 +285,9 @@ export default {
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 12.5px;
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #e4e1d8);
-  color: var(--muted, #6b7280);
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  color: #6b7280;
 }
 
 /* Section grid: two columns on wider screens, stacks to one on narrow ones */
@@ -307,12 +307,12 @@ export default {
 
 .section-card {
   text-align: left;
-  border: 1px solid var(--border, #e4e1d8);
+  border: 1px solid #e4e1d8;
   border-radius: 16px;
   box-shadow: 0 1px 2px rgba(28, 30, 36, 0.04);
   padding: 20px;
   height: 100%;
-  background: var(--surface, #ffffff);
+  background: #ffffff;
   box-sizing: border-box;
 }
 
@@ -323,37 +323,37 @@ export default {
   margin-bottom: 12px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
 }
 .section-head .icon {
-  color: var(--teal, #128189);
+  color: #128189;
 }
 .section-head .count {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11px;
-  color: var(--muted, #6b7280);
+  color: #6b7280;
   font-weight: 400;
 }
 
 .section-empty {
   font-size: 12.5px;
-  color: var(--muted-soft, #9aa0ac);
+  color: #9aa0ac;
   font-style: italic;
 }
 
 .count-note {
   font-size: 13px;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
 }
 
 .user-name {
   font-size: 13.5px;
   font-weight: 500;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
 }
 .user-role {
   font-size: 11.5px;
-  color: var(--muted, #6b7280);
+  color: #6b7280;
 }
 
 .pill-tag {
@@ -367,10 +367,10 @@ export default {
 .target-row {
   border-radius: 8px;
   padding: 8px 12px;
-  background: var(--bg, #f6f5f0);
-  border: 1px solid var(--border, #e4e1d8);
+  background: #f6f5f0;
+  border: 1px solid #e4e1d8;
   font-size: 12.5px;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
   margin-bottom: 6px;
 }
 
@@ -379,12 +379,12 @@ export default {
   align-items: flex-start;
   gap: 6px;
   font-size: 12.5px;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
   margin-bottom: 6px;
 }
 .hotissue-row svg {
   margin-top: 2px;
   flex-shrink: 0;
-  color: var(--amber, #c1791f);
+  color: #c1791f;
 }
 </style>

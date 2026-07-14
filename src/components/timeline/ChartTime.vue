@@ -49,7 +49,7 @@
             :openTopUsers="openTopUsers"
             :openTrendSummary="openTrendSummary"
           />
-        <b-collapse id="trendSummary" v-model="openTrendSummary" class="my-2">
+        <b-collapse id="trendSummary" v-model="openTrendSummary" class="nuxt-page my-2">
             <TrendSummary
             :summary="summary"
             :filters="filters"
@@ -60,7 +60,7 @@
       </b-col>
 
       <!-- TopUsers: ย้ายออกมานอกเงื่อนไข series เพื่อให้โหลดข้อมูลของตัวเองได้ทันที ไม่ต้องรอกราฟ -->
-      <b-col cols="12" class="">
+      <b-col cols="12" class="nuxt-page">
         <b-collapse id="top-participants" v-model="openTopUsers" class="my-2">
             <TopUsers
                 :filters="filters"

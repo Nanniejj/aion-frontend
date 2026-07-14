@@ -8,17 +8,17 @@
       :visible="open"
       @hide="closeModal"
       :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '520px', 1200: '520px', 768: '92vw', 480: '92vw' }"
+      :resize-width="{ 3000: '660px', 1200: '520px', 768: '92vw', 480: '92vw' }"
       class="create-modal"
     >
       <div class="modal-shell">
-        <div class="modal-topbar">
+        <div class="modal-topbar pb-3">
           <div class="modal-title">
             <b-icon icon="person-plus"></b-icon>
             สร้างผู้ใช้ใหม่
           </div>
           <button class="modal-close-btn" @click="closeModal" aria-label="ปิดหน้าต่าง">
-            <b-icon icon="x"></b-icon>
+            <b-icon icon="x" scale="2"></b-icon>
           </button>
         </div>
 
@@ -42,8 +42,10 @@
             <div class="form-field">
               <label>Role</label>
               <select v-model="form.role" class="form-input form-select">
-                <option value="user">user</option>
+                <option value="superadmin">superadmin</option>
                 <option value="admin">admin</option>
+                <option value="user">user</option>
+                <option value="service">service</option>
               </select>
             </div>
 
@@ -128,15 +130,77 @@
                 </button>
               </div>
             </div>
+
+            <div class="form-field form-field-full">
+              <label>วันหมดอายุบัญชี</label>
+              <div class="expiry-presets">
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === '3' }"
+                  @click="setExpiryMonths(3, '3')"
+                >
+                  3 เดือน
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === '6' }"
+                  @click="setExpiryMonths(6, '6')"
+                >
+                  6 เดือน
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === '12' }"
+                  @click="setExpiryMonths(12, '12')"
+                >
+                  12 เดือน
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === 'custom' }"
+                  @click="useCustomExpiry"
+                >
+                  กำหนดเอง
+                </button>
+                <button
+                  v-if="form.expiresAt"
+                  type="button"
+                  class="preset-clear"
+                  @click="clearExpiry"
+                  title="ไม่กำหนดวันหมดอายุ"
+                >
+                  <b-icon icon="x-circle"></b-icon>
+                </button>
+              </div>
+              <date-picker
+                ref="expiryInput"
+                v-model="form.expiresAt"
+                type="date"
+                placeholder="เลือกวันหมดอายุ"
+                :disabled-date="isPastDate"
+                :append-to-body="false"
+                value-type="YYYY-MM-DD"
+                format="DD/MM/YYYY"
+                class="expiry-datepicker"
+                @change="onExpiryChange"
+              ></date-picker>
+              <span v-if="form.expiresAt" class="expiry-hint">
+                บัญชีจะหมดอายุวันที่ {{ formatExpiry(form.expiresAt) }}
+              </span>
+            </div>
           </div>
 
           <span v-if="error" class="form-error">{{ error }}</span>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn-cancel" @click="closeModal">ยกเลิก</button>
-          <button class="btn-submit" @click="submit">สร้างผู้ใช้</button>
-        </div>
+        <b-row class=" justify-content-end mx-3">
+          <button class="btn-submit mx-3" @click="submit">สร้างผู้ใช้</button>
+          <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
+        </b-row>
       </div>
     </vue-modaltor>
   </span>
@@ -156,6 +220,13 @@ function todayJoined() {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
 
+function toISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function emptyForm() {
   return {
     username: "",
@@ -166,13 +237,13 @@ function emptyForm() {
     email: "",
     password: "",
     role: "user",
+    expiresAt: "",
   };
 }
 
 export default {
   name: "CreateUserModal",
   props: {
-    // Full project list to pick from, e.g. `:projects="projects"` from mock.js PROJECTS
     projects: { type: Array, default: () => [] },
   },
   data() {
@@ -180,9 +251,8 @@ export default {
       open: false,
       error: "",
       showPassword: false,
-      // Starts readonly so Chrome can't autofill it on open; removed as
-      // soon as the field is focused (see @focus on the input).
       usernameLocked: true,
+      expiryPreset: "",
       form: emptyForm(),
     };
   },
@@ -195,11 +265,52 @@ export default {
     },
   },
   methods: {
+    isPastDate(date) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return date < today;
+    },
+    closeExpiryPicker() {
+      const picker = this.$refs.expiryInput;
+      if (!picker) return;
+      if (typeof picker.closePopup === "function") picker.closePopup();
+      else if (typeof picker.closeDropdown === "function") picker.closeDropdown();
+      else if (picker.$el && typeof picker.$el.blur === "function") picker.$el.blur();
+    },
+    onExpiryChange() {
+      this.expiryPreset = "custom";
+      this.closeExpiryPicker();
+    },
+    setExpiryMonths(months, key) {
+      const d = new Date();
+      d.setMonth(d.getMonth() + months);
+      this.form.expiresAt = toISODate(d);
+      this.expiryPreset = key;
+      this.closeExpiryPicker();
+    },
+    useCustomExpiry() {
+      this.expiryPreset = "custom";
+      this.$nextTick(() => {
+        const picker = this.$refs.expiryInput;
+        if (picker && typeof picker.focus === "function") picker.focus();
+      });
+    },
+    clearExpiry() {
+      this.form.expiresAt = "";
+      this.expiryPreset = "";
+      this.closeExpiryPicker();
+    },
+    formatExpiry(iso) {
+      const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+      const d = new Date(iso + "T00:00:00");
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+    },
     closeModal() {
       this.open = false;
       this.error = "";
       this.showPassword = false;
       this.usernameLocked = true;
+      this.expiryPreset = "";
       this.form = emptyForm();
     },
     submit() {
@@ -213,7 +324,6 @@ export default {
       }
 
       const user = {
-        // Fields matching the requested schema:
         username: this.form.username,
         name: this.form.name,
         lastname: this.form.lastname,
@@ -222,10 +332,7 @@ export default {
         password: this.form.password,
         role: this.form.role,
         project_id: this.form.project_id || null,
-        // isActive: true,
-
-        // Derived fields kept so the existing user table/list still
-        // renders correctly (initial, status label, join date).
+        expiresAt: this.form.expiresAt || null,
         _id: newId(),
         initial: this.form.name.trim().charAt(0),
         status: "ใช้งานอยู่",
@@ -239,14 +346,12 @@ export default {
 </script>
 
 <style scoped>
-/* Self-contained, with fallback values on every var(--token, fallback). */
-
 .create-btn {
-  background: var(--teal, #128189) !important;
-  border-color: var(--teal, #128189) !important;
+  background: #128189 !important;
+  border-color: #128189 !important;
   color: #ffffff !important;
   font-weight: 500;
-  font-size: 13.5px;
+  font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -255,29 +360,24 @@ export default {
   background: #0e6971 !important;
   border-color: #0e6971 !important;
 }
-.create-btn-user {
-  background: #ffffff !important;
-  border-color: var(--teal, #128189) !important;
-  color: var(--teal, #128189) !important;
-}
-.create-btn-user:hover {
-  background: rgba(18, 129, 137, 0.08) !important;
-}
 
 .modal-shell {
-  background: var(--surface, #ffffff);
+  background: #ffffff;
   border-radius: 16px;
   width: 100%;
-  overflow: hidden;
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  overflow: hidden;
 }
 
 .modal-topbar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border, #e4e1d8);
+  border-bottom: 1px solid #e4e1d8;
 }
 
 .modal-title {
@@ -286,8 +386,8 @@ export default {
   gap: 8px;
   font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
-  font-size: 16px;
-  color: var(--text, #1c1e24);
+  font-size: 18px;
+  color: #1c1e24;
 }
 
 .modal-close-btn {
@@ -296,11 +396,11 @@ export default {
   cursor: pointer;
   padding: 4px;
   border-radius: 6px;
-  color: var(--muted, #6b7280);
+  color: #6b7280;
   display: flex;
 }
 .modal-close-btn:hover {
-  background: var(--bg, #f6f5f0);
+  background: #f6f5f0;
 }
 
 .modal-body {
@@ -308,6 +408,9 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .form-grid {
@@ -326,45 +429,123 @@ export default {
   grid-column: 1 / -1;
 }
 .form-field label {
-  font-size: 12.5px;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--text, #1c1e24);
+  color: #1c1e24;
 }
 .req {
   color: #c0392b;
 }
+.field-note {
+  font-weight: 400;
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: 4px;
+}
 
 .form-input {
-  border: 1px solid var(--border, #e4e1d8);
+  border: 1px solid #e4e1d8;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 14px;
-  color: var(--text, #1c1e24);
-  background: var(--surface, #ffffff);
+  color: #1c1e24;
+  background: #ffffff;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   width: 100%;
   box-sizing: border-box;
 }
 .form-input:focus {
-  border-color: var(--teal, #128189);
+  border-color: #128189;
   box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
 }
 
-/* Kill Chrome's default blue/yellow autofill tint so autofilled fields
-   still match the rest of the form. */
 .form-input:-webkit-autofill,
 .form-input:-webkit-autofill:hover,
 .form-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: var(--text, #1c1e24);
-  -webkit-box-shadow: 0 0 0 1000px var(--surface, #ffffff) inset;
-  box-shadow: 0 0 0 1000px var(--surface, #ffffff) inset;
+  -webkit-text-fill-color: #1c1e24;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
   transition: background-color 9999s ease-in-out 0s;
 }
 
 .form-error {
-  font-size: 12px;
+  font-size: 14px;
   color: #c0392b;
+}
+
+.expiry-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.preset-btn {
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  color: #1c1e24;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.preset-btn:hover {
+  background: #f6f5f0;
+}
+.preset-btn.active {
+  background: #128189;
+  border-color: #128189;
+  color: #ffffff;
+}
+
+.preset-clear {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+.preset-clear:hover {
+  background: #f6f5f0;
+  color: #c0392b;
+}
+
+.expiry-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.expiry-datepicker {
+  width: 100%;
+  position: relative;
+  z-index: 5;
+}
+::v-deep .expiry-datepicker.mx-datepicker,
+.expiry-datepicker.mx-datepicker {
+  width: 100%;
+}
+::v-deep .expiry-datepicker .mx-input,
+.expiry-datepicker .mx-input {
+  height: auto;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #1c1e24;
+  box-shadow: none;
+}
+::v-deep .expiry-datepicker .mx-input:focus,
+.expiry-datepicker .mx-input:focus {
+  border-color: #128189;
+  box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
 }
 
 .password-row {
@@ -377,17 +558,17 @@ export default {
 }
 .password-toggle {
   background: transparent;
-  border: 1px solid var(--border, #e4e1d8);
+  border: 1px solid #e4e1d8;
   border-radius: 8px;
   padding: 8px 10px;
-  color: var(--muted, #6b7280);
+  color: #6b7280;
   cursor: pointer;
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 .password-toggle:hover {
-  background: var(--bg, #f6f5f0);
+  background: #f6f5f0;
 }
 
 .form-select {
@@ -401,35 +582,36 @@ export default {
 }
 
 .modal-footer {
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   padding: 16px 20px;
-  border-top: 1px solid var(--border, #e4e1d8);
+  border-top: 1px solid #e4e1d8;
 }
 
 .btn-cancel {
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--border, #e4e1d8);
-  color: var(--text, #1c1e24);
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  color: #1c1e24;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
 .btn-cancel:hover {
-  background: var(--bg, #f6f5f0);
+  background: #f6f5f0;
 }
 
 .btn-submit {
-  background: var(--teal, #128189);
-  border: 1px solid var(--teal, #128189);
+  background: #128189;
+  border: 1px solid #128189;
   color: #ffffff;
   border-radius: 8px;
   padding: 8px 18px;
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
 }
 .btn-submit:hover {
@@ -442,11 +624,6 @@ export default {
   }
 }
 
-/* ---- vue-modaltor wrapper overrides ---- */
-/* The library's own overlay/panel/close button aren't styled by default,
-   which is why the dialog was pinned to the top-left instead of centered,
-   and why a second "×" (the library's own close button) floated in the
-   corner on top of our custom one. */
 ::v-deep .create-modal {
   z-index: 2000 !important;
 }
@@ -467,8 +644,7 @@ export default {
   margin: 0 !important;
   width: auto !important;
   max-width: 100% !important;
-  max-height: 90vh !important;
-  overflow-y: auto !important;
+  overflow: visible !important;
   border-radius: 16px !important;
   padding: 0 !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
@@ -488,8 +664,6 @@ export default {
 </style>
 
 <style>
-/* Safety net in case the scoped ::v-deep rules above don't reach these
-   elements (same pattern used in ImportDomain.vue's own modal). */
 .create-modal .modaltor__header,
 .create-modal .modaltor__close {
   display: none !important;

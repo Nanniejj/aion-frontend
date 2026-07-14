@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="container my-3">
+      
       <div class="position-relative text-right filter-btn">
         <b-button size="sm" :variant="showFilters ? 'info' : 'outline-info'" @click="showFilters = !showFilters" pill
           class="d-inline-flex align-items-center">
@@ -48,8 +49,8 @@
       </div>
 
       <!-- Filter form -->
-      <b-card class="mb-3 shadow-sm" style="border-radius: 20px;" v-if="showFilters">
-        <b-alert show variant="info">
+      <b-card class="mb-3 shadow-sm no-print" style="border-radius: 20px;" v-if="showFilters">
+        <b-alert show variant="info" class="no-print">
           <div class="text-left">
             <b-icon icon="info-circle" variant="info"></b-icon>
             <small>คำค้นหา (AND ใช้ช่องว่างหรือ +, OR ใช้ ,)
@@ -142,25 +143,38 @@
           </b-row>
         </b-form>
       </b-card>
-
+      <b-row class=" justify-content-between my-4 mx-0 no-print">
+        <h5>ผลลัพธ์</h5>
+        <PrintButton
+          class=""
+          :disabled="Array.isArray(postsFromApi) && postsFromApi.length === 0"
+          @before-print="showFilters = false" 
+        /> 
+      </b-row>
       <ChartTime
         :filters="paramTo"
         :postsForAnalysis="filters.keywordInput === '' && filters.hashtags.length === 0 ? postsFromApi : postsForAnalysis"
         @point-click="handlePointClick"
         @range-selected="handleRange"
-        @filter-account="handleSearchAccount" />
+        @filter-account="handleSearchAccount" 
+      />
 
-      <ExportExcelButton
-        :posts="postsFromApi"
-        :filters="filters"
-        :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)"
-        :full-export="true"
-        :api-base="'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'"
-        :count="count"
-        :prefer-single-shot="true"
-        inline-comments="json"
-        :comments-limit="20"
-        v-if="!loading" />
+      <!-- <div class="d-flex align-items-end flex-wrap" v-if="!loading"> -->
+        <ExportExcelButton
+          class="no-print"
+          :posts="postsFromApi"
+          :filters="filters"
+          :disabled="loading || (Array.isArray(postsFromApi) && postsFromApi.length === 0)"
+          :full-export="true"
+          :api-base="'https://api2.cognizata.com/api/v2/userposts/getFulltextPost'"
+          :count="count"
+          :prefer-single-shot="true"
+          inline-comments="json"
+          :comments-limit="20" 
+        />
+
+        
+      <!-- </div> -->
 
       <!-- Loading spinner -->
       <div class="text-center my-4 py-4" v-if="loading">
@@ -179,7 +193,9 @@
         @loadMoreDay="loadMoreDay"
         @changeDaySort="changeDaySort"
         @openDay="handleOpenDay"
-        :count="count" />
+        :count="count"
+        class="nuxt-page"
+      />
 
       <!-- Load more (posts mode) -->
       <div v-if="filters.view_mode === 'posts' && !loading && filters.page < totalPages" class="text-center my-2 pb-5">
@@ -204,6 +220,7 @@
 import TimelinePosts     from "@/components/timeline/TimelinePosts2.vue";
 import ChartTime         from "@/components/timeline/ChartTime.vue";
 import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+import PrintButton       from "@/components/timeline/PrintButton.vue";
 import { mapGetters }    from "vuex";
 import "vue-select/dist/vue-select.css";
 import moment from "moment";
@@ -220,7 +237,7 @@ function getSavedNewsSource() {
 const DEFAULT_DAY_OPEN_SORT = "engagement";
 
 export default {
-  components: { TimelinePosts, ChartTime, ExportExcelButton },
+  components: { TimelinePosts, ChartTime, ExportExcelButton, PrintButton },
 
   data() {
     return {
@@ -989,5 +1006,12 @@ export default {
   .vue-back-to-top { right: 14px !important; }
   .btn-to-top { width: 50px; height: 50px; padding: 10px 13px; }
   .checkbox-v { zoom: 85%; }
+}
+@media print {
+  .no-print,
+  .filter-btn,
+  .vue-back-to-top {
+    display: none !important;
+  }
 }
 </style>

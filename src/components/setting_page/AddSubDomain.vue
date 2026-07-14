@@ -23,7 +23,7 @@
             <b-form-input id="input-small2" placeholder="" maxlength="50" v-model="addSubDomain" focus></b-form-input>
             <small class="text-muted">{{ addSubDomain.length }} / 50 ตัวอักษร</small>
             <div v-if="hasForbiddenChars(addSubDomain)" class="text-danger small mt-1">
-              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ ฿ % ^ & * ,
+              <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ  & 
             </div>
 
             <!-- {{addSubDomain}} -->
@@ -61,7 +61,7 @@ export default {
     // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่ (ใช้กฎเดียวกับ ImportObject.vue)
     // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข และเว้นวรรคเท่านั้น
     hasForbiddenChars(value) {
-      const forbiddenPattern = /[@_#$฿%^&*!~`<>{}[\]|\\/:;"',]/;
+      const forbiddenPattern = /&/
       return forbiddenPattern.test(String(value || ""));
     },
  async apiAddSubdomain() {

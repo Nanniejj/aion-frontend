@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative card-sd my-2"
+    <b-card img-alt="Image" img-top class="box-spotnews black mx-2 p-1 position-relative card-sd my-2"
       v-if="post">
       <div class="position-relative">
 

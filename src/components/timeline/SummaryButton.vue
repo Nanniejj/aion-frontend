@@ -1,6 +1,6 @@
 <template>
     <div class="">
-        <b-row class="m-0">
+        <b-row class="m-0 no-print">
             <b-col v-if="!hideTrandButton" cols="auto" sm="auto" class="px-0 mt-2 mr-2">
                 <b-button  size="sm" :variant="openTrendSummary ? 'secondary' : 'outline-secondary'" 
                     class=" w-100" v-b-toggle href="#trendSummary" @click.prevent>
@@ -52,27 +52,27 @@
                 <a v-b-toggle v-if="fullSummary && !open && !analyzing" @click.prevent="toggle" class="px-2">บทวิเคราะห์ล่าสุด</a>
             </b-col>
         </b-row>
-        <b-col cols="12" class="pt-2 text-danger" style="font-size: small;" v-if="fullSummary && !open">
+        <b-col cols="12" class="pt-2 text-danger no-print" style="font-size: small;" v-if="fullSummary && !open">
             *** หมายเหตุ: หากต้องการบทวิเคราะห์ใหม่ กรุณากดปุ่ม "Analysis" อีกครั้ง
         </b-col>
-        <b-collapse v-model="open" class="my-2">
+        <b-collapse v-model="open" class="my-2 nuxt-page">
             <b-card class="shadow-sm" header-class="border-0" body-class="pt-0" style="border-radius: 16px; min-height: 100px;">
                 <!-- ส่วน header ให้ scroll -->
                 <template #header>
                     <b-row class="m-0 align-items-center justify-content-center">
-                        <b-col cols="12" md="" class="px-0">
+                        <b-col cols="12" md="" class="summary-title px-0">
                             การวิเคราะห์แนวโน้ม
                             <span v-if="filters.keywordInput">เกี่ยวกับ <span class="bold">{{ filters.keywordInput }}</span></span>
                             <span v-if="filters.view_mode === 'daily'">ของโพสต์ในช่วง</span>
                             <span v-if="filters.view_mode === 'posts'">ตามเวลา</span>ในวัน {{ formatDateRange() }}
                         </b-col>
-                        <b-col cols="auto" md="auto" class="px-0">
+                        <b-col cols="auto" md="auto" class="px-0 no-print">
                             <b-button size="sm" variant="outline-secondary" class="d-inline-flex" @click="copyFull"
                             :disabled="!fullSummary || analyzing">
                             คัดลอกสรุป
                             </b-button>
                         </b-col>
-                        <b-col cols="auto" class="">
+                        <b-col cols="auto" class="no-print">
                             <button @click="toggle" class="btn d-inline-flex align-items-center btn-info btn-sm">
                             <i class="fas fa-sliders mr-2" aria-hidden="true"></i>
                             <span class="small">Hide</span>
@@ -89,6 +89,13 @@
                     </div>
                     <div v-else class="text-left pb-3">
                         <div v-html="formatSummarize(fullSummary)"></div>
+
+                        <sentiment-ratio-chart
+                            v-if="hasSentimentChart"
+                            class="mt-5"
+                            :items="sentimentBySection"
+                            chart-title="สัดส่วนความคิดเห็น: บวก / กลาง / ลบ (แยกตามประเด็น)"
+                        ></sentiment-ratio-chart>
                     </div>
                 </b-card-text>
             </b-card>
@@ -98,9 +105,13 @@
 
 <script>
 import Swal from 'sweetalert2';
+import SentimentRatioChart from './SentimentRatioChart.vue';
 
 export default {
     name: "SummaryButton",
+    components: {
+        SentimentRatioChart,
+    },
     props: {
         hideTrandButton:{ type: Boolean, default: false },
         posts: { type: [Array, Object], required: true }, // postsFromApi (flat array หรือ grouped daily)
@@ -210,8 +221,19 @@ export default {
             }
             return [];
         },
+        // ดึงข้อมูล บวก/กลาง/ลบ ของแต่ละ "ประเด็นที่ N" จากส่วน "เสียงจากสื่อสังคม"
+        // ใช้ parseTopicStats() ซึ่งอ่านค่าแบบไม่สนลำดับ บวก/กลาง/ลบ ในข้อความต้นฉบับ
+        // คืนค่าเป็น array [{index, title, positive, neutral, negative, engagementTrend}, ...]
+        // ส่งตรงเข้า <sentiment-ratio-chart :items="...">
+        sentimentBySection() {
+            return this.parseTopicStats(this.fullSummary);
+        },
+        hasSentimentChart() {
+            return this.sentimentBySection.length > 0;
+        },
     },
     methods: {
+        // parser ของ format เดิม (## 2) ภาพรวม Social Sentiment)
         parseSentimentStats(text) {
             if (!text) return [];
 
@@ -259,6 +281,101 @@ export default {
 
                 return [{ title: "ภาพรวม Social Sentiment", sentiment }];
             }
+        },
+        // parser ของ format ใหม่: หัวข้อ "2. เสียงจากสื่อสังคม" มีบล็อกย่อยแบบ
+        // "ประเด็นที่ N: <ชื่อประเด็น>" ตามด้วยบรรทัด "สัดส่วน: ..." ซึ่งลำดับ บวก/กลาง/ลบ
+        // ในต้นฉบับสลับกันได้ (เช่น "บวก~15%/กลาง~60%/ลบ~25%" หรือ "ลบ~85%/กลาง~10%/บวก~5%")
+        // ฟังก์ชันนี้จะไล่สร้าง array เก็บสถิติของแต่ละประเด็นจาก fullSummary ทั้งหมด
+        // คืนค่า: [{ index, title, positive, neutral, negative, engagementTrend }, ...]
+        parseTopicStats(text) {
+            if (!text) return [];
+
+            // เอกสารต้นฉบับมี 2 รูปแบบที่พบ:
+            // แบบ (1) หลายประเด็น — ใช้เส้นคั่น "════..." ล้อมหัวข้อไว้ต่างหากจากเนื้อหา เช่น
+            //   ════...
+            //   2. เสียงจากสื่อสังคม
+            //   ════...
+            //   ประเด็นที่ 1: ...
+            //   ประเด็นที่ 2: ...
+            // แบบ (2) ประเด็นเดียว — ไม่มีเลข "ประเด็นที่ N:" เลย สนใจแค่ว่ามีบรรทัด
+            //   สัดส่วน: บวก ~30% / กลาง ~50% / ลบ ~20%
+            // อยู่ที่ไหนก็ได้ใน fullSummary ก็พอ ไม่ต้องอาศัยโครงสร้าง section ใดๆ เพิ่ม
+
+            // ลองหาโครงสร้างแบบ (1) ก่อน: แบ่งด้วยเส้นคั่น ════ แล้วหา chunk หัวข้อ จากนั้นใช้ chunk ถัดไปเป็นเนื้อหา
+            let section = null;
+            const dividerChunks = text.split(/═{3,}/).map(c => c.trim()).filter(Boolean);
+            if (dividerChunks.length > 1) {
+                const headingIdx = dividerChunks.findIndex(c => /เสียงจากสื่อสังคม/.test(c) && c.length < 60);
+                if (headingIdx !== -1 && dividerChunks[headingIdx + 1]) {
+                    section = dividerChunks[headingIdx + 1];
+                }
+            }
+
+            // แตกเป็นบล็อกย่อยตาม "ประเด็นที่ N:" พร้อมเก็บเลขประเด็นไว้ด้วย (capturing group)
+            const blocks = section ? section.split(/ประเด็นที่\s*(\d+)[:：]?\s*/).slice(1) : [];
+
+            if (blocks.length > 0) {
+                // เอกสารแบบหลายประเด็น
+                const results = [];
+
+                for (let i = 0; i < blocks.length; i += 2) {
+                    const topicNo = parseInt(blocks[i], 10);
+                    const block = blocks[i + 1] || '';
+
+                    const title = (block.trim().split('\n')[0] || '').trim();
+                    if (!title) continue;
+
+                    const stats = this.extractRatioFromBlock(block);
+                    if (!stats) continue;
+
+                    results.push({
+                        index: Number.isNaN(topicNo) ? results.length + 1 : topicNo,
+                        title,
+                        ...stats,
+                    });
+                }
+
+                return results;
+            }
+
+            // ไม่มี "ประเด็นที่ N:" เลย แปลว่าเป็นเอกสารแบบประเด็นเดียว
+            // ไม่ต้องหา section ให้ซับซ้อน สนใจแค่บรรทัด "สัดส่วน: บวก ~X% / กลาง ~Y% / ลบ ~Z%" ที่อยู่ตรงไหนก็ได้ใน text
+            const stats = this.extractRatioFromBlock(text);
+            if (!stats) return [];
+
+            // หาชื่อประเด็นจาก "ข่าวเด่นที่สุด:" ก่อน ถ้าไม่มีค่อย fallback เป็นบรรทัดแรกสุดของ fullSummary
+            const titleMatch = text.match(/ข่าวเด่นที่สุด[:：]?\s*(.+)/);
+            const title = titleMatch ? titleMatch[1].trim() : (text.trim().split('\n')[0] || '').trim();
+
+            return [{
+                index: 1,
+                title,
+                ...stats,
+            }];
+        },
+        // ดึงค่าสัดส่วน บวก/กลาง/ลบ + แนวโน้ม engagement จากก้อนข้อความหนึ่งบล็อก
+        // คืนค่า null ถ้าไม่พบข้อมูลสัดส่วนเลย
+        extractRatioFromBlock(block) {
+            // ดึงเฉพาะบรรทัด "สัดส่วน: ..." กันไม่ให้ไปจับเลข % จากที่อื่นในบล็อก (เช่นในตัวอย่างคอมเมนต์)
+            const ratioLineMatch = block.match(/สัดส่วน[:：]?\s*(.+)/);
+            const ratioLine = ratioLineMatch ? ratioLineMatch[1] : '';
+
+            // อ่านค่า บวก/กลาง/ลบ แบบไม่สนลำดับที่ปรากฏในข้อความ
+            const posMatch = ratioLine.match(/บวก\s*~?(\d+)%/);
+            const neuMatch = ratioLine.match(/กลาง\s*~?(\d+)%/);
+            const negMatch = ratioLine.match(/ลบ\s*~?(\d+)%/);
+
+            if (!posMatch && !neuMatch && !negMatch) return null;
+
+            // ดึงแนวโน้ม engagement เผื่อใช้ต่อ (ไม่บังคับต้องมี)
+            const engagementMatch = block.match(/แนวโน้ม\s*engagement[:：]?\s*(.+)/);
+
+            return {
+                positive: posMatch ? parseInt(posMatch[1], 10) : 0,
+                neutral: neuMatch ? parseInt(neuMatch[1], 10) : 0,
+                negative: negMatch ? parseInt(negMatch[1], 10) : 0,
+                engagementTrend: engagementMatch ? engagementMatch[1].trim() : '',
+            };
         },
         extractSection2(text) {
             const match = text.match(/##\s*2\)[\s\S]*?(?=##\s*3\)|$)/);
@@ -597,6 +714,11 @@ export default {
 </script>
 
 <style scoped>
+.summary-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
 .card-header-scroll {
   max-height: 120px;
   overflow-y: auto;

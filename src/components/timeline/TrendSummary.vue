@@ -1,11 +1,11 @@
 <template>
   <b-card header-class="text-left">
     <template #header>
-        <span>📝 สรุปแนวโน้มกราฟสถิติรายชั่วโมง </span>
+        <span class="text-title">สรุปแนวโน้มกราฟสถิติรายชั่วโมง </span>
         <button
             variant="info"
             size="sm"
-            class="analysis-button"
+            class="analysis-button no-print"
             :class="{ 'is-glowing': analyzing }"
             type="button"
             @click="summarizeGraph()"
@@ -80,9 +80,9 @@
             <!-- {{ fullSummary }} -->
           <!-- <div v-html="formatSummarize(fullSummary)"></div> -->
           </div>
-            <b-col cols="12" class="pt-2 text-danger" style="font-size: small;" v-if="fullSummary">
-                *** หมายเหตุ: หากต้องการบทวิเคราะห์ใหม่ กรุณากดปุ่ม "Chart Analyze" อีกครั้ง
-            </b-col>
+          <b-col cols="12" class="pt-2 text-danger no-print" style="font-size: small;" v-if="fullSummary">
+              *** หมายเหตุ: หากต้องการบทวิเคราะห์ใหม่ กรุณากดปุ่ม "Chart Analyze" อีกครั้ง
+          </b-col>
       </div>
     </div>
     <!-- ส่วนเนื้อหา -->
@@ -205,6 +205,10 @@ export default {
 </script>
 
 <style scoped>
+.text-title {
+    font-weight: bold;
+    font-size: 16px;
+}
 /* .card-scroll {
   max-height: 400px;
 } */
