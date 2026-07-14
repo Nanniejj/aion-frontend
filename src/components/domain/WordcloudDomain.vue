@@ -2,7 +2,7 @@
   <div class="px-1 ">
     <div class="text-left">
       <span class="h5 mr-3 d-inline-block">Wordcloud / Hashtagcloud</span>
-{{ getSdateDm }} {{ getEdateDm }} {{ setArrDate }}
+<!-- {{ getSdateDm }} {{ getEdateDm }} {{ setArrDate }} -->
       <div v-if="start && end" class="d-inline-block">
         <div v-if="startd === endd" class="text-left onedate">
           <i class="far fa-calendar-alt"></i> {{ startd }}
