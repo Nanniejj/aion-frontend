@@ -67,7 +67,7 @@ export const WordcloudService = {
 
     return ApiService.get(`/v1/getwordcloud/?${params.toString()}`);
   },
-  getWordCloud2(payload) {
+  getWordCloud2 (payload) {
     console.log(payload.domain);
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();

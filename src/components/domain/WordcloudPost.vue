@@ -845,11 +845,11 @@
                         <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
                           v-if="datas.source == 'youtube'">
                           <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
-                          <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                          <b-avatar v-else loading="lazy" style="height: 32px;"></b-avatar>
                         </a>
                         <a :href="cmt.url" target="_blank" v-else>
                           <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
-                          <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                          <b-avatar v-else loading="lazy" style="height: 32px;"></b-avatar>
                         </a>
 
                         <span> </span>
@@ -1150,6 +1150,8 @@ export default {
       const domain = this.$route.query.domain_id || "";
       const monitor = this.$route.query.monitor || "";
       const source_news = this.$route.query.source_news || "";
+      const type = this.$route.query.type || "";
+      const id = this.$route.query.id || "";
 
       const url = "https://api2.cognizata.com/api/v2/userposts/getSentimentStat";
 
@@ -1162,6 +1164,19 @@ export default {
       if (domain) params.domain_id = domain;
       if (monitor) params.monitor = monitor;
       if (source_news) params.source_news = source_news;
+      if (type){ 
+        params.type = type;
+      //  delete params.start;
+      //  delete params.end;
+       if(type=="targetlist"){
+        params.account = id
+       }else{
+        if(this.getNamePlatform=="all"){
+      params.source ="news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram"
+        }
+       }
+      }
+      if (id) params.id = id;
       if (hashtag) params.hashtags = hashtag;
       else if (keyword) params.querySearch = keyword;
 
@@ -1444,8 +1459,12 @@ export default {
       const endQ = this.$route.query.end;
 
       const today = moment(new Date()).format("YYYY-MM-DD");
-      const start = (startQ && String(startQ).trim() ? String(startQ).trim() : today + "T00:00:00");
-      const end = (endQ && String(endQ).trim() ? String(endQ).trim() : today + "T23:59:59");
+      const start = 
+      this.$route.query.start && String(startQ).trim() ? String(startQ).trim() : today + "T00:00:00";
+      const end = this.$route.query.end && String(endQ).trim() ? String(endQ).trim() : today + "T23:59:59";
+
+      const type = this.$route.query.type || "";
+      const id = this.$route.query.id || "";
 
       const params = {
         sentiment: stm || "",
@@ -1467,6 +1486,21 @@ export default {
       }
       if (this.$route.query.source_news) {
         params.source_news = this.$route.query.source_news
+      }
+      if (type) {
+        params.type = type
+        //          delete params.start;
+        // delete params.end;
+      }
+      if (id) {
+        params.id = id
+        if (type == "targetlist") {
+          params.account = id
+        }else{
+        if(this.getNamePlatform=="all"){
+        params.source ="news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram"
+        }
+       }
       }
       this.axios({
         method: "get",

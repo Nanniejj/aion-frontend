@@ -1684,8 +1684,8 @@ export default {
     //     .then((response) => (this.heightword = response.data[0].Keywords));
     // }
 
-    this.$store.commit("setSdateDm", null);
-    this.$store.commit("setEdateDm", null);
+    // this.$store.commit("setSdateDm", null);
+    // this.$store.commit("setEdateDm", null);
     await this.infiniteScroll();
   },
   destroyed() {
@@ -1695,6 +1695,8 @@ export default {
     this.$store.commit("addAllPost", []);
     this.$store.commit("setPostLocation", []);
     this.$store.commit("addPostLocation", []);
+    this.$store.commit("setSdateDm", null);
+     this.$store.commit("setEdateDm", null);
   },
 };
 </script>

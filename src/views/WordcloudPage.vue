@@ -44,5 +44,22 @@ export default {
   min-height: 100vh;
   padding: 0;
 }
+.btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+    background-color: #fed16e;
+    border-color: #fed16e;
+      color: #fff;
+       box-shadow: 2px 1px 4px #888888;
+}
+.btn-to-top:hover{
 
+    background-color: #f7c24e;
+    border-color: #f7c24e;
+      color: #fff;
+}
 </style>

@@ -67,12 +67,25 @@
         aria-label="ปิด">×</button>
 
       <div class="wc-word-popup-title">{{ popup.name }}</div>
-
+      <b-row style="font-size: 14px;">
+        <b-col cols="6" class="px-0 ">
+          <span class="text-muted mr-auto"> <b>โพสต์</b></span>
+          <span class="font-weight-bold"> {{ fmt(popup.total_post) }}</span>
+        </b-col>
+        <b-col cols="6" class="px-0 ">
+          <span class="text-muted mr-auto"> <b>ความถี่</b></span>
+          <span class="font-weight-bold"> {{ fmt(popup.total) }}</span>
+        </b-col>
+      </b-row>
       <div class="wc-word-popup-stats">
-        <div class="wc-word-popup-stat-row">
-          <span class="text-muted mr-auto">รวม</span>
-          <span class="font-weight-bold">{{ fmt(popup.total) }}</span>
+        <!-- <div class="wc-word-popup-stat-row">
+          <span class="text-muted mr-auto">จำนวน <b>โพสต์</b></span>
+          <span class="font-weight-bold">{{ fmt(popup.total_post) }}</span>
         </div>
+        <div class="wc-word-popup-stat-row">
+          <span class="text-muted mr-auto">จำนวน <b>ความถี่</b></span>
+          <span class="font-weight-bold">{{ fmt(popup.total) }}</span>
+        </div> -->
         <div class="wc-word-popup-stat-row">
           <i class="fa fa-face-grin wc-icon wc-icon-pos"></i>
           <span class="text-muted mr-auto">บวก</span>
@@ -292,8 +305,8 @@ export default {
 
       // ⚡ generation counter: กันงานวาดที่ค้างคิวอยู่ดันภาพเก่าทับข้อมูลใหม่
       _renderGen: 0, // ต้องเป็นตัวเลข 0 เสมอ — ถ้าหายไปจาก data() ตรงนี้ this._renderGen จะเป็น undefined
-                     // แล้ว undefined++ = NaN ซึ่งทำให้ (myGen !== this._renderGen) เป็น true ตลอดกาล (NaN !== NaN)
-                     // และ render pipeline จะ bail ทิ้งทุกครั้งก่อนถึงขั้นตอนสร้าง canvas
+      // แล้ว undefined++ = NaN ซึ่งทำให้ (myGen !== this._renderGen) เป็น true ตลอดกาล (NaN !== NaN)
+      // และ render pipeline จะ bail ทิ้งทุกครั้งก่อนถึงขั้นตอนสร้าง canvas
 
       // ⚡ กันโหลดฟอนต์ซ้ำซ้อน: cache ผลลัพธ์ของ ensureFontLoaded ต่อ "text signature" ที่เคยโหลดแล้ว
       _fontReadySignature: "",
@@ -310,6 +323,7 @@ export default {
         neu: 0,
         neg: 0,
         word: null,
+        total_post: 0,
       },
     };
   },
@@ -396,7 +410,7 @@ export default {
     //    ยิงแบบ fire-and-forget ตรงนี้ เพื่อให้พอถึงตอน renderKind() เรียก ensureFontLoaded()
     //    ไฟล์ CSS ส่วนใหญ่น่าจะโหลดมาถึง browser แล้ว ลดโอกาสที่ canvas จะวาดด้วย fallback font
     if (typeof document !== "undefined") {
-      ensureFontStylesheetLoaded(WC_FONT_HREF).catch(() => {});
+      ensureFontStylesheetLoaded(WC_FONT_HREF).catch(() => { });
     }
   },
 
@@ -499,6 +513,33 @@ export default {
     fmt(n) {
       const x = Number(n || 0);
       return x.toLocaleString("th-TH");
+    },
+    getItemTotalPost(it) {
+      const src = it?.__src ?? it ?? {};
+      const candidates = [
+        src?.total_post,
+        src?.totalPost,
+        src?.total_posts,
+        src?.posts,
+        src?.post_count,
+        src?.postCount,
+        it?.total_post,
+        it?.totalPost,
+        it?.total_posts,
+        it?.posts,
+        it?.post_count,
+        it?.postCount,
+        src?.count?.total_post,
+        src?.count?.totalPost,
+        src?.count?.total_posts,
+        src?.count?.posts,
+      ];
+
+      const found = candidates.find((value) => value !== undefined && value !== null && value !== "");
+      if (found !== undefined) return Number(found) || 0;
+
+      const { total } = this.getCounts(it);
+      return Number(total) || 0;
     },
     clamp(x, a, b) {
       return Math.min(b, Math.max(a, x));
@@ -619,7 +660,8 @@ export default {
           const src = x.__src ?? x;
           const name = x.name ?? x.text ?? x.key ?? src.name ?? src.text ?? src.key ?? "";
           const total = Number(x.total ?? x.value ?? src.total ?? 0);
-          return { key: String(name).trim(), text: String(name).trim(), value: total, __src: src };
+          const total_post = this.getItemTotalPost(x);
+          return { key: String(name).trim(), text: String(name).trim(), value: total, total_post: total_post, __src: src };
         })
         .filter((d) => d.key.length > 0)
         .filter((d) => !excluded[this._normKey(d.key)])
@@ -774,7 +816,7 @@ export default {
         ? () => this._doRenderOne({ kind: "words", wrapRef: "chartWrapWords", chartRef: "chartWords", getItems: () => this.wordItems })
         : () => this._doRenderOne({ kind: "tags", wrapRef: "chartWrapTags", chartRef: "chartTags", getItems: () => this.hashtagItems });
 
-      this._renderChain = (this._renderChain || Promise.resolve()).catch(() => {}).then(job);
+      this._renderChain = (this._renderChain || Promise.resolve()).catch(() => { }).then(job);
       return this._renderChain;
     },
 
@@ -967,7 +1009,8 @@ export default {
 
     // -------- Popup --------
     _fillPopupData(kind, d) {
-      const { pos, neu, neg, total } = this.getCounts(d.__src);
+      const src = d?.__src ?? d ?? {};
+      const { pos, neu, neg, total } = this.getCounts(src);
       this.popup.kind = kind;
       this.popup.word = d;
       this.popup.name = d.text;
@@ -975,6 +1018,7 @@ export default {
       this.popup.pos = pos;
       this.popup.neu = neu;
       this.popup.neg = neg;
+      this.popup.total_post = this.getItemTotalPost(src);
     },
     showHoverPopup(kind, d, event) {
       if (this.popup.pinned) return;
@@ -1021,15 +1065,15 @@ export default {
       this.popup.pinned = false;
       this.popup.word = null;
     },
-  popupViewPosts() {
-  if (!this.popup.word) return;
-  this.$emit("select", {
-    kind: this.popup.kind,          // "words" | "tags"
-    text: this.popup.word.text,     // ✅ คำ/แฮชแท็กที่แสดงจริง (plain text)
-    data: this.popup.word.__src,
-  });
-  this.closePopup();
-},
+    popupViewPosts() {
+      if (!this.popup.word) return;
+      this.$emit("select", {
+        kind: this.popup.kind,          // "words" | "tags"
+        text: this.popup.word.text,     // ✅ คำ/แฮชแท็กที่แสดงจริง (plain text)
+        data: this.popup.word.__src,
+      });
+      this.closePopup();
+    },
     popupHide() {
       if (!this.popup.word || !this.popup.kind) return;
       this.excludeItem(this.popup.kind, this.popup.word);
@@ -1050,6 +1094,7 @@ export default {
   justify-content: center;
   margin-bottom: 10px;
 }
+
 @import url("https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
 
 .wordcloud-card {

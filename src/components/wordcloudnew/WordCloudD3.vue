@@ -74,10 +74,24 @@
       <div class="wc-word-popup-title">{{ popup.name }}</div>
 
       <div class="wc-word-popup-stats">
-        <div class="wc-word-popup-stat-row">
-          <span class="text-muted mr-auto">รวม</span>
-          <span class="font-weight-bold">{{ fmt(popup.total) }}</span>
+        <b-row style="font-size: 14px;">
+          <b-col cols="6" class="px-0 ">
+            <span class="text-muted mr-auto"> <b>โพสต์</b></span>
+            <span class="font-weight-bold"> {{ fmt(popup.total_post) }}</span>
+          </b-col>
+          <b-col cols="6" class="px-0 ">
+            <span class="text-muted mr-auto"> <b>ความถี่</b></span>
+            <span class="font-weight-bold"> {{ fmt(popup.total) }}</span>
+          </b-col>
+        </b-row>
+        <!-- <div class="wc-word-popup-stat-row">
+          <span class="text-muted mr-auto">จำนวน <b>โพสต์</b></span>
+          <span class="font-weight-bold">{{ fmt(popup.total_post) }}</span>
         </div>
+        <div class="wc-word-popup-stat-row">
+          <span class="text-muted mr-auto">จำนวน <b>ความถี่</b></span>
+          <span class="font-weight-bold">{{ fmt(popup.total) }}</span>
+        </div> -->
         <div class="wc-word-popup-stat-row">
           <i class="fa fa-face-grin wc-icon wc-icon-pos"></i>
           <span class="text-muted mr-auto">บวก</span>
@@ -267,6 +281,7 @@ export default {
         y: 0,
         name: "",
         total: 0,
+        total_post: 0,
         pos: 0,
         neu: 0,
         neg: 0,
@@ -519,6 +534,33 @@ destroyed() {
       const x = Number(n || 0);
       return x.toLocaleString("th-TH");
     },
+    getItemTotalPost(it) {
+      const src = it?.__src ?? it ?? {};
+      const candidates = [
+        src?.total_post,
+        src?.totalPost,
+        src?.total_posts,
+        src?.posts,
+        src?.post_count,
+        src?.postCount,
+        it?.total_post,
+        it?.totalPost,
+        it?.total_posts,
+        it?.posts,
+        it?.post_count,
+        it?.postCount,
+        src?.count?.total_post,
+        src?.count?.totalPost,
+        src?.count?.total_posts,
+        src?.count?.posts,
+      ];
+
+      const found = candidates.find((value) => value !== undefined && value !== null && value !== "");
+      if (found !== undefined) return Number(found) || 0;
+
+      const { total } = this.getCounts(it);
+      return Number(total) || 0;
+    },
     clamp(x, a, b) {
       return Math.min(b, Math.max(a, x));
     },
@@ -639,7 +681,8 @@ destroyed() {
           const src = x.__src ?? x;
           const name = x.name ?? x.text ?? x.key ?? src.name ?? src.text ?? src.key ?? "";
           const total = Number(x.total ?? x.value ?? src.total ?? 0);
-          return { key: String(name).trim(), text: String(name).trim(), value: total, __src: src };
+          const total_post = this.getItemTotalPost(x);
+          return { key: String(name).trim(), text: String(name).trim(), value: total, total_post, __src: src };
         })
         .filter((d) => d.key.length > 0)
         .filter((d) => !excluded[this._normKey(d.key)])
@@ -993,11 +1036,13 @@ destroyed() {
 
     // -------- Popup --------
     _fillPopupData(kind, d) {
-      const { pos, neu, neg, total } = this.getCounts(d.__src);
+      const src = d?.__src ?? d ?? {};
+      const { pos, neu, neg, total } = this.getCounts(src);
       this.popup.kind = kind;
       this.popup.word = d;
       this.popup.name = d.text;
       this.popup.total = total;
+      this.popup.total_post = this.getItemTotalPost(src);
       this.popup.pos = pos;
       this.popup.neu = neu;
       this.popup.neg = neg;

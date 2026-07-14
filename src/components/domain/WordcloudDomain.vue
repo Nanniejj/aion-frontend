@@ -2,7 +2,7 @@
   <div class="px-1 ">
     <div class="text-left">
       <span class="h5 mr-3 d-inline-block">Wordcloud / Hashtagcloud</span>
-
+{{ getSdateDm }} {{ getEdateDm }} {{ setArrDate }}
       <div v-if="start && end" class="d-inline-block">
         <div v-if="startd === endd" class="text-left onedate">
           <i class="far fa-calendar-alt"></i> {{ startd }}
@@ -29,6 +29,7 @@
 import moment from "moment";
 import WordCloudD3 from "./WordCloudD3.vue";
 import { mapGetters } from "vuex";
+import { del } from "vue";
 export default {
   name: "Wordcloud",
 
@@ -76,7 +77,7 @@ export default {
     this.$store.commit('setLoadDataWordcloud', false)
   },
   computed: {
-        ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getClickDomainId", "getSourceNews", "getNamePlatform"]),
+    ...mapGetters(["getClickDomain", "getSdateDm","setArrDate", "getEdateDm", "getClickDomainId", "getSourceNews", "getNamePlatform"]),
 
     startd() {
       return String(this.start).slice(0, 10);
@@ -94,23 +95,29 @@ export default {
   },
 
   methods: {
-onSelectWord({ kind, text, data }) {
-  const fallback = data?.name ?? data?.text ?? data?.key ?? "";
-  const word = (text || fallback).toString().trim();
-  if (!word) return;
+    onSelectWord({ kind, text, data }) {
+      const fallback = data?.name ?? data?.text ?? data?.key ?? "";
+      const word = (text || fallback).toString().trim();
+      if (!word) return;
 
-  this.openPostTab(kind, word);
+      this.openPostTab(kind, word);
 
-  this.$emit("select", word);
-},
+      this.$emit("select", word);
+    },
 
     openPostTab(kind, word) {
       const isTag = kind === "tags";
-    this.startd = moment(new Date()).format().slice(0,10);
-    this.endd = moment(new Date()).format().slice(0,10);
-    this.sdate = moment(new Date()).format().slice(0,10) + "T00:00:00";
-    this.edate = moment(new Date()).format().slice(0,10) + "T23:59:59";
-    
+
+      // ✅ ใช้วันที่ตาม filter ปัจจุบัน (prop start/end ที่ parent ส่งเข้ามา)
+      //    fallback เป็นย้อนหลัง 7 วันถึงวันนี้ เฉพาะกรณีไม่มีค่า filter ส่งมา
+      const hasFilterRange = this.start && this.end;
+      const filterStart = hasFilterRange ? moment(this.start) : moment().subtract(6, "days");
+      const filterEnd = hasFilterRange ? moment(this.end) : moment();
+
+      const sdate = filterStart.format("YYYY-MM-DD") + "T00:00:00";
+      const edate = filterEnd.format("YYYY-MM-DD") + "T23:59:59";
+
+      let source = this.getNamePlatform == "all" ? "news,twitter,facebook,youtube,tiktok,blockdit,instagram,pantip,threads,telegram" : this.getNamePlatform || "";
       const query = {
         // ✅ word -> querySearch , hashtag -> hashtags (ไม่ต้องมี # นำหน้า)
         ...(isTag
@@ -119,14 +126,43 @@ onSelectWord({ kind, text, data }) {
 
         // ✅ พารามเดิมติดไปด้วยทั้งหมดตามที่ต้องการ
         domain_id: this.getClickDomainId || "",
-        // monitor: this.$route?.query?.monitor || "",
-        start: this.getSdateDm || this.sdate || "",
-        end: this.getEdateDm || this.edate || "",
+
+        start: this.getSdateDm || sdate || "",
+        end: this.getEdateDm || edate || "",
         source_news: this.getSourceNews || "",
-        source: this.getNamePlatform|| "",
+        source: source,
+        // monitor: this.$route?.query?.monitor || "",
       };
-if (this.$route?.query?.monitor) {
+      console.log("openPostTab query", query, this.getClickDomainId, this.getSdateDm, this.getEdateDm, this.getSourceNews, this.getNamePlatform);
+
+
+      if (this.$route?.query?.monitor) {
         query.monitor = this.$route.query.monitor;
+
+      }
+      if (this.$route?.query?.type) {
+        query.type = this.$route.query.type;
+        if (this.$route.query.type == "targetlist") {
+          console.log(this.$route.query.type);
+
+          query.account = this.$route.query.id;
+        }
+        // delete query.start;
+        // delete query.end;
+
+      }
+      // if (this.$route?.query?.start) {
+      //   query.start = this.getSdateDm || this.sdate || "",
+      //   query.end = this.getEdateDm || this.edate || ""
+      // }else {
+      //   query.start = this.sdate || "",
+      //   query.end = this.edate || ""
+      //   console.log('query.start ',query.start,this.edate  );
+      // }
+
+      if (this.$route?.query?.id) {
+        query.id = this.$route.query.id;
+
       }
       // ตัด key ที่ค่าว่างทิ้ง กัน URL รก
       Object.keys(query).forEach((k) => {
@@ -138,11 +174,11 @@ if (this.$route?.query?.monitor) {
         query,
       });
 
-      
+
 
       window.open(routeData.href, "_blank");
 
-      
+
     },
   },
 };
