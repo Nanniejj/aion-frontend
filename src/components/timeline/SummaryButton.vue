@@ -56,7 +56,7 @@
             *** หมายเหตุ: หากต้องการบทวิเคราะห์ใหม่ กรุณากดปุ่ม "Analysis" อีกครั้ง
         </b-col>
         <b-collapse v-model="open" class="my-2 nuxt-page">
-            <b-card class="shadow-sm" header-class="border-0" body-class="pt-0" style="border-radius: 16px; min-height: 100px;">
+            <b-card class="shadow-sm summary-card" header-class="border-0" body-class="pt-0" style="border-radius: 16px; min-height: 100px;">
                 <!-- ส่วน header ให้ scroll -->
                 <template #header>
                     <b-row class="m-0 align-items-center justify-content-center">
@@ -92,9 +92,9 @@
 
                         <sentiment-ratio-chart
                             v-if="hasSentimentChart"
-                            class="mt-5"
+                            class="nuxt-page mt-5"
                             :items="sentimentBySection"
-                            chart-title="สัดส่วนความคิดเห็น: บวก / กลาง / ลบ (แยกตามประเด็น)"
+                            chart-title="สัดส่วนความคิดเห็นจากสื่อสังคม"
                         ></sentiment-ratio-chart>
                     </div>
                 </b-card-text>
@@ -353,8 +353,12 @@ export default {
                 ...stats,
             }];
         },
-        // ดึงค่าสัดส่วน บวก/กลาง/ลบ + แนวโน้ม engagement จากก้อนข้อความหนึ่งบล็อก
-        // คืนค่า null ถ้าไม่พบข้อมูลสัดส่วนเลย
+        // ดึงค่าสัดส่วน บวก/กลาง/ลบ + แนวโน้ม engagement + ตัวอย่างความคิดเห็นเชิงบวก/ลบ + ประเด็นที่ถูกพูดถึงซ้ำ
+        // จากก้อนข้อความหนึ่งบล็อก คืนค่า null ถ้าไม่พบข้อมูลสัดส่วนเลย
+        // รองรับ 2 รูปแบบ:
+        //   (1) แบบย่อบรรทัดเดียว: ตัวอย่างเชิงบวก: "..." – หมายเหตุ ตัวอย่างเชิงลบ: "..." – หมายเหตุ ...
+        //   (2) แบบหลายบรรทัด/หลายคำพูด: ตัวอย่างเชิงบวก: \n "..." \n "..." \n "..." \n\n ตัวอย่างเชิงลบ: ...
+        //       และ ประเด็นที่ถูกพูดถึงซ้ำ เป็นลิสต์เลข 1. 2. 3.
         extractRatioFromBlock(block) {
             // ดึงเฉพาะบรรทัด "สัดส่วน: ..." กันไม่ให้ไปจับเลข % จากที่อื่นในบล็อก (เช่นในตัวอย่างคอมเมนต์)
             const ratioLineMatch = block.match(/สัดส่วน[:：]?\s*(.+)/);
@@ -367,15 +371,90 @@ export default {
 
             if (!posMatch && !neuMatch && !negMatch) return null;
 
-            // ดึงแนวโน้ม engagement เผื่อใช้ต่อ (ไม่บังคับต้องมี)
-            const engagementMatch = block.match(/แนวโน้ม\s*engagement[:：]?\s*(.+)/);
+            // ดึงข้อความของแต่ละหัวข้อย่อย (ตัวอย่างเชิงบวก/ลบ, ประเด็นที่ถูกพูดถึงซ้ำ, แนวโน้ม engagement)
+            // โดยตัดขอบเขตด้วย keyword ถัดไปที่เจอก่อน — ใช้ [\s\S] เพื่อให้ครอบคลุมกรณีเนื้อหาขึ้นบรรทัดใหม่ได้ด้วย
+            const positiveSectionText = this.extractLabeledSection(block, 'ตัวอย่างเชิงบวก', [
+                'ตัวอย่างเชิงลบ', 'ประเด็นที่ถูกพูดถึงซ้ำ', 'แนวโน้ม\\s*engagement', 'สรุป', '--',
+            ]);
+            const negativeSectionText = this.extractLabeledSection(block, 'ตัวอย่างเชิงลบ', [
+                'ตัวอย่างเชิงบวก', 'ประเด็นที่ถูกพูดถึงซ้ำ', 'แนวโน้ม\\s*engagement', 'สรุป', '--',
+            ]);
+            const recurringSectionText = this.extractLabeledSection(block, 'ประเด็นที่ถูกพูดถึงซ้ำ', [
+                'ตัวอย่างเชิงบวก', 'ตัวอย่างเชิงลบ', 'แนวโน้ม\\s*engagement', 'สรุป', '--',
+            ]);
+            // ตัดขอบเขตด้วย "สรุป" (หัวข้อ "สรุป/ข้อเสนอแนะ" ที่ตามมา) ด้วยเสมอ กันกรณีเอกสารไม่มี "--" คั่นระหว่าง section
+            // (ถ้าไม่กันไว้ แนวโน้ม engagement จะกวาดเอาเนื้อหาทั้งหมดของ "สรุป/ข้อเสนอแนะ" ติดมาด้วย เพราะไม่มี keyword อื่นมาคั่น)
+            const engagementText = this.extractLabeledSection(block, 'แนวโน้ม\\s*engagement', ['สรุป', '--']);
+
+            // ดึงคำพูดในเครื่องหมายคำพูดทั้งหมดที่เจอ (รองรับได้ตั้งแต่ 1 คำพูดขึ้นไป)
+            const positiveExamples = this.extractQuotedPhrases(positiveSectionText);
+            const negativeExamples = this.extractQuotedPhrases(negativeSectionText);
+
+            // หมายเหตุ/การตีความท้ายคำพูด (มีเฉพาะรูปแบบย่อบรรทัดเดียวที่ต่อด้วย – หลังปิดคำพูด)
+            const positiveNoteMatch = positiveSectionText.match(/[”"]\s*[–—-]\s*(.+)/);
+            const negativeNoteMatch = negativeSectionText.match(/[”"]\s*[–—-]\s*(.+)/);
 
             return {
                 positive: posMatch ? parseInt(posMatch[1], 10) : 0,
                 neutral: neuMatch ? parseInt(neuMatch[1], 10) : 0,
                 negative: negMatch ? parseInt(negMatch[1], 10) : 0,
-                engagementTrend: engagementMatch ? engagementMatch[1].trim() : '',
+                engagementTrend: engagementText,
+                // เก็บคำพูดแรกไว้ที่ positiveExample/negativeExample เพื่อ backward-compat กับโค้ดเดิมที่ใช้ field เดี่ยว
+                positiveExample: positiveExamples[0] || '',
+                positiveExamples,
+                positiveExampleNote: positiveNoteMatch ? positiveNoteMatch[1].trim() : '',
+                negativeExample: negativeExamples[0] || '',
+                negativeExamples,
+                negativeExampleNote: negativeNoteMatch ? negativeNoteMatch[1].trim() : '',
+                recurringThemes: recurringSectionText,
+                recurringThemesList: this.splitNumberedList(recurringSectionText),
             };
+        },
+        // ดึงข้อความของหัวข้อย่อยหนึ่งอัน (label) จนถึง keyword ถัดไปตัวแรกที่เจอใน endLabels (หรือจบ text)
+        // ใช้ [\s\S] แทน "." เพื่อให้จับเนื้อหาที่ขึ้นบรรทัดใหม่ได้ด้วย (กรณีตัวอย่างคำพูดหลายบรรทัด)
+        extractLabeledSection(text, label, endLabels) {
+            const endPattern = endLabels.join('|');
+            // อนุญาตให้มีเลขข้อนำหน้า keyword ได้ (เช่น "3. สรุป/ข้อเสนอแนะ") โดยไม่ถูกดึงติดไปกับเนื้อหาก่อนหน้า
+            const re = new RegExp(`${label}[:：]?\\s*([\\s\\S]*?)(?=\\s*(?:\\d+[.、]\\s*)?(?:${endPattern})|$)`);
+            const m = text.match(re);
+            return m ? m[1].trim() : '';
+        },
+        // ดึงข้อความทุกคำพูดออกมาเป็น array — แยกทีละบรรทัด/บูลเล็ตก่อน แล้วค่อยหาเครื่องหมายคำพูด
+        // "ตัวแรก" ถึง "ตัวสุดท้าย" ของแต่ละบรรทัด (ไม่ใช่จับคู่เปิด-ปิดสลับกันทั่วทั้งก้อนข้อความ)
+        // เพราะถ้าในคำพูดมีเครื่องหมายคำพูดซ้อนอยู่ข้างใน (เช่น ใช้คำว่า "น่าจะ" กระทำความผิด...)
+        // การจับคู่แบบสลับกันทั่วก้อนจะพังทันที ตัดคำพูดผิดจุด — แยกรายบรรทัดก่อนช่วยตัดปัญหานี้ได้
+        extractQuotedPhrases(text) {
+            if (!text) return [];
+
+            const rawLines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
+            const lines = rawLines.length > 0 ? rawLines : [text];
+
+            const quotes = [];
+            for (const line of lines) {
+                // ตัด bullet marker ("* ", "- ", "1. ") ที่นำหน้าบรรทัดออกก่อน (ถ้ามี)
+                const cleaned = line.replace(/^[ \t]*(?:\d+[.、]|[*•-])[ \t]+/, '');
+
+                const quoteCharRe = /["“”]/g;
+                const positions = [];
+                let m;
+                while ((m = quoteCharRe.exec(cleaned)) !== null) positions.push(m.index);
+                if (positions.length < 2) continue; // ต้องมีอย่างน้อยเปิด-ปิด 1 คู่ถึงจะถือว่าเป็นคำพูด
+
+                const first = positions[0];
+                const last = positions[positions.length - 1];
+                const quote = cleaned.slice(first + 1, last).trim();
+                if (quote) quotes.push(quote);
+            }
+
+            return quotes;
+        },
+        // แยกลิสต์แบบมีเลขข้อ "1. ... 2. ... 3. ..." ออกเป็น array ทีละข้อ
+        // ถ้าไม่มีเลขข้อเลย จะคืน array ที่มีข้อความทั้งก้อนเป็นสมาชิกเดียว
+        splitNumberedList(text) {
+            if (!text) return [];
+            // รองรับทั้งลิสต์แบบเลขข้อ "1. " และแบบ bullet "* " "• " "- "
+            // ใช้ ^ (multiline) ให้ตัดเฉพาะตอนตัวคั่นอยู่ต้นบรรทัดจริงๆ เท่านั้น กัน "-" ที่อยู่กลางประโยคปกติโดนตัดไปด้วย
+            return text.split(/^[ \t]*(?:\d+[.、]|[*•-])[ \t]+/m).map((s) => s.trim()).filter(Boolean);
         },
         extractSection2(text) {
             const match = text.match(/##\s*2\)[\s\S]*?(?=##\s*3\)|$)/);
@@ -726,7 +805,7 @@ export default {
 }
 
 .card-body-scroll {
-  max-height: 400px; 
+  max-height: 500px; 
   overflow-y: auto;
 }
 

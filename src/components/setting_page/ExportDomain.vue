@@ -9,7 +9,7 @@
     </template>
 
     <b-dropdown-item-button @click="exportExcel">
-      <i class="fa fa-file-excel"></i> Export
+      <i class="fa fa-file-excel"></i> Excel
     </b-dropdown-item-button>
     <b-dropdown-item-button @click="exportCsv">
       <i class="fa fa-file-alt"></i> CSV

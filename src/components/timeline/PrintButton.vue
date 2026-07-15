@@ -79,10 +79,31 @@ export default {
     margin: 4mm;
   }
 
+  /* แก้บั๊กหน้ากระดาษหมุน 180 องศาสลับหน้าเวลาพิมพ์หลายหน้าแบบ landscape
+     (บั๊กที่รู้จักกันดีของ Chromium: เกิดเมื่อใช้ @page{size:landscape} ร่วมกับ
+     page-break-before หลายจุด และมี ancestor ที่ยังมี overflow/height จำกัดอยู่
+     แม้จะแก้ .card-body-scroll กับ .slider ไปแล้ว แต่ถ้า wrapper ชั้นบนสุด
+     (html/body/root ของแอป) ยังมี overflow ที่ไม่ใช่ visible บั๊กนี้ก็ยังเกิดได้)
+     ต้องเคลียร์ overflow/height ของทุก ancestor ตั้งแต่ root จนถึง body ให้หมด */
+  html,
+  body,
+  #__nuxt,
+  #__layout,
+  #app {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
   .no-print {
     display: none !important;
   }
-
+  .summary-card {
+    border: none !important;
+    box-shadow: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
   .card-body-scroll {
     max-height: none !important;
     overflow: visible !important;
@@ -102,6 +123,8 @@ export default {
     gap: 10px !important;
     width: 100% !important;
     padding: 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
   .slider-item {
     width: 200px !important;

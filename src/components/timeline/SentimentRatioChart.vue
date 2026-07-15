@@ -27,14 +27,58 @@
                 </button>
             </div>
 
-            <vue-apex-charts
-                v-if="isSingleTopic"
-                ref="chart"
-                type="pie"
-                :height="pieHeight"
-                :options="pieOptions"
-                :series="pieSeries"
-            ></vue-apex-charts>
+            <div v-if="isSingleTopic" class="sentiment-single-layout">
+                <div class="sentiment-single-layout__chart">
+                    <vue-apex-charts
+                        ref="chart"
+                        type="pie"
+                        :height="pieHeight"
+                        :options="pieOptions"
+                        :series="pieSeries"
+                    ></vue-apex-charts>
+                </div>
+
+                <div v-if="hasExtraInfo" class="sentiment-single-layout__info">
+                    <div v-if="singleTopicItem.positiveExamples && singleTopicItem.positiveExamples.length" class="sentiment-info-block sentiment-info-block--positive">
+                        <div class="sentiment-info-block__label" :style="{ color: colors[0] }">
+                            <i class="far fa-smile"></i> ตัวอย่างความคิดเห็นเชิงบวก ({{ items[0].positive }} %)
+                        </div>
+                        <p
+                            v-for="(quote, idx) in singleTopicItem.positiveExamples"
+                            :key="'pos-' + idx"
+                            class="sentiment-info-block__quote"
+                        >
+                            “{{ quote }}”
+                        </p>
+                        <p v-if="singleTopicItem.positiveExampleNote" class="sentiment-info-block__note">
+                            {{ singleTopicItem.positiveExampleNote }}
+                        </p>
+                    </div>
+
+                    <div v-if="singleTopicItem.negativeExamples && singleTopicItem.negativeExamples.length" class="sentiment-info-block sentiment-info-block--negative">
+                        <div class="sentiment-info-block__label" :style="{ color: colors[2] }">
+                            <i class="far fa-frown-open"></i> ตัวอย่างความคิดเห็นเชิงลบ ({{ items[0].negative }} %)
+                        </div>
+                        <p
+                            v-for="(quote, idx) in singleTopicItem.negativeExamples"
+                            :key="'neg-' + idx"
+                            class="sentiment-info-block__quote"
+                        >
+                            “{{ quote }}”
+                        </p>
+                        <p v-if="singleTopicItem.negativeExampleNote" class="sentiment-info-block__note">
+                            {{ singleTopicItem.negativeExampleNote }}
+                        </p>
+                    </div>
+
+                    <div v-if="singleTopicItem.engagementTrend" class="sentiment-info-block">
+                        <div class="sentiment-info-block__label">
+                            <i class="fas fa-chart-line"></i> แนวโน้ม engagement
+                        </div>
+                        <p class="sentiment-info-block__note">{{ singleTopicItem.engagementTrend }}</p>
+                    </div>
+                </div>
+            </div>
             <vue-apex-charts
                 v-else
                 ref="chart"
@@ -43,6 +87,18 @@
                 :options="chartOptions"
                 :series="chartSeries"
             ></vue-apex-charts>
+        </div>
+        
+        <div v-if="singleTopicItem.recurringThemesList && singleTopicItem.recurringThemesList.length" class="sentiment-info-block mt-3">
+            <div class="sentiment-info-block__label">
+                <i class="fas fa-redo-alt"></i> ประเด็นที่ถูกพูดถึงซ้ำ
+            </div>
+            <ul v-if="singleTopicItem.recurringThemesList.length > 1" class="sentiment-info-block__list">
+                <li v-for="(theme, idx) in singleTopicItem.recurringThemesList" :key="'theme-' + idx">
+                    {{ theme }}
+                </li>
+            </ul>
+            <p v-else class="sentiment-info-block__note">{{ singleTopicItem.recurringThemesList[0] }}</p>
         </div>
         <div v-else class="text-muted small">
             {{ emptyText }}
@@ -111,7 +167,7 @@ export default {
         // ความเข้มของสีพื้นหลัง badge (0-1) ยิ่งน้อยยิ่งอ่อน
         badgeBgAlpha: { type: Number, default: 0.12 },
         // ความสูงของ pie/donut chart (ใช้เมื่อ items มีประเด็นเดียว)
-        pieHeight: { type: [Number, String], default: 320 },
+        pieHeight: { type: [Number, String], default: 420 },
     },
     data() {
         return {
@@ -127,6 +183,21 @@ export default {
         // มีประเด็นเดียว -> แสดงเป็น pie/donut chart แทนกราฟแท่งแนวนอน
         isSingleTopic() {
             return this.items.length === 1;
+        },
+        // item เดียวของโหมด pie chart (กันเช็ค items[0] undefined กระจายหลายที่ใน template)
+        singleTopicItem() {
+            return this.items[0] || {};
+        },
+        // มีข้อมูลเสริม (ตัวอย่างคำพูด/ประเด็นซ้ำ/แนวโน้ม engagement) ให้แสดงฝั่งขวาของ pie chart หรือไม่
+        hasExtraInfo() {
+            if (!this.isSingleTopic) return false;
+            const item = this.singleTopicItem;
+            return !!(
+                item.positiveExample ||
+                item.negativeExample ||
+                item.recurringThemes ||
+                item.engagementTrend
+            );
         },
         pieSeries() {
             if (!this.isSingleTopic) return [];
@@ -165,6 +236,16 @@ export default {
                         formatter: (val) => (isPercent ? `${val}%` : `${val}`),
                     },
                 },
+                // จอเล็ก (มือถือ) ลดขนาดกราฟและตัวอักษร label ลงหน่อย กันกราฟใหญ่เกินจนดันเนื้อหาด้านล่างไปไกล
+                responsive: [
+                    {
+                        breakpoint: 576,
+                        options: {
+                            chart: { height: 260 },
+                            dataLabels: { style: { fontSize: "12px" } },
+                        },
+                    },
+                ],
             };
         },
         computedHeight() {
@@ -345,5 +426,88 @@ export default {
 
 .sentiment-badge__label {
     white-space: nowrap;
+}
+
+/* โหมดประเด็นเดียว: pie chart ฝั่งซ้าย + ข้อมูลเสริม (ตัวอย่างคำพูด/ประเด็นซ้ำ/engagement) ฝั่งขวา */
+.sentiment-single-layout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+}
+
+.sentiment-single-layout__chart {
+    flex: 1 1 320px;
+    min-width: 260px;
+}
+
+.sentiment-single-layout__info {
+    flex: 1 1 320px;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sentiment-info-block {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #f7f8fa;
+    border-left: 3px solid #cfd4da;
+}
+
+.sentiment-info-block--positive {
+    background: rgba(83, 185, 147, 0.08);
+    border-left-color: #53b993;
+}
+
+.sentiment-info-block--positive .sentiment-info-block__label {
+    color: #53b993 !important;
+}
+
+.sentiment-info-block--negative {
+    background: rgba(240, 105, 100, 0.08);
+    border-left-color: #f06964;
+}
+
+.sentiment-info-block--negative .sentiment-info-block__label {
+    color: #f06964 !important;
+}
+
+.sentiment-info-block__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.sentiment-info-block__quote {
+    font-size: 14px;
+    font-style: italic;
+    color: #343a40;
+    margin: 0 0 4px;
+    line-height: 1.5;
+}
+
+.sentiment-info-block__note {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.sentiment-info-block__quote + .sentiment-info-block__quote {
+    margin-top: 6px;
+}
+
+.sentiment-info-block__list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.6;
 }
 </style>

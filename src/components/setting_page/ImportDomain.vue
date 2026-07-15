@@ -42,7 +42,7 @@
                 <input
                   ref="fileInput"
                   type="file"
-                  accept=".xlsx,.xls"
+                  accept=".xlsx,.xls,.csv"
                   class="import-dropzone-input"
                   @change="onNativeFileChange"
                   @dragover.prevent
@@ -54,7 +54,7 @@
                 <div class="import-dropzone-text">
                   <strong v-if="selectedFile">{{ selectedFile.name }}</strong>
                   <strong v-else>คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</strong>
-                  <span>รองรับไฟล์ .xlsx, .xls</span>
+                  <span>รองรับไฟล์ .xlsx, .xls, .csv</span>
                 </div>
                 <b-button v-if="selectedFile" size="sm" class="import-dropzone-clear" @click.prevent.stop="clearFile">
                   <i class="fa fa-times"></i> เลือกไฟล์ใหม่
