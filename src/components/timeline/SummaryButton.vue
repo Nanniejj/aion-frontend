@@ -92,7 +92,7 @@
 
                         <sentiment-ratio-chart
                             v-if="hasSentimentChart"
-                            class="nuxt-page mt-5"
+                            class="nuxt-page mt-3"
                             :items="sentimentBySection"
                             chart-title="สัดส่วนความคิดเห็นจากสื่อสังคม"
                         ></sentiment-ratio-chart>
