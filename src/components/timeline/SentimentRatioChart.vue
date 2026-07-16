@@ -71,7 +71,7 @@
                         </p>
                     </div>
 
-                    <div v-if="singleTopicItem.engagementTrend" class="sentiment-info-block">
+                    <div v-if="singleTopicItem.engagementTrend" class="sentiment-info-block sentiment-info-block--engagement">
                         <div class="sentiment-info-block__label">
                             <i class="fas fa-chart-line"></i> แนวโน้ม engagement
                         </div>
@@ -452,8 +452,12 @@ export default {
 .sentiment-info-block {
     padding: 10px 14px;
     border-radius: 10px;
-    background: #f7f8fa;
+    background: #ecedee;
     border-left: 3px solid #cfd4da;
+}
+.sentiment-info-block--engagement {
+    background: rgba(231, 90, 161, 0.08) ;
+    border-left-color: #e75aa1 ;
 }
 
 .sentiment-info-block--positive {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="container my-3">
+    <div id="content" class="container my-3">
       
       <div class="position-relative text-right filter-btn">
         <b-button size="sm" :variant="showFilters ? 'info' : 'outline-info'" @click="showFilters = !showFilters" pill
