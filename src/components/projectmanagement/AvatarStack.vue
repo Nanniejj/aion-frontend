@@ -8,9 +8,9 @@
       v-b-tooltip.hover
       :title="u.name || u.initial"
     >
-      {{ u.initial }}
+      {{ u.name ? u.name.charAt(0).toUpperCase() : u.initial }}
     </div>
-
+    
     <div v-if="extraCount > 0" class="mini-avatar extra" :style="sizeStyle">
       +{{ extraCount }}
     </div>
@@ -86,7 +86,7 @@ export default {
     avatarStyle(i) {
       return {
         background: this.avatarColor(i),
-        zIndex: this.visibleUsers.length - i,
+        zIndex: this.visibleUsers.length + i,
         ...this.sizeStyle,
       };
     },
@@ -115,6 +115,12 @@ export default {
 }
 .mini-avatar.extra {
   background: rgba(28, 30, 36, 0.55);
+  /* Less overlap than the real avatars (-8px) so the count doesn't sit
+     crushed on top of the last avatar's initial, and a higher z-index so
+     it never ends up hidden behind a neighboring avatar. */
+  margin-left: -4px !important;
+  position: relative;
+  z-index: 20;
 }
 
 .empty-note {

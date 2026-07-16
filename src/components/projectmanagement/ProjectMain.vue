@@ -7,7 +7,7 @@
     -->
     <ProjectCard
       v-for="project in projects"
-      :key="project._id.$oid"
+      :key="(project._id && project._id) || project._id"
       :project="project"
       @open="$emit('open', $event)"
     />

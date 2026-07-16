@@ -69,7 +69,7 @@ import UserMain from "../components/projectmanagement/UserMain.vue";
 import ProjectDetail from "../components/projectmanagement/project/ProjectDetail.vue";
 import CreateProjectModal from "../components/projectmanagement/project/CreateProjectModal.vue";
 import CreateUserModal from "../components/projectmanagement/users/CreateUserModal.vue";
-import { PROJECTS, USERS } from "../components/projectmanagement/mock.js";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "ProjectManagementView",
@@ -83,11 +83,16 @@ export default {
       searchLocked: true,
       view: "list", // 'list' | 'detail'
       activeProject: null,
-      projects: PROJECTS,
-      users: USERS,
     };
   },
   computed: {
+    ...mapGetters(["getProjects", "getUsers"]),
+    projects() {
+      return this.getProjects;
+    },
+    users() {
+      return this.getUsers;
+    },
     filteredProjects() {
       const q = this.query.toLowerCase();
       return this.projects.filter((p) => p.projectname.toLowerCase().includes(q));
@@ -99,7 +104,15 @@ export default {
       );
     },
   },
+  created() {
+    this.fetchProjects();
+    // project_id/page/limit default to the values you specified;
+    // pass a payload here (e.g. { project_id, page, limit }) if these
+    // should instead come from the route or the selected project.
+    this.fetchUsers({ project_id: "606add1cc8777a79d216ecb3", page: 2, limit: 20 });
+  },
   methods: {
+    ...mapActions(["fetchProjects", "fetchUsers"]),
     openProject(project) {
       this.activeProject = project;
       this.view = "detail";
@@ -110,10 +123,10 @@ export default {
       this.activeProject = null;
     },
     addProject(project) {
-      this.projects.unshift(project);
+      this.$store.commit("addProject", project);
     },
     addUser(user) {
-      this.users.unshift(user);
+      this.$store.commit("addUser", user);
     },
   },
 };

@@ -25,7 +25,7 @@ import hotissue from './hotissue'
 import section from './section'
 import report from './report'
 import setting from './setting'
-
+import project from './project'
 export default new Vuex.Store({
-  modules: { worldcloud,dashboard,ranking,topinfluencer,influencerlink,avatar,gsearch,getrelation,template,loading,token,auth,monitor,monitor_hashtag,location,domain,platform,feed,user,map ,hotissue,section,report,setting},
+  modules: { project, worldcloud,dashboard,ranking,topinfluencer,influencerlink,avatar,gsearch,getrelation,template,loading,token,auth,monitor,monitor_hashtag,location,domain,platform,feed,user,map ,hotissue,section,report,setting},
 });

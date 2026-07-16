@@ -9,10 +9,10 @@
 
         <div class="folder-top-right">
           <span
-            v-if="project.hotissue_list.length"
+            v-if="(project.hotissue_list || []).length"
             class="hotissue-dot"
             v-b-tooltip.hover
-            :title="`ประเด็นร้อน ${project.hotissue_list.length} รายการ`"
+            :title="`ประเด็นร้อน ${(project.hotissue_list || []).length} รายการ`"
           ></span>
           <span
             class="mion-dot"
@@ -30,30 +30,30 @@
 
       <!-- Stats: users / domains / hashtags / targets -->
       <div class="stats-row">
-        <span class="stat-chip" v-b-tooltip.hover :title="`ผู้ใช้ที่ดูแล ${project.userlist.length} คน`">
-          <b-icon icon="people"></b-icon>{{ project.userlist.length }}
+        <span class="stat-chip" v-b-tooltip.hover :title="`ผู้ใช้ที่ดูแล ${(project.userlist || []).length} คน`">
+          <b-icon icon="people"></b-icon>{{ (project.userlist || []).length }}
         </span>
-        <span class="stat-chip" v-b-tooltip.hover :title="`โดเมนที่ติดตาม ${project.domainlist.length} รายการ`">
-          <b-icon icon="globe2"></b-icon>{{ project.domainlist.length }}
+        <span class="stat-chip" v-b-tooltip.hover :title="`โดเมนที่ติดตาม ${(project.domainlist || []).length} รายการ`">
+          <b-icon icon="globe2"></b-icon>{{ (project.domainlist || []).length }}
         </span>
-        <span class="stat-chip" v-b-tooltip.hover :title="`แฮชแท็กที่ติดตาม ${project.hashtaglist.length} รายการ`">
-          <b-icon icon="hash"></b-icon>{{ project.hashtaglist.length }}
+        <span class="stat-chip" v-b-tooltip.hover :title="`แฮชแท็กที่ติดตาม ${(project.hashtaglist || []).length} รายการ`">
+          <b-icon icon="hash"></b-icon>{{ (project.hashtaglist || []).length }}
         </span>
-        <span class="stat-chip" v-b-tooltip.hover :title="`เป้าหมายที่เฝ้าระวัง ${project.targetlist.length} รายการ`">
-          <b-icon icon="bullseye"></b-icon>{{ project.targetlist.length }}
+        <span class="stat-chip" v-b-tooltip.hover :title="`เป้าหมายที่เฝ้าระวัง ${(project.targetlist || []).length} รายการ`">
+          <b-icon icon="bullseye"></b-icon>{{ (project.targetlist || []).length }}
         </span>
       </div>
 
       <div class="folder-bottom">
-        <AvatarStack :users="cardUsers" :max="3" empty-text="ยังไม่มีผู้ใช้" />
+        <AvatarStack :users="cardUsers" :max="3" />
 
         <div class="bottom-right">
           <div class="item-count" v-b-tooltip.hover title="โดเมน + แฮชแท็ก + เป้าหมาย + กลุ่ม + ประเด็นร้อน">
             {{ totalItems }} items
           </div>
-          <div class="updated-note" v-b-tooltip.hover :title="formatDate(project.updatedAt.$date)">
+          <div class="updated-note" v-b-tooltip.hover :title="สร้างเมื่อ">
             <b-icon icon="clock"></b-icon>
-            {{ formatDate(project.updatedAt.$date).split(" · ")[0] }}
+            สร้างเมื่อ {{ formatDate(project.updatedAt) }}
           </div>
         </div>
       </div>
@@ -63,7 +63,6 @@
 
 <script>
 import AvatarStack from "../AvatarStack.vue";
-import { resolveUsers, formatDate } from "../mock.js";
 
 const THEMES = [{ grad: "linear-gradient(135deg, #d2e2e3, #e8dff6)", border: "#e8dff6" }];
 
@@ -84,23 +83,48 @@ export default {
   },
   computed: {
     theme() {
-      return THEMES[hashCode(this.project._id.$oid) % THEMES.length];
+      const oid = (this.project._id && this.project._id) || this.project._id || "";
+      return THEMES[hashCode(String(oid)) % THEMES.length];
     },
     cardUsers() {
-      return resolveUsers(this.project.userlist);
+      // userlist items are the full user objects the API embeds directly
+      // (no separate lookup needed, unlike the old mock.js ID+lookup flow).
+      return (this.project.userlist || []).map((u) => ({
+        id: u._id,
+        name: [u.name, u.lastname].filter(Boolean).join(" ").trim() || u.username || u.email || "",
+        role: u.role || "user",
+      }));
     },
     totalItems() {
       const p = this.project;
       return (
-        p.domainlist.length +
-        p.hashtaglist.length +
-        p.targetlist.length +
-        p.group_list.length +
-        p.hotissue_list.length
+        (p.domainlist || []).length +
+        (p.hashtaglist || []).length +
+        (p.targetlist || []).length +
+        (p.group_list || []).length +
+        (p.hotissue_list || []).length
       );
     },
   },
-  methods: { formatDate },
+  methods: { 
+    formatDate(dateStr) {
+            const date = new Date(dateStr);
+
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const year = date.getFullYear();
+
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; // Convert 0 -> 12
+            const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+            return `${day}/${month}/${year}`;
+        },
+   },
 };
 </script>
 
@@ -152,7 +176,7 @@ export default {
 
 .folder-title {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text, #1c1e24);
   line-height: 1.3;
   overflow: hidden;
@@ -223,7 +247,7 @@ export default {
   padding: 2px 7px;
   background: rgba(255, 255, 255, 0.55);
   border: 1px solid rgba(28, 30, 36, 0.08);
-  font-size: 11px;
+  font-size: 14px;
   color: rgba(28, 30, 36, 0.75);
 }
 
@@ -243,7 +267,7 @@ export default {
 }
 
 .item-count {
-  font-size: 11.5px;
+  font-size: 14px;
   color: rgba(28, 30, 36, 0.55);
   white-space: nowrap;
 }
@@ -252,7 +276,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10.5px;
+  font-size: 14px;
   color: rgba(28, 30, 36, 0.45);
   white-space: nowrap;
 }

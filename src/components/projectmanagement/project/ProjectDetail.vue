@@ -7,7 +7,6 @@
       </button>
       <div class="topbar-id">
         <b-icon icon="fingerprint"></b-icon>
-        <!-- _id: {{ shortId(project._id.$oid) }} -->
       </div>
     </div>
 
@@ -98,17 +97,7 @@
 
 <script>
 import AvatarStack from "../AvatarStack.vue";
-import {
-  oids,
-  shortId,
-  formatDate,
-  USER_LOOKUP,
-  DOMAIN_LOOKUP,
-  HASHTAG_LOOKUP,
-  TARGET_LOOKUP,
-  HOTISSUE_LOOKUP,
-  GROUP_LOOKUP,
-} from "../mock.js";
+import { shortId, formatDate } from "../mock.js";
 
 export default {
   name: "ProjectDetail",
@@ -118,9 +107,12 @@ export default {
   },
   computed: {
     detailUsers() {
-      return oids(this.project.userlist)
-        .map((id) => ({ id, ...USER_LOOKUP[id] }))
-        .filter((u) => u.name);
+      // userlist items are the full user objects the API embeds directly.
+      return (this.project.userlist || []).map((u) => ({
+        id: u._id,
+        name: [u.name, u.lastname].filter(Boolean).join(" ").trim() || u.username || u.email || "",
+        role: u.role || "user",
+      }));
     },
     // Every field group below except "users" is rendered by one generic
     // template (see `type` in the template). Add a field group here and
@@ -132,8 +124,8 @@ export default {
           type: "count",
           icon: "image",
           title: "อวตาร / บัญชีเฝ้าระวัง",
-          count: p.avatarlist.length,
-          label: `ผูกบัญชีอวตารไว้ ${p.avatarlist.length} บัญชี`,
+          count: (p.avatarlist || []).length,
+          label: `ผูกบัญชีอวตารไว้ ${(p.avatarlist || []).length} บัญชี`,
           emptyText: "ยังไม่มีการผูกบัญชีอวตาร",
         },
         {
@@ -141,7 +133,9 @@ export default {
           icon: "globe2",
           title: "โดเมนที่ติดตาม",
           color: "#5457D6",
-          items: oids(p.domainlist).map((id) => DOMAIN_LOOKUP[id]).filter(Boolean),
+          // domainlist already holds full domain objects (see mion domain
+          // API), so read the display name straight off each item.
+          items: (p.domainlist || []).map((d) => d.name).filter(Boolean),
           emptyText: "ยังไม่มีโดเมนที่ติดตาม",
         },
         {
@@ -149,14 +143,16 @@ export default {
           icon: "hash",
           title: "แฮชแท็กที่ติดตาม",
           color: "#128189",
-          items: oids(p.hashtaglist).map((id) => HASHTAG_LOOKUP[id]).filter(Boolean),
+          // Not returned by api/v2/project/getProjects yet — wire this up
+          // to the real hashtag field/endpoint once it's available.
+          items: p.hashtaglist || [],
           emptyText: "ยังไม่มีแฮชแท็กที่ติดตาม",
         },
         {
           type: "list",
           icon: "bullseye",
           title: "เป้าหมายที่เฝ้าระวัง",
-          items: oids(p.targetlist).map((id) => TARGET_LOOKUP[id]).filter(Boolean),
+          items: p.targetlist || [],
           emptyText: "ยังไม่มีเป้าหมายที่กำหนด",
         },
         {
@@ -164,14 +160,14 @@ export default {
           icon: "people-fill",
           title: "กลุ่มที่เกี่ยวข้อง",
           color: "#C74A63",
-          items: oids(p.group_list).map((id) => GROUP_LOOKUP[id]).filter(Boolean),
+          items: p.group_list || [],
           emptyText: "ยังไม่มีกลุ่มที่เชื่อมโยง",
         },
         {
           type: "hotissue",
           icon: "fire",
           title: "ประเด็นร้อน",
-          items: oids(p.hotissue_list).map((id) => HOTISSUE_LOOKUP[id]).filter(Boolean),
+          items: p.hotissue_list || [],
           emptyText: "ยังไม่มีประเด็นร้อนที่ตรวจพบ",
           full: true,
         },
