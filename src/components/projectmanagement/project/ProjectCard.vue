@@ -31,29 +31,29 @@
       <!-- Stats: users / domains / hashtags / targets -->
       <div class="stats-row">
         <span class="stat-chip" v-b-tooltip.hover :title="`ผู้ใช้ที่ดูแล ${(project.userlist || []).length} คน`">
-          <b-icon icon="people"></b-icon>{{ (project.userlist || []).length }}
+          <b-icon icon="people"></b-icon>{{ (project.userlist || []).length }} บัญชีผู้ใช้
         </span>
         <span class="stat-chip" v-b-tooltip.hover :title="`โดเมนที่ติดตาม ${(project.domainlist || []).length} รายการ`">
-          <b-icon icon="globe2"></b-icon>{{ (project.domainlist || []).length }}
+          <b-icon icon="globe2"></b-icon>{{ (project.domainlist || []).length }} หัวเรื่อง
         </span>
-        <span class="stat-chip" v-b-tooltip.hover :title="`แฮชแท็กที่ติดตาม ${(project.hashtaglist || []).length} รายการ`">
+        <!-- <span class="stat-chip" v-b-tooltip.hover :title="`แฮชแท็กที่ติดตาม ${(project.hashtaglist || []).length} รายการ`">
           <b-icon icon="hash"></b-icon>{{ (project.hashtaglist || []).length }}
         </span>
         <span class="stat-chip" v-b-tooltip.hover :title="`เป้าหมายที่เฝ้าระวัง ${(project.targetlist || []).length} รายการ`">
           <b-icon icon="bullseye"></b-icon>{{ (project.targetlist || []).length }}
-        </span>
+        </span> -->
       </div>
 
       <div class="folder-bottom">
         <AvatarStack :users="cardUsers" :max="3" />
 
         <div class="bottom-right">
-          <div class="item-count" v-b-tooltip.hover title="โดเมน + แฮชแท็ก + เป้าหมาย + กลุ่ม + ประเด็นร้อน">
+          <!-- <div class="item-count" v-b-tooltip.hover title="โดเมน + แฮชแท็ก + เป้าหมาย + กลุ่ม + ประเด็นร้อน">
             {{ totalItems }} items
-          </div>
-          <div class="updated-note" v-b-tooltip.hover :title="สร้างเมื่อ">
+          </div> -->
+          <div class="updated-note" v-b-tooltip.hover :title="'สร้างเมื่อ ' + formatDate(project.createdAt)">
             <b-icon icon="clock"></b-icon>
-            สร้างเมื่อ {{ formatDate(project.updatedAt) }}
+            สร้างเมื่อ {{ formatDate(project.createdAt) }}
           </div>
         </div>
       </div>
@@ -108,7 +108,9 @@ export default {
   },
   methods: { 
     formatDate(dateStr) {
+            if (!dateStr) return "-";
             const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return "-";
 
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed

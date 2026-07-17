@@ -22,35 +22,14 @@ const API_BASE = "https://api2.cognizata.com";
 //   Authorization: "Bearer " + localStorage.getItem("token")
 // (kept commented out below both requests so it's easy to switch back).
 const token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNGNhOGMyMTkxZjg5MWY1MmE2MWJhOSIsInByb2plY3RpZCI6IjYwNmFkZDFjYzg3NzdhNzlkMjE2ZWNiMyIsInVzZXJuYW1lIjoieWVsbHlkZXYiLCJyb2xlIjoic3VwZXJhZG1pbiIsIm1pb24iOnRydWUsInRva2VuaWQiOiI2YTU4YWFmM2FjZDBkMzJmYWYzZDcwZjUiLCJpYXQiOjE3ODQxOTU4MjcsImV4cCI6MTc4NDE5OTQyN30.MG-orJQE6WGBQEOeUX6O1Pt291IA0oUZLucfjfdb6ZM";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNGNhOGMyMTkxZjg5MWY1MmE2MWJhOSIsInByb2plY3RpZCI6IjYwNmFkZDFjYzg3NzdhNzlkMjE2ZWNiMyIsInVzZXJuYW1lIjoieWVsbHlkZXYiLCJyb2xlIjoic3VwZXJhZG1pbiIsIm1pb24iOnRydWUsInRva2VuaWQiOiI2YTU5YjI4NWEyOTU5MTU3N2ZhMTM1YjkiLCJpYXQiOjE3ODQyNjMzMDEsImV4cCI6MTc4NDI2NjkwMX0.vIbwh_wgBYPURLNfMwp4NnhNhpjCwFsweN7Z0kDnL_I";
 // --- Field mapping helpers -------------------------------------------------
-// ProjectManagement.vue's child components (ProjectCard, ProjectDetail,
-// ProjectMain) were originally built against mock.js data, which used
-// Mongo extended JSON (`_id.$oid`, `updatedAt.$date`). The real API
-// returns `_id` / `createdAt` / `updatedAt` as plain strings instead, and
-// the components have been updated to read them directly (no more
-// `.$oid` / `.$date`).
-//
-// mapProject() still bridges the other gap: `userlist` / `domainlist` come
-// back as full embedded objects (not ID refs), and the API doesn't return
-// `hashtaglist` / `targetlist` / `group_list` / `hotissue_list` /
-// `avatarlist` at all — default those to `[]` so `.length` never throws.
+// mapProject() no longer renames or defaults anything — ProjectCard.vue
+// and ProjectDetail.vue already guard every list field with `|| []` in
+// their own computed properties, so the raw API object is passed straight
+// through as-is.
 function mapProject(raw) {
-  return {
-    ...raw,
-    projectname: raw.projectname || raw.project_name || raw.name || raw.title || "",
-    mion: !!raw.mion,
-    userlist: raw.userlist || [],
-    domainlist: raw.domainlist || [],
-    // Not returned by api/v2/project/getProjects today — default to empty
-    // so the "โดเมนที่ติดตาม / แฮชแท็ก / เป้าหมาย / กลุ่ม / ประเด็นร้อน"
-    // sections render as empty instead of crashing.
-    hashtaglist: raw.hashtaglist || [],
-    targetlist: raw.targetlist || [],
-    group_list: raw.group_list || [],
-    hotissue_list: raw.hotissue_list || [],
-    avatarlist: raw.avatarlist || [],
-  };
+  return { ...raw };
 }
 
 // UserMain.vue's avatar circle reads `u.initial` — the API doesn't send
