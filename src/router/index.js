@@ -605,6 +605,30 @@ const routes = [
       ),
       meta: { requiresAuth: true },
   },
+  {
+    path: "/spike",
+    name: "SpikeAlertsView",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/SpikeAlertsView.vue"
+      ),
+      meta: { requiresAuth: true },
+  },
+  {
+    path: "/keywords",
+    name: "KeywordBagsView",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/KeywordBagsView.vue"
+      ),
+      meta: { requiresAuth: true },
+  },
    // {
   //   path: "/home",
   //   name: "Section",
