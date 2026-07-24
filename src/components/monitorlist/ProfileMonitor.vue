@@ -1615,6 +1615,8 @@ export default {
         } else if (this.$route.query.type === 'hashtaglist') {
             this.selectedSource = 'all'
             await this.apiTimelineUserPosts();
+        }else {
+            this.selectedSource = this.$route.query.source;
         }
         this.$store.commit('setNamePlatform', this.selectedSource);
         await this.apiMonitorProfile();
