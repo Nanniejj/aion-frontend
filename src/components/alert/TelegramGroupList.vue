@@ -314,7 +314,7 @@ export default {
         this.loading = true;
       try {
         const token = localStorage.getItem("token");
-        const url = `https://api2.cognizata.com/api/v2/monitor/monitorGroupDropdown?limit=all&page=&search=${encodeURIComponent(search)}`;
+        const url = `https://api2.cognizata.com/api/v2/monitor/monitorGroupDropdown?limit=all&search=${encodeURIComponent(search)}`;
         const res = await axios.get(url, {
           headers: token ? { Authorization: "Bearer " + token } : {}
         });
