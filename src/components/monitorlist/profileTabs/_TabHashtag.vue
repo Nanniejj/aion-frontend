@@ -173,41 +173,10 @@ export default {
 
             console.log("Hashtag with score:", this.dataHashtagCloud);
         },
-        getWordCloudImage() {
-            this.load = true;
-            const config = {
-                method: "get",
-                url: "https://api.cognizata.com/api/v1/getMonitor/",
-                params: {
-                    query: this.$route.query.uid.replace(/^#/, ''),
-                    api_type: "hashtag",
-                    top_type: "domain",
-                    // type: this.$route.query.type,
-                    // source: this.$route.query.source,
-                    // id: this.$route.query.id,
-                },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
-            console.log(config.params);
-            
-            this.axios(config)
-            .then((response) => {
-                this.wordcloud_images = response.data.wordcloud_images || [];
-                console.log('this.wordcloud_images ', this.wordcloud_images);
-                this.load = false;
-            })
-            .catch((error) => {
-                this.load = false;
-                console.error(error);
-            });
-        },
+        
     },
     mounted() {
         // this.apiGetProfileHashtagCloud()
-        // this.getWordCloudImage();
     }
 } 
     

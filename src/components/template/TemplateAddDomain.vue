@@ -24,7 +24,8 @@
           <b-row class="my-1">
             <b-col sm="12" style="text-align:right;">
                 <br>
-              <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button>  <b-button class="btn btn-save" size="sm" @click="addRowDomain()" :disabled="isAddDomainInvalid">บันทึก</b-button>
+              <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button>  
+              <b-button class="btn btn-save" size="sm" @click="addRowDomain()" :disabled="isAddDomainInvalid || isSubmitting">บันทึก</b-button>
             </b-col>
           </b-row>
      </b-container>
@@ -43,6 +44,7 @@ export default {
         return {
             open: false,
              addDomain: '',
+             isSubmitting: false,
         }
     },
 methods: {
@@ -55,11 +57,21 @@ methods: {
      const forbiddenPattern = /&/
      return forbiddenPattern.test(String(value || ""));
    },
-   addRowDomain() {
-     if (this.isAddDomainInvalid) return;
+   async addRowDomain() {
+     if (this.isAddDomainInvalid || this.isSubmitting) return;
      let domain = this.addDomain.replace("/","-").replace("&","-")
      let tdomain =domain.trim()
-     this.$store.dispatch("updateAddDomain",{name: tdomain ,display:true});
+
+     this.isSubmitting = true;
+     try {
+       await this.$store.dispatch("updateAddDomain",{name: tdomain ,display:true});
+     } catch (error) {
+       console.log("[TemplateAddDomain] dispatch updateAddDomain rejected:", error);
+     } finally {
+       this.isSubmitting = false;
+       this.$emit("domain-added");
+     }
+
      this.hideModal()
      this.addDomain=""
     },

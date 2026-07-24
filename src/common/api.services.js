@@ -546,23 +546,30 @@ export const TemplateService = {
   },
 
   AddDomain(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
-    return ApiService.post(`/v1/domain/`, {
+    return ApiService.post(`/v2/setting/postDomain`, {
       name: payload.name,
-      display: payload.display,
+      // display: payload.display,
     });
+    // return ApiService.post(`/v1/domain/`, {
+    //   name: payload.name,
+    //   display: payload.display,
+    // });
   },
 
   EditDomain(payload) {
-    Vue.axios.defaults.baseURL = API_URL;
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
     ApiService.setHeader();
     // id เป็น path → เข้ารหัส
-    return ApiService.put(`/v1/domain/${encodeURIComponent(payload.id)}/`, {
+    return ApiService.put(`/v2/setting/updateDomain/${encodeURIComponent(payload.id)}`, {
       name: payload.name,
-      id: payload.id,
-      display: payload.display,
     });
+    // return ApiService.put(`/v1/domain/${encodeURIComponent(payload.id)}/`, {
+    //   name: payload.name,
+    //   id: payload.id,
+    //   display: payload.display,
+    // });
   },
 
   EditSubDomain(payload) {

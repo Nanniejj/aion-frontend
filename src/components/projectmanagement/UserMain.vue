@@ -1,6 +1,18 @@
 <template>
   <div class="users-card">
-    <table class="users-table">
+    <div v-if="loading" class="suggest-loading">
+      <div class="suggest-loading-spinner">
+        <vue-element-loading
+          :active="loading"
+          size="60"
+          background-color="rgba(255, 255, 255, 0.3)"
+          color="#ede7dd"
+        />
+      </div>
+      <span>กำลังโหลดผู้ใช้...</span>
+    </div>
+
+    <table v-else class="users-table">
       <thead>
         <tr>
           <th>ผู้ใช้</th>
@@ -25,6 +37,8 @@
               {{ u.status }}
             </span>
           </td>
+          <td data-label="บริษัท" class="company-cell">{{ u.company }}</td>
+          <td data-label="โปรเจกต์" class="company-cell">{{ u.projectname }}</td>
           <td class="mono joined-cell" data-label="เข้าร่วมเมื่อ">{{ u.joined }}</td>
           <td class="mono expiry-cell" data-label="วันหมดอายุ">
             <span v-if="!u.expiresAt" class="expiry-none">ไม่มีกำหนด</span>
@@ -57,16 +71,31 @@
       </tbody>
     </table>
 
-    <div v-if="users.length === 0" class="empty-state">
+    <div v-if="!loading && users.length === 0" class="empty-state">
       ไม่พบผู้ใช้งานที่ตรงกับ "{{ query }}"
     </div>
 
-    <EditUserModal ref="editModal" :projects="projects" @updated="$emit('updated', $event)" />
+    <div v-if="pagination && totalPages > 1" class="pagination-bar">
+      <span class="pagination-info">
+        หน้า {{ pagination.page }} จาก {{ totalPages }} ( ทั้งหมด {{ pagination.total }} รายการ )
+      </span>
+      <b-pagination
+        v-model="currentPage"
+        :total-rows="totalRows"
+        :per-page="perPage"
+        align="center"
+        class="my-2"
+        @input="onPageChange"
+      />
+    </div>
+
+    <EditUserModal ref="editModal" @updated="$emit('updated', $event)" />
   </div>
 </template>
 
 <script>
 import EditUserModal from './users/EditUserModal.vue';
+import VueElementLoading from "vue-element-loading";
 // Same palette as AvatarStack, assigned by row position so colors stay
 // distinct across the visible list.
 
@@ -83,22 +112,55 @@ const AVATAR_COLORS = [
 
 export default {
   name: "UserMain",
-  components: { EditUserModal },
+  components: { EditUserModal, VueElementLoading },
   props: {
     users: { type: Array, default: () => [] },
     query: { type: String, default: "" },
-    // Forwarded straight to EditUserModal's project picker.
-    projects: { type: Array, default: () => [] },
+    // Shape: { page, limit, total, project_id }. Pass getUsersPagination
+    // from the store; omit or leave null to hide the pagination bar.
+    pagination: { type: Object, default: null },
+    // Pass getLoadingUsers from the store — shows a spinner instead of
+    // the table while a fetchUsers request is in flight.
+    loading: { type: Boolean, default: false },
   },
   data() {
     return {
       fields: [
         { key: "status", label: "สถานะ" },
+        { key: "company", label: "บริษัท" },
+        { key: "project", label: "โปรเจกต์" },
         { key: "joined", label: "เข้าร่วมเมื่อ" },
       ],
+      currentPage: this.pagination ? this.pagination.page : 1,
     };
   },
+  computed: {
+    totalPages() {
+      if (!this.pagination) return 1;
+      if (this.pagination.totalPages) return this.pagination.totalPages;
+      if (!this.pagination.limit) return 1;
+      return Math.max(1, Math.ceil(this.pagination.total / this.pagination.limit));
+    },
+    totalRows() {
+      return this.pagination ? this.pagination.total : 0;
+    },
+    perPage() {
+      return this.pagination ? this.pagination.limit : 10;
+    },
+  },
+  watch: {
+    // Keep the b-pagination widget in sync if the page changes from
+    // outside (e.g. store updated after a filter/search elsewhere).
+    "pagination.page"(newPage) {
+      if (newPage && newPage !== this.currentPage) {
+        this.currentPage = newPage;
+      }
+    },
+  },
   methods: {
+    onPageChange(page) {
+      this.$emit("change-page", page);
+    },
     avatarColor(i) {
       return AVATAR_COLORS[i % AVATAR_COLORS.length];
     },
@@ -228,6 +290,14 @@ export default {
   white-space: nowrap;
 }
 
+.company-cell {
+  font-size: 14px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .expiry-cell {
   font-size: 14px;
   white-space: nowrap;
@@ -260,6 +330,45 @@ export default {
   padding: 24px 20px;
   font-size: 14px;
 }
+
+.suggest-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 4px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.suggest-loading-spinner {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid #e4e1d8;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+@media (max-width: 700px) {
+  .pagination-bar {
+    border-top: none;
+    padding: 12px 4px;
+  }
+}
+
 
 .actions-col {
   width: 1%;

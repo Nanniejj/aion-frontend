@@ -15,7 +15,7 @@
                     name: 'UserLineList', query: {
                         from: $route.name  
                     }
-                    })" v-b-tooltip.hover title="Alert" v-if="username == 'adminatapy' || username == 'adminpeach' || username == 'usertest01' || username == 'usertest02'">
+                    })" v-b-tooltip.hover title="Alert" v-if="username == 'adminatapy' || username == 'adminpeach'">
                     <b-iconstack font-scale="2">
                         <b-icon stacked icon="circle"></b-icon>
                         <b-icon stacked icon="bell" scale="0.5"></b-icon>

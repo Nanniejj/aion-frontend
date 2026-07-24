@@ -5,13 +5,9 @@
         <b-icon icon="arrow-left"></b-icon>
         กลับไปที่รายการโปรเจกต์
       </button>
-      <div class="topbar-id" :title="project._id">
-        <b-icon icon="fingerprint"></b-icon>
-        {{ shortId(project._id) }}
-      </div>
     </div>
 
-    <div class="detail-body">
+    <div class="detail-body container">
       <!-- Header: just the essentials — name + status. Dates moved into
            the overview tab so this row stays scannable at a glance. -->
       <div class="header-row">
@@ -68,14 +64,8 @@
             <span class="info-label"><b-icon icon="clock"></b-icon> อัปเดตล่าสุด</span>
             <span class="info-value">{{ updatedAtText }}</span>
           </div>
-          <div class="info-row">
-            <span class="info-label"><b-icon icon="fingerprint"></b-icon> Project ID</span>
-            <span class="info-value mono">{{ project._id }}</span>
-          </div>
         </div>
 
-        <!-- Short preview with a link into the full tab, instead of
-             dumping the whole list here too. -->
         <div class="preview-card" v-if="detailUsers.length">
           <div class="preview-head">
             <span>ผู้ใช้ที่ดูแล</span>
@@ -136,7 +126,7 @@
                 {{ permissionLabel(p) }}
               </span>
             </div>
-            <div v-else class="permission-none">ไม่มีสิทธิ์พิเศษ</div>
+            <!-- <div v-else class="permission-none">ไม่มีสิทธิ์พิเศษ</div> -->
           </div>
         </div>
       </div>
@@ -224,7 +214,7 @@ export default {
     permissionLabel(key) {
       const labels = {
         hottopics: "ประเด็นร้อน",
-        face: "ใบหน้า",
+        face: "ตรวจจับใบหน้า",
         suggestionkeyword: "คำแนะนำคำค้น",
       };
       return labels[key] || key;
@@ -293,7 +283,7 @@ export default {
 }
 
 .detail-body {
-  max-width: 760px;
+  /* max-width: 760px; */
   margin: 0 auto;
   padding: 32px 24px 64px;
   display: flex;
@@ -587,7 +577,7 @@ export default {
 /* โดเมน: card grid instead of a plain list */
 .domain-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 @media (max-width: 560px) {

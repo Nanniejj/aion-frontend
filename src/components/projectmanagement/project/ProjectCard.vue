@@ -20,11 +20,27 @@
             v-b-tooltip.hover
             :title="project.mion ? 'เปิดใช้งาน Mion' : 'ปิดใช้งาน Mion'"
           ></span>
-          <button class="folder-menu" @click.stop title="ตัวเลือกเพิ่มเติม">
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-          </button>
+          <div class="folder-menu-wrap" tabindex="-1" @focusout="menuOpen = false">
+            <button
+              class="folder-menu"
+              :class="{ active: menuOpen }"
+              @click.stop="menuOpen = !menuOpen"
+              title="ตัวเลือกเพิ่มเติม"
+            >
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </button>
+
+            <div v-if="menuOpen" class="folder-menu-dropdown" @click.stop @mousedown.prevent>
+              <button type="button" class="folder-menu-item" @click="onEdit">
+                <b-icon icon="pencil"></b-icon> แก้ไข
+              </button>
+              <button type="button" class="folder-menu-item danger" @click="onClose">
+                <b-icon icon="trash"></b-icon> ปิดโปรเจกต์
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -81,6 +97,11 @@ export default {
   props: {
     project: { type: Object, required: true },
   },
+  data() {
+    return {
+      menuOpen: false,
+    };
+  },
   computed: {
     theme() {
       const oid = (this.project._id && this.project._id) || this.project._id || "";
@@ -107,6 +128,21 @@ export default {
     },
   },
   methods: { 
+    // Edit/close are just emitted here — this card is presentational and
+    // doesn't call the API itself. The parent (ProjectMain/ProjectManagement)
+    // is responsible for opening an edit form / confirming and dispatching
+    // the actual updateProject call.
+    onEdit() {
+      this.menuOpen = false;
+      this.$emit("edit", this.project);
+    },
+    // "ปิดโปรเจกต์" sets mion: false for this project (a soft
+    // deactivate, not a real delete) — parent should confirm, then call
+    // updateProject with { ...project fields, mion: false }.
+    onClose() {
+      this.menuOpen = false;
+      this.$emit("close", this.project);
+    },
     formatDate(dateStr) {
             if (!dateStr) return "-";
             const date = new Date(dateStr);
@@ -212,6 +248,11 @@ export default {
   background: rgba(28, 30, 36, 0.2);
 }
 
+.folder-menu-wrap {
+  position: relative;
+  outline: none;
+}
+
 .folder-menu {
   display: flex;
   align-items: center;
@@ -223,7 +264,8 @@ export default {
   border-radius: 6px;
   line-height: 0;
 }
-.folder-menu:hover {
+.folder-menu:hover,
+.folder-menu.active {
   background: rgba(28, 30, 36, 0.06);
 }
 .folder-menu .dot {
@@ -232,6 +274,44 @@ export default {
   border-radius: 50%;
   background: rgba(28, 30, 36, 0.45);
   display: inline-block;
+}
+
+.folder-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 5;
+  min-width: 150px;
+  background: #ffffff;
+  border: 1px solid rgba(28, 30, 36, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(28, 30, 36, 0.16);
+  padding: 4px;
+  cursor: default;
+}
+
+.folder-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #1c1e24;
+  text-align: left;
+  cursor: pointer;
+}
+.folder-menu-item:hover {
+  background: rgba(28, 30, 36, 0.06);
+}
+.folder-menu-item.danger {
+  color: #c0392b;
+}
+.folder-menu-item.danger:hover {
+  background: rgba(192, 57, 43, 0.08);
 }
 
 .stats-row {

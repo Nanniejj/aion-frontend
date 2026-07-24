@@ -87,12 +87,44 @@
 
             <div class="form-field">
               <label>โปรเจกต์</label>
-              <select v-model="form.project_id" class="form-input form-select">
-                <option value="">— ไม่ระบุ —</option>
-                <option v-for="p in projects" :key="p._id.$oid" :value="p._id.$oid">
-                  {{ p.projectname }}
-                </option>
-              </select>
+              <div class="project-picker" tabindex="-1" @focusout="closeProjectMenu">
+                <input
+                  v-model="projectSearch"
+                  type="text"
+                  class="form-input project-picker-input"
+                  placeholder="พิมพ์เพื่อค้นหาโปรเจกต์..."
+                  autocomplete="off"
+                  @focus="openProjectMenu"
+                  @input="onProjectSearchInput"
+                />
+                <b-icon icon="chevron-down" class="project-picker-caret"></b-icon>
+                <div v-if="projectMenuOpen" class="project-picker-menu" @scroll="onProjectMenuScroll" @mousedown.prevent>
+                  <div
+                    class="project-picker-item"
+                    :class="{ active: !form.project_id }"
+                    @click="selectProject(null)"
+                  >
+                    — ไม่ระบุ —
+                  </div>
+                  <div
+                    v-for="p in projectPicker.items"
+                    :key="p._id"
+                    class="project-picker-item"
+                    :class="{ active: form.project_id === p._id }"
+                    @click="selectProject(p)"
+                  >
+                    {{ p.projectname }}
+                  </div>
+                  <div
+                    v-if="!projectPicker.loading && !projectPicker.items.length"
+                    class="project-picker-empty"
+                  >
+                    <template v-if="projectSearch">ไม่พบโปรเจกต์ที่ตรงกับ "{{ projectSearch }}"</template>
+                    <template v-else>ไม่พบโปรเจกต์</template>
+                  </div>
+                  <div v-if="projectPicker.loading" class="project-picker-loading">กำลังโหลด...</div>
+                </div>
+              </div>
             </div>
 
             <div class="form-field form-field-full">
@@ -198,7 +230,9 @@
         </div>
 
         <b-row class=" justify-content-end mx-3">
-          <button class="btn-submit mx-3" @click="submit">สร้างผู้ใช้</button>
+          <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
+            {{ submitting ? "กำลังบันทึก..." : "สร้างผู้ใช้" }}
+          </button>
           <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
         </b-row>
       </div>
@@ -207,19 +241,6 @@
 </template>
 
 <script>
-function newId() {
-  const hex = "0123456789abcdef";
-  let id = "";
-  for (let i = 0; i < 24; i++) id += hex[Math.floor(Math.random() * 16)];
-  return id;
-}
-
-function todayJoined() {
-  const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-  const d = new Date();
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
-}
-
 function toISODate(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -243,28 +264,75 @@ function emptyForm() {
 
 export default {
   name: "CreateUserModal",
-  props: {
-    projects: { type: Array, default: () => [] },
-  },
   data() {
     return {
       open: false,
       error: "",
+      submitting: false,
       showPassword: false,
       usernameLocked: true,
       expiryPreset: "",
+      projectMenuOpen: false,
+      projectSearch: "",
+      projectSearchTimer: null,
       form: emptyForm(),
     };
+  },
+  computed: {
+    // Paginated project list backing the autocomplete dropdown.
+    projectPicker() {
+      return this.$store.getters.getProjectPicker;
+    },
   },
   watch: {
     open(val) {
       if (val) {
         this.usernameLocked = true;
+        this.projectMenuOpen = false;
+        this.projectSearch = "";
+        // Fresh picker each time the modal opens.
+        this.$store.dispatch("resetProjectPicker");
+        this.$store.dispatch("fetchProjectPickerPage");
         this.$nextTick(() => this.$refs.usernameInput && this.$refs.usernameInput.focus());
       }
     },
   },
   methods: {
+    openProjectMenu() {
+      this.projectMenuOpen = true;
+    },
+    closeProjectMenu() {
+      this.projectMenuOpen = false;
+      // If the admin typed something but never picked an option, revert
+      // the box back to whatever project is actually selected.
+      if (!this.form.project_id) {
+        this.projectSearch = "";
+        return;
+      }
+      const match = this.projectPicker.items.find((p) => p._id === this.form.project_id);
+      if (match) this.projectSearch = match.projectname;
+      // else: selected project isn't in the currently loaded/filtered
+      // items — leave the box showing whatever name was set on select.
+    },
+    selectProject(p) {
+      this.form.project_id = p ? p._id : "";
+      this.projectSearch = p ? p.projectname : "";
+      this.projectMenuOpen = false;
+    },
+    onProjectSearchInput() {
+      this.projectMenuOpen = true;
+      clearTimeout(this.projectSearchTimer);
+      this.projectSearchTimer = setTimeout(() => {
+        this.$store.dispatch("searchProjectPicker", this.projectSearch.trim());
+      }, 300);
+    },
+    onProjectMenuScroll(e) {
+      const el = e.target;
+      const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+      if (nearBottom) {
+        this.$store.dispatch("fetchProjectPickerPage");
+      }
+    },
     isPastDate(date) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -311,9 +379,11 @@ export default {
       this.showPassword = false;
       this.usernameLocked = true;
       this.expiryPreset = "";
+      this.submitting = false;
+      this.projectMenuOpen = false;
       this.form = emptyForm();
     },
-    submit() {
+    async submit() {
       if (!this.form.username || !this.form.name || !this.form.lastname || !this.form.email || !this.form.password) {
         this.error = "กรุณากรอก Username, ชื่อ, นามสกุล, อีเมล และรหัสผ่านให้ครบ";
         return;
@@ -323,7 +393,7 @@ export default {
         return;
       }
 
-      const user = {
+      const payload = {
         username: this.form.username,
         name: this.form.name,
         lastname: this.form.lastname,
@@ -333,13 +403,20 @@ export default {
         role: this.form.role,
         project_id: this.form.project_id || null,
         expiresAt: this.form.expiresAt || null,
-        _id: newId(),
-        initial: this.form.name.trim().charAt(0),
-        status: "ใช้งานอยู่",
-        joined: todayJoined(),
       };
-      this.$emit("created", user);
-      this.closeModal();
+
+      this.error = "";
+      this.submitting = true;
+      try {
+        const user = await this.$store.dispatch("createUser", payload);
+        this.$emit("created", user);
+        this.closeModal();
+      } catch (err) {
+        console.log(err);
+        this.error = "สร้างผู้ใช้ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+      } finally {
+        this.submitting = false;
+      }
     },
   },
 };
@@ -581,6 +658,65 @@ export default {
   cursor: pointer;
 }
 
+.project-picker {
+  position: relative;
+  outline: none;
+}
+
+.project-picker-input {
+  padding-right: 32px;
+  cursor: text;
+}
+.project-picker-caret {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.project-picker-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(28, 30, 36, 0.12);
+  padding: 4px;
+}
+
+.project-picker-item {
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #1c1e24;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project-picker-item:hover {
+  background: #f6f5f0;
+}
+.project-picker-item.active {
+  background: #128189;
+  color: #ffffff;
+}
+
+.project-picker-loading,
+.project-picker-empty {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
 .modal-footer {
   flex-shrink: 0;
   display: flex;
@@ -616,6 +752,10 @@ export default {
 }
 .btn-submit:hover {
   background: #0e6971;
+}
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 480px) {
@@ -687,4 +827,4 @@ export default {
   margin: 0 !important;
   z-index: 2001 !important;
 }
-</style>
+</style>v

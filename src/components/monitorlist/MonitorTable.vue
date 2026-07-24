@@ -267,7 +267,6 @@
             @close="closeEditProfile"  
             @updated="apiMonitorList(); closeEditProfile()"
         />
-
     </div>
 </template>
 
