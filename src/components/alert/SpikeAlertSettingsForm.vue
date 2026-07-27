@@ -50,7 +50,7 @@
     </b-row>
 
     <b-form-group label="ช่องทางแจ้งเตือน">
-      <b-form-checkbox-group v-model="settings.notify_channels" :options="channelOptions" buttons button-variant="outline-primary" />
+      <b-form-checkbox-group v-model="settings.notify_channels" color="info" :options="channelOptions" buttons button-variant="outline-primary" />
     </b-form-group>
 
     <div class="d-flex justify-content-end mt-3">
@@ -78,7 +78,7 @@ export default {
       saving: false,
       settings: JSON.parse(JSON.stringify(this.value)),
       metricOptions: [
-        { value: 'frequency', text: 'ความถี่ (mention count)' },
+        { value: 'frequency', text: 'ความถี่โพสต์ (mention count)' },
         { value: 'engagement', text: 'engagement' },
         { value: 'both', text: 'ทั้งสองอย่าง' },
       ],

@@ -10,7 +10,7 @@
       </div>
     </div>
 
-    <div class="container py-5">
+    <div class="container py-5 bg-content">
       <div class="idx">
         <div class="text-gp text-center brand-block">
           <h1 class="mb-2 brand-title">
@@ -28,11 +28,11 @@
               <!-- Panel header -->
               <div class="kb-panel-head">
                 <div>
-                  <h2 class="kb-panel-title">ถุงคำ</h2>
+                  <h2 class="kb-panel-title">ตั้งค่าแจ้งเตือน</h2>
                   <p class="kb-panel-desc">จัดการคำที่ติดตามและตั้งค่าการแจ้งเตือน</p>
                 </div>
                 <b-button variant="primary" class="kb-new-btn" @click="openCreate">
-                  <b-icon icon="plus" class="mr-1" />ถุงคำใหม่
+                  <b-icon icon="plus" class="mr-1" />เพิ่มแจ้งเตือน
                 </b-button>
               </div>
 
@@ -243,10 +243,10 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap'); */
 
 .kb-page {
-  font-family: 'Noto Sans Thai', sans-serif;
+  /* font-family: 'Noto Sans Thai', sans-serif; */
   color: var(--gp-charcoal, #2e2a26);
 }
 
@@ -256,7 +256,7 @@ export default {
   width: 100%;
   position: absolute;
   top: 0;
-  z-index: 0;
+  z-index: 9;
 }
 
 .brand-block {
@@ -279,6 +279,11 @@ export default {
 /* Layout */
 .kb-stats {
   margin-top: 24px;
+  z-index: 99 !important;
+}
+.bg-content{
+  position: relative;
+  z-index: 99 !important; 
 }
 .kb-layout {
   margin-top: 24px;
