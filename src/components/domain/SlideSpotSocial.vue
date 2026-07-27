@@ -166,15 +166,22 @@ export default {
   },
   watch: {
     selectIndex() {
+      // ✅ <div ref="slider"> อยู่ใน v-if="items && items.length" — ถ้า items ว่าง ref จะไม่มี element
+      // เลย เซ็ต scrollLeft ตรงๆ ไม่ได้ (undefined.scrollLeft) ต้องเช็คก่อนเสมอ
       const slider = this.$refs.slider;
-      slider.scrollLeft = 0; // เลื่อนซ้าย 300px
+      if (slider) slider.scrollLeft = 0; // เลื่อนซ้าย 300px
     },
     getArrDate() {
-      let from = this.getSdateDm.slice(0, 10);
-      let to = this.getEdateDm.slice(0, 10);
-      this.apiSpotNews(from, to);
+      // ✅ เดิมตรงนี้ใช้ this.getSdateDm/this.getEdateDm ตรงๆ (เป็น "วันนี้")
+      // แต่ mounted() คำนวณเป็น "เมื่อวาน" (ลบ 1 วัน) → คนละวันกัน
+      // ทำให้ยิง apiSpotNews 2 ครั้งด้วยคนละ from/to ตอน component เพิ่งโหลด
+      // แก้โดยรวม logic ให้ผ่านฟังก์ชันเดียว ที่คำนวณ "ย้อนหลัง 1 วัน" เสมอ
+      // และกันเรียกซ้ำถ้าช่วงวันที่ที่คำนวณได้เหมือนครั้งล่าสุด
+      this.fetchYesterdaySpotNews();
+      // ✅ ช่วงวันที่ใหม่อาจไม่มีข้อมูล (items ว่าง) หรือ apiSpotNews (async) ยังโหลดไม่เสร็จ
+      // ref="slider" จะไม่มี element ต้องเช็คก่อนเซ็ต scrollLeft
       const slider = this.$refs.slider;
-      slider.scrollLeft = 0; // เลื่อนซ้าย 300px
+      if (slider) slider.scrollLeft = 0; // เลื่อนซ้าย 300px
     },
   },
   data() {
@@ -184,6 +191,7 @@ export default {
       slide: 0,
       selectIndex: 0,
       load: false,
+      lastRange: null, // ✅ เก็บช่วงวันที่ (from/to) ที่เรียก apiSpotNews ไปล่าสุด กันเรียกซ้ำด้วยวันเดิม
     };
   },
   methods: {
@@ -235,6 +243,28 @@ export default {
     onSlideEnd(slide) {
       this.sliding = false;
     },
+    // ✅ คำนวณ "วันย้อนหลัง 1 วัน" เสมอ โดยอิงจากช่วงวันที่ที่เลือกในตัวกรอง (getEdateDm) ถ้ามี
+    // ไม่มีก็ใช้วันปัจจุบันของเครื่อง เป็นจุดเดียวที่คำนวณวันที่ให้ mounted() และ watcher ใช้ร่วมกัน
+    getYesterdayRange() {
+      let base = this.getEdateDm ? moment(this.getEdateDm) : moment();
+      let day = base.clone().subtract(1, "days").format().slice(0, 10);
+      return { from: day, to: day };
+    },
+    // ✅ จุดเดียวที่เรียก apiSpotNews สำหรับ "ข้อมูลเมื่อวาน"
+    // กันเรียกซ้ำถ้า from/to ที่คำนวณได้เหมือนกับครั้งล่าสุดที่เรียกไปแล้ว
+    // (เดิม mounted() กับ watch getArrDate() ต่างคนต่างเรียก apiSpotNews คนละวันกัน ทำให้ยิงซ้ำ 2 ครั้ง)
+    fetchYesterdaySpotNews() {
+      const { from, to } = this.getYesterdayRange();
+      if (
+        this.lastRange &&
+        this.lastRange.from === from &&
+        this.lastRange.to === to
+      ) {
+        return; // ช่วงวันที่เดิม ไม่ต้องเรียกซ้ำ
+      }
+      this.lastRange = { from, to };
+      this.apiSpotNews(from, to);
+    },
     apiSpotNews(from, to) {
       this.load = true;
       var config = {
@@ -272,18 +302,9 @@ export default {
     },
   },
   mounted() {
-    let from = moment(new Date())
-      .subtract(1, "days") // ลบ 1 วันเพื่อให้ได้วันที่เมื่อวาน
-      .format()
-      .slice(0, 10);
-
-    let to = moment(new Date())
-      .subtract(1, "days") // ลบ 1 วันเพื่อให้ได้วันที่เมื่อวาน
-      .format()
-      .slice(0, 10);
-    // let from = "2024-11-29";
-    // let to = "2024-12-03";
-    this.apiSpotNews(from, to);
+    // ✅ ใช้ฟังก์ชันกลางเดียวกับ watcher getArrDate() เพื่อให้คำนวณ "เมื่อวาน" แบบเดียวกัน
+    // และมี guard กันเรียกซ้ำในตัว
+    this.fetchYesterdaySpotNews();
   },
 };
 </script>

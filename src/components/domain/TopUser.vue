@@ -550,7 +550,7 @@ export default {
                 id: item.account_name,
                 uid: item.account_name,
                 source: item.source,
-                // type: this.type
+                // type: 'topuser',
             },
         });
         window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่

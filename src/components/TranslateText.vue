@@ -50,7 +50,10 @@ export default {
     // true = ปิดปุ่มไว้ ไม่ให้กดแปลซ้ำ (โหมดปกติ/ไม่ combined เท่านั้น)
     disabled: { type: Boolean, default: false },
     // ✅ _id ของโพสต์ — ใช้ยิง backend endpoint /getTranslate/{postId} เพื่อดึงคำแปลของโพสต์นี้
-    postId: { type: String, required: true },
+    // ไม่บังคับ required เพราะบางรายการโพสต์จาก parent (เช่น getPostAllMonitor ใน TabPost.vue)
+    // ยังไม่มี _id ตอน render (undefined) — ปุ่มแปลจะถูกปิดใช้งานเองอยู่แล้วผ่าน guard
+    // `if (!this.postId) return;` ใน translateNow()/translateOrToggle() ด้านล่าง
+    postId: { type: String, default: "" },
     // ฟิลด์ที่จะดึงจากผลลัพธ์ที่แปลแล้ว (โหมดปกติเท่านั้น): 'title' หรือ 'full_text'
     field: {
       type: String,
@@ -95,7 +98,9 @@ export default {
     },
     // แสดงปุ่มก็ต่อเมื่อ "ทั้งคู่" เป็นภาษาต่างประเทศเท่านั้น (ไม่ใช่แค่อันใดอันหนึ่ง)
     // ถ้าไม่มี title เลย ให้เช็คแค่เนื้อหาอย่างเดียว
+    // และต้องมี postId พร้อมใช้งานแล้วด้วย (กันปุ่มโผล่มาแต่กดแล้วไม่ทำอะไรเลยตอน postId ยังไม่มา)
     shouldShowCombinedButton() {
+      if (!this.postId) return false;
       const hasTitle = !!(this.title && this.title.trim());
       if (hasTitle) return this.titleHasNoThai && this.bodyHasNoThai;
       return this.bodyHasNoThai;

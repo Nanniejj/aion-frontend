@@ -659,29 +659,20 @@ export default {
       );
     },
     getHashtagFeed() {
-
-      this.page = 0;
-      this.isInfinite = true;
-      this.infiniteScroll();
+      this.resetInfiniteScroll();
     },
 
     getStatusFeed() {
-      console.log("getStatusFeed");
-      this.page = 0;
-      this.isInfinite = true;
-      this.infiniteScroll();
+      // console.log("getStatusFeed");
+      this.resetInfiniteScroll();
     },
     getArrFeed() {
-      console.log("getArrFeed");
-      this.page = 0;
-      this.isInfinite = true;
-      this.infiniteScroll();
+      // console.log("getArrFeed");
+      this.resetInfiniteScroll();
     },
     getSocialFeed() {
-      console.log("getSocialFeed");
-      this.page = 0;
-      this.isInfinite = true;
-      this.infiniteScroll();
+      // console.log("getSocialFeed");
+      this.resetInfiniteScroll();
     },
   },
   computed: {
@@ -697,6 +688,7 @@ export default {
       "getDataReportLine",
       "getHashtagFeed",
       "getClickDomain",
+      "getClickDomainId",
     ]),
 
     selectedPosts() {
@@ -918,9 +910,7 @@ export default {
       return word;
     },
     submitform() {
-      this.page = 0;
-      this.isInfinite = true;
-      this.infiniteScroll();
+      this.resetInfiniteScroll();
     },
     subdomain() {
       this.select_subdomain = "";
@@ -937,18 +927,24 @@ export default {
       }
     },
     selectSort() {
-      this.page = 0;
-      this.isInfinite = true;
-      this.infiniteScroll();
+      this.resetInfiniteScroll();
     },
     selectSentiment() {
+      this.resetInfiniteScroll();
+    },
+    // ✅ ฟังก์ชันกลางสำหรับ reset การแบ่งหน้า
+    // ไม่เรียก infiniteScroll() ตรงๆ เพื่อไม่ให้ชนกับการ auto-trigger
+    // ของ <infinite-loading :identifier="infiniteId">
+    // แค่เปลี่ยนค่า infiniteId พอ component จะ reset ตัวเองและยิง @infinite ให้เอง
+    resetInfiniteScroll() {
       this.page = 0;
+      this.list = [];
       this.isInfinite = true;
-      this.infiniteScroll();
+      this.infiniteId += 1;
     },
     getTheSelected(k, v, uid, read) {
-      console.log("this.list.sentiment", this.list[k].sentiment);
-      console.log("k", k);
+      // console.log("this.list.sentiment", this.list[k].sentiment);
+      // console.log("k", k);
       var err;
       if (v == 1) {
         err = "Positive";
@@ -964,7 +960,7 @@ export default {
         msg = "คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?";
       }
       this.$confirm(msg).then(() => {
-        console.log("sen", v);
+        // console.log("sen", v);
         const encoded = encodeURI(uid);
         var _this = this;
         var config = {
@@ -981,23 +977,23 @@ export default {
         };
         this.axios(config)
           .then(function (response) {
-            console.log(response);
+            // console.log(response);
             if (_this.status == true) {
               if (_this.selected == "") {
-                console.log("เข้าาาาาาาาา");
+                // console.log("เข้าาาาาาาاا");
                 let objIndex = _this.list.findIndex(
                   (obj) => obj.uid == _this.list[k].uid
                 );
-                console.log("objIndex", _this.list[objIndex]);
+                // console.log("objIndex", _this.list[objIndex]);
                 _this.list[objIndex]["user_sentiment"] =
                   response.data.user_sentiment;
 
                 //   _this.list[k].user_sentiment[_this.objId] = v;
-                console.log("Object", _this.list);
+                // console.log("Object", _this.list);
                 _this.infiniteScroll();
               } else {
                 if (v == _this.selected) {
-                  console.log("เข้าาาาาาาาา2");
+                  // console.log("เข้าาาาาาาาา2");
                   let objIndex = _this.list.findIndex(
                     (obj) => obj.uid == _this.list[k].uid
                   );
@@ -1005,15 +1001,15 @@ export default {
                     response.data.user_sentiment;
                   _this.infiniteScroll();
                 } else {
-                  console.log('ตัด1');
+                  // console.log('ตัด1');
                   _this.list.splice(k, 1);
                 }
 
                 //   _this.list[k].user_sentiment[_this.objId] == v;
-                console.log("Object", _this.list);
+                // console.log("Object", _this.list);
               }
             } else {
-              console.log('ตัด2');
+              // console.log('ตัด2');
               _this.list.splice(k, 1);
               _this.$fire({
                 title: "จัดเก็บในหมวดอ่านแล้ว",
@@ -1028,9 +1024,9 @@ export default {
             console.log("errrrrrr", response.message);
           });
         // this.list.splice(k, 1);
-        console.log("Object2", this.list);
+        // console.log("Object2", this.list);
         if (this.selected == "") {
-          console.log('this.selected == ""');
+          // console.log('this.selected == ""');
           if (v == 1) {
             this.list[k].sentiment = 1;
             this.list[k].user_sentiment[this.objId] = 1;
@@ -1074,16 +1070,16 @@ export default {
       event.target.src = this.default_avatar;
     },
     onClick(i, data) {
-      console.log(data);
+      // console.log(data);
       this.index = i;
       this.dataPhoto = data;
     },
-    async infiniteScroll() {
+    async infiniteScroll($state) {
       if (this.page == 0) {
         await this.axios
           .get(
-            "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-            this.getClickDomain,
+            "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain_id=" +
+            this.getClickDomainId,
 
             {
               check_sentiment_word: {
@@ -1134,8 +1130,8 @@ export default {
       if (this.getStatusFeed !== "") {
         dash = "&dashboard=" + this.getStatusFeed;
       }
-      if (this.getClickDomain) {
-        domain = "&domain=" + this.getClickDomain;
+      if (this.getClickDomainId) {
+        domain = "&domain=" + this.getClickDomainId;
       } else {
         domain = "";
       }
@@ -1143,9 +1139,8 @@ export default {
       var config = {
         method: "get",
         url:
-          "https://api.cognizata.com/api/v1/getsentimentdetail/?offset=" +
+          "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain/?sort_by=engagement&offset=" +
           this.page +
-          "&sort_by=engagement" +
           this.sdate +
           this.edate +
           "&sentiment=" +
@@ -1163,7 +1158,7 @@ export default {
         _this.$store.commit("setLoadFeed", false);
         _this.$store.commit("setCountPostFeed", response.data.count);
         var post = response.data.data;
-        console.log("postss", post);
+        // console.log("postss", post);
         var pair = { read: true };
         var posts = post.map((result) => {
           result.selected = false;
@@ -1200,23 +1195,28 @@ export default {
           resObject = temp;
         }
 
-        console.log("this.page", _page);
+        // console.log("this.page", _page);
         if (_page === 0) {
           _this.list = resObject;
         } else {
-          console.log("push");
+          // console.log("push");
           _this.list.push(...resObject);
         }
-        console.log("aquaticCreatures", resObject);
+        // console.log("aquaticCreatures", resObject);
         // return _this.list;
       });
-      console.log("his.list.length", this.list.length, data);
-      if (data.length === 0) {
+      // console.log("his.list.length", this.list.length, data);
+      if (!data || data.length === 0) {
         this.isInfinite = false;
+        // ❌ เดิม: this.infiniteId += 1; ตรงนี้ทำให้ <infinite-loading :identifier="infiniteId">
+        // reset ตัวเองและยิง @infinite ซ้ำทันทีทุกครั้งที่โหลดเสร็จ (ทั้งกรณีมีข้อมูลและไม่มี)
+        // ✅ ใหม่: บอก component ผ่าน $state แทน ไม่ต้องแตะ infiniteId ที่นี่
+        if ($state) $state.complete();
+      } else {
+        this.page += 10;
+        // console.log("loop+10", this.page);
+        if ($state) $state.loaded();
       }
-      this.page += 10;
-      console.log("loop+10", this.page);
-      this.infiniteId += 1;
     },
   },
   mounted() {
@@ -1228,7 +1228,9 @@ export default {
     this.username = localStorage.getItem("username");
     this.objId = localStorage.getItem("objId");
     this.$store.commit("setHashtagFeed", "");
-    this.infiniteScroll();
+    // ❌ เดิม: this.infiniteScroll(); ตรงนี้ยิงซ้ำกับที่ <infinite-loading v-if="isInfinite">
+    // auto-trigger @infinite ให้เองตอน mount อยู่แล้ว (isInfinite เริ่มต้นเป็น true)
+    // ทำให้เกิด request ซ้ำคู่ตอนโหลดหน้าแรกตามที่เห็นใน Network tab
   },
 };
 </script>

@@ -477,12 +477,23 @@ export default {
       // if (item.source == "youtube") {
       //   acc = item.account_name.replace("@", "");
       // }
-      this.$store.commit("setProfileData", item.account_name);
-      this.$store.commit("setValSource", item.source);
-      //this.$store.commit("setDomainName", item.name);
-      this.$store.commit("setToLinkProfile", "Domain");
-      this.$store.commit("setNoMonitor", item);
-      this.$router.push({ name: "Profile" });
+      // this.$store.commit("setProfileData", item.account_name);
+      // this.$store.commit("setValSource", item.source);
+      // //this.$store.commit("setDomainName", item.name);
+      // this.$store.commit("setToLinkProfile", "Domain");
+      // this.$store.commit("setNoMonitor", item);
+      // this.$router.push({ name: "Profile" });
+
+      const routeData = this.$router.resolve({
+          name: "MonitorProfile",
+          query: {
+              id: item.account_name,
+              uid: item.account_name,
+              source: item.source,
+              // type: 'topuser',
+          },
+      });
+      window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
     },
     selectDate() {
       this.$store.commit("setLoadTopUserF", true);
