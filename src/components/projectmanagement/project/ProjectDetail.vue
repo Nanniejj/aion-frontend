@@ -15,12 +15,16 @@
           <!-- <div class="eyebrow">โปรเจกต์</div> -->
           <h1 class="detail-title">{{ project.projectname }}</h1>
         </div>
-        <label class="status-switch" :class="{ disabled: statusUpdating }">
+        <!-- <label class="status-switch" :class="{ disabled: statusUpdating }">
           <span class="status-switch-label">{{ isProjectActive ? "เปิดใช้งาน" : "ปิดใช้งาน" }}</span>
           <span class="switch-track" :class="{ on: isProjectActive }" @click="toggleProjectStatus">
             <span class="switch-thumb"></span>
           </span>
-        </label>
+        </label> -->
+        <button type="button" class="edit-btn" @click.stop="onEdit" v-b-tooltip.hover title="แก้ไขโปรเจกต์">
+        <b-icon icon="pencil"></b-icon>
+        แก้ไขรายละเอียด
+      </button>
       </div>
 
       <!-- Tabs: separating overview / users / domains means each screen
@@ -39,7 +43,9 @@
         <button class="tab-btn" :class="{ active: tab === 'logs' }" @click="tab = 'logs'">
           ประวัติการใช้งาน
         </button>
+
       </div>
+      
 
       <!-- ภาพรวม -->
       <div v-if="tab === 'overview'" class="tab-panel">
@@ -98,9 +104,14 @@
           <div v-for="(u, idx) in filteredUsers" :key="u.id" class="user-row">
             <AvatarStack :users="[u]" large :start-index="idx" />
             <div class="user-text">
-              <div class="user-name">{{ u.name }}</div>
-              <div class="user-role">{{ u.role }}<span v-if="u.email"> · {{ u.email }}</span></div>
+              <div class="user-name">{{ u.name || u.username }}</div>
+              <div class="user-role">
+                {{ u.role || "ไม่ระบุ role" }}
+                <span v-if="u.name"> · {{ u.username }}</span>
+                <span v-if="u.email"> · {{ u.email }}</span>
+              </div>
             </div>
+            <div class="ml-auto">{{ u.isActive ? "เปิดใช้งาน" : "ระงับการใช้งาน" }}</div>
           </div>
         </div>
       </div>
@@ -170,7 +181,7 @@
             <option v-for="u in detailUsers" :key="u.id" :value="u.id">{{ u.name }}</option>
           </select>
 
-          <span class="log-filter-divider"></span>
+          <!-- <span class="log-filter-divider"></span> -->
 
           <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '1' }"
             @click="setLogDateMonths(1, '1')">
@@ -194,8 +205,9 @@
           </button>
 
           <button v-if="hasActiveLogFilters" type="button" class="log-filter-clear" @click="clearLogFilters">
-            <b-icon icon="x-circle"></b-icon> ล้างตัวกรอง
+            <b-icon icon="x-circle"></b-icon> ล้าง
           </button>
+          
         </div>
 
         <div v-if="logDatePreset === 'custom' || (logFilters.startDate && logFilters.endDate)" class="log-date-filters">
@@ -476,10 +488,8 @@ export default {
       return (this.project.userlist || []).map((u) => {
         const name = [u.name, u.lastname].filter(Boolean).join(" ").trim() || u.username || u.email || "";
         return {
-          id: u._id,
-          name,
-          role: u.role || "user",
-          email: u.email || "",
+          ...u,
+          // name,
           initial: name ? name.charAt(0).toUpperCase() : "?",
         };
       });
@@ -557,6 +567,10 @@ export default {
     },
   },
   methods: {
+    onEdit() {
+      // this.menuOpen = false;
+      this.$emit("edit", this.project);
+    },
     formatDate(dateStr) {
       if (!dateStr) return "-";
       const date = new Date(dateStr);
@@ -722,7 +736,29 @@ export default {
   Self-contained styling (colors hard-coded directly, no CSS variables) so
   this page renders correctly even without the shared theme.css loaded.
 */
+.edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 5px 5px;
+  border: 1px solid rgba(28, 30, 36, 0.08);
+  border-radius: 8px;
+  background: #fff4de;
+  color: #5a3f04;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(28, 30, 36, 0.06);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
 
+.edit-btn:hover {
+  background: #fed16e;
+  /* border-color: #5a3f04; */
+  color: #5a3f04;
+}
 .detail-page {
   position: fixed;
   inset: 0;
@@ -879,7 +915,7 @@ export default {
   border-bottom: 2px solid transparent;
   padding: 10px 4px;
   margin-right: 20px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: #6b7280;
   cursor: pointer;
@@ -1128,6 +1164,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: start;
 }
 
 /* ประวัติการใช้งาน (audit log) */
@@ -1223,6 +1260,7 @@ export default {
 @media (min-width: 701px) and (max-width: 1180px) {
   .tab-btn {
     margin-right: 3px;
+    font-size: 14px;
   }
   .log-filter-divider {
     flex-basis: 100%;
@@ -1236,6 +1274,7 @@ export default {
 .log-date-filters {
   display: flex;
   align-items: center;
+  justify-content: right;
 }
 
 .log-preset-btn {
@@ -1465,6 +1504,7 @@ export default {
   }
   .tab-btn {
     margin-right: 3px;
+    font-size: 14px;
   }
   .log-detail-user-meta {
     overflow-wrap: unset;

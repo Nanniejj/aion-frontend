@@ -97,7 +97,7 @@
     </div>
 
     <!-- ============ DETAIL (FULL PAGE) VIEW ============ -->
-    <ProjectDetail v-else :project="activeProject" @close="closeProject" />
+    <ProjectDetail v-else :project="activeProject" @close="closeProject" @edit="onEditProject" />
   </div>
 </template>
 

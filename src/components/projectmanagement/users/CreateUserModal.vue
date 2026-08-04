@@ -417,7 +417,7 @@ export default {
       this.form = emptyForm();
     },
     async submit() {
-      if (!this.form.username || !this.form.name || !this.form.lastname || !this.form.email || !this.form.password) {
+      if (!this.form.username || !this.form.name || !this.form.lastname || !this.form.email || !this.form.password && this.form.role !== "service") {
         this.error = "กรุณากรอก Username, ชื่อ, นามสกุล, อีเมล และรหัสผ่านให้ครบ";
         return;
       }
