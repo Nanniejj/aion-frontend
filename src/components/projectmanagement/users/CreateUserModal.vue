@@ -8,7 +8,7 @@
       :visible="open"
       @hide="closeModal"
       :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '660px', 1200: '520px', 768: '92vw', 480: '92vw' }"
+      :resize-width="{ 3000: '680px', 1200: '520px', 768: '92vw', 480: '92vw' }"
       class="create-modal"
     >
       <div class="modal-shell">
@@ -40,7 +40,7 @@
             </div>
 
             <div class="form-field">
-              <label>Role</label>
+              <label>Role <span class="req">*</span></label>
               <select v-model="form.role" class="form-input form-select">
                 <option value="superadmin">superadmin</option>
                 <option value="admin">admin</option>
@@ -49,7 +49,7 @@
               </select>
             </div>
 
-            <div class="form-field">
+            <div v-if="form.role !== 'service'" class="form-field">
               <label>ชื่อ <span class="req">*</span></label>
               <input
                 v-model.trim="form.name"
@@ -61,7 +61,7 @@
               />
             </div>
 
-            <div class="form-field">
+            <div v-if="form.role !== 'service'" class="form-field">
               <label>นามสกุล <span class="req">*</span></label>
               <input
                 v-model.trim="form.lastname"
@@ -73,7 +73,7 @@
               />
             </div>
 
-            <div class="form-field">
+            <div v-if="form.role !== 'service'" class="form-field">
               <label>บริษัท</label>
               <input
                 v-model.trim="form.company"
@@ -127,7 +127,7 @@
               </div>
             </div>
 
-            <div class="form-field form-field-full">
+            <div v-if="form.role !== 'service'" class="form-field form-field-full">
               <label>อีเมล <span class="req">*</span></label>
               <input
                 v-model.trim="form.email"
@@ -140,7 +140,7 @@
               />
             </div>
 
-            <div class="form-field form-field-full">
+            <div v-if="form.role !== 'service'" class="form-field form-field-full">
               <label>รหัสผ่าน <span class="req">*</span></label>
               <div class="password-row">
                 <input
@@ -199,16 +199,25 @@
                   กำหนดเอง
                 </button>
                 <button
-                  v-if="form.expiresAt"
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === 'never' }"
+                  @click="setNeverExpire"
+                >
+                  ไม่กำหนดวันหมดอายุ
+                </button>
+                <button
+                  v-if="form.expiresAt || expiryPreset === 'never'"
                   type="button"
                   class="preset-clear"
                   @click="clearExpiry"
-                  title="ไม่กำหนดวันหมดอายุ"
+                  title="ล้างการตั้งค่าวันหมดอายุ"
                 >
                   <b-icon icon="x-circle"></b-icon>
                 </button>
               </div>
               <date-picker
+                v-if="expiryPreset !== 'never'"
                 ref="expiryInput"
                 v-model="form.expiresAt"
                 type="date"
@@ -220,7 +229,10 @@
                 class="expiry-datepicker"
                 @change="onExpiryChange"
               ></date-picker>
-              <span v-if="form.expiresAt" class="expiry-hint">
+              <span v-if="expiryPreset === 'never'" class="expiry-hint">
+                บัญชีนี้จะไม่มีวันหมดอายุ
+              </span>
+              <span v-else-if="form.expiresAt" class="expiry-hint">
                 บัญชีจะหมดอายุวันที่ {{ formatExpiry(form.expiresAt) }}
               </span>
             </div>
@@ -259,6 +271,8 @@ function emptyForm() {
     password: "",
     role: "user",
     expiresAt: "",
+    expiresInDays: null,
+    neverExpire: false,
   };
 }
 
@@ -347,24 +361,43 @@ export default {
     },
     onExpiryChange() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.closeExpiryPicker();
     },
     setExpiryMonths(months, key) {
       const d = new Date();
       d.setMonth(d.getMonth() + months);
+      const today0 = new Date();
+      today0.setHours(0, 0, 0, 0);
+      const target0 = new Date(d);
+      target0.setHours(0, 0, 0, 0);
       this.form.expiresAt = toISODate(d);
+      this.form.expiresInDays = Math.round((target0 - today0) / 86400000);
+      this.form.neverExpire = false;
       this.expiryPreset = key;
       this.closeExpiryPicker();
     },
     useCustomExpiry() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.$nextTick(() => {
         const picker = this.$refs.expiryInput;
         if (picker && typeof picker.focus === "function") picker.focus();
       });
     },
+    setNeverExpire() {
+      this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = true;
+      this.expiryPreset = "never";
+      this.closeExpiryPicker();
+    },
     clearExpiry() {
       this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.expiryPreset = "";
       this.closeExpiryPicker();
     },
@@ -402,8 +435,15 @@ export default {
         password: this.form.password,
         role: this.form.role,
         project_id: this.form.project_id || null,
-        expiresAt: this.form.expiresAt || null,
       };
+
+      if (this.form.neverExpire) {
+        payload.neverExpire = true;
+      } else if (this.expiryPreset === "custom" && this.form.expiresAt) {
+        payload.expiresAt = new Date(`${this.form.expiresAt}T23:59:59.000Z`).toISOString();
+      } else if (this.form.expiresInDays != null) {
+        payload.expiresInDays = this.form.expiresInDays;
+      }
 
       this.error = "";
       this.submitting = true;

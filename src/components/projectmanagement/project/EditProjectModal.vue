@@ -14,7 +14,7 @@
     :visible="visible"
     @hide="closeModal"
     :animation-panel="'modal-slide-top'"
-    :resize-width="{ 3000: '100vw', 1200: '92vw', 768: '92vw', 480: '92vw' }"
+    :resize-width="{ 3000: '96vw', 1200: '96vw', 768: '96vw', 480: '96vw' }"
     class="create-modal"
   >
     <div class="modal-shell">
@@ -45,7 +45,7 @@
           <label class="switch-row">
             <input type="checkbox" v-model="form.mion" class="switch-input" />
             <span class="switch-track"><span class="switch-thumb"></span></span>
-            <span class="switch-text">เปิดใช้งาน Mion</span>
+            <span class="switch-text">เปิดใช้งาน Project</span>
           </label>
         </div>
 
@@ -345,9 +345,12 @@ export default {
   background: #ffffff;
   border-radius: 16px;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: 85vh;
+  height: 90vh;
   overflow: hidden;
 }
 
@@ -503,19 +506,24 @@ export default {
 .combo {
   position: relative;
   outline: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .combo-shell {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  width: 100%;
   min-height: 42px;
   border: 1px solid #e4e1d8;
   border-radius: 8px;
   padding: 6px 34px 6px 8px;
   background: #ffffff;
   cursor: text;
+  box-sizing: border-box;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .combo:focus-within .combo-shell {
@@ -569,12 +577,14 @@ export default {
 .combo-input {
   flex: 1 1 80px;
   min-width: 80px;
+  max-width: 100%;
   border: none;
   outline: none;
   background: transparent;
   font-size: 14px;
   color: #1c1e24;
   padding: 4px 2px;
+  box-sizing: border-box;
 }
 
 .combo-caret {
@@ -591,6 +601,8 @@ export default {
 }
 
 .combo-dropdown {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 6px;
   max-height: 200px;
   border: 1px solid #e4e1d8;

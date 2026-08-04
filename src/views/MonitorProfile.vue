@@ -5,7 +5,7 @@
       <div class="main-wrapper m-sm-auto">
         <h1 class="title m-0">{{ pageTitle }}</h1>
 
-        <nav class="d-flex align-items-center mb-3" aria-label="breadcrumb">
+        <nav v-if="type" class="d-flex align-items-center mb-3" aria-label="breadcrumb">
           <b-col
             cols="auto pl-0"
             class="m-0 breadcrumb-link"

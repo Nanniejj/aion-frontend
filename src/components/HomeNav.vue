@@ -579,7 +579,7 @@ export default {
     this.$store.commit("setToSection", localStorage.getItem("section"));
     this.username = localStorage.getItem("username");
     const reftokenOpt = localStorage.getItem("reftokenOpt");
-    if (reftokenOpt === "admin") this.seen = true;
+    if (reftokenOpt === "superadmin") this.seen = true;
   },
 };
 </script>

@@ -42,9 +42,10 @@
         <thead>
           <tr>
             <th>โปรเจกต์</th>
-            <th class="num-col">จำนวนผู้ใช้</th>
+            <th class="num-col">จำนวนผู้ใช้ที่ดูแล</th>
             <th class="num-col">จำนวนโดเมน</th>
             <th>สร้างเมื่อ</th>
+            <th>การจัดการ</th>
           </tr>
         </thead>
         <tbody>
@@ -55,13 +56,29 @@
                 <span class="project-name">{{ project.projectname || "-" }}</span>
               </div>
             </td>
-            <td data-label="จำนวนผู้ใช้" class="num-col">
-              <span class="count-badge" :class="{ 'is-zero': userCount(project) === 0 }">{{ userCount(project) }}</span>
+            <td data-label="จำนวนผู้ใช้" class="num-col users-count-cell">
+              <!-- <span class="" :class="{ 'is-zero': userCount(project) === 0 }"> -->
+                <AvatarStack :users="project.userlist || []" :max="5" />
+              <!-- </span> -->
             </td>
             <td data-label="จำนวนโดเมน" class="num-col">
-              <span class="count-badge" :class="{ 'is-zero': domainCount(project) === 0 }">{{ domainCount(project) }}</span>
+              <span class="count-badge" :class="{ 'is-zero': domainCount(project) === 0 }">{{ domainCount(project) }} หัวเรื่อง</span>
             </td>
             <td data-label="สร้างเมื่อ" class="mono">{{ formatDate(project.createdAt) }}</td>
+            <td data-label="การจัดการ">
+            <div class="row-actions">
+               <b-button size="sm" variant="danger">Button</b-button>
+              <!-- <button
+                type="button"
+                class="row-action-btn edit"
+                title="แก้ไขผู้ใช้"
+                @click="$refs.editModal.open(u)"
+              >
+                <b-icon icon="pencil-square"></b-icon>
+              </button> -->
+              
+            </div>
+          </td>
           </tr>
         </tbody>
       </table>
@@ -90,7 +107,7 @@
 <script>
 import ProjectCard from "./project/ProjectCard.vue";
 import VueElementLoading from "vue-element-loading";
-
+import AvatarStack from "./AvatarStack.vue";
 // Same palette as UserMain's avatars, assigned by row position so colors
 // stay distinct across the visible list.
 const AVATAR_COLORS = [
@@ -106,7 +123,7 @@ const AVATAR_COLORS = [
 
 export default {
   name: "ProjectGrid",
-  components: { ProjectCard, VueElementLoading },
+  components: { ProjectCard, VueElementLoading, AvatarStack },
   props: {
     projects: { type: Array, required: true },
     query: { type: String, default: "" },
@@ -244,6 +261,11 @@ export default {
 .projects-table tbody td.num-col {
   text-align: right;
 }
+.projects-table tbody td.users-count-cell {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
 
 .projects-table tbody tr:nth-child(even) {
   background: #fafaf8;
@@ -303,7 +325,7 @@ export default {
 }
 
 .mono {
-  font-variant-numeric: tabular-nums;
+  /* font-variant-numeric: tabular-nums; */
   color: #6b7280;
   font-size: 13px;
 }
@@ -313,7 +335,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 4px 0;
+  padding: 25px 4px 0;
 }
 
 .pagination-info {
@@ -385,6 +407,9 @@ export default {
   }
   .projects-table tbody td.num-col {
     text-align: left;
+  }
+  .projects-table tbody td.users-count-cell {
+    justify-content: space-between;
   }
 
   .pagination-bar {

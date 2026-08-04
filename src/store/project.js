@@ -18,7 +18,6 @@ function mapUser(raw) {
   const name = composedName || raw.username || raw.full_name || raw.email || "";
   return {
     ...raw,
-    name,
     role: raw.role || raw.position || "user",
     initial: name ? name.charAt(0).toUpperCase() : "?",
     // API returns isActive (boolean), not a ready-made status label.
@@ -62,6 +61,24 @@ async function apiGetUsers(params) {
   return {
     list: (res.data.results || res.data || []).map(mapUser),
     apiPagination: res.data.pagination || {},
+  };
+}
+
+function mapLog(raw) {
+  return { ...raw };
+}
+
+async function apiGetAuditLogs(params) {
+  const res = await axios.get(`${API_BASE}/api/v2/auditLog/getAuditLogs`, {
+    params,
+    headers: authHeaders(),
+  });
+  return {
+    // The real response nests the log entries under `data`, not
+    // `results` — unlike getProjects/getUsers above.
+    list: (res.data.data || []).map(mapLog),
+    apiPagination: res.data.pagination || {},
+    summary: res.data.summary || { total: 0, success: 0, failed: 0 },
   };
 }
 
@@ -129,6 +146,24 @@ export default {
     // when responses arrive out of order).
     projectsFetchToken: 0,
     usersFetchToken: 0,
+    auditLogs: [],
+    auditLogsPagination: {
+      page: 1,
+      limit: 20,
+      total: 0,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+      start_date: "",
+      end_date: "",
+      project_id: "",
+      user_id: "",
+      search: "",
+      method: "",
+    },
+    loadingAuditLogs: false,
+    auditLogsFetchToken: 0,
+    auditLogsSummary: { total: 0, success: 0, failed: 0 },
   },
   getters: {
     getProjects: (state) => state.projects,
@@ -141,6 +176,10 @@ export default {
     getDomainList: (state) => state.domains,
     getLoadingDomains: (state) => state.loadingDomains,
     getUserPicker: (state) => state.userPicker,
+    getAuditLogs: (state) => state.auditLogs,
+    getAuditLogsPagination: (state) => state.auditLogsPagination,
+    getLoadingAuditLogs: (state) => state.loadingAuditLogs,
+    getAuditLogsSummary: (state) => state.auditLogsSummary,
   },
   mutations: {
     setProjects: (state, payload) => {
@@ -188,6 +227,21 @@ export default {
     updateUserInList: (state, user) => {
       const idx = state.users.findIndex((u) => u._id === user._id);
       if (idx !== -1) state.users.splice(idx, 1, user);
+    },
+    setAuditLogs: (state, payload) => {
+      state.auditLogs = payload;
+    },
+    setAuditLogsPagination: (state, payload) => {
+      state.auditLogsPagination = payload;
+    },
+    setLoadingAuditLogs: (state, payload) => {
+      state.loadingAuditLogs = payload;
+    },
+    bumpAuditLogsFetchToken: (state) => {
+      state.auditLogsFetchToken++;
+    },
+    setAuditLogsSummary: (state, payload) => {
+      state.auditLogsSummary = payload;
     },
   },
   actions: {
@@ -287,6 +341,82 @@ export default {
       return dispatch("fetchUsers", { page: 1, search: query || "" });
     },
 
+    // payload (all optional): { page, limit, start_date, end_date,
+    // project_id, user_id, search, method }
+    // e.g. dispatch("getLogs", {
+    //   page: 1, limit: 20,
+    //   start_date: "2026-07-01T00:00:00", end_date: "2026-08-04T23:59:59",
+    //   project_id: "6a59ee4456f7ea7655a5476f", user_id: "6a7177966bc06796926905fd",
+    //   search: "root", method: "get",
+    // })
+    async getLogs({ commit, state }, payload = {}) {
+      commit("setLoadingAuditLogs", true);
+      commit("bumpAuditLogsFetchToken");
+      const myToken = state.auditLogsFetchToken;
+
+      const page = payload.page || state.auditLogsPagination.page || 1;
+      const limit = payload.limit || state.auditLogsPagination.limit || 20;
+      const start_date =
+        payload.start_date !== undefined
+          ? payload.start_date
+          : state.auditLogsPagination.start_date || "";
+      const end_date =
+        payload.end_date !== undefined ? payload.end_date : state.auditLogsPagination.end_date || "";
+      const project_id =
+        payload.project_id !== undefined
+          ? payload.project_id
+          : state.auditLogsPagination.project_id || "";
+      const user_id =
+        payload.user_id !== undefined ? payload.user_id : state.auditLogsPagination.user_id || "";
+      const search =
+        payload.search !== undefined ? payload.search : state.auditLogsPagination.search || "";
+      const method =
+        payload.method !== undefined ? payload.method : state.auditLogsPagination.method || "";
+
+      const params = { page, limit };
+      if (start_date) params.start_date = start_date;
+      if (end_date) params.end_date = end_date;
+      if (project_id) params.project_id = project_id;
+      if (user_id) params.user_id = user_id;
+      if (search) params.search = search;
+      if (method) params.method = method;
+
+      try {
+        const { list, apiPagination, summary } = await apiGetAuditLogs(params);
+        // A newer getLogs call was issued while this one was still in
+        // flight — its result is stale, discard it so it can't clobber
+        // the newer one (same fix as fetchProjects/fetchUsers above).
+        if (myToken !== state.auditLogsFetchToken) return;
+
+        commit("setAuditLogs", list);
+        commit("setAuditLogsSummary", summary);
+        commit("setAuditLogsPagination", {
+          // The audit-log endpoint already returns a complete pagination
+          // object (page/limit/total/totalPages/hasNextPage/
+          // hasPreviousPage) — unlike getProjects/getUsers, there's
+          // nothing to derive here, so use it as-is instead of
+          // resolvePaginationMeta.
+          page: apiPagination.page || page,
+          limit: apiPagination.limit || limit,
+          total: apiPagination.total ?? list.length,
+          totalPages: apiPagination.totalPages ?? 1,
+          hasNextPage: !!apiPagination.hasNextPage,
+          hasPreviousPage: !!apiPagination.hasPreviousPage,
+          start_date,
+          end_date,
+          project_id,
+          user_id,
+          search,
+          method,
+        });
+        return list;
+      } catch (error) {
+        console.log(error);
+      } finally {
+        if (myToken === state.auditLogsFetchToken) commit("setLoadingAuditLogs", false);
+      }
+    },
+
     // payload: { projectname, domainlist: [domainId, ...], userlist: [userId, ...] }
     // NOTE: endpoint name/path is assumed to follow the getProjects
     // convention (/api/v2/project/createProject) — adjust if the real
@@ -347,15 +477,15 @@ export default {
       return user;
     },
 
-    async updateUser({ commit }, payload) {
+    async updateUserDetails({ commit }, payload) {
       const { _id, ...body } = payload;
       const res = await axios.put(`${API_BASE}/api/v2/user/updateUser/${_id}`, body, {
         headers: authHeaders(),
       });
-      const raw = res.data.result || res.data.user || res.data;
-      const user = mapUser({ _id, ...raw });
-      commit("updateUserInList", user);
-      return user;
+      // const raw = res.data.result || res.data.user || res.data;
+      // const user = mapUser({ _id, ...raw });
+      // commit("updateUserInList", user);
+      // return user;
     },
     
     resetProjectPicker({ commit, state }, search = "") {

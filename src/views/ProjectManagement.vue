@@ -10,12 +10,6 @@
         </div>
 
         <div class="d-flex align-items-center flex-wrap header-actions">
-          <!-- <b-input-group class="search-box">
-            <b-input-group-prepend is-text>
-              <b-icon icon="search" font-scale="0.85"></b-icon>
-            </b-input-group-prepend>
-            <b-form-input v-model="query" placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."></b-form-input>
-          </b-input-group> -->
           <b-input-group size="lg" class="search-box">
             <b-form-input
               id="filter-input"
@@ -97,6 +91,7 @@
         :pagination="getUsersPagination"
         :loading="getLoadingUsers"
         @change-page="onUsersPageChange"
+        @delete="onProjectUpdated"
       />
     </div>
 

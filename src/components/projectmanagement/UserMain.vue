@@ -12,11 +12,12 @@
       <span>กำลังโหลดผู้ใช้...</span>
     </div>
 
-    <table v-else class="users-table">
+    <div v-else class="table-scroll">
+    <table class="users-table">
       <thead>
         <tr>
           <th>ผู้ใช้</th>
-          <th v-for="f in fields" :key="f.key">{{ f.label }}</th>
+          <th v-for="f in fields" :key="f.key" :class="'col-' + f.key">{{ f.label }}</th>
           <th>วันหมดอายุ</th>
           <th class="actions-col">การจัดการ</th>
         </tr>
@@ -27,8 +28,19 @@
             <div class="name-cell">
               <div class="user-avatar" :style="{ background: avatarColor(i) }">{{ u.initial }}</div>
               <div class="name-cell-text">
-                <span class="user-name">{{ u.name }}</span>
-                <span class="user-subline">{{ u.role }} · {{ u.email }}</span>
+                <span class="user-name">{{ displayName(u) }}
+                  <span class="role-badge" :class="'role-' + u.role">
+                    <b-icon :icon="roleIcon(u.role)"></b-icon>
+                    {{ u.role }}
+                  </span>
+                </span>
+                <span class="user-subline">{{ u.username }} 
+                  <span v-if="u.role !== 'service'"> · {{ u.email }}</span>
+                </span>
+                <span v-if="u.role !== 'service'" class="user-subline">
+                  <b-icon icon="building"></b-icon>
+                  {{ u.company }}
+                </span>
               </div>
             </div>
           </td>
@@ -37,14 +49,14 @@
               {{ u.status }}
             </span>
           </td>
-          <td data-label="บริษัท" class="company-cell">{{ u.company }}</td>
+          <!-- <td data-label="บริษัท" class="company-cell">{{ u.company }}</td> -->
           <td data-label="โปรเจกต์" class="company-cell">{{ u.projectname }}</td>
           <td class="mono joined-cell" data-label="เข้าร่วมเมื่อ">{{ u.joined }}</td>
           <td class="mono expiry-cell" data-label="วันหมดอายุ">
-            <span v-if="!u.expiresAt" class="expiry-none">ไม่มีกำหนด</span>
-            <span v-else class="expiry-value" :class="{ expired: isExpired(u.expiresAt) }">
-              {{ formatExpiry(u.expiresAt) }}
-              <span v-if="isExpired(u.expiresAt)" class="expiry-badge">หมดอายุแล้ว</span>
+            <span v-if="u.accountNeverExpire || !u.accountExpiresAt" class="expiry-none">ไม่มีกำหนด</span>
+            <span v-else class="expiry-value" :class="{ expired: isExpired(u.accountExpiresAt) }">
+              {{ formatExpiry(u.accountExpiresAt) }}
+              <span v-if="isExpired(u.accountExpiresAt)" class="expiry-badge">หมดอายุแล้ว</span>
             </span>
           </td>
           <td data-label="การจัดการ">
@@ -60,16 +72,17 @@
               <button
                 type="button"
                 class="row-action-btn delete"
-                title="ลบผู้ใช้"
+                title="ระงับบัญชีผู้ใช้"
                 @click="confirmDelete(u)"
               >
-                <b-icon icon="trash"></b-icon>
+                <b-icon icon="lock-fill"></b-icon>
               </button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
+    </div>
 
     <div v-if="!loading && users.length === 0" class="empty-state">
       ไม่พบผู้ใช้งานที่ตรงกับ "{{ query }}"
@@ -96,6 +109,7 @@
 <script>
 import EditUserModal from './users/EditUserModal.vue';
 import VueElementLoading from "vue-element-loading";
+import Swal from 'sweetalert2';
 // Same palette as AvatarStack, assigned by row position so colors stay
 // distinct across the visible list.
 
@@ -127,7 +141,7 @@ export default {
     return {
       fields: [
         { key: "status", label: "สถานะ" },
-        { key: "company", label: "บริษัท" },
+        // { key: "company", label: "บริษัท" },
         { key: "project", label: "โปรเจกต์" },
         { key: "joined", label: "เข้าร่วมเมื่อ" },
       ],
@@ -164,19 +178,59 @@ export default {
     avatarColor(i) {
       return AVATAR_COLORS[i % AVATAR_COLORS.length];
     },
+    displayName(u) {
+      const full = `${u.name || ""} ${u.lastname || ""}`.trim();
+      return full || u.username || "-";
+    },
     formatExpiry(iso) {
       const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-      const d = new Date(iso + "T00:00:00");
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "-";
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
     },
     isExpired(iso) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return new Date(iso + "T00:00:00") < today;
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return false;
+      return d < new Date();
     },
-    confirmDelete(user) {
-      if (window.confirm(`ต้องการลบผู้ใช้ "${user.name}" ใช่หรือไม่?`)) {
-        this.$emit("delete", user);
+    roleIcon(role) {
+      const icons = {
+        superadmin: "shield-lock-fill",
+        admin: "shield-fill",
+        user: "person-fill",
+        service: "gear-fill",
+      };
+      return icons[role] || "person-fill";
+    },
+    async confirmDelete(user) {
+      const result = await Swal.fire({
+        title: `ต้องการระงับบัญชีผู้ใช้ "${user.username}" ใช่หรือไม่?`,
+        text: "ผู้ใช้จะไม่สามารถเข้าสู่ระบบได้จนกว่าจะเปิดใช้งานอีกครั้ง",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "ระงับบัญชี",
+        cancelButtonText: "ยกเลิก",
+        confirmButtonColor: "#e06b6b",
+        reverseButtons: true,
+        didOpen: () => {
+          const iconContent = document.querySelector('.swal2-icon-content');
+          if (iconContent) iconContent.style.display = 'none';
+        },
+      });
+
+      if (!result.isConfirmed) return;
+
+      const payload = { _id: user._id, isActive: false };
+      try {
+        const updated = await this.$store.dispatch("updateUserDetails", payload);
+        this.$emit("updated", updated);
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          title: "ระงับบัญชีไม่สำเร็จ",
+          text: "กรุณาลองใหม่อีกครั้ง",
+          icon: "error",
+        });
       }
     },
   },
@@ -196,6 +250,11 @@ export default {
   border-radius: 16px;
   box-shadow: 0 1px 2px rgba(28, 30, 36, 0.04);
   overflow: hidden;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .users-table {
@@ -228,6 +287,44 @@ export default {
   padding: 14px 20px;
   font-size: 14px;
   vertical-align: middle;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+  border-radius: 999px;
+  padding: 3px 10px 3px 8px;
+  font-size: 11px;
+  /* font-weight: 700; */
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  vertical-align: middle;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(120, 111, 99, 0.288);
+}
+.role-badge .b-icon {
+  font-size: 12px;
+}
+.role-superadmin {
+  background: #e0355c;
+  color: #ffffff;
+  /* box-shadow: 0 1px 0px rgba(224, 53, 92, 0.45); */
+}
+.role-admin {
+  background: #dd8f1e;
+  color: #ffffff;
+  /* box-shadow: 0 1px 0px rgba(221, 143, 30, 0.4); */
+}
+.role-user {
+  background: rgba(18, 137, 56, 0.12);
+  color: #128930;
+}
+.role-service {
+  background: rgba(107, 114, 128, 0.14);
+  color: #4b5563;
 }
 
 .name-cell {
@@ -362,8 +459,44 @@ export default {
   color: #6b7280;
 }
 
+/* ---- Medium screens (tablets) ----
+   Table stays a table, but gets tighter and drops the least essential
+   column ("เข้าร่วมเมื่อ") to avoid the actions column being squeezed
+   off-screen. A horizontal scrollbar is the fallback for anything that
+   still doesn't fit. */
+@media (min-width: 701px) {
+  .users-table {
+    min-width: 720px;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 1180px) {
+  .users-table thead th,
+  .users-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .role-badge {
+    font-size: 10px;
+    padding: 2px 8px 2px 6px;
+  }
+  .company-cell {
+    max-width: 100px;
+  }
+  .col-joined,
+  .joined-cell {
+    display: none;
+  }
+  .row-action-btn {
+    width: 28px;
+    height: 28px;
+  }
+}
+
 @media (max-width: 700px) {
+  
   .pagination-bar {
+    display:block;
     border-top: none;
     padding: 12px 4px;
   }
@@ -406,7 +539,7 @@ export default {
 }
 
 /* ---- Card layout on small screens ---- */
-@media (max-width: 700px) {
+@media (max-width: 769px) {
   .users-card {
     background: transparent;
     border: none;
@@ -479,6 +612,17 @@ export default {
     font-weight: 500;
     color: #6b7280;
     flex-shrink: 0;
+  }
+
+  /* .company-cell's max-width:160px is meant to truncate the project
+     name text on desktop, but on mobile this <td> IS the flex row
+     (label + value together, via td[data-label] above). That cap was
+     squeezing the whole row into a 160px box instead of letting it
+     span the full card width, which is why the value never reached
+     the right edge like every other row. */
+  .company-cell {
+    max-width: none;
+    text-align: right;
   }
 
   .row-actions {

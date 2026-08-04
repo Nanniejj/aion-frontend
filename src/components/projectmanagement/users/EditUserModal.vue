@@ -126,7 +126,7 @@
             </div>
           </div>
 
-          <div class="form-field form-field-full">
+          <div v-if="form.role !== 'service'" class="form-field form-field-full">
             <label>อีเมล <span class="req">*</span></label>
             <input
               v-model.trim="form.email"
@@ -137,32 +137,6 @@
               name="edit-user-email"
               @keyup.enter="submit"
             />
-          </div>
-
-          <div class="form-field form-field-full">
-            <label>
-              รหัสผ่านใหม่
-              <span class="field-note">(เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</span>
-            </label>
-            <div class="password-row">
-              <input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                class="form-input"
-                placeholder="เว้นว่างไว้หากไม่เปลี่ยนรหัสผ่าน"
-                autocomplete="new-password"
-                name="edit-user-password"
-                @keyup.enter="submit"
-              />
-              <button
-                type="button"
-                class="password-toggle"
-                @click="showPassword = !showPassword"
-                :aria-label="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'"
-              >
-                <b-icon :icon="showPassword ? 'eye-slash' : 'eye'"></b-icon>
-              </button>
-            </div>
           </div>
 
           <div class="form-field form-field-full">
@@ -201,16 +175,25 @@
                 กำหนดเอง
               </button>
               <button
-                v-if="form.expiresAt"
+                type="button"
+                class="preset-btn"
+                :class="{ active: expiryPreset === 'never' }"
+                @click="setNeverExpire"
+              >
+                ไม่กำหนดวันหมดอายุ
+              </button>
+              <button
+                v-if="form.expiresAt || expiryPreset === 'never'"
                 type="button"
                 class="preset-clear"
                 @click="clearExpiry"
-                title="ไม่กำหนดวันหมดอายุ"
+                title="ล้างการตั้งค่าวันหมดอายุ"
               >
                 <b-icon icon="x-circle"></b-icon>
               </button>
             </div>
             <date-picker
+              v-if="expiryPreset !== 'never'"
               ref="expiryInput"
               v-model="form.expiresAt"
               type="date"
@@ -222,7 +205,10 @@
               class="expiry-datepicker"
               @change="onExpiryChange"
             ></date-picker>
-            <span v-if="form.expiresAt" class="expiry-hint">
+            <span v-if="expiryPreset === 'never'" class="expiry-hint">
+              บัญชีนี้จะไม่มีวันหมดอายุ
+            </span>
+            <span v-else-if="form.expiresAt" class="expiry-hint">
               บัญชีจะหมดอายุวันที่ {{ formatExpiry(form.expiresAt) }}
             </span>
           </div>
@@ -260,6 +246,8 @@ function emptyForm() {
     password: "",
     role: "user",
     expiresAt: "",
+    expiresInDays: null,
+    neverExpire: false,
   };
 }
 
@@ -298,9 +286,17 @@ export default {
         email: user.email || "",
         password: "", // left blank — only sent if the admin types a new one
         role: user.role || "user",
-        expiresAt: user.expiresAt || "",
+        expiresAt: user.accountExpiresAt ? toISODate(new Date(user.accountExpiresAt)) : "",
+        expiresInDays: null,
+        neverExpire: !!user.accountNeverExpire,
       };
-      this.expiryPreset = user.expiresAt ? "custom" : "";
+      if (user.accountNeverExpire) {
+        this.expiryPreset = "never";
+      } else if (user.accountExpiresAt) {
+        this.expiryPreset = "custom";
+      } else {
+        this.expiryPreset = "";
+      }
       this.error = "";
       this.visible = true;
       this.projectMenuOpen = false;
@@ -362,24 +358,43 @@ export default {
     },
     onExpiryChange() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.closeExpiryPicker();
     },
     setExpiryMonths(months, key) {
       const d = new Date();
       d.setMonth(d.getMonth() + months);
+      const today0 = new Date();
+      today0.setHours(0, 0, 0, 0);
+      const target0 = new Date(d);
+      target0.setHours(0, 0, 0, 0);
       this.form.expiresAt = toISODate(d);
+      this.form.expiresInDays = Math.round((target0 - today0) / 86400000);
+      this.form.neverExpire = false;
       this.expiryPreset = key;
       this.closeExpiryPicker();
     },
     useCustomExpiry() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.$nextTick(() => {
         const picker = this.$refs.expiryInput;
         if (picker && typeof picker.focus === "function") picker.focus();
       });
     },
+    setNeverExpire() {
+      this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = true;
+      this.expiryPreset = "never";
+      this.closeExpiryPicker();
+    },
     clearExpiry() {
       this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.expiryPreset = "";
       this.closeExpiryPicker();
     },
@@ -398,8 +413,12 @@ export default {
       this.form = emptyForm();
     },
     async submit() {
-      if (!this.form.name || !this.form.lastname || !this.form.email) {
-        this.error = "กรุณากรอกชื่อ, นามสกุล และอีเมลให้ครบ";
+      const missing = [];
+      if (!this.form.name) missing.push("ชื่อ");
+      if (!this.form.lastname) missing.push("นามสกุล");
+      if (this.form.role !== "service" && !this.form.email) missing.push("อีเมล");
+      if (missing.length) {
+        this.error = `กรุณากรอก${missing.join(", ")}ให้ครบ`;
         return;
       }
       if (this.form.password && this.form.password.length < 8) {
@@ -415,15 +434,22 @@ export default {
         email: this.form.email,
         role: this.form.role,
         project_id: this.form.project_id || null,
-        expiresAt: this.form.expiresAt || null,
       };
+
+      if (this.form.neverExpire) {
+        payload.neverExpire = true;
+      } else if (this.expiryPreset === "custom" && this.form.expiresAt) {
+        payload.expiresAt = new Date(`${this.form.expiresAt}T23:59:59.000Z`).toISOString();
+      } else if (this.form.expiresInDays != null) {
+        payload.expiresInDays = this.form.expiresInDays;
+      }
       // Only overwrite the stored password if the admin actually typed one.
       if (this.form.password) payload.password = this.form.password;
 
       this.error = "";
       this.submitting = true;
       try {
-        const user = await this.$store.dispatch("updateUser", payload);
+        const user = await this.$store.dispatch("updateUserDetails", payload);
         this.$emit("updated", user);
         this.closeModal();
       } catch (err) {
