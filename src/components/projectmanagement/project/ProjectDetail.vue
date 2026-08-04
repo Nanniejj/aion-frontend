@@ -12,7 +12,7 @@
            the overview tab so this row stays scannable at a glance. -->
       <div class="header-row">
         <div>
-          <div class="eyebrow">โปรเจกต์</div>
+          <!-- <div class="eyebrow">โปรเจกต์</div> -->
           <h1 class="detail-title">{{ project.projectname }}</h1>
         </div>
         <label class="status-switch" :class="{ disabled: statusUpdating }">
@@ -31,13 +31,13 @@
           ภาพรวม
         </button>
         <button class="tab-btn" :class="{ active: tab === 'users' }" @click="tab = 'users'">
-          บัญชีผู้ใช้ <span class="tab-count">{{ detailUsers.length }}</span>
+          บัญชีผู้ใช้ 
         </button>
         <button class="tab-btn" :class="{ active: tab === 'domains' }" @click="tab = 'domains'">
-          โดเมน <span class="tab-count">{{ domainItems.length }}</span>
+          โดเมน 
         </button>
         <button class="tab-btn" :class="{ active: tab === 'logs' }" @click="tab = 'logs'">
-          ประวัติการใช้งาน <span class="tab-count">{{ auditLogsSummary.total || "" }}</span>
+          ประวัติการใช้งาน
         </button>
       </div>
 
@@ -258,7 +258,7 @@
                     <div class="log-detail-user-name">{{ logUserName(item) }}</div>
                     <div class="log-detail-user-meta">
                       <span v-if="item.user.username" class="mono">@{{ item.user.username }}</span>
-                      <span v-if="item.user.email"> · {{ item.user.email }}</span>
+                      <span v-if="item.user.email"> {{ item.user.email }}</span>
                     </div>
                   </div>
                   <span v-if="item.user.role" class="log-detail-user-role">{{ item.user.role }}</span>
@@ -314,8 +314,8 @@
 
                   <div class="log-diff-row-wrap">
                     <b-row align-v="stretch">
-                      <b-col v-if="item.detail.before" md="6">
-                        <b-card class="log-diff-card is-before" no-body>
+                      <b-col v-if="item.detail.before" :md="item.detail.after ? 6 : 12">
+                        <b-card class="log-diff-card is-before" :class="{ 'is-solo': !item.detail.after }" no-body>
                           <template #header>
                             <b-icon icon="x-circle-fill"></b-icon>
                             <span>Before</span>
@@ -347,8 +347,25 @@
                           </b-card-body>
                         </b-card>
                       </b-col>
-                      <b-col v-if="item.detail.after" md="6">
-                        <b-card class="log-diff-card is-after" no-body>
+
+                      <!-- Connecting line between the two cards: absolutely
+                           positioned overlay on desktop (contributes no
+                           width to the flex row), normal-flow block on
+                           mobile so it naturally falls between the two
+                           stacked cards in source order. -->
+                      <div v-if="item.detail.before && item.detail.after" class="log-diff-connector d-none d-md-flex">
+                        <span class="log-diff-connector-line log-diff-connector-line-top"></span>
+                        <span class="log-diff-connector-icon"><b-icon icon="arrow-right" font-scale="0.85"></b-icon></span>
+                        <span class="log-diff-connector-line log-diff-connector-line-bottom"></span>
+                      </div>
+                      <div v-if="item.detail.before && item.detail.after" class="log-diff-connector-mobile d-flex d-md-none">
+                        <span class="log-diff-connector-line-h"></span>
+                        <span class="log-diff-connector-icon"><b-icon icon="arrow-down" font-scale="0.85"></b-icon></span>
+                        <span class="log-diff-connector-line-h"></span>
+                      </div>
+
+                      <b-col v-if="item.detail.after" :md="item.detail.before ? 6 : 12">
+                        <b-card class="log-diff-card is-after" :class="{ 'is-solo': !item.detail.before }" no-body>
                           <template #header>
                             <b-icon icon="check-circle-fill"></b-icon>
                             <span>After</span>
@@ -381,15 +398,6 @@
                         </b-card>
                       </b-col>
                     </b-row>
-
-                    <!-- Connecting line between the two cards, desktop only
-                         (columns stack on mobile so there's nothing to
-                         connect there). -->
-                    <div v-if="item.detail.before && item.detail.after" class="log-diff-connector d-none d-md-flex">
-                      <span class="log-diff-connector-line log-diff-connector-line-top"></span>
-                      <span class="log-diff-connector-icon"><b-icon icon="arrow-right" font-scale="0.85"></b-icon></span>
-                      <span class="log-diff-connector-line log-diff-connector-line-bottom"></span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -764,7 +772,6 @@ export default {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 14px;
   color: #6b7280;
   cursor: default;
@@ -798,7 +805,6 @@ export default {
 }
 
 .detail-title {
-  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
   font-size: 32px;
   color: #1c1e24;
@@ -898,7 +904,6 @@ export default {
 }
 
 .tab-count {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 12px;
   color: inherit;
   opacity: 0.75;
@@ -951,7 +956,6 @@ export default {
 }
 
 .stat-value {
-  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
   font-size: 26px;
   color: #1c1e24;
@@ -1005,7 +1009,6 @@ export default {
 }
 
 .info-value.mono {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-weight: 400;
   font-size: 12.5px;
 }
@@ -1214,6 +1217,22 @@ export default {
   margin: 2px 2px;
 }
 
+/* Medium screens (e.g. iPad Mini ~768px): search/method/user fit on one
+   line, but the 5 date-preset buttons only half-fit next to them and
+   wrap unevenly. Force them onto their own line instead. */
+@media (min-width: 701px) and (max-width: 1180px) {
+  .tab-btn {
+    margin-right: 3px;
+  }
+  .log-filter-divider {
+    flex-basis: 100%;
+    width: auto;
+    height: 0;
+    background: none;
+    margin: 0;
+  }
+}
+
 .log-date-filters {
   display: flex;
   align-items: center;
@@ -1269,7 +1288,7 @@ export default {
   padding: 12px 16px;
   border-bottom: 1px solid #e4e1d8;
   background: #f6f5f0;
-  white-space: nowrap;
+  /* white-space: nowrap; */
   vertical-align: middle;
 }
 
@@ -1299,10 +1318,9 @@ export default {
 
 .log-table td.mono,
 .log-table .mono {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 12.5px;
   color: #6b7280;
-  white-space: nowrap;
+  /* white-space: nowrap; */
 }
 
 .log-detail-panel {
@@ -1399,14 +1417,12 @@ export default {
 }
 
 .log-status-code {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-weight: 600;
   color: inherit;
   opacity: 0.85;
 }
 
 .log-method {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11px;
   font-weight: 600;
   padding: 2px 7px;
@@ -1441,6 +1457,18 @@ export default {
    label/value card list — style that mode to match the card look used
    elsewhere in this app instead of leaving it as bootstrap's bare default. */
 @media (max-width: 767px) {
+  .detail-body {
+  /* max-width: 760px; */
+   
+    padding: 20px 20px 20px;
+   
+  }
+  .tab-btn {
+    margin-right: 3px;
+  }
+  .log-detail-user-meta {
+    overflow-wrap: unset;
+  }
   .log-table.b-table-stacked-md {
     border: none;
     background: transparent;
@@ -1674,6 +1702,10 @@ export default {
   min-width: 0;
   text-align: left;
 }
+.log-detail-field > div {
+  min-width: 0;
+  flex: 1;
+}
 
 .log-detail-field-full {
   grid-column: 1 / -1;
@@ -1704,7 +1736,6 @@ export default {
 }
 
 .log-detail-value.mono {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 12.5px;
   overflow-wrap: anywhere;
 }
@@ -1753,6 +1784,9 @@ export default {
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(28, 30, 36, 0.05);
   margin: auto;
+}
+.log-diff-card.is-solo {
+  max-width: 480px;
 }
 .log-diff-card.is-before {
   /* margin-right: auto; */
@@ -1829,6 +1863,21 @@ export default {
   box-shadow: 0 1px 3px rgba(28, 30, 36, 0.08);
 }
 
+/* Mobile: cards stack, so the connector runs horizontally between them
+   instead of vertically. Normal flow (not absolute) so it naturally
+   lands between the two cards via flex-wrap's source order. */
+.log-diff-connector-mobile {
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  margin: -2px 0 10px;
+}
+.log-diff-connector-line-h {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #d8d5cb, transparent);
+}
+
 .log-diff-kv {
   display: flex;
   justify-content: space-between;
@@ -1844,7 +1893,6 @@ export default {
 .log-diff-kv-key {
   flex-shrink: 0;
   color: #9aa0ac;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11.5px;
 }
 .log-diff-kv-val {
@@ -1869,7 +1917,6 @@ export default {
   align-items: center;
   width: auto;
   max-width: 100%;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 11.5px;
   color: #6b7280;
   background: rgba(28, 30, 36, 0.04);

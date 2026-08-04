@@ -92,6 +92,7 @@
         :loading="getLoadingUsers"
         @change-page="onUsersPageChange"
         @delete="onProjectUpdated"
+        @updated="onUserUpdated"
       />
     </div>
 
@@ -208,6 +209,9 @@ export default {
       // fetchProjects already ran inside EditProjectModal's submit(), so
       // `projects` is already fresh — nothing else to do here. Hook kept
       // in case you want a toast/notification later.
+    },
+    onUserUpdated() {
+      this.fetchUsers({ project_id: "", page: 1, limit: 10 });
     },
     closeProject() {
       this.view = "list";
