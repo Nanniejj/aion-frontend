@@ -27,9 +27,6 @@
       </button>
       </div>
 
-      <!-- Tabs: separating overview / users / domains means each screen
-           only has one job, instead of every list competing for attention
-           on one page. -->
       <div class="tab-bar">
         <button class="tab-btn" :class="{ active: tab === 'overview' }" @click="tab = 'overview'">
           ภาพรวม
@@ -43,7 +40,6 @@
         <button class="tab-btn" :class="{ active: tab === 'logs' }" @click="tab = 'logs'">
           ประวัติการใช้งาน
         </button>
-
       </div>
       
 
@@ -127,16 +123,23 @@
           {{ domainItems.length === 0 ? "ยังไม่มีโดเมนที่ติดตาม" : "ไม่พบโดเมนที่ตรงกับ " + domainQuery }}
         </div>
         <div v-else class="domain-grid">
-          <div v-for="d in filteredDomains" :key="d.id" class="domain-card">
+          <div v-for="(d, idx) in filteredDomains" :key="d.id" class="domain-card">
             <div class="domain-card-top">
-              <div class="domain-icon"><b-icon icon="globe2"></b-icon></div>
-              <span class="status-dot" :class="d.display ? 'status-on' : 'status-off'"
-                :title="d.display ? 'แสดงผลอยู่' : 'ซ่อนอยู่'"></span>
+              <div class="d-flex align-items-center">
+                <div class="domain-icon" :style="{ background: domainIconBg(idx), color: domainIconColor(idx) }">
+                  <b-icon icon="globe2"></b-icon>
+                </div>
+                <div class="domain-name" :title="d.name">{{ d.name }}</div>
+              </div>
+              <span class="status-pill" :class="d.display ? 'status-on' : 'status-off'">
+                <span class="status-dot"></span>
+                {{ d.display ? "ใช้งาน" : "ปิดใช้งาน" }}
+              </span>
             </div>
-            <div class="domain-name" :title="d.name">{{ d.name }}</div>
+            
             <div v-if="d.permission.length" class="permission-wrap">
               <span v-for="p in d.permission" :key="p" class="permission-chip">
-                <b-icon icon="shield-check" font-scale="0.75"></b-icon>
+                <b-icon icon="shield-check" font-scale="0.7"></b-icon>
                 {{ permissionLabel(p) }}
               </span>
             </div>
@@ -418,19 +421,17 @@
 
           <div class="log-pagination">
             <span class="log-pagination-info">
-              หน้า {{ auditLogsPagination.page }} / {{ auditLogsPagination.totalPages }}
-              ({{ auditLogsPagination.total }} รายการ)
+              หน้า {{ auditLogsPagination.page }} จาก {{ auditLogsPagination.totalPages }}
+              ( ทั้งหมด {{ auditLogsPagination.total }} รายการ )
             </span>
-            <div class="log-pagination-btns">
-              <button type="button" class="page-btn" :disabled="!auditLogsPagination.hasPreviousPage"
-                @click="goToLogPage(auditLogsPagination.page - 1)">
-                <b-icon icon="chevron-left"></b-icon>
-              </button>
-              <button type="button" class="page-btn" :disabled="!auditLogsPagination.hasNextPage"
-                @click="goToLogPage(auditLogsPagination.page + 1)">
-                <b-icon icon="chevron-right"></b-icon>
-              </button>
-            </div>
+            <b-pagination
+              v-model="logCurrentPage"
+              :total-rows="auditLogsPagination.total"
+              :per-page="auditLogsPagination.limit"
+              align="center"
+              class="my-2"
+              @input="goToLogPage"
+            />
           </div>
         </template>
       </div>
@@ -464,6 +465,7 @@ export default {
       localStatus: this.project.status,
       statusUpdating: false,
       expandedLogId: null,
+      logCurrentPage: 1,
     };
   },
   created() {
@@ -480,6 +482,11 @@ export default {
       // Component instance is reused across different projects — resync
       // the local optimistic-toggle state when that happens.
       this.localStatus = this.project.status;
+    },
+    "auditLogsPagination.page"(newPage) {
+      if (newPage && newPage !== this.logCurrentPage) {
+        this.logCurrentPage = newPage;
+      }
     },
   },
   computed: {
@@ -584,6 +591,21 @@ export default {
       if (!id) return "";
       const str = String(id);
       return str.length <= 8 ? str : str.slice(0, 8);
+    },
+    domainIconBg(idx) {
+      const colors = [
+        "rgba(84, 87, 214, 0.12)",
+        "rgba(18, 129, 137, 0.12)",
+        "rgba(193, 121, 31, 0.12)",
+        "rgba(200, 79, 146, 0.12)",
+        "rgba(63, 131, 248, 0.12)",
+        "rgba(46, 160, 105, 0.12)",
+      ];
+      return colors[idx % colors.length];
+    },
+    domainIconColor(idx) {
+      const colors = ["#5457d6", "#128189", "#c1791f", "#c84f92", "#3f83f8", "#2ea069"];
+      return colors[idx % colors.length];
     },
     permissionLabel(key) {
       const labels = {
@@ -1591,39 +1613,11 @@ export default {
   color: #6b7280;
 }
 
-.log-pagination-btns {
-  display: flex;
-  gap: 6px;
-}
-
-.page-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid #e4e1d8;
-  background: #ffffff;
-  color: #1c1e24;
-  cursor: pointer;
-}
-
-.page-btn:hover:not(:disabled) {
-  border-color: #128189;
-  color: #128189;
-}
-
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 /* โดเมน: card grid instead of a plain list */
 .domain-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 @media (max-width: 560px) {
@@ -1634,60 +1628,80 @@ export default {
 
 .domain-card {
   border: 1px solid #e4e1d8;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #ffffff;
-  padding: 14px 16px;
-  box-shadow: 0 1px 2px rgba(28, 30, 36, 0.04);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(28, 30, 36, 0.04), 0 1px 1px rgba(28, 30, 36, 0.03);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .domain-card:hover {
+  transform: translateY(-2px);
   border-color: #cfd7d8;
-  box-shadow: 0 2px 8px rgba(28, 30, 36, 0.06);
+  box-shadow: 0 10px 24px -8px rgba(28, 30, 36, 0.12), 0 2px 6px rgba(28, 30, 36, 0.06);
 }
 
 .domain-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .domain-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 15px;
-  background: rgba(84, 87, 214, 0.12);
-  color: #5457d6;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
   flex-shrink: 0;
 }
 
-.status-on {
-  background: #2fa86a;
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 3px 9px 3px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
 }
-
-.status-off {
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-pill.status-on {
+  background: rgba(47, 168, 106, 0.12);
+  color: #2fa86a;
+}
+.status-pill.status-on .status-dot {
+  background: #2fa86a;
+  box-shadow: 0 0 0 3px rgba(47, 168, 106, 0.15);
+}
+.status-pill.status-off {
+  background: rgba(28, 30, 36, 0.05);
+  color: #9aa0ac;
+}
+.status-pill.status-off .status-dot {
   background: #d8d4c8;
 }
 
 .domain-name {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
   color: #1c1e24;
+  line-height: 1.35;
+  text-align: start;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-bottom: 8px;
+  min-height: 2.7em;
+  display: flex;
+  align-items: center;
+  text-overflow: ellipsis;    
 }
 
 .permission-wrap {
@@ -1701,11 +1715,12 @@ export default {
   align-items: center;
   gap: 4px;
   border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 14px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 500;
   background: rgba(18, 129, 137, 0.09);
   color: #128189;
-  border: 1px solid rgba(18, 129, 137, 0.18);
+  border: 1px solid rgba(18, 129, 137, 0.16);
 }
 
 .permission-none {

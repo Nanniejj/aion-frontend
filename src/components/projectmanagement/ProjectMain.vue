@@ -42,10 +42,10 @@
         <thead>
           <tr>
             <th>โปรเจกต์</th>
-            <th class="num-col">จำนวนผู้ใช้ที่ดูแล</th>
+            <th class="num-col">ผู้ใช้ที่ดูแล</th>
             <th class="num-col">จำนวนโดเมน</th>
-            <th>สร้างเมื่อ</th>
-            <th>การจัดการ</th>
+            <th >สร้างเมื่อ</th>
+            <th class="d-flex justify-content-center">การจัดการ</th>
           </tr>
         </thead>
         <tbody>
@@ -55,11 +55,15 @@
                 <span class="project-avatar" :style="{ background: avatarColor(i) }">{{ initial(project) }}</span>
                 <span class="project-name">{{ project.projectname || "-" }}</span>
               </div>
+               <div class="project-status-badge" :class="project.status === 'active' ? 'is-active' : 'is-inactive'">
+                  <span class="project-status-dot"></span>
+                  {{ project.status === "active" ? "ใช้งาน" : "ปิดใช้งาน" }}
+                </div>
             </td>
             <td data-label="จำนวนผู้ใช้" class="num-col users-count-cell">
-              <!-- <span class="" :class="{ 'is-zero': userCount(project) === 0 }"> -->
+              <div class="users-count-inner">
                 <AvatarStack :users="project.userlist || []" :max="5" />
-              <!-- </span> -->
+              </div>
             </td>
             <td data-label="จำนวนโดเมน" class="num-col">
               <span class="count-badge" :class="{ 'is-zero': domainCount(project) === 0 }">{{ domainCount(project) }} หัวเรื่อง</span>
@@ -67,16 +71,24 @@
             <td data-label="สร้างเมื่อ" class="mono">{{ formatDate(project.createdAt) }}</td>
             <td data-label="การจัดการ">
             <div class="row-actions">
-               <b-button size="sm" variant="danger">Button</b-button>
-              <!-- <button
+              <button
+                type="button"
+                class="row-action-btn view"
+                title="เปิดรายละเอียดโปรเจกต์"
+                @click.stop="$emit('open', project)"
+              >
+                <b-icon icon="eye"></b-icon>
+                
+              </button>
+              <button
                 type="button"
                 class="row-action-btn edit"
-                title="แก้ไขผู้ใช้"
-                @click="$refs.editModal.open(u)"
+                title="แก้ไขโปรเจกต์"
+                @click.stop="$emit('edit', project)"
               >
                 <b-icon icon="pencil-square"></b-icon>
-              </button> -->
-              
+                แก้ไข
+              </button>
             </div>
           </td>
           </tr>
@@ -203,7 +215,7 @@ export default {
 
 .empty-note {
   color: var(--muted, #6b7280);
-  font-size: 13px;
+  font-size: 14px;
   padding: 24px 4px;
 }
 
@@ -249,7 +261,7 @@ export default {
   background: #f6f5f0;
 }
 .projects-table thead th.num-col {
-  text-align: right;
+  text-align: start;
 }
 
 .projects-table tbody td {
@@ -257,13 +269,14 @@ export default {
   font-size: 14px;
   color: #1c1e24;
   border-bottom: 1px solid #f0eee6;
+  text-align: start;
 }
 .projects-table tbody td.num-col {
-  text-align: right;
+  text-align: start;
 }
-.projects-table tbody td.users-count-cell {
+.users-count-inner {
   display: flex;
-  justify-content: flex-end;
+  justify-content: start;
   align-items: center;
 }
 
@@ -292,6 +305,40 @@ export default {
   font-weight: 500;
 }
 
+.project-status-badge {
+  display: inline-flex;
+  justify-content: start;
+  align-items: center;
+  gap: 5px;
+  /* margin-left: auto; */
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.project-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.project-status-badge.is-active {
+  background: rgba(47, 168, 106, 0.12);
+  color: #2fa86a;
+}
+.project-status-badge.is-active .project-status-dot {
+  background: #2fa86a;
+}
+.project-status-badge.is-inactive {
+  background: rgba(28, 30, 36, 0.06);
+  color: #9aa0ac;
+}
+.project-status-badge.is-inactive .project-status-dot {
+  background: #d8d4c8;
+}
+
 .project-avatar {
   display: flex;
   align-items: center;
@@ -300,7 +347,7 @@ export default {
   height: 30px;
   border-radius: 8px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -312,7 +359,7 @@ export default {
   min-width: 26px;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   background: rgba(18, 129, 137, 0.1);
@@ -327,7 +374,44 @@ export default {
 .mono {
   /* font-variant-numeric: tabular-nums; */
   color: #6b7280;
-  font-size: 13px;
+  font-size: 14px;
+  text-align: start;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.row-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(28, 30, 36, 0.08);
+  border-radius: 8px;
+  background: #fff4de;
+  color: #5a3f04;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(28, 30, 36, 0.06);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.row-action-btn:hover {
+  background: #fed16e;
+  color: #5a3f04;
+}
+.row-action-btn.view {
+  background: #ffffff;
+  color: #1c1e24;
+}
+.row-action-btn.view:hover {
+  background: #f6f5f0;
+  border-color: #128189;
+  color: #128189;
 }
 
 .pagination-bar {
@@ -339,7 +423,7 @@ export default {
 }
 
 .pagination-info {
-  font-size: 13px;
+  font-size: 14px;
   color: #6b7280;
 }
 
@@ -377,11 +461,8 @@ export default {
   }
 
   .projects-table tbody td {
-    border-bottom: 1px solid #f0eee6;
-    padding: 10px 0;
-  }
-  .projects-table tbody td:last-child {
     border-bottom: none;
+    padding: 10px 0;
   }
 
   /* Name cell stays a plain block — it's the card's header, not a
@@ -391,19 +472,26 @@ export default {
   }
 
   /* Every other cell becomes a "label: value" row via the data-label
-     attribute set on each <td> in the template. */
-  td[data-label]:not([data-label="โปรเจกต์"]) {
+     attribute set on each <td> in the template — except "การจัดการ",
+     which shows just the action buttons (a label there only crowds them). */
+  td[data-label]:not([data-label="โปรเจกต์"]):not([data-label="การจัดการ"]) {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
   }
-  td[data-label]:not([data-label="โปรเจกต์"])::before {
+  td[data-label]:not([data-label="โปรเจกต์"]):not([data-label="การจัดการ"])::before {
     content: attr(data-label);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #6b7280;
     flex-shrink: 0;
+  }
+  td[data-label="การจัดการ"] {
+    padding-top: 6px;
+  }
+  .row-actions {
+    justify-content: flex-start;
   }
   .projects-table tbody td.num-col {
     text-align: left;

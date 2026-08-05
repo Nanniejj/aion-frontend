@@ -38,7 +38,7 @@
             </div>
 
             <label class="switch-row">
-              <input type="checkbox" v-model="form.mion" class="switch-input" />
+              <input type="checkbox" v-model="isActiveStatus" class="switch-input" />
               <span class="switch-track"><span class="switch-thumb"></span></span>
               <span class="switch-text">เปิดใช้งาน Mion</span>
             </label>
@@ -65,7 +65,7 @@
                 <div class="combo-shell" @click="focusUserInput">
                   <span v-for="u in selectedUsers" :key="u._id" class="combo-chip">
                     <span class="combo-chip-avatar">{{ u.initial }}</span>
-                    {{ u.name }}
+                    {{ u.name || u.username }}
                     <button type="button" class="combo-chip-remove" @click.stop="removeUser(u._id)" aria-label="เอาออก">×</button>
                   </span>
                   <input
@@ -92,7 +92,7 @@
                       <input type="checkbox" :checked="form.userIds.includes(u._id)" tabindex="-1" />
                       <span class="pick-avatar">{{ u.initial }}</span>
                       <span class="pick-text">
-                        <span class="pick-name">{{ u.name }}</span>
+                        <span class="pick-name">{{ u.name || u.username }}</span>
                         <span class="pick-role">{{ u.role }}</span>
                       </span>
                     </div>
@@ -150,7 +150,22 @@
                     >
                       <input type="checkbox" :checked="form.domainIds.includes(d._id)" tabindex="-1" />
                       <span class="pick-text">
-                        <span class="pick-name">{{ d.name }}</span>
+                        <span class="pick-name-row">
+                          <span class="pick-name">{{ d.name }}</span>
+                          <span
+                            class="domain-status-badge"
+                            :class="d.display !== false ? 'is-on' : 'is-off'"
+                            :title="d.display !== false ? 'แสดงผลอยู่' : 'ซ่อนอยู่'"
+                          >
+                            <span class="domain-status-dot"></span>
+                            {{ d.display !== false ? "แสดงผล" : "ซ่อนอยู่" }}
+                          </span>
+                        </span>
+                        <span v-if="(d.permission || []).length" class="domain-permission-chips">
+                          <span v-for="p in d.permission" :key="p" class="domain-permission-chip">{{
+                            permissionLabel(p)
+                          }}</span>
+                        </span>
                       </span>
                     </div>
 
@@ -186,7 +201,7 @@ export default {
       domainSearch: "",
       userMenuOpen: false,
       domainMenuOpen: false,
-      form: { projectname: "", mion: false, userIds: [], domainIds: [] },
+      form: { projectname: "", status: "inactive", userIds: [], domainIds: [] },
     };
   },
   computed: {
@@ -205,11 +220,22 @@ export default {
     selectedUsers() {
       return this.form.userIds.map((id) => this.users.find((u) => u._id === id)).filter(Boolean);
     },
+    isActiveStatus: {
+      get() {
+        return this.form.status === "active";
+      },
+      set(val) {
+        this.form.status = val ? "active" : "inactive";
+      },
+    },
     filteredUsers() {
       const q = this.userSearch.toLowerCase();
       if (!q) return this.users;
       return this.users.filter(
-        (u) => u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)
+        (u) =>
+          (u.name || u.username || "").toLowerCase().includes(q) ||
+          (u.username || "").toLowerCase().includes(q) ||
+          (u.role || "").toLowerCase().includes(q)
       );
     },
     domains() {
@@ -238,6 +264,14 @@ export default {
     },
   },
   methods: {
+    permissionLabel(key) {
+      const labels = {
+        hottopics: "ประเด็นร้อน",
+        face: "ตรวจจับใบหน้า",
+        suggestionkeyword: "คำแนะนำคำค้น",
+      };
+      return labels[key] || key;
+    },
     removeUser(id) {
       this.form.userIds = this.form.userIds.filter((existingId) => existingId !== id);
     },
@@ -296,7 +330,7 @@ export default {
       this.domainSearch = "";
       this.userMenuOpen = false;
       this.domainMenuOpen = false;
-      this.form = { projectname: "", mion: false, userIds: [], domainIds: [] };
+      this.form = { projectname: "", status: "inactive", userIds: [], domainIds: [] };
     },
     async submit() {
       if (!this.form.projectname) {
@@ -306,7 +340,7 @@ export default {
 
       const payload = {
         projectname: this.form.projectname,
-        mion: this.form.mion,
+        status: this.form.status,
         domainlist: this.form.domainIds,
         userlist: this.form.userIds,
       };
@@ -603,10 +637,19 @@ export default {
 }
 
 .combo-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 6px;
   max-height: 200px;
   border: 1px solid #e4e1d8;
   border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(28, 30, 36, 0.12);
   overflow-y: auto;
 }
 
@@ -655,6 +698,7 @@ export default {
 .pick-text {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-width: 0;
 }
 .pick-name {
@@ -668,6 +712,63 @@ export default {
 .pick-role {
   font-size: 14px;
   color: #6b7280;
+}
+
+.pick-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.pick-name-row .pick-name {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.domain-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.domain-status-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.domain-status-badge.is-on {
+  color: #128189;
+}
+.domain-status-badge.is-on .domain-status-dot {
+  background: #128189;
+}
+.domain-status-badge.is-off {
+  color: #9aa0ac;
+}
+.domain-status-badge.is-off .domain-status-dot {
+  background: rgba(28, 30, 36, 0.25);
+}
+.domain-permission-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 3px;
+}
+.domain-permission-chip {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #128189;
+  background: rgba(18, 129, 137, 0.09);
+  border: 1px solid rgba(18, 129, 137, 0.18);
+  border-radius: 999px;
+  padding: 1px 8px;
 }
 
 .pick-empty {

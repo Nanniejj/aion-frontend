@@ -23,7 +23,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(u, i) in users" :key="u._id || i">
+        <template v-for="(u, i) in users">
+        <tr :key="u._id || i">
           <td class="name-td">
             <div class="name-cell">
               <div class="user-avatar" :style="{ background: avatarColor(i) }">{{ u.initial }}</div>
@@ -63,6 +64,15 @@
             <div class="row-actions">
               <button
                 type="button"
+                class="row-action-btn history"
+                title="ดูประวัติการใช้งาน"
+                @click="openLogModal(u)"
+              >
+                <b-icon icon="clock-history"></b-icon>
+              </button>
+              <button
+                v-if="u.role !== 'service'"
+                type="button"
                 class="row-action-btn edit"
                 title="แก้ไขผู้ใช้"
                 @click="$refs.editModal.open(u)"
@@ -72,14 +82,16 @@
               <button
                 type="button"
                 class="row-action-btn delete"
-                title="ระงับบัญชีผู้ใช้"
-                @click="confirmDelete(u)"
+                :class="{ 'is-suspended': !u.isActive }"
+                :title="u.isActive ? 'ระงับบัญชีผู้ใช้' : 'เปิดใช้งานบัญชีผู้ใช้'"
+                @click="confirmToggleActive(u)"
               >
-                <b-icon icon="lock-fill"></b-icon>
+                <b-icon :icon="u.isActive ? 'lock-fill' : 'unlock-fill'"></b-icon>
               </button>
             </div>
           </td>
         </tr>
+        </template>
       </tbody>
     </table>
     </div>
@@ -101,6 +113,105 @@
         @input="onPageChange"
       />
     </div>
+
+    <b-modal v-model="logModalOpen" size="lg" hide-footer scrollable no-fade @hidden="onLogModalHidden">
+      <template #modal-title>
+        <div class="log-modal-title">
+          <b-icon icon="clock-history"></b-icon>
+          ประวัติการใช้งาน — {{ logModalUser ? displayName(logModalUser) : "" }}
+        </div>
+      </template>
+
+      <div class="log-modal-body">
+        <div class="log-modal-filters">
+          <div class="log-search">
+            <b-icon icon="search"></b-icon>
+            <input
+              v-model="logFilters.search"
+              type="text"
+              placeholder="ค้นหา action, endpoint..."
+              @input="onLogFilterInput"
+            />
+          </div>
+          <select v-model="logFilters.method" class="log-filter-select" @change="applyLogFilters">
+            <option value="">ทุก Method</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <span class="log-filter-divider"></span>
+          <button
+            v-for="preset in logDatePresets"
+            :key="preset.key"
+            type="button"
+            class="log-preset-btn"
+            :class="{ active: logDatePreset === preset.key }"
+            @click="setLogDateMonths(preset.months, preset.key)"
+          >
+            {{ preset.label }}
+          </button>
+          <button
+            type="button"
+            class="log-preset-btn"
+            :class="{ active: logDatePreset === 'custom' }"
+            @click="useCustomLogDate"
+          >
+            กำหนดเอง
+          </button>
+          <button v-if="hasActiveLogFilters" type="button" class="log-filter-clear" @click="clearLogFilters">
+            <b-icon icon="x-circle"></b-icon> ล้างตัวกรอง
+          </button>
+        </div>
+
+        <div v-if="logDatePreset === 'custom'" class="log-date-range">
+          <input v-model="logFilters.startDate" type="date" class="log-filter-date" @change="applyLogFilters" />
+          <span class="log-filter-sep">ถึง</span>
+          <input v-model="logFilters.endDate" type="date" class="log-filter-date" @change="applyLogFilters" />
+        </div>
+        <div v-else-if="logFilters.startDate && logFilters.endDate" class="log-date-hint">
+          {{ formatExpiry(logFilters.startDate) }} — {{ formatExpiry(logFilters.endDate) }}
+        </div>
+
+        <div v-if="userLogsLoading" class="user-log-empty">กำลังโหลด...</div>
+        <div v-else-if="userLogs.length === 0" class="user-log-empty">
+          {{ hasActiveLogFilters ? "ไม่พบประวัติการใช้งานที่ตรงกับตัวกรอง" : "ไม่มีประวัติการใช้งาน" }}
+        </div>
+        <template v-else>
+          <div class="user-log-list">
+            <div v-for="log in userLogs" :key="log._id" class="user-log-item">
+              <span class="user-log-dot" :class="log.success ? 'is-ok' : 'is-fail'"></span>
+              <div class="user-log-main">
+                <div class="user-log-top">
+                  <span class="user-log-action">{{ actionLabel(log.action) }}</span>
+                  <span class="user-log-method" :class="'method-' + (log.method || '').toLowerCase()">{{ log.method }}</span>
+                  <span class="user-log-status" :class="log.success ? 'is-ok' : 'is-fail'">{{ log.statusCode }}</span>
+                  <span class="user-log-time">{{ log.createdAtThai || log.createdAt }}</span>
+                </div>
+                <div class="user-log-endpoint">{{ log.endpoint }}</div>
+                <div v-if="log.errorMessage" class="user-log-error">{{ log.errorMessage }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-modal-pagination">
+            <span class="log-pagination-info">
+              หน้า {{ userLogsPagination.page }} จาก {{ userLogsPagination.totalPages }}
+              ( ทั้งหมด {{ userLogsPagination.total }} รายการ )
+            </span>
+            <b-pagination
+              v-model="userLogsPage"
+              :total-rows="userLogsPagination.total"
+              :per-page="userLogsPagination.limit"
+            align="center"
+            class="my-2"
+            @input="fetchUserLogs"
+          />
+        </div>
+      </template>
+      </div>
+    </b-modal>
 
     <EditUserModal ref="editModal" @updated="$emit('updated', $event)" />
   </div>
@@ -146,6 +257,28 @@ export default {
         { key: "joined", label: "เข้าร่วมเมื่อ" },
       ],
       currentPage: this.pagination ? this.pagination.page : 1,
+      logModalOpen: false,
+      logModalUser: null,
+      userLogs: [],
+      userLogsLoading: false,
+      userLogsPage: 1,
+      userLogsPagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+      logFilters: { search: "", method: "", startDate: "", endDate: "" },
+      logDatePreset: "",
+      logSearchTimer: null,
+      logDatePresets: [
+        { months: 1, key: "1", label: "1 เดือน" },
+        { months: 3, key: "3", label: "3 เดือน" },
+        { months: 6, key: "6", label: "6 เดือน" },
+        { months: 12, key: "12", label: "12 เดือน" },
+      ],
     };
   },
   computed: {
@@ -161,6 +294,12 @@ export default {
     perPage() {
       return this.pagination ? this.pagination.limit : 10;
     },
+    hasActiveLogFilters() {
+      const f = this.logFilters;
+      // The 1-month date range is the default state, not a user-applied
+      // filter — only flag it as "active" once something differs from it.
+      return !!(f.search || f.method || this.logDatePreset !== "1");
+    },
   },
   watch: {
     // Keep the b-pagination widget in sync if the page changes from
@@ -168,6 +307,11 @@ export default {
     "pagination.page"(newPage) {
       if (newPage && newPage !== this.currentPage) {
         this.currentPage = newPage;
+      }
+    },
+    "userLogsPagination.page"(newPage) {
+      if (newPage && newPage !== this.userLogsPage) {
+        this.userLogsPage = newPage;
       }
     },
   },
@@ -202,15 +346,137 @@ export default {
       };
       return icons[role] || "person-fill";
     },
-    async confirmDelete(user) {
+    actionLabel(action) {
+      const labels = {
+        CREATE_PROJECT: "สร้างโปรเจกต์",
+        UPDATE_PROJECT: "แก้ไขโปรเจกต์",
+        DELETE_PROJECT: "ลบโปรเจกต์",
+        CREATE_USER: "สร้างผู้ใช้",
+        UPDATE_USER: "แก้ไขผู้ใช้",
+        DELETE_USER: "ลบผู้ใช้",
+        CHANGE_PASSWORD: "เปลี่ยนรหัสผ่าน",
+        LOGIN: "เข้าสู่ระบบ",
+        LOGIN_SUCCESS: "เข้าสู่ระบบสำเร็จ",
+        LOGOUT: "ออกจากระบบ",
+        ADD_DOMAIN: "เพิ่มโดเมน",
+        REMOVE_DOMAIN: "ลบโดเมน",
+      };
+      if (labels[action]) return labels[action];
+      if (!action) return "ทำรายการ";
+      // Fallback: humanize unknown action codes, e.g. "SOME_ACTION" -> "Some action"
+      const words = action.toLowerCase().split("_");
+      return words.map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(" ");
+    },
+    openLogModal(user) {
+      this.logModalUser = user;
+      this.logModalOpen = true;
+      this.userLogs = [];
+      this.logFilters = { search: "", method: "", startDate: "", endDate: "" };
+      this.setLogDateRangeOnly(1, "1"); // default to the last 1 month
+      this.fetchUserLogs(1);
+    },
+    onLogModalHidden() {
+      // Clear state once the modal has fully closed so the next open
+      // doesn't briefly flash the previous user's logs.
+      this.logModalUser = null;
+      this.userLogs = [];
+      this.userLogsPagination = {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+    },
+    async fetchUserLogs(page) {
+      if (!this.logModalUser) return;
+      const targetUserId = this.logModalUser._id;
+      const f = this.logFilters;
+      this.userLogsLoading = true;
+      try {
+        const result = await this.$store.dispatch("getLogs", {
+          user_id: targetUserId,
+          page: page || 1,
+          limit: 10,
+          project_id: "",
+          search: f.search.trim(),
+          method: f.method,
+          start_date: f.startDate ? `${f.startDate}T00:00:00` : "",
+          end_date: f.endDate ? `${f.endDate}T23:59:59` : "",
+        });
+        // Bail if the modal was closed (or switched to a different user)
+        // while this request was still in flight.
+        if (!this.logModalUser || this.logModalUser._id !== targetUserId) return;
+        this.userLogs = result || [];
+        // getLogs also updates the shared store pagination getter — pull
+        // it in right after the dispatch resolves so it reflects this
+        // specific call, not a stale value from elsewhere.
+        const storePagination = this.$store.getters.getAuditLogsPagination;
+        this.userLogsPagination = {
+          page: storePagination.page,
+          limit: storePagination.limit,
+          total: storePagination.total,
+          totalPages: storePagination.totalPages,
+          hasNextPage: storePagination.hasNextPage,
+          hasPreviousPage: storePagination.hasPreviousPage,
+        };
+      } catch (err) {
+        console.log(err);
+      } finally {
+        if (this.logModalUser && this.logModalUser._id === targetUserId) {
+          this.userLogsLoading = false;
+        }
+      }
+    },
+    onLogFilterInput() {
+      clearTimeout(this.logSearchTimer);
+      this.logSearchTimer = setTimeout(() => this.applyLogFilters(), 400);
+    },
+    applyLogFilters() {
+      this.fetchUserLogs(1);
+    },
+    clearLogFilters() {
+      this.logFilters = { search: "", method: "", startDate: "", endDate: "" };
+      this.setLogDateRangeOnly(1, "1");
+      this.fetchUserLogs(1);
+    },
+    toISODate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    },
+    setLogDateRangeOnly(months, key) {
+      const end = new Date();
+      const start = new Date();
+      start.setMonth(start.getMonth() - months);
+      this.logFilters.startDate = this.toISODate(start);
+      this.logFilters.endDate = this.toISODate(end);
+      this.logDatePreset = key;
+    },
+    setLogDateMonths(months, key) {
+      this.setLogDateRangeOnly(months, key);
+      this.applyLogFilters();
+    },
+    useCustomLogDate() {
+      this.logDatePreset = "custom";
+    },
+    async confirmToggleActive(user) {
+      const willSuspend = user.isActive;
+
       const result = await Swal.fire({
-        title: `ต้องการระงับบัญชีผู้ใช้ "${user.username}" ใช่หรือไม่?`,
-        text: "ผู้ใช้จะไม่สามารถเข้าสู่ระบบได้จนกว่าจะเปิดใช้งานอีกครั้ง",
+        title: willSuspend
+          ? `ต้องการระงับบัญชีผู้ใช้ "${user.username}" ใช่หรือไม่?`
+          : `ต้องการเปิดใช้งานบัญชีผู้ใช้ "${user.username}" ใช่หรือไม่?`,
+        text: willSuspend
+          ? "ผู้ใช้จะไม่สามารถเข้าสู่ระบบได้จนกว่าจะเปิดใช้งานอีกครั้ง"
+          : "ผู้ใช้จะสามารถเข้าสู่ระบบได้อีกครั้ง",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "ระงับบัญชี",
+        confirmButtonText: willSuspend ? "ระงับบัญชี" : "เปิดใช้งาน",
         cancelButtonText: "ยกเลิก",
-        confirmButtonColor: "#e06b6b",
+        confirmButtonColor: willSuspend ? "#e06b6b" : "#128189",
         reverseButtons: true,
         didOpen: () => {
           const iconContent = document.querySelector('.swal2-icon-content');
@@ -220,14 +486,14 @@ export default {
 
       if (!result.isConfirmed) return;
 
-      const payload = { _id: user._id, isActive: false };
+      const payload = { _id: user._id, isActive: !willSuspend };
       try {
         const updated = await this.$store.dispatch("updateUserDetails", payload);
         this.$emit("updated", updated);
       } catch (err) {
         console.log(err);
         Swal.fire({
-          title: "ระงับบัญชีไม่สำเร็จ",
+          title: willSuspend ? "ระงับบัญชีไม่สำเร็จ" : "เปิดใช้งานบัญชีไม่สำเร็จ",
           text: "กรุณาลองใหม่อีกครั้ง",
           icon: "error",
         });
@@ -536,6 +802,249 @@ export default {
   background: rgba(192, 57, 43, 0.1);
   border-color: #c0392b;
   color: #c0392b;
+}
+.row-action-btn.delete.is-suspended {
+  color: #128189;
+  border-color: rgba(18, 129, 137, 0.25);
+  background: rgba(18, 129, 137, 0.06);
+}
+.row-action-btn.delete.is-suspended:hover {
+  background: rgba(18, 129, 137, 0.12);
+  border-color: #128189;
+  color: #128189;
+}
+.row-action-btn.history:hover,
+.row-action-btn.history.active {
+  background: rgba(63, 131, 248, 0.1);
+  border-color: #3f83f8;
+  color: #3f83f8;
+}
+
+.user-log-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #9aa0ac;
+  font-style: italic;
+  padding: 6px 2px;
+}
+.user-log-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #eeece3;
+}
+.user-log-item:last-child {
+  border-bottom: none;
+}
+.user-log-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+.user-log-dot.is-ok {
+  background: #128189;
+}
+.user-log-dot.is-fail {
+  background: #c0392b;
+}
+.user-log-main {
+  min-width: 0;
+  flex: 1;
+}
+.user-log-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.user-log-action {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1c1e24;
+}
+.user-log-method {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(28, 30, 36, 0.06);
+  color: #6b7280;
+}
+.user-log-method.method-get {
+  background: rgba(18, 129, 137, 0.12);
+  color: #128189;
+}
+.user-log-method.method-post {
+  background: rgba(63, 131, 248, 0.12);
+  color: #3f83f8;
+}
+.user-log-method.method-put,
+.user-log-method.method-patch {
+  background: rgba(193, 121, 31, 0.12);
+  color: #c1791f;
+}
+.user-log-method.method-delete {
+  background: rgba(192, 57, 43, 0.12);
+  color: #c0392b;
+}
+.user-log-status {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.user-log-status.is-ok {
+  color: #128189;
+}
+.user-log-status.is-fail {
+  color: #c0392b;
+}
+.user-log-endpoint {
+  font-size: 12px;
+  color: #9aa0ac;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.user-log-time {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #9aa0ac;
+}
+.user-log-error {
+  font-size: 12px;
+  color: #c0392b;
+  margin-top: 4px;
+}
+.user-log-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.log-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1c1e24;
+}
+
+.log-modal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.log-search {
+  flex: 1 1 200px;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e4e1d8;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 8px 14px;
+}
+.log-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #1c1e24;
+}
+.log-search input::placeholder {
+  color: #9aa0ac;
+}
+.log-filter-select,
+.log-filter-date {
+  border: 1px solid #e4e1d8;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #1c1e24;
+}
+.log-filter-divider {
+  flex-basis: 100%;
+  width: auto;
+  height: 0;
+  background: none;
+  margin: 0;
+}
+.log-preset-btn {
+  border: 1px solid #e4e1d8;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #1c1e24;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.log-preset-btn:hover {
+  border-color: #128189;
+  color: #128189;
+}
+.log-preset-btn.active {
+  background: #128189;
+  border-color: #128189;
+  color: #ffffff;
+}
+.log-filter-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  color: #c0392b;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 4px;
+}
+.log-filter-clear:hover {
+  text-decoration: underline;
+}
+.log-date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.log-filter-sep {
+  font-size: 13px;
+  color: #9aa0ac;
+}
+.log-modal-body {
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+.log-date-hint {
+  display: block;
+  text-align: right;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+.log-modal-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e4e1d8;
+}
+.log-pagination-info {
+  font-size: 13px;
+  color: #6b7280;
 }
 
 /* ---- Card layout on small screens ---- */

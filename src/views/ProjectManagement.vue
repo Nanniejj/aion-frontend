@@ -82,8 +82,6 @@
         @close="onCloseProject"
       />
 
-      <EditProjectModal ref="editProjectModal" @updated="onProjectUpdated" />
-
       <UserMain
         v-if="tab === 'users'"
         :users="users"
@@ -98,6 +96,11 @@
 
     <!-- ============ DETAIL (FULL PAGE) VIEW ============ -->
     <ProjectDetail v-else :project="activeProject" @close="closeProject" @edit="onEditProject" />
+
+    <!-- Rendered unconditionally (not inside the list-view v-if) so
+         $refs.editProjectModal still exists and .open() works when the
+         "แก้ไข" button is clicked from the ProjectDetail full-page view too. -->
+    <EditProjectModal ref="editProjectModal" @updated="onProjectUpdated" />
   </div>
 </template>
 
