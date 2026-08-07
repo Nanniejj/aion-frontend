@@ -55,7 +55,7 @@
                 <span class="project-avatar" :style="{ background: avatarColor(i) }">{{ initial(project) }}</span>
                 <span class="project-name">{{ project.projectname || "-" }}</span>
               </div>
-               <div class="project-status-badge" :class="project.status === 'active' ? 'is-active' : 'is-inactive'">
+               <div class="project-status-badge mt-2" :class="project.status === 'active' ? 'is-active' : 'is-inactive'">
                   <span class="project-status-dot"></span>
                   {{ project.status === "active" ? "ใช้งาน" : "ปิดใช้งาน" }}
                 </div>
@@ -150,6 +150,12 @@ export default {
   data() {
     return {
       currentPage: this.pagination ? this.pagination.page : 1,
+      // b-pagination can emit 'input' twice for a single click (both
+      // before either fetch resolves), so comparing against the
+      // pagination *prop* isn't enough — that only catches a delayed
+      // echo, not two emissions firing back-to-back. Track the page we
+      // already acted on ourselves instead.
+      requestedPage: null,
     };
   },
   computed: {
@@ -173,6 +179,11 @@ export default {
       if (newPage && newPage !== this.currentPage) {
         this.currentPage = newPage;
       }
+      // An externally-driven page change means any pending "did we
+      // already request this page" tracking is now moot — reset so a
+      // later click on this same page number isn't mistaken for the
+      // earlier duplicate-emit echo.
+      this.requestedPage = null;
     },
   },
   methods: {
@@ -199,6 +210,11 @@ export default {
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
     },
     onPageChange(page) {
+      // Guards against b-pagination emitting 'input' more than once for
+      // the same click — only the first emission for a given page value
+      // actually triggers a fetch.
+      if (page === this.requestedPage) return;
+      this.requestedPage = page;
       this.$emit("change-page", page);
     },
   },

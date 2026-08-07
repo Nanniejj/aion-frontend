@@ -46,8 +46,8 @@
             </div>
           </td>
           <td data-label="สถานะ">
-            <span class="status-pill" :class="u.status === 'ใช้งานอยู่' ? 'status-active' : 'status-inactive'">
-              {{ u.status }}
+            <span class="status-pill" :class="statusClass(u.accountStatus)">
+              {{ statusLabel(u.accountStatus) }}
             </span>
           </td>
           <!-- <td data-label="บริษัท" class="company-cell">{{ u.company }}</td> -->
@@ -114,9 +114,18 @@
       />
     </div>
 
-    <b-modal v-model="logModalOpen" size="lg" hide-footer scrollable no-fade @hidden="onLogModalHidden">
+    <b-modal
+      v-model="logModalOpen"
+      size="lg"
+      hide-footer
+      scrollable
+      no-fade
+      dialog-class="log-history-dialog"
+      content-class="log-history-content"
+      @hidden="onLogModalHidden"
+    >
       <template #modal-title>
-        <div class="log-modal-title">
+        <div class="log-modal-title py-2">
           <b-icon icon="clock-history"></b-icon>
           ประวัติการใช้งาน — {{ logModalUser ? displayName(logModalUser) : "" }}
         </div>
@@ -130,10 +139,16 @@
               v-model="logFilters.search"
               type="text"
               placeholder="ค้นหา action, endpoint..."
+              :disabled="userLogsLoading"
               @input="onLogFilterInput"
             />
           </div>
-          <select v-model="logFilters.method" class="log-filter-select" @change="applyLogFilters">
+          <select
+            v-model="logFilters.method"
+            class="log-filter-select"
+            :disabled="userLogsLoading"
+            @change="applyLogFilters"
+          >
             <option value="">ทุก Method</option>
             <option value="GET">GET</option>
             <option value="POST">POST</option>
@@ -148,6 +163,7 @@
             type="button"
             class="log-preset-btn"
             :class="{ active: logDatePreset === preset.key }"
+            :disabled="userLogsLoading"
             @click="setLogDateMonths(preset.months, preset.key)"
           >
             {{ preset.label }}
@@ -156,19 +172,38 @@
             type="button"
             class="log-preset-btn"
             :class="{ active: logDatePreset === 'custom' }"
+            :disabled="userLogsLoading"
             @click="useCustomLogDate"
           >
             กำหนดเอง
           </button>
-          <button v-if="hasActiveLogFilters" type="button" class="log-filter-clear" @click="clearLogFilters">
+          <button
+            v-if="hasActiveLogFilters"
+            type="button"
+            class="log-filter-clear"
+            :disabled="userLogsLoading"
+            @click="clearLogFilters"
+          >
             <b-icon icon="x-circle"></b-icon> ล้างตัวกรอง
           </button>
         </div>
 
         <div v-if="logDatePreset === 'custom'" class="log-date-range">
-          <input v-model="logFilters.startDate" type="date" class="log-filter-date" @change="applyLogFilters" />
+          <input
+            v-model="logFilters.startDate"
+            type="date"
+            class="log-filter-date"
+            :disabled="userLogsLoading"
+            @change="applyLogFilters"
+          />
           <span class="log-filter-sep">ถึง</span>
-          <input v-model="logFilters.endDate" type="date" class="log-filter-date" @change="applyLogFilters" />
+          <input
+            v-model="logFilters.endDate"
+            type="date"
+            class="log-filter-date"
+            :disabled="userLogsLoading"
+            @change="applyLogFilters"
+          />
         </div>
         <div v-else-if="logFilters.startDate && logFilters.endDate" class="log-date-hint">
           {{ formatExpiry(logFilters.startDate) }} — {{ formatExpiry(logFilters.endDate) }}
@@ -180,17 +215,31 @@
         </div>
         <template v-else>
           <div class="user-log-list">
-            <div v-for="log in userLogs" :key="log._id" class="user-log-item">
+            <div
+              v-for="log in userLogs"
+              :key="log._id"
+              class="user-log-item"
+              :class="{ expanded: expandedLogId === log._id }"
+              @click="toggleLogDetails(log)"
+            >
               <span class="user-log-dot" :class="log.success ? 'is-ok' : 'is-fail'"></span>
               <div class="user-log-main">
                 <div class="user-log-top">
-                  <span class="user-log-action">{{ actionLabel(log.action) }}</span>
-                  <span class="user-log-method" :class="'method-' + (log.method || '').toLowerCase()">{{ log.method }}</span>
-                  <span class="user-log-status" :class="log.success ? 'is-ok' : 'is-fail'">{{ log.statusCode }}</span>
+                  <div class="user-log-title">
+                    <span class="user-log-action">{{ actionLabel(log.action) }}</span>
+                    <span class="user-log-method" :class="'method-' + (log.method || '').toLowerCase()">{{ log.method }}</span>
+                  </div>
                   <span class="user-log-time">{{ log.createdAtThai || log.createdAt }}</span>
                 </div>
-                <div class="user-log-endpoint">{{ log.endpoint }}</div>
+                <div class="user-log-bottom">
+                  <div class="user-log-endpoint">{{ log.endpoint }}</div>
+                  <span class="user-log-status" :class="log.success ? 'is-ok' : 'is-fail'">{{ log.statusCode }}</span>
+                </div>
                 <div v-if="log.errorMessage" class="user-log-error">{{ log.errorMessage }}</div>
+
+                <div v-if="expandedLogId === log._id" @click.stop>
+                  <LogDetailPanel :log="log" :show-user="false" />
+                </div>
               </div>
             </div>
           </div>
@@ -206,7 +255,7 @@
               :per-page="userLogsPagination.limit"
             align="center"
             class="my-2"
-            @input="fetchUserLogs"
+            @input="onUserLogsPageChange"
           />
         </div>
       </template>
@@ -219,6 +268,7 @@
 
 <script>
 import EditUserModal from './users/EditUserModal.vue';
+import LogDetailPanel from "./LogDetailPanel.vue";
 import VueElementLoading from "vue-element-loading";
 import Swal from 'sweetalert2';
 // Same palette as AvatarStack, assigned by row position so colors stay
@@ -237,7 +287,7 @@ const AVATAR_COLORS = [
 
 export default {
   name: "UserMain",
-  components: { EditUserModal, VueElementLoading },
+  components: { EditUserModal, VueElementLoading, LogDetailPanel },
   props: {
     users: { type: Array, default: () => [] },
     query: { type: String, default: "" },
@@ -257,11 +307,26 @@ export default {
         { key: "joined", label: "เข้าร่วมเมื่อ" },
       ],
       currentPage: this.pagination ? this.pagination.page : 1,
+      // b-pagination can emit 'input' twice for a single click (both
+      // before either fetch resolves), so comparing against the
+      // pagination *prop* alone isn't enough. Track the page we already
+      // acted on ourselves instead.
+      requestedPage: null,
       logModalOpen: false,
       logModalUser: null,
       userLogs: [],
       userLogsLoading: false,
+      // getLogs shares a single "latest wins" cancellation token in the
+      // store across every consumer (this modal AND ProjectDetail.vue's
+      // own audit-log tab). If two calls overlap, the store can resolve
+      // an older one to `undefined` after a newer one already landed —
+      // this counter lets fetchUserLogs recognize and ignore its own
+      // stale responses instead of letting them blank out fresh results.
+      userLogsRequestSeq: 0,
       userLogsPage: 1,
+      // Same synchronous-duplicate-emit guard as requestedPage above, but
+      // scoped to the log modal's own pagination.
+      userLogsRequestedPage: null,
       userLogsPagination: {
         page: 1,
         limit: 10,
@@ -279,6 +344,7 @@ export default {
         { months: 6, key: "6", label: "6 เดือน" },
         { months: 12, key: "12", label: "12 เดือน" },
       ],
+      expandedLogId: null,
     };
   },
   computed: {
@@ -308,15 +374,22 @@ export default {
       if (newPage && newPage !== this.currentPage) {
         this.currentPage = newPage;
       }
+      this.requestedPage = null;
     },
     "userLogsPagination.page"(newPage) {
       if (newPage && newPage !== this.userLogsPage) {
         this.userLogsPage = newPage;
       }
+      this.userLogsRequestedPage = null;
     },
   },
   methods: {
     onPageChange(page) {
+      // Guards against b-pagination emitting 'input' more than once for
+      // the same click — only the first emission for a given page value
+      // actually triggers a fetch.
+      if (page === this.requestedPage) return;
+      this.requestedPage = page;
       this.$emit("change-page", page);
     },
     avatarColor(i) {
@@ -325,6 +398,25 @@ export default {
     displayName(u) {
       const full = `${u.name || ""} ${u.lastname || ""}`.trim();
       return full || u.username || "-";
+    },
+    // accountStatus comes straight from the API as "active" / "inactive" /
+    // "deleted" — map it to a Thai label and a status-pill color here
+    // rather than relying on a pre-formatted string from the store.
+    statusLabel(accountStatus) {
+      const labels = {
+        active: "ใช้งานอยู่",
+        inactive: "ระงับการใช้งาน",
+        deleted: "ถูกลบ",
+      };
+      return labels[accountStatus] || "ไม่ทราบสถานะ";
+    },
+    statusClass(accountStatus) {
+      const classes = {
+        active: "status-active",
+        inactive: "status-inactive",
+        deleted: "status-deleted",
+      };
+      return classes[accountStatus] || "status-inactive";
     },
     formatExpiry(iso) {
       const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -367,10 +459,15 @@ export default {
       const words = action.toLowerCase().split("_");
       return words.map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(" ");
     },
+    toggleLogDetails(log) {
+      this.expandedLogId = this.expandedLogId === log._id ? null : log._id;
+    },
     openLogModal(user) {
       this.logModalUser = user;
       this.logModalOpen = true;
       this.userLogs = [];
+      this.expandedLogId = null;
+      this.userLogsRequestedPage = null;
       this.logFilters = { search: "", method: "", startDate: "", endDate: "" };
       this.setLogDateRangeOnly(1, "1"); // default to the last 1 month
       this.fetchUserLogs(1);
@@ -380,6 +477,7 @@ export default {
       // doesn't briefly flash the previous user's logs.
       this.logModalUser = null;
       this.userLogs = [];
+      this.expandedLogId = null;
       this.userLogsPagination = {
         page: 1,
         limit: 10,
@@ -389,11 +487,21 @@ export default {
         hasPreviousPage: false,
       };
     },
+    onUserLogsPageChange(page) {
+      // Guards against b-pagination emitting 'input' more than once for
+      // the same click — only the first emission for a given page value
+      // actually triggers a fetch.
+      if (page === this.userLogsRequestedPage) return;
+      this.userLogsRequestedPage = page;
+      this.fetchUserLogs(page);
+    },
     async fetchUserLogs(page) {
       if (!this.logModalUser) return;
       const targetUserId = this.logModalUser._id;
+      const requestId = ++this.userLogsRequestSeq;
       const f = this.logFilters;
       this.userLogsLoading = true;
+      this.expandedLogId = null;
       try {
         const result = await this.$store.dispatch("getLogs", {
           user_id: targetUserId,
@@ -405,6 +513,13 @@ export default {
           start_date: f.startDate ? `${f.startDate}T00:00:00` : "",
           end_date: f.endDate ? `${f.endDate}T23:59:59` : "",
         });
+        // A newer fetchUserLogs call has since been issued — either from
+        // this component (fast clicks on presets/pagination) or from
+        // anywhere else sharing getLogs' cancellation token. This
+        // response is stale (possibly `undefined`, since the store
+        // itself may have discarded it too), so skip it entirely rather
+        // than let it blank out results a newer call already populated.
+        if (requestId !== this.userLogsRequestSeq) return;
         // Bail if the modal was closed (or switched to a different user)
         // while this request was still in flight.
         if (!this.logModalUser || this.logModalUser._id !== targetUserId) return;
@@ -424,7 +539,7 @@ export default {
       } catch (err) {
         console.log(err);
       } finally {
-        if (this.logModalUser && this.logModalUser._id === targetUserId) {
+        if (requestId === this.userLogsRequestSeq && this.logModalUser && this.logModalUser._id === targetUserId) {
           this.userLogsLoading = false;
         }
       }
@@ -434,11 +549,13 @@ export default {
       this.logSearchTimer = setTimeout(() => this.applyLogFilters(), 400);
     },
     applyLogFilters() {
+      this.expandedLogId = null;
       this.fetchUserLogs(1);
     },
     clearLogFilters() {
       this.logFilters = { search: "", method: "", startDate: "", endDate: "" };
       this.setLogDateRangeOnly(1, "1");
+      this.expandedLogId = null;
       this.fetchUserLogs(1);
     },
     toISODate(d) {
@@ -490,6 +607,18 @@ export default {
       try {
         const updated = await this.$store.dispatch("updateUserDetails", payload);
         this.$emit("updated", updated);
+        Swal.fire({
+          title: willSuspend ? "ระงับบัญชีแล้ว" : "เปิดใช้งานบัญชีแล้ว",
+          text: willSuspend
+            ? `บัญชีผู้ใช้ "${user.username}" ถูกระงับเรียบร้อย`
+            : `บัญชีผู้ใช้ "${user.username}" เปิดใช้งานเรียบร้อย`,
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          buttonsStyling: false,
+        });
       } catch (err) {
         console.log(err);
         Swal.fire({
@@ -646,6 +775,10 @@ export default {
 .status-inactive {
   background: rgba(107, 114, 128, 0.12);
   color:  #6b7280;
+}
+.status-deleted {
+  background: rgba(192, 57, 43, 0.12);
+  color: #c0392b;
 }
 
 .joined-cell {
@@ -833,8 +966,19 @@ export default {
 .user-log-item {
   display: flex;
   gap: 10px;
-  padding: 10px 0;
+  padding: 10px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
   border-bottom: 1px dashed #eeece3;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.user-log-item:hover {
+  background: #f6f5f0;
+}
+.user-log-item.expanded {
+  background: rgba(18, 129, 137, 0.05);
+  border-bottom-color: transparent;
 }
 .user-log-item:last-child {
   border-bottom: none;
@@ -858,9 +1002,24 @@ export default {
 }
 .user-log-top {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.user-log-title {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
+}
+.user-log-bottom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
 }
 .user-log-action {
   font-size: 13.5px;
@@ -895,6 +1054,8 @@ export default {
 .user-log-status {
   font-size: 11.5px;
   font-weight: 600;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .user-log-status.is-ok {
   color: #128189;
@@ -905,11 +1066,11 @@ export default {
 .user-log-endpoint {
   font-size: 12px;
   color: #9aa0ac;
-  margin-top: 2px;
   overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 .user-log-time {
-  margin-left: auto;
   flex-shrink: 0;
   font-size: 12px;
   color: #9aa0ac;
@@ -919,9 +1080,12 @@ export default {
   color: #c0392b;
   margin-top: 4px;
 }
+
+
 .user-log-list {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
 }
 
 .log-modal-title {
@@ -931,6 +1095,38 @@ export default {
   font-size: 16px;
   font-weight: 700;
   color: #1c1e24;
+}
+
+::v-deep .log-history-dialog {
+  height: 100vh;
+  max-width: 900px;
+}
+::v-deep .log-history-content {
+  height: 100%;
+  max-height: 100%;
+}
+::v-deep .log-history-content .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-search input:disabled,
+.log-filter-select:disabled,
+.log-filter-date:disabled,
+.log-preset-btn:disabled,
+.log-filter-clear:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.log-preset-btn:disabled:hover {
+  border-color: #e4e1d8;
+  color: #1c1e24;
+}
+.log-preset-btn.active:disabled:hover {
+  border-color: #128189;
+  color: #ffffff;
 }
 
 .log-modal-filters {
@@ -1022,7 +1218,8 @@ export default {
   color: #9aa0ac;
 }
 .log-modal-body {
-  min-height: 480px;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -1049,6 +1246,12 @@ export default {
 
 /* ---- Card layout on small screens ---- */
 @media (max-width: 769px) {
+  .log-modal-pagination {
+    display: block;
+    text-align: center;
+    border-top: none;
+    padding-top: 0;
+  }
   .users-card {
     background: transparent;
     border: none;
@@ -1123,12 +1326,6 @@ export default {
     flex-shrink: 0;
   }
 
-  /* .company-cell's max-width:160px is meant to truncate the project
-     name text on desktop, but on mobile this <td> IS the flex row
-     (label + value together, via td[data-label] above). That cap was
-     squeezing the whole row into a 160px box instead of letting it
-     span the full card width, which is why the value never reached
-     the right edge like every other row. */
   .company-cell {
     max-width: none;
     text-align: right;

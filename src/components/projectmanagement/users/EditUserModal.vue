@@ -228,6 +228,8 @@
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 function toISODate(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -452,9 +454,24 @@ export default {
         const user = await this.$store.dispatch("updateUserDetails", payload);
         this.$emit("updated", user);
         this.closeModal();
+        Swal.fire({
+          title: "บันทึกแล้ว!",
+          text: "ข้อมูลของคุณถูกบันทึกเรียบร้อย",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          buttonsStyling: false,
+        });
       } catch (err) {
         console.log(err);
         this.error = "บันทึกการแก้ไขไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        Swal.fire({
+          icon: "error",
+          title: "บันทึกการแก้ไขไม่สำเร็จ",
+          text: err.response?.data?.message || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง",
+        });
       } finally {
         this.submitting = false;
       }

@@ -249,10 +249,83 @@
         </b-row>
       </div>
     </vue-modaltor>
+
+    <!-- Shown once, right after a role=service user is created — the API
+         only returns the token this one time, so the admin must copy it
+         here before closing. Dismissal via ESC/overlay-click is ignored
+         (see onTokenModalHide); the only way out is the "ปิดหน้าต่าง"
+         button, which stays disabled until the token has been copied. -->
+    <vue-modaltor
+      :visible="tokenModalOpen"
+      @hide="onTokenModalHide"
+      :animation-panel="'modal-slide-top'"
+      :resize-width="{ 3000: '560px', 1200: '480px', 768: '92vw', 480: '92vw' }"
+      class="create-modal token-modal"
+    >
+      <div class="modal-shell">
+        <div class="modal-topbar pb-3">
+          <div class="modal-title">
+            <b-icon icon="key-fill"></b-icon>
+            Token สำหรับ Service Account
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <div class="token-warning">
+            <b-icon icon="exclamation-triangle-fill"></b-icon>
+            <span>
+              กรุณาคัดลอก Token นี้เก็บไว้ในที่ปลอดภัยก่อนปิดหน้าต่างนี้ ระบบจะ<strong>ไม่แสดง Token นี้อีก</strong>
+              หลังจากปิดหน้าต่างไปแล้ว
+            </span>
+          </div>
+
+          <div class="form-field">
+            <label>Username</label>
+            <div class="token-static-value">{{ serviceTokenData && serviceTokenData.username }}</div>
+          </div>
+
+          <div class="form-field">
+            <label>Token</label>
+            <div class="token-copy-row">
+              <textarea
+                readonly
+                class="form-input token-textarea"
+                :value="serviceTokenData && serviceTokenData.token"
+                @focus="$event.target.select()"
+              ></textarea>
+              <button type="button" class="token-copy-btn" :class="{ copied: tokenCopied }" @click="copyServiceToken">
+                <b-icon :icon="tokenCopied ? 'check2' : 'clipboard'"></b-icon>
+                {{ tokenCopied ? "คัดลอกแล้ว" : "คัดลอก" }}
+              </button>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>วันหมดอายุ Token</label>
+            <div class="token-static-value">
+              {{ serviceTokenData && serviceTokenData.neverExpire ? "ไม่มีกำหนด" : (serviceTokenData && serviceTokenData.expiresAtThai) || "-" }}
+            </div>
+          </div>
+        </div>
+
+        <b-row class="justify-content-end mx-3">
+          <button
+            class="btn-submit mx-3"
+            :disabled="!tokenCopied"
+            :title="!tokenCopied ? 'กรุณาคัดลอก Token ก่อนปิดหน้าต่าง' : ''"
+            @click="closeTokenModal"
+          >
+            ปิดหน้าต่าง
+          </button>
+        </b-row>
+      </div>
+    </vue-modaltor>
   </span>
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 function toISODate(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -290,6 +363,16 @@ export default {
       projectSearch: "",
       projectSearchTimer: null,
       form: emptyForm(),
+      // Service-account token popup — shown once right after a role=service
+      // user is created (see submit()).
+      tokenModalOpen: false,
+      tokenCopied: false,
+      serviceTokenData: null, // { token, username, neverExpire, expiresAtThai }
+      // Holds the created user between openTokenModal() and closeTokenModal()
+      // so the "created" event (which the parent uses to refresh the users
+      // table) fires only once the admin has actually copied the token and
+      // closed the popup — not while it's still open behind the overlay.
+      pendingCreatedUser: null,
     };
   },
   computed: {
@@ -417,25 +500,32 @@ export default {
       this.form = emptyForm();
     },
     async submit() {
-      if (!this.form.username || !this.form.name || !this.form.lastname || !this.form.email || !this.form.password && this.form.role !== "service") {
-        this.error = "กรุณากรอก Username, ชื่อ, นามสกุล, อีเมล และรหัสผ่านให้ครบ";
+      const isService = this.form.role === "service";
+      if (!this.form.username || (!isService && (!this.form.name || !this.form.lastname || !this.form.email || !this.form.password))) {
+        this.error = isService
+          ? "กรุณากรอก Username ให้ครบ"
+          : "กรุณากรอก Username, ชื่อ, นามสกุล, อีเมล และรหัสผ่านให้ครบ";
         return;
       }
-      if (this.form.password.length < 8) {
+      if (!isService && this.form.password.length < 8) {
         this.error = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
         return;
       }
 
       const payload = {
         username: this.form.username,
-        name: this.form.name,
-        lastname: this.form.lastname,
-        company: this.form.company,
-        email: this.form.email,
-        password: this.form.password,
         role: this.form.role,
         project_id: this.form.project_id || null,
       };
+      // service accounts don't have a person behind them, so skip the
+      // name/contact/login fields entirely instead of sending blanks.
+      if (!isService) {
+        payload.name = this.form.name;
+        payload.lastname = this.form.lastname;
+        payload.company = this.form.company;
+        payload.email = this.form.email;
+        payload.password = this.form.password;
+      }
 
       if (this.form.neverExpire) {
         payload.neverExpire = true;
@@ -448,15 +538,102 @@ export default {
       this.error = "";
       this.submitting = true;
       try {
-        const user = await this.$store.dispatch("createUser", payload);
-        this.$emit("created", user);
+        const result = await this.$store.dispatch("createUser", payload);
+        // project.js's createUser action resolves with { user, serviceAccount }
+        // — serviceAccount (and its one-time token) is only present when
+        // role === "service".
+        const createdUser = result && result.user ? result.user : result;
+        const serviceAccount = result && result.serviceAccount ? result.serviceAccount : null;
+
         this.closeModal();
+
+        if (isService && serviceAccount && serviceAccount.token) {
+          // Don't emit "created" yet — the parent's refresh would happen
+          // while the token popup is still open behind the overlay, easy
+          // to miss. Emit it from closeTokenModal() instead, once the
+          // admin has copied the token and actually closed the popup.
+          this.openTokenModal(serviceAccount, createdUser);
+        } else {
+          this.$emit("created", createdUser);
+          Swal.fire({
+            title: "บันทึกแล้ว!",
+            text: "ข้อมูลของคุณถูกบันทึกเรียบร้อย",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 3000,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            buttonsStyling: false,
+          });
+        }
       } catch (err) {
         console.log(err);
         this.error = "สร้างผู้ใช้ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        Swal.fire({
+          icon: "error",
+          title: "สร้างผู้ใช้ไม่สำเร็จ",
+          text: err.response?.data?.message || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง",
+        });
       } finally {
         this.submitting = false;
       }
+    },
+    openTokenModal(serviceAccount, user) {
+      this.tokenCopied = false;
+      this.pendingCreatedUser = user;
+      this.serviceTokenData = {
+        token: serviceAccount.token,
+        username: (user && user.username) || this.form.username,
+        neverExpire: !!serviceAccount.neverExpire,
+        expiresAtThai: serviceAccount.expiresAtThai || "",
+      };
+      this.tokenModalOpen = true;
+    },
+    onTokenModalHide() {
+      // Deliberately ignore ESC / overlay-click dismissal — the token is
+      // shown only this one time, so closing is only allowed through the
+      // explicit "ปิดหน้าต่าง" button, which itself stays disabled until
+      // the token has been copied.
+    },
+    async copyServiceToken() {
+      const token = this.serviceTokenData && this.serviceTokenData.token;
+      if (!token) return;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(token);
+        } else {
+          // Fallback for non-secure contexts / older browsers where the
+          // Clipboard API isn't available.
+          const textarea = document.createElement("textarea");
+          textarea.value = token;
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
+        this.tokenCopied = true;
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          icon: "error",
+          title: "คัดลอกไม่สำเร็จ",
+          text: "กรุณาคัดลอก Token ด้วยตนเอง",
+        });
+      }
+    },
+    closeTokenModal() {
+      if (!this.tokenCopied) return;
+      this.tokenModalOpen = false;
+      this.serviceTokenData = null;
+      this.tokenCopied = false;
+      const createdUser = this.pendingCreatedUser;
+      this.pendingCreatedUser = null;
+      // Table refresh (see ProjectManagement.vue's @created listener)
+      // happens now, right as the popup actually closes.
+      this.$emit("created", createdUser);
     },
   },
 };
@@ -796,6 +973,75 @@ export default {
 .btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.token-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff4e5;
+  border: 1px solid #f0c780;
+  color: #7a4a00;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.token-warning .b-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #e0a458;
+}
+
+.token-static-value {
+  padding: 8px 12px;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  background: #f6f5f0;
+  font-size: 14px;
+  color: #1c1e24;
+  word-break: break-word;
+}
+
+.token-copy-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.token-textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  height: 80px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.4;
+  word-break: break-all;
+  background: #f6f5f0;
+}
+.token-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  background: #128189;
+  border: 1px solid #128189;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.token-copy-btn:hover {
+  background: #0e6971;
+}
+.token-copy-btn.copied {
+  background: #6fbf73;
+  border-color: #6fbf73;
 }
 
 @media (max-width: 480px) {

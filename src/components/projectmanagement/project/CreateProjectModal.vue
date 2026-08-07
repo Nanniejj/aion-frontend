@@ -40,7 +40,7 @@
             <label class="switch-row">
               <input type="checkbox" v-model="isActiveStatus" class="switch-input" />
               <span class="switch-track"><span class="switch-thumb"></span></span>
-              <span class="switch-text">เปิดใช้งาน Mion</span>
+              <span class="switch-text">เปิดใช้งาน Project</span>
             </label>
           </div>
 
@@ -190,6 +190,8 @@
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 export default {
   name: "CreateProjectModal",
   data() {
@@ -352,9 +354,24 @@ export default {
         await this.$store.dispatch("fetchProjects", { page: 1 });
         this.$emit("created", project);
         this.closeModal();
+        Swal.fire({
+          title: "บันทึกแล้ว!",
+          text: "ข้อมูลของคุณถูกบันทึกเรียบร้อย",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          buttonsStyling: false,
+        });
       } catch (err) {
         console.log(err);
         this.error = "สร้างโปรเจกต์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        Swal.fire({
+          icon: "error",
+          title: "สร้างโปรเจกต์ไม่สำเร็จ",
+          text: err.response?.data?.message || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง",
+        });
       } finally {
         this.submitting = false;
       }

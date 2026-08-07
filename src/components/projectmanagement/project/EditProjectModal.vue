@@ -194,6 +194,8 @@
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 export default {
   name: "EditProjectModal",
   data() {
@@ -271,10 +273,21 @@ export default {
       this.form = {
         projectname: project.projectname || "",
         status: project.status === "active" ? "active" : "inactive",
-        // userlist/domainlist on a project are full embedded objects (per
-        // getProjects), not bare ids — pull just the ids out for the form.
-        userIds: (project.userlist || []).map((u) => u._id),
-        domainIds: (project.domainlist || []).map((d) => d._id),
+        // userlist/domainlist on a project are usually full embedded
+        // objects (per getProjects), not bare ids — pull just the ids
+        // out for the form. Guarded against a few shapes seen in
+        // practice: a dangling null entry (deleted reference), an item
+        // that's already a bare id string instead of an object, or an
+        // object missing _id — any of which would otherwise end up as a
+        // literal `null` in the save payload and get rejected by the API.
+        userIds: (project.userlist || [])
+          .filter(Boolean)
+          .map((u) => (typeof u === "string" ? u : u._id))
+          .filter(Boolean),
+        domainIds: (project.domainlist || [])
+          .filter(Boolean)
+          .map((d) => (typeof d === "string" ? d : d._id))
+          .filter(Boolean),
       };
       this.error = "";
       this.visible = true;
@@ -363,9 +376,24 @@ export default {
         await this.$store.dispatch("fetchProjects", { page: 1 });
         this.$emit("updated", project);
         this.closeModal();
+        Swal.fire({
+          title: "บันทึกแล้ว!",
+          text: "ข้อมูลของคุณถูกบันทึกเรียบร้อย",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          buttonsStyling: false,
+        });
       } catch (err) {
         console.log(err);
         this.error = "บันทึกการแก้ไขไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        Swal.fire({
+          icon: "error",
+          title: "บันทึกการแก้ไขไม่สำเร็จ",
+          text: err.response?.data?.message || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง",
+        });
       } finally {
         this.submitting = false;
       }

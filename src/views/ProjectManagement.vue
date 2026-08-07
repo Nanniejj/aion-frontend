@@ -9,25 +9,7 @@
           <h1 class="page-title">Projects & Users Management</h1>
         </div>
 
-        <div class="d-flex align-items-center flex-wrap header-actions">
-          <b-input-group size="lg" class="search-box">
-            <b-form-input
-              id="filter-input"
-              v-model="query"
-              type="text"
-              name="project-search-query"
-              autocomplete="off"
-              :readonly="searchLocked"
-              @focus="searchLocked = false"
-              placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."
-            ></b-form-input>
-            <b-input-group-append v-if="query">
-              <button type="button" class="search-clear-btn" @click="query = ''" aria-label="ล้างคำค้นหา">
-                <b-icon icon="x"></b-icon>
-              </button>
-            </b-input-group-append>
-          </b-input-group>
-        </div>
+        
       </div>
 
       <!-- ===== Tabs + create buttons (right-aligned) ===== -->
@@ -46,6 +28,46 @@
         </div>
 
         <div class="d-flex align-items-center flex-wrap tab-actions">
+          <div class="d-flex align-items-center flex-wrap header-actions">
+          <b-input-group size="lg" class="search-box">
+            <b-form-input
+              id="filter-input"
+              v-model="query"
+              type="text"
+              name="project-search-query"
+              autocomplete="off"
+              :readonly="searchLocked"
+              :disabled="isFilterLoading"
+              @focus="searchLocked = false"
+              placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."
+            ></b-form-input>
+            <b-input-group-append v-if="query">
+              <button
+                type="button"
+                class="search-clear-btn"
+                :disabled="isFilterLoading"
+                @click="query = ''"
+                aria-label="ล้างคำค้นหา"
+              >
+                <b-icon icon="x"></b-icon>
+              </button>
+            </b-input-group-append>
+          </b-input-group>
+          <select
+            v-if="tab === 'users'"
+            v-model="roleFilter"
+            class="form-control w-auto"
+            :disabled="isFilterLoading"
+            aria-label="กรอง Role"
+          >
+            <option value="">ทุก Role</option>
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+            <option value="service">Service</option>
+          </select>
+          <CreateUserModal v-if="tab === 'users'" @created="onUserCreated" />
+        </div>
           <div v-if="tab === 'projects'" class="view-toggle" role="group" aria-label="สลับรูปแบบการแสดงผล">
             <button
               type="button"
@@ -65,7 +87,7 @@
             </button>
           </div>
           <CreateProjectModal v-if="tab === 'projects'" />
-          <CreateUserModal v-if="tab === 'users'" />
+          
         </div>
       </div>
 
@@ -84,7 +106,7 @@
 
       <UserMain
         v-if="tab === 'users'"
-        :users="users"
+        :users="filteredUsersByRole"
         :query="query"
         :pagination="getUsersPagination"
         :loading="getLoadingUsers"
@@ -121,6 +143,7 @@ export default {
     return {
       tab: "projects", // 'projects' | 'users'
       query: "",
+      roleFilter: "",
       // Starts readonly so Chrome can't autofill it on page load; removed
       // as soon as the user focuses the field (see @focus on the input).
       searchLocked: true,
@@ -138,6 +161,20 @@ export default {
     users() {
       return this.getUsers;
     },
+    // Now that role is sent to the API (see the roleFilter watcher and
+    // fetchUsers calls below), the server should already return only
+    // matching users — this just guards against a backend that doesn't
+    // filter by role yet, or returns extras.
+    filteredUsersByRole() {
+      if (!this.roleFilter) return this.users;
+      return this.users.filter((u) => u.role === this.roleFilter);
+    },
+    // Drives the disabled state of the search box / role filter — whichever
+    // tab is active, its own API loading flag decides whether filters are
+    // locked while a request is in flight.
+    isFilterLoading() {
+      return this.tab === "projects" ? this.getLoadingProjects : this.getLoadingUsers;
+    },
     // filteredProjects() {
     //   const q = this.query.toLowerCase();
     //   return this.projects.filter((p) => p.projectname.toLowerCase().includes(q));
@@ -154,7 +191,7 @@ export default {
     // project_id/page/limit default to the values you specified;
     // pass a payload here (e.g. { project_id, page, limit }) if these
     // should instead come from the route or the selected project.
-    this.fetchUsers({ project_id: "", page: 1, limit: 10 });
+    this.fetchUsersFiltered(1);
   },
   watch: {
     // Debounced server-side search: filteredProjects/filteredUsers give
@@ -166,7 +203,7 @@ export default {
         if (this.tab === "projects") {
           this.searchProjects(val);
         } else {
-          this.searchUsers(val);
+          this.fetchUsersFiltered(1);
         }
       }, 300);
     },
@@ -179,12 +216,19 @@ export default {
       if (val === "projects") {
         this.searchProjects(this.query);
       } else {
-        this.searchUsers(this.query);
+        this.fetchUsersFiltered(1);
       }
+    },
+    // Role is a separate axis from the text search box, but both need to
+    // reach the API together (see fetchUsersFiltered) so neither one
+    // silently drops the other. Always resets back to page 1 — a role
+    // change is a new result set, not a continuation of the current page.
+    roleFilter() {
+      this.fetchUsersFiltered(1);
     },
   },
   methods: {
-    ...mapActions(["fetchProjects", "fetchUsers", "searchProjects", "searchUsers", "updateProject"]),
+    ...mapActions(["fetchProjects", "fetchUsers", "searchProjects", "updateProject"]),
     openProject(project) {
       this.activeProject = project;
       this.view = "detail";
@@ -208,27 +252,66 @@ export default {
         console.log(err);
       }
     },
-    onProjectUpdated() {
-      // fetchProjects already ran inside EditProjectModal's submit(), so
-      // `projects` is already fresh — nothing else to do here. Hook kept
-      // in case you want a toast/notification later.
+    // EditProjectModal emits the updated project object after a
+    // successful save. If the detail view is currently showing that same
+    // project, refresh `activeProject` too — otherwise ProjectDetail.vue
+    // keeps rendering the stale object it was opened with, even though
+    // fetchProjects() already refreshed the underlying list.
+    //
+    // Deliberately don't use the `project` object the event carries
+    // directly — that's the raw updateProject dispatch response, and
+    // (per the network payloads showing null/bare-id entries) its
+    // userlist/domainlist aren't shaped the same way getProjects' does
+    // (fully embedded {_id, name, ...} objects). Pulling the matching
+    // entry from `this.projects` instead — already refreshed by
+    // fetchProjects() inside the modal's own submit() — keeps
+    // ProjectDetail.vue and a subsequent re-open of EditProjectModal
+    // seeing the same consistent shape they always do.
+    onProjectUpdated(project) {
+      if (!project || !this.activeProject || project._id !== this.activeProject._id) return;
+      const refreshed = this.projects.find((p) => p._id === project._id);
+      this.activeProject = refreshed || project;
     },
     onUserUpdated() {
-      this.fetchUsers({ project_id: "", page: 1, limit: 10 });
+      this.fetchUsersFiltered(1);
+    },
+    // CreateUserModal already does an optimistic store commit (addUser) on
+    // success, but that doesn't refresh pagination totals or fields the
+    // create response doesn't fully echo back (e.g. project name) — so
+    // re-fetch from the server here too, same as after an edit. Fired
+    // right after a normal create, or once the service-account token
+    // popup is closed (see CreateUserModal's closeTokenModal).
+    onUserCreated() {
+      this.fetchUsersFiltered(1);
     },
     closeProject() {
       this.view = "list";
       this.activeProject = null;
     },
-    onUsersPageChange(page) {
+    // Single place that composes the users-tab filters (text search, role,
+    // page/limit) and calls the API — used by the query/tab/role watchers,
+    // pagination, and the post-edit refresh, so all of them agree on what
+    // "current filters" means and role never gets silently dropped.
+    fetchUsersFiltered(page) {
       this.fetchUsers({
-        page,
-        limit: this.getUsersPagination.limit,
-        project_id: this.getUsersPagination.project_id,
-
+        project_id: "",
+        page: page || 1,
+        limit: this.getUsersPagination.limit || 10,
+        search: this.query,
+        role: this.roleFilter,
       });
     },
+    // b-pagination re-emits 'input' with the same page number whenever
+    // its :total-rows/:per-page props change — which happens right after
+    // this handler's own fetch resolves and updates the store (that's
+    // what total-rows is bound to). Without this guard, every page click
+    // fires the fetch a second time for free with identical params.
+    onUsersPageChange(page) {
+      if (page === this.getUsersPagination.page) return;
+      this.fetchUsersFiltered(page);
+    },
     onProjectsPageChange(page) {
+      if (page === this.getProjectsPagination.page) return;
       this.fetchProjects({
         page,
         limit: this.getProjectsPagination.limit,
@@ -274,9 +357,10 @@ export default {
   /* color: #1c1e24; */
 }
 
-/* .search-box {
-  width: 300px;
-} */
+.search-box {
+  width: 280px;
+  flex: 0 0 auto;
+}
 .search-box >>> .input-group-text {
   background: #ffffff;
   border-color: #e4e1d8;
@@ -309,6 +393,37 @@ export default {
 .search-clear-btn:hover {
   background: #f6f5f0;
   color: #1c1e24;
+}
+.search-box >>> .form-control:disabled {
+  background: #f6f5f0;
+  cursor: not-allowed;
+}
+.search-clear-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.search-clear-btn:disabled:hover {
+  background: #ffffff;
+  color: #6b7280;
+}
+
+.role-filter-select {
+  height: 100%;
+  min-height: 46px;
+  flex: 0 0 auto;
+  border: 1px solid #e4e1d8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1c1e24;
+  font-size: 13px;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.role-filter-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
+  border-color: #128189;
 }
 
 .tab-row {

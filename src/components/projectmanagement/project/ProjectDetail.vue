@@ -126,9 +126,7 @@
           <div v-for="(d, idx) in filteredDomains" :key="d.id" class="domain-card">
             <div class="domain-card-top">
               <div class="d-flex align-items-center">
-                <div class="domain-icon" :style="{ background: domainIconBg(idx), color: domainIconColor(idx) }">
-                  <b-icon icon="globe2"></b-icon>
-                </div>
+                
                 <div class="domain-name" :title="d.name">{{ d.name }}</div>
               </div>
               <span class="status-pill" :class="d.display ? 'status-on' : 'status-off'">
@@ -179,10 +177,50 @@
             <option value="PATCH">PATCH</option>
             <option value="DELETE">DELETE</option>
           </select>
-          <select v-model="logFilters.user_id" class="log-filter-select" @change="applyLogFilters">
-            <option value="">ทุกผู้ใช้</option>
-            <option v-for="u in detailUsers" :key="u.id" :value="u.id">{{ u.name }}</option>
-          </select>
+          <div class="log-user-combo" tabindex="-1" @focusout="closeUserFilterMenu">
+            <div class="log-user-combo-shell" @click="focusUserFilterInput">
+              <span v-if="selectedLogUser" class="log-user-combo-chip">
+                <span class="log-user-combo-chip-avatar">{{ selectedLogUser.initial }}</span>
+                {{ selectedLogUser.name || selectedLogUser.username }}
+                <button type="button" class="log-user-combo-chip-remove" @click.stop="clearLogUserFilter" aria-label="ล้างตัวกรองผู้ใช้">×</button>
+              </span>
+              <input
+                v-else
+                ref="userFilterInput"
+                v-model.trim="userFilterSearch"
+                class="log-user-combo-input"
+                placeholder="ทุกผู้ใช้"
+                @focus="userFilterMenuOpen = true"
+                @input="userFilterMenuOpen = true"
+              />
+              <b-icon icon="chevron-down" class="log-user-combo-caret" :class="{ open: userFilterMenuOpen }"></b-icon>
+            </div>
+
+            <div v-if="userFilterMenuOpen" class="log-user-combo-dropdown" @mousedown.prevent>
+              <div v-if="loadingSystemUsers" class="log-user-pick-empty">กำลังโหลด...</div>
+              <template v-else>
+                <div class="log-user-pick-row" :class="{ checked: !logFilters.user_id }" @click="selectLogUser('')">
+                  <span class="log-user-pick-text">ทุกผู้ใช้</span>
+                </div>
+                <div
+                  v-for="u in filteredLogUsers"
+                  :key="u.id"
+                  class="log-user-pick-row"
+                  :class="{ checked: logFilters.user_id === u.id }"
+                  @click="selectLogUser(u.id)"
+                >
+                  <span class="log-user-pick-avatar">{{ u.initial }}</span>
+                  <span class="log-user-pick-text">
+                    <span class="log-user-pick-name">{{ u.name || u.username }}</span>
+                    <span class="log-user-pick-role">{{ u.role }}</span>
+                  </span>
+                </div>
+                <div v-if="filteredLogUsers.length === 0" class="log-user-pick-empty">
+                  ไม่พบผู้ใช้ที่ตรงกับ "{{ userFilterSearch }}"
+                </div>
+              </template>
+            </div>
+          </div>
 
           <!-- <span class="log-filter-divider"></span> -->
 
@@ -264,158 +302,11 @@
 
             <!-- Bootstrap-vue's built-in row-details: clicking a row (via
                  @row-clicked below) toggles this expanded panel inline,
-                 instead of a separate modal. -->
+                 instead of a separate modal. Rendered by the shared
+                 LogDetailPanel component so this table and UserMain.vue's
+                 per-user log list stay in sync. -->
             <template #row-details="{ item }">
-              <div class="log-detail-panel">
-                <div v-if="item.user" class="log-detail-user">
-                  <AvatarStack :users="[logAvatarUser(item)]" large />
-                  <div class="log-detail-user-info">
-                    <div class="log-detail-user-name">{{ logUserName(item) }}</div>
-                    <div class="log-detail-user-meta">
-                      <span v-if="item.user.username" class="mono">@{{ item.user.username }}</span>
-                      <span v-if="item.user.email"> {{ item.user.email }}</span>
-                    </div>
-                  </div>
-                  <span v-if="item.user.role" class="log-detail-user-role">{{ item.user.role }}</span>
-                </div>
-
-                <div v-if="item.errorMessage" class="log-detail-error">
-                  <b-icon icon="exclamation-triangle-fill"></b-icon> {{ item.errorMessage }}
-                </div>
-
-                <div class="log-detail-meta">
-                  <div class="log-detail-field">
-                    <b-icon icon="link-45deg" class="log-detail-icon"></b-icon>
-                    <div>
-                      <span class="log-detail-label">Endpoint</span>
-                      <span class="log-detail-value mono">{{ item.endpoint || "-" }}</span>
-                    </div>
-                  </div>
-                  <div class="log-detail-field">
-                    <b-icon icon="stopwatch" class="log-detail-icon"></b-icon>
-                    <div>
-                      <span class="log-detail-label">ระยะเวลา</span>
-                      <span class="log-detail-value">{{ item.durationMs != null ? item.durationMs + " ms" : "-" }}</span>
-                    </div>
-                  </div>
-                  <div class="log-detail-field">
-                    <b-icon icon="bullseye" class="log-detail-icon"></b-icon>
-                    <div>
-                      <span class="log-detail-label">Target</span>
-                      <span class="log-detail-value">{{ item.targetType || "-" }}<span v-if="item.targetId"
-                          class="mono"> · {{ item.targetId }}</span></span>
-                    </div>
-                  </div>
-                  <div class="log-detail-field">
-                    <b-icon icon="geo-alt" class="log-detail-icon"></b-icon>
-                    <div>
-                      <span class="log-detail-label">IP Address</span>
-                      <span class="log-detail-value mono">{{ item.ipAddress || "-" }}</span>
-                    </div>
-                  </div>
-                  <div class="log-detail-field log-detail-field-full">
-                    <b-icon icon="laptop" class="log-detail-icon"></b-icon>
-                    <div>
-                      <span class="log-detail-label">User Agent</span>
-                      <span class="log-detail-value mono">{{ item.userAgent || "-" }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div v-if="item.detail && (item.detail.before || item.detail.after)" class="log-detail-changes">
-                  <div class="log-detail-changes-head">
-                    <b-icon icon="pencil-square"></b-icon> การเปลี่ยนแปลง
-                  </div>
-
-                  <div class="log-diff-row-wrap">
-                    <b-row align-v="stretch">
-                      <b-col v-if="item.detail.before" :md="item.detail.after ? 6 : 12">
-                        <b-card class="log-diff-card is-before" :class="{ 'is-solo': !item.detail.after }" no-body>
-                          <template #header>
-                            <b-icon icon="x-circle-fill"></b-icon>
-                            <span>Before</span>
-                            <span class="log-diff-card-sub">ข้อมูลก่อนแก้ไข</span>
-                          </template>
-                          <b-card-body>
-                            <div
-                              v-for="(val, key) in item.detail.before"
-                              :key="key"
-                              class="log-diff-kv"
-                              :class="{
-                                'is-changed': !Array.isArray(val) && isChangedField(key, item.detail.before, item.detail.after),
-                                'is-list': Array.isArray(val),
-                              }"
-                            >
-                              <span class="log-diff-kv-key">{{ key }}</span>
-                              <div v-if="Array.isArray(val)" class="log-diff-kv-list">
-                                <span v-if="val.length === 0" class="log-diff-kv-val">ว่างเปล่า</span>
-                                <span
-                                  v-for="(v, i) in val"
-                                  :key="i"
-                                  class="log-diff-kv-item"
-                                  :class="{ 'is-removed': notIn(item.detail.after && item.detail.after[key], v) }"
-                                  >{{ v }}</span
-                                >
-                              </div>
-                              <span v-else class="log-diff-kv-val">{{ formatDiffValue(val) }}</span>
-                            </div>
-                          </b-card-body>
-                        </b-card>
-                      </b-col>
-
-                      <!-- Connecting line between the two cards: absolutely
-                           positioned overlay on desktop (contributes no
-                           width to the flex row), normal-flow block on
-                           mobile so it naturally falls between the two
-                           stacked cards in source order. -->
-                      <div v-if="item.detail.before && item.detail.after" class="log-diff-connector d-none d-md-flex">
-                        <span class="log-diff-connector-line log-diff-connector-line-top"></span>
-                        <span class="log-diff-connector-icon"><b-icon icon="arrow-right" font-scale="0.85"></b-icon></span>
-                        <span class="log-diff-connector-line log-diff-connector-line-bottom"></span>
-                      </div>
-                      <div v-if="item.detail.before && item.detail.after" class="log-diff-connector-mobile d-flex d-md-none">
-                        <span class="log-diff-connector-line-h"></span>
-                        <span class="log-diff-connector-icon"><b-icon icon="arrow-down" font-scale="0.85"></b-icon></span>
-                        <span class="log-diff-connector-line-h"></span>
-                      </div>
-
-                      <b-col v-if="item.detail.after" :md="item.detail.before ? 6 : 12">
-                        <b-card class="log-diff-card is-after" :class="{ 'is-solo': !item.detail.before }" no-body>
-                          <template #header>
-                            <b-icon icon="check-circle-fill"></b-icon>
-                            <span>After</span>
-                            <span class="log-diff-card-sub">ข้อมูลหลังแก้ไข</span>
-                          </template>
-                          <b-card-body>
-                            <div
-                              v-for="(val, key) in item.detail.after"
-                              :key="key"
-                              class="log-diff-kv"
-                              :class="{
-                                'is-changed': !Array.isArray(val) && isChangedField(key, item.detail.before, item.detail.after),
-                                'is-list': Array.isArray(val),
-                              }"
-                            >
-                              <span class="log-diff-kv-key">{{ key }}</span>
-                              <div v-if="Array.isArray(val)" class="log-diff-kv-list">
-                                <span v-if="val.length === 0" class="log-diff-kv-val">ว่างเปล่า</span>
-                                <span
-                                  v-for="(v, i) in val"
-                                  :key="i"
-                                  class="log-diff-kv-item"
-                                  :class="{ 'is-added': notIn(item.detail.before && item.detail.before[key], v) }"
-                                  >{{ v }}</span
-                                >
-                              </div>
-                              <span v-else class="log-diff-kv-val">{{ formatDiffValue(val) }}</span>
-                            </div>
-                          </b-card-body>
-                        </b-card>
-                      </b-col>
-                    </b-row>
-                  </div>
-                </div>
-              </div>
+              <LogDetailPanel :log="item" />
             </template>
           </b-table>
 
@@ -441,10 +332,11 @@
 
 <script>
 import AvatarStack from "../AvatarStack.vue";
+import LogDetailPanel from "../LogDetailPanel.vue";
 
 export default {
   name: "ProjectDetail",
-  components: { AvatarStack },
+  components: { AvatarStack, LogDetailPanel },
   props: {
     project: { type: Object, required: true },
   },
@@ -460,6 +352,8 @@ export default {
         startDate: "",
         endDate: "",
       },
+      userFilterSearch: "",
+      userFilterMenuOpen: false,
       logDatePreset: "",
       logSearchTimer: null,
       localStatus: this.project.status,
@@ -476,12 +370,28 @@ export default {
     tab(newTab) {
       // Lazy-load: only hit the API once we actually switch into the
       // logs tab, and reload fresh each time it's opened.
-      if (newTab === "logs") this.fetchLogs(1);
+      if (newTab === "logs") {
+        this.fetchLogs(1);
+        // Same isolated user-picker endpoint CreateProjectModal uses —
+        // gives the filter the full system user list, not just the
+        // users already attached to this project.
+        this.$store.dispatch("fetchUserPickerList");
+      }
     },
     "project._id"() {
       // Component instance is reused across different projects — resync
       // the local optimistic-toggle state when that happens.
       this.localStatus = this.project.status;
+    },
+    "project.status"(newStatus) {
+      // Covers edits made elsewhere (e.g. EditProjectModal) to the same
+      // project — without this, only switching to a *different* project
+      // (via the watcher above) would ever refresh the toggle. Skip while
+      // toggleProjectStatus() has its own optimistic update in flight so
+      // this doesn't stomp on it before that request resolves.
+      if (!this.statusUpdating && newStatus) {
+        this.localStatus = newStatus;
+      }
     },
     "auditLogsPagination.page"(newPage) {
       if (newPage && newPage !== this.logCurrentPage) {
@@ -492,14 +402,19 @@ export default {
   computed: {
     detailUsers() {
       // userlist items are the full user objects the API embeds directly.
-      return (this.project.userlist || []).map((u) => {
-        const name = [u.name, u.lastname].filter(Boolean).join(" ").trim() || u.username || u.email || "";
-        return {
-          ...u,
-          // name,
-          initial: name ? name.charAt(0).toUpperCase() : "?",
-        };
-      });
+      // Guarded against a dangling null entry (deleted/orphaned
+      // reference) the same way domainItems is below — without this, one
+      // bad entry crashes the whole tab instead of just being skipped.
+      return (this.project.userlist || [])
+        .filter((u) => u && typeof u === "object")
+        .map((u) => {
+          const name = [u.name, u.lastname].filter(Boolean).join(" ").trim() || u.username || u.email || "";
+          return {
+            ...u,
+            // name,
+            initial: name ? name.charAt(0).toUpperCase() : "?",
+          };
+        });
     },
     filteredUsers() {
       const q = this.userQuery.trim().toLowerCase();
@@ -525,6 +440,32 @@ export default {
       const q = this.domainQuery.trim().toLowerCase();
       if (!q) return this.domainItems;
       return this.domainItems.filter((d) => d.name.toLowerCase().includes(q));
+    },
+    selectedLogUser() {
+      if (!this.logFilters.user_id) return null;
+      return this.systemUsers.find((u) => u.id === this.logFilters.user_id) || null;
+    },
+    // Sourced from the store's isolated user picker (not detailUsers,
+    // which is limited to users already attached to this project) — same
+    // endpoint CreateProjectModal uses via fetchUserPickerList.
+    systemUsers() {
+      return (this.$store.getters.getUserPicker.items || []).map((u) => ({
+        ...u,
+        id: u.id || u._id,
+      }));
+    },
+    loadingSystemUsers() {
+      return this.$store.getters.getUserPicker.loading;
+    },
+    filteredLogUsers() {
+      const q = this.userFilterSearch.trim().toLowerCase();
+      if (!q) return this.systemUsers;
+      return this.systemUsers.filter(
+        (u) =>
+          (u.name || u.username || "").toLowerCase().includes(q) ||
+          (u.username || "").toLowerCase().includes(q) ||
+          (u.role || "").toLowerCase().includes(q)
+      );
     },
     createdAtText() {
       return this.formatDate(this.project.createdAt);
@@ -640,8 +581,30 @@ export default {
       this.expandedLogId = null;
       this.fetchLogs(1);
     },
+    // Clicking anywhere in the combobox shell focuses the inner text
+    // input, same as clicking a native <select>/Vuetify combobox opens it.
+    focusUserFilterInput() {
+      this.userFilterMenuOpen = true;
+      this.$nextTick(() => this.$refs.userFilterInput && this.$refs.userFilterInput.focus());
+    },
+    closeUserFilterMenu() {
+      this.userFilterMenuOpen = false;
+    },
+    selectLogUser(id) {
+      this.logFilters.user_id = id;
+      this.userFilterSearch = "";
+      this.userFilterMenuOpen = false;
+      this.applyLogFilters();
+    },
+    clearLogUserFilter() {
+      this.logFilters.user_id = "";
+      this.userFilterSearch = "";
+      this.applyLogFilters();
+    },
     clearLogFilters() {
       this.logFilters = { search: "", method: "", user_id: "", startDate: "", endDate: "" };
+      this.userFilterSearch = "";
+      this.userFilterMenuOpen = false;
       this.setLogDateRangeOnly(1, "1"); // back to the default 1-month range
       this.expandedLogId = null;
       this.fetchLogs(1);
@@ -730,22 +693,6 @@ export default {
       const words = action.toLowerCase().split("_");
       return words.map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(" ");
     },
-    notIn(arr, val) {
-      return !Array.isArray(arr) || !arr.includes(val);
-    },
-    isChangedField(key, before, after) {
-      if (!before || !after) return false;
-      return JSON.stringify(before[key]) !== JSON.stringify(after[key]);
-    },
-    formatDiffValue(val) {
-      if (val === null || val === undefined) return "ไม่มีค่า";
-      if (Array.isArray(val)) {
-        if (val.length === 0) return "ว่างเปล่า";
-        return val.map((v) => (typeof v === "object" ? JSON.stringify(v) : String(v))).join(", ");
-      }
-      if (typeof val === "object") return JSON.stringify(val);
-      return String(val);
-    },
     onLogRowClicked(item) {
       this.expandedLogId = this.expandedLogId === item._id ? null : item._id;
     },
@@ -768,7 +715,7 @@ export default {
   border-radius: 8px;
   background: #fff4de;
   color: #5a3f04;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
   cursor: pointer;
@@ -962,7 +909,7 @@ export default {
 }
 
 .tab-count {
-  font-size: 12px;
+  font-size: 14px;
   color: inherit;
   opacity: 0.75;
 }
@@ -1068,7 +1015,7 @@ export default {
 
 .info-value.mono {
   font-weight: 400;
-  font-size: 12.5px;
+  font-size: 14px;
 }
 
 /* Overview: short preview card linking into the full tab */
@@ -1213,7 +1160,7 @@ export default {
 }
 
 .log-summary-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #6b7280;
 }
 
@@ -1249,8 +1196,185 @@ export default {
 }
 
 .log-filter-sep {
-  font-size: 13px;
+  font-size: 14px;
   color: #9aa0ac;
+}
+
+/* User filter combobox: search input that opens into a checkable list —
+   same visual language as CreateProjectModal's user picker, but a single
+   selection instead of multi-select chips. */
+.log-user-combo {
+  position: relative;
+  outline: none;
+  flex: 1 1 200px;
+  min-width: 170px;
+}
+
+.log-user-combo-shell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  border: 1px solid #e4e1d8;
+  border-radius: 10px;
+  padding: 5px 30px 5px 10px;
+  background: #ffffff;
+  cursor: text;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.log-user-combo:focus-within .log-user-combo-shell {
+  border-color: #128189;
+  box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
+}
+
+.log-user-combo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(18, 129, 137, 0.1);
+  color: #0e5157;
+  border-radius: 999px;
+  padding: 3px 6px 3px 4px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-user-combo-chip-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #128189;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.log-user-combo-chip-remove {
+  background: transparent;
+  border: none;
+  color: #0e5157;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 3px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.log-user-combo-chip-remove:hover {
+  background: rgba(18, 129, 137, 0.2);
+}
+
+.log-user-combo-input {
+  flex: 1 1 auto;
+  min-width: 80px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #1c1e24;
+  padding: 3px 2px;
+}
+
+.log-user-combo-caret {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+.log-user-combo-caret.open {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.log-user-combo-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  width: 100%;
+  min-width: 240px;
+  box-sizing: border-box;
+  max-height: 220px;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(28, 30, 36, 0.12);
+  overflow-y: auto;
+}
+
+.log-user-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #edebe3;
+  text-align: left;
+}
+.log-user-pick-row:last-child {
+  border-bottom: none;
+}
+.log-user-pick-row:hover {
+  background: #f6f5f0;
+}
+.log-user-pick-row.checked {
+  background: rgba(18, 129, 137, 0.06);
+}
+
+.log-user-pick-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f6f5f0;
+  border: 1px solid #e4e1d8;
+  color: #128189;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.log-user-pick-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.log-user-pick-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1c1e24;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  width: 100%;
+}
+.log-user-pick-role {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: left;
+  width: 100%;
+}
+.log-user-pick-empty {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
 }
 
 .log-filter-clear {
@@ -1260,7 +1384,7 @@ export default {
   border: none;
   background: transparent;
   color: #c0392b;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   padding: 6px 4px;
 }
@@ -1304,7 +1428,7 @@ export default {
   border-radius: 999px;
   background: #ffffff;
   padding: 6px 14px;
-  font-size: 13px;
+  font-size: 14px;
   color: #1c1e24;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
@@ -1328,7 +1452,7 @@ export default {
 }
 
 .log-date-hint {
-  font-size: 13px;
+  font-size: 14px;
   color: #6b7280;
 }
 
@@ -1341,7 +1465,7 @@ export default {
 
 .log-table thead th {
   text-align: left;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
@@ -1379,52 +1503,9 @@ export default {
 
 .log-table td.mono,
 .log-table .mono {
-  font-size: 12.5px;
+  font-size: 14px;
   color: #6b7280;
   /* white-space: nowrap; */
-}
-
-.log-detail-panel {
-  padding: 16px 20px;
-  background: #fafaf8;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  text-align: left;
-}
-
-.log-detail-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #e4e1d8;
-}
-.log-detail-user-info {
-  min-width: 0;
-}
-.log-detail-user-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1c1e24;
-}
-.log-detail-user-meta {
-  font-size: 12.5px;
-  color: #6b7280;
-  overflow-wrap: anywhere;
-}
-.log-detail-user-role {
-  margin-left: auto;
-  flex-shrink: 0;
-  align-self: flex-start;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: #128189;
-  background: rgba(18, 129, 137, 0.1);
-  border-radius: 999px;
-  padding: 4px 10px;
 }
 
 .log-user-cell {
@@ -1452,7 +1533,7 @@ export default {
 }
 
 .log-error {
-  font-size: 12px;
+  font-size: 14px;
   color: #c0392b;
 }
 
@@ -1462,7 +1543,7 @@ export default {
   gap: 5px;
   border-radius: 999px;
   padding: 3px 10px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1484,7 +1565,7 @@ export default {
 }
 
 .log-method {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 5px;
@@ -1528,9 +1609,6 @@ export default {
     margin-right: 3px;
     font-size: 14px;
   }
-  .log-detail-user-meta {
-    overflow-wrap: unset;
-  }
   .log-table.b-table-stacked-md {
     border: none;
     background: transparent;
@@ -1573,7 +1651,7 @@ export default {
   }
   .log-table.b-table-stacked-md td::before {
     content: attr(data-label);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     color: #9aa0ac;
     flex-shrink: 0;
@@ -1630,7 +1708,7 @@ export default {
   border: 1px solid #e4e1d8;
   border-radius: 16px;
   background: #ffffff;
-  padding: 16px;
+  padding: 15px;
   box-shadow: 0 1px 2px rgba(28, 30, 36, 0.04), 0 1px 1px rgba(28, 30, 36, 0.03);
   transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, border-color 0.18s ease;
 }
@@ -1665,8 +1743,8 @@ export default {
   gap: 5px;
   border-radius: 999px;
   padding: 3px 9px 3px 7px;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  /* font-weight: 600; */
   white-space: nowrap;
 }
 .status-dot {
@@ -1692,7 +1770,7 @@ export default {
 }
 
 .domain-name {
-  font-size: 14.5px;
+  font-size: 16px;
   font-weight: 600;
   color: #1c1e24;
   line-height: 1.35;
@@ -1701,7 +1779,8 @@ export default {
   min-height: 2.7em;
   display: flex;
   align-items: center;
-  text-overflow: ellipsis;    
+  text-overflow: ellipsis;  
+  /* width: 90%; */
 }
 
 .permission-wrap {
@@ -1729,301 +1808,4 @@ export default {
   font-style: italic;
 }
 
-/* Row-details panel content (rendered inline by b-table, not a modal) */
-.log-detail-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(192, 57, 43, 0.08);
-  border: 1px solid rgba(192, 57, 43, 0.2);
-  color: #c0392b;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
-  text-align: left;
-}
-
-.log-detail-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 24px;
-  text-align: left;
-}
-
-.log-detail-field {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-width: 0;
-  text-align: left;
-}
-.log-detail-field > div {
-  min-width: 0;
-  flex: 1;
-}
-
-.log-detail-field-full {
-  grid-column: 1 / -1;
-}
-
-.log-detail-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: #9aa0ac;
-  font-size: 14px;
-}
-
-.log-detail-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: #9aa0ac;
-}
-
-.log-detail-value {
-  display: block;
-  font-size: 13.5px;
-  color: #1c1e24;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-.log-detail-value.mono {
-  font-size: 12.5px;
-  overflow-wrap: anywhere;
-}
-
-/* Before/After shown as b-card pairs */
-.log-detail-changes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  text-align: left;
-  border-top: 1px dashed #e4e1d8;
-  padding-top: 14px;
-}
-
-.log-detail-changes-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: #6b7280;
-}
-
-.log-diff-row-wrap {
-  position: relative;
-}
-@media (min-width: 768px) {
-  .log-diff-row-wrap .row {
-    margin-left: -32px;
-    margin-right: -32px;
-  }
-  .log-diff-row-wrap .col-md-6 {
-    padding-left: 32px;
-    padding-right: 32px;
-    display: flex;
-  }
-}
-
-.log-diff-card.card {
-  border-radius: 14px;
-  border: 1px solid #e4e1d8;
-  width: 100%;
-  max-width: 340px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(28, 30, 36, 0.05);
-  margin: auto;
-}
-.log-diff-card.is-solo {
-  max-width: 480px;
-}
-.log-diff-card.is-before {
-  /* margin-right: auto; */
-}
-.log-diff-card.is-after {
-  /* margin-left: auto; */
-}
-.log-diff-card .card-header {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  border-bottom: none;
-}
-.log-diff-card-sub {
-  font-size: 11px;
-  font-weight: 400;
-  color: #6b7280;
-  margin-left: auto;
-}
-.log-diff-card.is-before {
-  border-top: 3px solid #c0392b;
-}
-.log-diff-card.is-before .card-header {
-  background: rgba(192, 57, 43, 0.06);
-  color: #c0392b;
-}
-.log-diff-card.is-after {
-  border-top: 3px solid #128189;
-}
-.log-diff-card.is-after .card-header {
-  background: rgba(18, 129, 137, 0.06);
-  color: #128189;
-}
-.log-diff-card .card-body {
-  padding: 10px 14px;
-}
-
-/* Connector between the two cards */
-.log-diff-connector {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  z-index: 3;
-  pointer-events: none;
-}
-.log-diff-connector-line {
-  flex: 1;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, #d8d5cb);
-}
-.log-diff-connector-line-bottom {
-  background: linear-gradient(to top, transparent, #d8d5cb);
-}
-.log-diff-connector-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 1px solid #e4e1d8;
-  color: #6b7280;
-  box-shadow: 0 1px 3px rgba(28, 30, 36, 0.08);
-}
-
-/* Mobile: cards stack, so the connector runs horizontally between them
-   instead of vertically. Normal flow (not absolute) so it naturally
-   lands between the two cards via flex-wrap's source order. */
-.log-diff-connector-mobile {
-  width: 100%;
-  align-items: center;
-  gap: 10px;
-  margin: -2px 0 10px;
-}
-.log-diff-connector-line-h {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, transparent, #d8d5cb, transparent);
-}
-
-.log-diff-kv {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 5px 0;
-  border-bottom: 1px solid #f2f0e9;
-  font-size: 12.5px;
-}
-.log-diff-kv:last-child {
-  border-bottom: none;
-}
-.log-diff-kv-key {
-  flex-shrink: 0;
-  color: #9aa0ac;
-  font-size: 11.5px;
-}
-.log-diff-kv-val {
-  text-align: right;
-  color: #1c1e24;
-  word-break: break-word;
-  min-width: 0;
-}
-.log-diff-kv.is-list {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-}
-.log-diff-kv-list {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.log-diff-kv-item {
-  display: inline-flex;
-  align-items: center;
-  width: auto;
-  max-width: 100%;
-  font-size: 11.5px;
-  color: #6b7280;
-  background: rgba(28, 30, 36, 0.04);
-  border-radius: 999px;
-  padding: 3px 10px;
-  word-break: break-all;
-}
-.log-diff-kv-item.is-removed {
-  background: rgba(192, 57, 43, 0.12);
-  color: #c0392b;
-  font-weight: 600;
-  text-decoration: line-through;
-}
-.log-diff-kv-item.is-added {
-  background: rgba(18, 129, 137, 0.12);
-  color: #128189;
-  font-weight: 600;
-}
-.log-diff-kv.is-changed {
-  background: rgba(193, 121, 31, 0.07);
-  margin: 0 -8px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border-bottom: none;
-}
-.log-diff-kv.is-changed .log-diff-kv-val {
-  font-weight: 600;
-}
-.log-diff-card.is-before .log-diff-kv.is-changed .log-diff-kv-val {
-  color: #c0392b;
-}
-.log-diff-card.is-after .log-diff-kv.is-changed .log-diff-kv-val {
-  color: #128189;
-}
-
-@media (max-width: 767px) {
-  .log-detail-meta {
-    grid-template-columns: 1fr;
-  }
-
-  /* Before/After cards: stack full-width instead of the fixed-width,
-     margin-auto-centered layout meant for the side-by-side desktop view. */
-  .log-diff-card.card {
-    max-width: none;
-  }
-  .log-diff-card.is-before,
-  .log-diff-card.is-after {
-    margin-left: 0;
-    margin-right: 0;
-  }
-  .log-diff-row-wrap .col-md-6:not(:last-child) {
-    margin-bottom: 16px;
-  }
-}
 </style>

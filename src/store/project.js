@@ -115,6 +115,7 @@ export default {
       total: 0,
       totalPages: 0,
       search: "",
+      role: "",
     },
     // Separate, paginated project list for the searchable/scrollable
     // project picker dropdown (EditUserModal/CreateUserModal), so paging
@@ -308,12 +309,17 @@ export default {
           : state.usersPagination.project_id || "";
       const search =
         payload.search !== undefined ? payload.search : state.usersPagination.search || "";
+      const role =
+        payload.role !== undefined ? payload.role : state.usersPagination.role || "";
 
       const params = { page, limit };
       if (project_id) params.project_id = project_id;
       // NOTE: assumes the backend accepts a `search` query param on
       // getUsers — adjust the param name here if the real API differs.
       if (search) params.search = search;
+      // Same assumption for role — adjust the param name here if the
+      // real API expects something else (e.g. `roles` as a CSV/array).
+      if (role) params.role = role;
 
       try {
         const { list, apiPagination } = await apiGetUsers(params);
@@ -327,6 +333,7 @@ export default {
           project_id,
           ...resolvePaginationMeta(apiPagination, { page, limit, total: list.length }),
           search,
+          role,
         });
       } catch (error) {
         console.log(error);
@@ -474,7 +481,11 @@ export default {
       const raw = res.data.result || res.data.user || res.data;
       const user = mapUser(raw);
       commit("addUser", user);
-      return user;
+      // For role=service accounts the API also returns a one-time
+      // `serviceAccount` block (with the auth token) alongside `user` —
+      // pass it through untouched so CreateUserModal can show it once.
+      // Non-service creates simply won't have this key in the response.
+      return { user, serviceAccount: res.data.serviceAccount || null };
     },
 
     async updateUserDetails({ commit }, payload) {
