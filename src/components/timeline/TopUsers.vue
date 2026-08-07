@@ -24,17 +24,10 @@
     </div> -->
 
     <div>
-        <!-- {{ topUsers }} -->
-        <!-- :showSentimentFilter="false" -->
-        <top-accounts 
-            :keyword="filters.keyword"
-            :accounts="topUsers" 
-            :limit="10" 
-            :loading="loading" 
-            :top-sentiment="sentiment" 
-            @filter-account="onFilterAccount"
-            @change-top-sentiment="onChangeTopSentiment" 
-        />
+      <!-- {{ topUsers }} -->
+      <!-- :showSentimentFilter="false" -->
+      <top-accounts :keyword="filters.keyword" :accounts="topUsers" :limit="10" :loading="loading"
+        :top-sentiment="sentiment" @filter-account="onFilterAccount" @change-top-sentiment="onChangeTopSentiment" />
     </div>
   </b-card>
 </template>
@@ -53,8 +46,8 @@ export default {
     // canNextTop: { type: Boolean, default: false },
     // peakOnlyWindow: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
-    },
-  components:{TopAccounts},
+  },
+  components: { TopAccounts },
   data() {
     return {
       peakSummaryFields: [
@@ -62,16 +55,16 @@ export default {
         { key: 'date', label: 'date' },
         { key: 'engage', label: 'engage', class: 'text-right' },
         { key: 'full_text', label: 'full_text' }
-        ],
-        topUsers: [],
-        accountsInput : [],
-        account : '',
-        loading: false
+      ],
+      topUsers: [],
+      accountsInput: [],
+      account: '',
+      loading: false
     }
   },
-    computed: {
+  computed: {
     sentiment() {
-        return this.filters.sentiment || '1,0,-1'
+      return this.filters.sentiment || '1,0,-1'
     },
     // safePosts() {
     //   return Array.isArray(this.topPosts) ? this.topPosts : []
@@ -89,30 +82,30 @@ export default {
     //   }))
     // }
   },
-    methods: {
+  methods: {
     toThaiDateTimeShort(datetimeStr) {
-        if (!datetimeStr) return '-'
+      if (!datetimeStr) return '-'
 
-        const date = new Date(datetimeStr)
+      const date = new Date(datetimeStr)
 
-        // ตั้งค่าให้แสดงวัน/เดือนย่อ/ปี/เวลา แบบไทย
-        const options = {
-            year: 'numeric',
-            month: 'short',   // ✅ ใช้ตัวย่อ เช่น พ.ย.
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Bangkok'
-        }
+      // ตั้งค่าให้แสดงวัน/เดือนย่อ/ปี/เวลา แบบไทย
+      const options = {
+        year: 'numeric',
+        month: 'short',   // ✅ ใช้ตัวย่อ เช่น พ.ย.
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Bangkok'
+      }
 
-        const formatter = new Intl.DateTimeFormat('th-TH', options)
-        const formatted = formatter.format(date) 
-        // ตัวอย่าง: "06 พ.ย. 2568 07:00"
+      const formatter = new Intl.DateTimeFormat('th-TH', options)
+      const formatted = formatter.format(date)
+      // ตัวอย่าง: "06 พ.ย. 2568 07:00"
 
-        const [day, month, year, time] = formatted.split(' ')
-        return `${day} ${month} ${year} เวลา ${time} น.`
-        },
+      const [day, month, year, time] = formatted.split(' ')
+      return `${day} ${month} ${year} เวลา ${time} น.`
+    },
     scrollLeft() {
       const slider = this.$refs.slider;
       if (slider) slider.scrollLeft -= 300;
@@ -138,75 +131,81 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       }).format(d)
-        },
+    },
     onChangeTopSentiment(val) {
-        this.filters.sentiment = val;
-        this.fetchTopUsers();
-        },
+      this.filters.sentiment = val;
+      this.fetchTopUsers();
+    },
     onFilterAccount({ uid }) {
       if (!uid) {
         this.accountsInput = [];
         this.account = '';
       } else {
         if (!Array.isArray(this.accountsInput)) this.accountsInput = [];
-          if (!this.accountsInput.includes(uid)) this.accountsInput.push(uid);
-      } 
-        this.$emit('filterAccount', this.accountsInput)
-        // this.fetchTopUsers();
+        if (!this.accountsInput.includes(uid)) this.accountsInput.push(uid);
+      }
+      this.$emit('filterAccount', this.accountsInput)
+      // this.fetchTopUsers();
     },
-fetchTopUsers() {
-  this.loading = true
-  this.topError = null
+    fetchTopUsers() {
+      this.loading = true
+      this.topError = null
 
-  const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
-  const params = {
-    sentiment: this.sentiment || '1,0,-1',
-    account: this.filters.account,
-    keyword: this.filters.keyword || '',
-    ...(this.filters.exclude ? { exclude: this.filters.exclude } : {}),
-    ...(this.filters.source_news ? { source_news: this.filters.source_news } : {}),
-    ...(this.filters.sort_by ? { sort_by: this.filters.sort_by } : {}),
-    top_accounts_limit: 10,
-    page: this.topPage,
-    start: this.filters.start,
-    end: this.filters.end,
-    ...(this.filters.source ? { source: this.filters.source } : {})
-  }
+      const API_URL = 'https://api2.cognizata.com/api/v2/userposts/getPostSentiment'
+      const params = {
+        sentiment: this.sentiment || '1,0,-1',
+        account: this.filters.account,
+        keyword: this.filters.keyword || '',
+        ...(this.filters.exclude ? { exclude: this.filters.exclude } : {}),
+        ...(this.filters.source_news ? { source_news: this.filters.source_news } : {}),
+        ...(this.filters.sort_by ? { sort_by: this.filters.sort_by } : {}),
+        top_accounts_limit: 10,
+        page: this.topPage,
+        start: this.filters.start,
+        end: this.filters.end,
+        ...(this.filters.source ? { source: this.filters.source } : {})
+      }
 
-  axios.get(API_URL, { params })
-    .then(({ data }) => {
-      const raw =
-        (Array.isArray(data?.top_accounts) && data.top_accounts) ||
-        (Array.isArray(data?.accounts) && data.accounts) ||
-        (Array.isArray(data?.data) && data.data) ||
-        [];
-      this.topUsers = raw
-      console.log("top users === ", this.topUsers)
-    })
-    .catch(err => {
-      console.error(err)
-      this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
-    })
-    .finally(() => {
-      this.loading = false
-    })
-},
+      axios.get(API_URL, {
+        params,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      })
+        .then(({ data }) => {
+          const raw =
+            (Array.isArray(data?.top_accounts) && data.top_accounts) ||
+            (Array.isArray(data?.accounts) && data.accounts) ||
+            (Array.isArray(data?.data) && data.data) ||
+            [];
+          this.topUsers = raw
+          console.log("top users === ", this.topUsers)
+        })
+        .catch(err => {
+          console.error(err)
+          this.topError = 'โหลดโพสต์แบบเต็มไม่สำเร็จ'
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
-    watch: {
-        filters: {
-            handler(newVal, oldVal) {
-            
-            if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-                // this.topPage = 1
-                this.fetchTopUsers();
-                }
-            },
-        deep: true
+  },
+  watch: {
+    filters: {
+      handler(newVal, oldVal) {
+
+        if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+          // this.topPage = 1
+          this.fetchTopUsers();
         }
-    },
-  mounted() {
-       this.fetchTopUsers();
+      },
+      deep: true
     }
+  },
+  mounted() {
+    this.fetchTopUsers();
+  }
 }
 </script>
 
@@ -261,5 +260,4 @@ fetchTopUsers() {
   display: none;
   /* ซ่อน scrollbar */
 }
-
 </style>

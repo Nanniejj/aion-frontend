@@ -81,7 +81,7 @@
             <button class="preview-link" @click="tab = 'users'">ดูทั้งหมด →</button>
           </div>
           <div class="preview-avatars">
-            <AvatarStack :users="detailUsers" max="15" />
+            <AvatarStack :users="detailUsers" :max="15" />
           </div>
         </div>
       </div>
@@ -107,7 +107,10 @@
                 <span v-if="u.email"> · {{ u.email }}</span>
               </div>
             </div>
-            <div class="ml-auto">{{ u.isActive ? "เปิดใช้งาน" : "ระงับการใช้งาน" }}</div>
+            <span class="status-pill ml-auto" :class="u.isActive ? 'status-on' : 'status-off'">
+              <span class="status-dot"></span>
+              {{ u.isActive ? "เปิดใช้งาน" : "ระงับการใช้งาน" }}
+            </span>
           </div>
         </div>
       </div>
@@ -222,8 +225,6 @@
             </div>
           </div>
 
-          <!-- <span class="log-filter-divider"></span> -->
-
           <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '1' }"
             @click="setLogDateMonths(1, '1')">
             1 เดือน
@@ -253,9 +254,18 @@
 
         <div v-if="logDatePreset === 'custom' || (logFilters.startDate && logFilters.endDate)" class="log-date-filters">
           <div v-if="logDatePreset === 'custom'" class="log-date-range">
-            <input v-model="logFilters.startDate" type="date" class="log-filter-date" @change="applyLogFilters" />
-            <span class="log-filter-sep">ถึง</span>
-            <input v-model="logFilters.endDate" type="date" class="log-filter-date" @change="applyLogFilters" />
+            <date-picker
+              v-model="valueDate"
+              type="date"
+              range
+              placeholder="เลือกช่วงเวลา"
+              size="sm"
+              :disabled-date="(date) => date >= new Date()"
+              value-type="format"
+              format="YYYY-MM-DD"
+              @change="checkDateRange()"
+              id="date-log-project"
+            >{{ valueDate }}</date-picker>
           </div>
           <span v-else-if="logFilters.startDate && logFilters.endDate" class="log-date-hint">
             {{ formatDate(logFilters.startDate) }} — {{ formatDate(logFilters.endDate) }}
@@ -333,10 +343,12 @@
 <script>
 import AvatarStack from "../AvatarStack.vue";
 import LogDetailPanel from "../LogDetailPanel.vue";
+import DatePicker from "vue2-datepicker";
+import "vue2-datepicker/index.css";
 
 export default {
   name: "ProjectDetail",
-  components: { AvatarStack, LogDetailPanel },
+  components: { AvatarStack, LogDetailPanel, DatePicker },
   props: {
     project: { type: Object, required: true },
   },
@@ -368,6 +380,9 @@ export default {
   },
   watch: {
     tab(newTab) {
+      // Collapse any expanded log row whenever the tab changes — otherwise
+      // switching away and back to "logs" leaves a stale row expanded.
+      this.expandedLogId = null;
       // Lazy-load: only hit the API once we actually switch into the
       // logs tab, and reload fresh each time it's opened.
       if (newTab === "logs") {
@@ -513,6 +528,19 @@ export default {
     isProjectActive() {
       return this.localStatus === "active";
     },
+    // date-picker (range mode) wants/emits a single [start, end] array —
+    // logFilters keeps startDate/endDate as separate strings everywhere
+    // else in this component, so bridge between the two shapes here
+    // instead of restructuring logFilters itself.
+    valueDate: {
+      get() {
+        return [this.logFilters.startDate || null, this.logFilters.endDate || null];
+      },
+      set(val) {
+        this.logFilters.startDate = (val && val[0]) || "";
+        this.logFilters.endDate = (val && val[1]) || "";
+      },
+    },
   },
   methods: {
     onEdit() {
@@ -580,6 +608,14 @@ export default {
     applyLogFilters() {
       this.expandedLogId = null;
       this.fetchLogs(1);
+    },
+    // date-picker (range) emits @change on every selection, including
+    // when only the start date has been picked so far — only actually
+    // apply the filter once both ends of the range are set.
+    checkDateRange() {
+      if (this.logFilters.startDate && this.logFilters.endDate) {
+        this.applyLogFilters();
+      }
     },
     // Clicking anywhere in the combobox shell focuses the inner text
     // input, same as clicking a native <select>/Vuetify combobox opens it.
@@ -773,15 +809,6 @@ export default {
   box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.2);
 }
 
-.topbar-id {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #6b7280;
-  cursor: default;
-}
-
 .detail-body {
   /* max-width: 760px; */
   margin: 0 auto;
@@ -812,7 +839,7 @@ export default {
 .detail-title {
   font-weight: 700;
   font-size: 32px;
-  color: #1c1e24;
+  color: #5a3f04;
   margin: 0;
   text-align: left;
   line-height: 1.15;
@@ -892,26 +919,19 @@ export default {
 }
 
 .tab-btn:hover {
-  color: #128189;
+  color: #5a3f04;
 }
 
 .tab-btn.active {
-  color: #128189;
-  border-bottom-color: #128189;
+  color: #5a3f04;
+  border-bottom-color: #fed16e;
+  font-weight: 600;
 }
 
-/* Keep a visible focus indicator for keyboard users, without the
-   default browser outline box that shows on every click. */
 .tab-btn:focus-visible {
-  outline: 2px solid #128189;
+  outline: 3px solid #fed16e;
   outline-offset: 2px;
   border-radius: 4px;
-}
-
-.tab-count {
-  font-size: 14px;
-  color: inherit;
-  opacity: 0.75;
 }
 
 .tab-panel {
@@ -971,6 +991,32 @@ export default {
   font-size: 14px;
   color: #6b7280;
   margin-top: 2px;
+}
+
+/* Mobile: two stat boxes side-by-side leaves too little room for the
+   label text (e.g. "โดเมนที่ติดตาม" wraps mid-phrase and the two boxes
+   end up uneven heights) — stack them full-width instead, same pattern
+   as .domain-grid below. */
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+  .stat-box {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+  }
+  .stat-value {
+    font-size: 22px;
+  }
+  .stat-label {
+    font-size: 13px;
+    white-space: nowrap;
+  }
 }
 
 /* Overview: key/value info card */
@@ -1054,11 +1100,6 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.preview-more {
-  font-size: 14px;
-  color: #6b7280;
 }
 
 /* Search box shared by users/domains tabs */
@@ -1185,19 +1226,13 @@ export default {
   padding: 8px 14px;
 }
 
-.log-filter-select,
-.log-filter-date {
+.log-filter-select {
   border: 1px solid #e4e1d8;
   border-radius: 10px;
   background: #ffffff;
   padding: 8px 10px;
   font-size: 14px;
   color: #1c1e24;
-}
-
-.log-filter-sep {
-  font-size: 14px;
-  color: #9aa0ac;
 }
 
 /* User filter combobox: search input that opens into a checkable list —
@@ -1393,13 +1428,6 @@ export default {
   text-decoration: underline;
 }
 
-.log-filter-divider {
-  width: 1px;
-  align-self: stretch;
-  background: #e4e1d8;
-  margin: 2px 2px;
-}
-
 /* Medium screens (e.g. iPad Mini ~768px): search/method/user fit on one
    line, but the 5 date-preset buttons only half-fit next to them and
    wrap unevenly. Force them onto their own line instead. */
@@ -1407,13 +1435,6 @@ export default {
   .tab-btn {
     margin-right: 3px;
     font-size: 14px;
-  }
-  .log-filter-divider {
-    flex-basis: 100%;
-    width: auto;
-    height: 0;
-    background: none;
-    margin: 0;
   }
 }
 
@@ -1449,6 +1470,20 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.log-date-range ::v-deep .mx-datepicker-range {
+  width: 260px;
+}
+.log-date-range ::v-deep .mx-input {
+  border: 1px solid #e4e1d8;
+  border-radius: 10px;
+  height: 34px;
+  font-size: 14px;
+  color: #1c1e24;
+  box-shadow: none;
+}
+.log-date-range ::v-deep .mx-input:focus {
+  border-color: #128189;
 }
 
 .log-date-hint {
@@ -1544,7 +1579,7 @@ export default {
   border-radius: 999px;
   padding: 3px 10px;
   font-size: 14px;
-  font-weight: 600;
+  /* font-weight: 600; */
   white-space: nowrap;
 }
 
@@ -1559,7 +1594,7 @@ export default {
 }
 
 .log-status-code {
-  font-weight: 600;
+  /* font-weight: 600; */
   color: inherit;
   opacity: 0.85;
 }
@@ -1618,36 +1653,34 @@ export default {
     display: none;
   }
 
-  .log-table.b-table-stacked-md tbody tr:not(.b-table-details) {
+  ::v-deep .log-table.b-table-stacked-md tbody tr:not(.b-table-details) {
     display: block;
-    background: #ffffff;
-    border: 1px solid #e4e1d8;
-    border-radius: 14px;
+    background: transparent;
+    border: none !important;
+    border-bottom: 3px solid #e4e1d8 !important;
+    border-radius: 0;
     margin-bottom: 12px;
-    padding: 4px 14px;
+    padding: 4px 0;
     overflow: hidden;
   }
-  /* A row with an expanded detail panel right after it: flatten the
-     bottom edge so the two merge into one continuous card. */
-  .log-table.b-table-stacked-md tbody tr:not(.b-table-details):has(+ .b-table-details) {
-    border-radius: 14px 14px 0 0;
-    border-bottom: none;
+  /* A row with an expanded detail panel right after it: the thick
+     divider moves to the end of the detail panel instead, so the two
+     read as one continuous record. */
+  ::v-deep .log-table.b-table-stacked-md tbody tr:not(.b-table-details):has(+ .b-table-details) {
+    border-bottom: none !important;
     margin-bottom: 0;
     padding-bottom: 8px;
   }
 
-  .log-table.b-table-stacked-md td {
+  ::v-deep .log-table.b-table-stacked-md td {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px 0;
-    border-top: none;
-    border-bottom: 1px solid #f2f0e9;
+    padding: 6px 0;
+    border-top: none !important;
+    border-bottom: none !important;
     text-align: left;
-  }
-  .log-table.b-table-stacked-md td:last-child {
-    border-bottom: none;
   }
   .log-table.b-table-stacked-md td::before {
     content: attr(data-label);
@@ -1660,19 +1693,20 @@ export default {
 
   /* The expanded row-details row: continue the card below the row it
      belongs to, rounded only at the bottom. */
-  .log-table.b-table-stacked-md tr.b-table-details {
+  ::v-deep .log-table.b-table-stacked-md tr.b-table-details {
     display: block;
-    background: #ffffff;
-    border: 1px solid #e4e1d8;
-    border-top: 1px dashed #e4e1d8;
-    border-radius: 0 0 14px 14px;
+    background: transparent;
+    border: none !important;
+    border-top: 1px dashed #e4e1d8 !important;
+    border-bottom: 3px solid #e4e1d8 !important;
+    border-radius: 0;
     margin-bottom: 12px;
     overflow: hidden;
   }
-  .log-table.b-table-stacked-md tr.b-table-details td {
+  ::v-deep .log-table.b-table-stacked-md tr.b-table-details td {
     display: block;
     padding: 0;
-    border: none;
+    border: none !important;
   }
   .log-table.b-table-stacked-md tr.b-table-details td::before {
     content: none;
@@ -1726,17 +1760,6 @@ export default {
   margin-bottom: 12px;
 }
 
-.domain-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -1755,18 +1778,20 @@ export default {
 }
 .status-pill.status-on {
   background: rgba(47, 168, 106, 0.12);
-  color: #2fa86a;
+  color: #1c7a4a;
+  font-weight: 600;
 }
 .status-pill.status-on .status-dot {
   background: #2fa86a;
   box-shadow: 0 0 0 3px rgba(47, 168, 106, 0.15);
 }
 .status-pill.status-off {
-  background: rgba(28, 30, 36, 0.05);
-  color: #9aa0ac;
+  background: rgba(28, 30, 36, 0.06);
+  color: #5b6270;
+  font-weight: 600;
 }
 .status-pill.status-off .status-dot {
-  background: #d8d4c8;
+  background: #9aa0ac;
 }
 
 .domain-name {

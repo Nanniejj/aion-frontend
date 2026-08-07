@@ -1,7 +1,8 @@
 <template>
   <div class="log-detail-panel">
+    <span style="font-weight: 700;color: #bd9a4f;">รายละเอียดการดำเนินการ</span>
     <div v-if="showUser && log.user" class="log-detail-user">
-      <AvatarStack :users="[avatarUser]" large />
+      <!-- <AvatarStack :users="[avatarUser]" large /> -->
       <div class="log-detail-user-info">
         <div class="log-detail-user-name">{{ userName }}</div>
         <div class="log-detail-user-meta">
@@ -472,7 +473,7 @@ export default {
   align-items: flex-start;
   gap: 10px;
   padding: 5px 0;
-  border-bottom: 1px solid #f2f0e9;
+  /* border-bottom: 1px solid #f2f0e9; */
   font-size: 14px;
 }
 .log-diff-kv:last-child {
@@ -506,8 +507,8 @@ export default {
   width: auto;
   max-width: 100%;
   font-size: 12px;
-  color: #6b7280;
-  background: rgba(28, 30, 36, 0.04);
+  color: #323f5a;
+  background: rgb(228, 229, 231);
   border-radius: 999px;
   padding: 3px 10px;
   word-break: break-all;

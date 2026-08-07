@@ -285,7 +285,12 @@
           </div>
 
           <div class="form-field">
-            <label>Token</label>
+            <label class="d-flex justify-content-between">Token
+              <button type="button" class="token-copy-btn" :class="{ copied: tokenCopied }" @click="copyServiceToken">
+                <b-icon :icon="tokenCopied ? 'check2' : 'clipboard'"></b-icon>
+                <!-- {{ tokenCopied ? "คัดลอกแล้ว" : "คัดลอก" }} -->
+              </button>
+            </label>
             <div class="token-copy-row">
               <textarea
                 readonly
@@ -293,10 +298,7 @@
                 :value="serviceTokenData && serviceTokenData.token"
                 @focus="$event.target.select()"
               ></textarea>
-              <button type="button" class="token-copy-btn" :class="{ copied: tokenCopied }" @click="copyServiceToken">
-                <b-icon :icon="tokenCopied ? 'check2' : 'clipboard'"></b-icon>
-                {{ tokenCopied ? "คัดลอกแล้ว" : "คัดลอก" }}
-              </button>
+              
             </div>
           </div>
 

@@ -189,21 +189,19 @@
         </div>
 
         <div v-if="logDatePreset === 'custom'" class="log-date-range">
-          <input
-            v-model="logFilters.startDate"
+          <date-picker
+            v-model="valueDate"
             type="date"
-            class="log-filter-date"
+            range
+            placeholder="เลือกช่วงเวลา"
+            size="sm"
+            :disabled-date="(date) => date >= new Date()"
             :disabled="userLogsLoading"
-            @change="applyLogFilters"
-          />
-          <span class="log-filter-sep">ถึง</span>
-          <input
-            v-model="logFilters.endDate"
-            type="date"
-            class="log-filter-date"
-            :disabled="userLogsLoading"
-            @change="applyLogFilters"
-          />
+            value-type="format"
+            format="YYYY-MM-DD"
+            @change="checkDateRange()"
+            id="date-log-user"
+          >{{ valueDate }}</date-picker>
         </div>
         <div v-else-if="logFilters.startDate && logFilters.endDate" class="log-date-hint">
           {{ formatExpiry(logFilters.startDate) }} — {{ formatExpiry(logFilters.endDate) }}
@@ -233,7 +231,11 @@
                 </div>
                 <div class="user-log-bottom">
                   <div class="user-log-endpoint">{{ log.endpoint }}</div>
-                  <span class="user-log-status" :class="log.success ? 'is-ok' : 'is-fail'">{{ log.statusCode }}</span>
+                  <span class="user-log-status" :class="log.success ? 'is-ok' : 'is-fail'">
+                    <b-icon :icon="log.success ? 'check-circle-fill' : 'exclamation-circle-fill'" font-scale="0.8"></b-icon>
+                    {{ log.success ? "สำเร็จ" : "ล้มเหลว" }}
+                    <span class="log-status-code">{{ log.statusCode }}</span>
+                  </span>
                 </div>
                 <div v-if="log.errorMessage" class="user-log-error">{{ log.errorMessage }}</div>
 
@@ -271,6 +273,8 @@ import EditUserModal from './users/EditUserModal.vue';
 import LogDetailPanel from "./LogDetailPanel.vue";
 import VueElementLoading from "vue-element-loading";
 import Swal from 'sweetalert2';
+import DatePicker from "vue2-datepicker";
+import "vue2-datepicker/index.css";
 // Same palette as AvatarStack, assigned by row position so colors stay
 // distinct across the visible list.
 
@@ -287,7 +291,7 @@ const AVATAR_COLORS = [
 
 export default {
   name: "UserMain",
-  components: { EditUserModal, VueElementLoading, LogDetailPanel },
+  components: { EditUserModal, VueElementLoading, LogDetailPanel, DatePicker },
   props: {
     users: { type: Array, default: () => [] },
     query: { type: String, default: "" },
@@ -366,6 +370,19 @@ export default {
       // filter — only flag it as "active" once something differs from it.
       return !!(f.search || f.method || this.logDatePreset !== "1");
     },
+    // date-picker (range mode) wants/emits a single [start, end] array —
+    // logFilters keeps startDate/endDate as separate strings everywhere
+    // else in this component, so bridge between the two shapes here
+    // instead of restructuring logFilters itself.
+    valueDate: {
+      get() {
+        return [this.logFilters.startDate || null, this.logFilters.endDate || null];
+      },
+      set(val) {
+        this.logFilters.startDate = (val && val[0]) || "";
+        this.logFilters.endDate = (val && val[1]) || "";
+      },
+    },
   },
   watch: {
     // Keep the b-pagination widget in sync if the page changes from
@@ -400,13 +417,15 @@ export default {
       return full || u.username || "-";
     },
     // accountStatus comes straight from the API as "active" / "inactive" /
-    // "deleted" — map it to a Thai label and a status-pill color here
-    // rather than relying on a pre-formatted string from the store.
+    // "deleted" / "expired" — map it to a Thai label and a status-pill
+    // color here rather than relying on a pre-formatted string from the
+    // store.
     statusLabel(accountStatus) {
       const labels = {
-        active: "ใช้งานอยู่",
+        active: "เปิดใช้งาน",
         inactive: "ระงับการใช้งาน",
-        deleted: "ถูกลบ",
+        deleted: "ปิดการใช้งาน",
+        expired: "หมดอายุ",
       };
       return labels[accountStatus] || "ไม่ทราบสถานะ";
     },
@@ -415,6 +434,7 @@ export default {
         active: "status-active",
         inactive: "status-inactive",
         deleted: "status-deleted",
+        expired: "status-expired",
       };
       return classes[accountStatus] || "status-inactive";
     },
@@ -551,6 +571,14 @@ export default {
     applyLogFilters() {
       this.expandedLogId = null;
       this.fetchUserLogs(1);
+    },
+    // date-picker (range) emits @change on every selection, including
+    // when only the start date has been picked so far — only actually
+    // apply the filter once both ends of the range are set.
+    checkDateRange() {
+      if (this.logFilters.startDate && this.logFilters.endDate) {
+        this.applyLogFilters();
+      }
     },
     clearLogFilters() {
       this.logFilters = { search: "", method: "", startDate: "", endDate: "" };
@@ -779,6 +807,10 @@ export default {
 .status-deleted {
   background: rgba(192, 57, 43, 0.12);
   color: #c0392b;
+}
+.status-expired {
+  background: rgba(193, 121, 31, 0.12);
+  color: #c1791f;
 }
 
 .joined-cell {
@@ -1052,16 +1084,28 @@ export default {
   color: #c0392b;
 }
 .user-log-status {
-  font-size: 11.5px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
   white-space: nowrap;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11.5px;
+  /* font-weight: 600; */
 }
 .user-log-status.is-ok {
+  background: rgba(18, 129, 137, 0.12);
   color: #128189;
 }
 .user-log-status.is-fail {
+  background: rgba(192, 57, 43, 0.12);
   color: #c0392b;
+}
+.log-status-code {
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.85;
 }
 .user-log-endpoint {
   font-size: 12px;
@@ -1212,6 +1256,20 @@ export default {
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+}
+.log-date-range ::v-deep .mx-datepicker-range {
+  width: 260px;
+}
+.log-date-range ::v-deep .mx-input {
+  border: 1px solid #e4e1d8;
+  border-radius: 10px;
+  height: 34px;
+  font-size: 14px;
+  color: #1c1e24;
+  box-shadow: none;
+}
+.log-date-range ::v-deep .mx-input:focus {
+  border-color: #128189;
 }
 .log-filter-sep {
   font-size: 13px;

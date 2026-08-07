@@ -13,7 +13,7 @@
 
       <b-col cols="12">
         <div class="text-left px-4">
-          <span class="">สถิติรายชั่วโมง </span>
+          <span class="">สถิติรายชั่วโมง</span>
           <b-icon icon="info-circle" variant="info" role="button" id="popover-button-variant" tabindex="0"
             class="flaot-right ml-2" />
         </div>
@@ -319,7 +319,13 @@ export default {
       const params = this.filters
 
       try {
-        const { data } = await axios.get(API_URL, { params })
+        const { data } = await axios.get(API_URL, {
+          params,
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        })
         this.datachart = data
         this.applyData(data) // คำนวณพีค -> สรุป -> ยิง API ช่วงพีค
       } catch (err) {
@@ -362,7 +368,13 @@ export default {
       }
 
       try {
-        const { data } = await axios.get(API_URL, { params })
+        const { data } = await axios.get(API_URL, {
+          params,
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        })
         const raw = Array.isArray(data) ? data
           : (data && Array.isArray(data.data)) ? data.data
             : (data && Array.isArray(data.items)) ? data.items

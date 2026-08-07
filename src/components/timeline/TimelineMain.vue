@@ -409,6 +409,15 @@ export default {
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
+    // Shared auth header block for every axios.get below — one place to
+    // update if the token key or header shape ever changes.
+    authHeaders() {
+      return {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+        "Content-Type": "application/json",
+      };
+    },
+
     setNewsSource(value) {
       localStorage.setItem(LS_NEWS_KEY, value);
       this.$store.commit("setSourceNewsTimeline", value);
@@ -563,7 +572,7 @@ export default {
       try {
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params: { ...this.buildParams(), sort_by: "engagement" } }
+          { params: { ...this.buildParams(), sort_by: "engagement" }, headers: this.authHeaders() }
         );
         this.postsForAnalysis = data.data || [];
       } catch (e) {
@@ -579,7 +588,7 @@ export default {
       try {
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params: this.buildParams() }
+          { params: this.buildParams(), headers: this.authHeaders() }
         );
         this.postsFromApi = data.data || [];
         this.count        = data.count      || 0;
@@ -622,7 +631,7 @@ export default {
 
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params }
+          { params, headers: this.authHeaders() }
         );
 
         const dayMap = {};
@@ -666,7 +675,7 @@ export default {
       try {
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params: this.buildParams({ silent: true }) }
+          { params: this.buildParams({ silent: true }), headers: this.authHeaders() }
         );
         this.postsFromApi = data.data || [];
         this.count        = data.count      || 0;
@@ -704,7 +713,7 @@ export default {
 
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params }
+          { params, headers: this.authHeaders() }
         );
 
         const dayMap = {};
@@ -751,7 +760,7 @@ export default {
       try {
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params: this.buildParamsForDay(date, { page: 1, sort_by: DEFAULT_DAY_OPEN_SORT }) }
+          { params: this.buildParamsForDay(date, { page: 1, sort_by: DEFAULT_DAY_OPEN_SORT }), headers: this.authHeaders() }
         );
         const rows = data?.data || [];
         const i    = this.postsFromApi.findIndex(d => d.date === date);
@@ -786,7 +795,7 @@ export default {
       try {
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params: this.buildParamsForDay(date, { page: cur + 1 }) }
+          { params: this.buildParamsForDay(date, { page: cur + 1 }), headers: this.authHeaders() }
         );
         const more = data?.data || [];
         const i    = this.postsFromApi.findIndex(d => d.date === date);
@@ -815,7 +824,7 @@ export default {
       try {
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params: this.buildParamsForDay(date, { page: 1, sort_by }) }
+          { params: this.buildParamsForDay(date, { page: 1, sort_by }), headers: this.authHeaders() }
         );
         const rows = data?.data || [];
         const i    = this.postsFromApi.findIndex(d => d.date === date);
@@ -879,7 +888,7 @@ export default {
       try {
         const { data } = await this.axios.get(
           "https://api2.cognizata.com/api/v2/userposts/getFulltextPost",
-          { params: this.buildParams({ silent: true }) }
+          { params: this.buildParams({ silent: true }), headers: this.authHeaders() }
         );
         this.postsFromApi = [...this.postsFromApi, ...(data.data || [])];
         this.totalPages   = data.totalPages ?? this.totalPages;

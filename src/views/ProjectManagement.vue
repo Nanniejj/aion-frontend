@@ -53,10 +53,74 @@
               </button>
             </b-input-group-append>
           </b-input-group>
+          <div
+            v-if="tab === 'users'"
+            class="project-filter"
+            :class="{ disabled: isFilterLoading }"
+            ref="projectFilterRoot"
+          >
+            <button
+              type="button"
+              class="project-filter-btn"
+              @click="toggleProjectDropdown"
+              :disabled="isFilterLoading"
+              aria-haspopup="listbox"
+              :aria-expanded="projectDropdownOpen"
+            >
+              <span class="project-filter-label">{{ projectFilterLabel }}</span>
+              <b-icon icon="chevron-down"></b-icon>
+            </button>
+            <div
+              v-if="projectDropdownOpen"
+              class="project-filter-menu"
+            >
+              <input
+                type="text"
+                class="project-filter-search"
+                v-model="projectFilterQuery"
+                placeholder="ค้นหาโปรเจกต์..."
+                autocomplete="off"
+                @click.stop
+                ref="projectFilterSearchInput"
+              />
+              <div
+                class="project-filter-list"
+                role="listbox"
+                @scroll="onProjectDropdownScroll"
+                ref="projectDropdownMenu"
+              >
+                <div
+                  class="project-filter-option"
+                  :class="{ active: projectFilter === '' }"
+                  role="option"
+                  @click="selectProjectFilter('')"
+                >
+                  ทุกโปรเจกต์
+                </div>
+                <div
+                  v-for="p in getProjectPicker.items"
+                  :key="p._id"
+                  class="project-filter-option"
+                  :class="{ active: projectFilter === p._id }"
+                  role="option"
+                  @click="selectProjectFilter(p._id)"
+                >
+                  {{ p.projectname }}
+                </div>
+                <div v-if="getProjectPicker.loading" class="project-filter-loading">กำลังโหลด...</div>
+                <div
+                  v-else-if="!getProjectPicker.items.length"
+                  class="project-filter-loading"
+                >
+                  ไม่พบโปรเจกต์
+                </div>
+              </div>
+            </div>
+          </div>
           <select
             v-if="tab === 'users'"
             v-model="roleFilter"
-            class="form-control w-auto"
+            class="project-filter-btn w-auto"
             :disabled="isFilterLoading"
             aria-label="กรอง Role"
           >
@@ -144,8 +208,11 @@ export default {
       tab: "projects", // 'projects' | 'users'
       query: "",
       roleFilter: "",
-      // Starts readonly so Chrome can't autofill it on page load; removed
-      // as soon as the user focuses the field (see @focus on the input).
+      projectFilter: "",
+      projectDropdownOpen: false,
+      projectFilterName: "",
+      projectFilterQuery: "",
+      projectFilterSearchTimer: null,
       searchLocked: true,
       view: "list", // 'list' | 'detail'
       activeProject: null,
@@ -154,49 +221,46 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getProjects", "getUsers", "getUsersPagination", "getProjectsPagination", "getLoadingProjects", "getLoadingUsers"]),
+    ...mapGetters([
+      "getProjects",
+      "getUsers",
+      "getUsersPagination",
+      "getProjectsPagination",
+      "getLoadingProjects",
+      "getLoadingUsers",
+      "getProjectPicker",
+    ]),
     projects() {
       return this.getProjects;
     },
     users() {
       return this.getUsers;
     },
-    // Now that role is sent to the API (see the roleFilter watcher and
-    // fetchUsers calls below), the server should already return only
-    // matching users — this just guards against a backend that doesn't
-    // filter by role yet, or returns extras.
+    // Label shown on the project-filter dropdown button.
+    projectFilterLabel() {
+      if (!this.projectFilter) return "ทุกโปรเจกต์";
+      return this.projectFilterName || "โปรเจกต์ที่เลือก";
+    },
     filteredUsersByRole() {
       if (!this.roleFilter) return this.users;
       return this.users.filter((u) => u.role === this.roleFilter);
     },
-    // Drives the disabled state of the search box / role filter — whichever
-    // tab is active, its own API loading flag decides whether filters are
-    // locked while a request is in flight.
     isFilterLoading() {
       return this.tab === "projects" ? this.getLoadingProjects : this.getLoadingUsers;
     },
-    // filteredProjects() {
-    //   const q = this.query.toLowerCase();
-    //   return this.projects.filter((p) => p.projectname.toLowerCase().includes(q));
-    // },
-    // filteredUsers() {
-    //   const q = this.query.toLowerCase();
-    //   return this.users.filter(
-    //     (u) => u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)
-    //   );
-    // },
   },
   created() {
     this.fetchProjects();
-    // project_id/page/limit default to the values you specified;
-    // pass a payload here (e.g. { project_id, page, limit }) if these
-    // should instead come from the route or the selected project.
     this.fetchUsersFiltered(1);
   },
+  mounted() {
+    document.addEventListener("click", this.handleProjectDropdownOutsideClick);
+  },
+  beforeDestroy() {
+    document.removeEventListener("click", this.handleProjectDropdownOutsideClick);
+  },
   watch: {
-    // Debounced server-side search: filteredProjects/filteredUsers give
-    // instant feedback on whatever's already loaded, then this refreshes
-    // with the real, complete result set from the API shortly after.
+    
     query(val) {
       clearTimeout(this.searchTimer);
       this.searchTimer = setTimeout(() => {
@@ -207,11 +271,7 @@ export default {
         }
       }, 300);
     },
-    // Switching tabs should always show fresh data for the newly-active
-    // tab — re-run the current search term if one's typed, otherwise do a
-    // clean unfiltered reload (page 1). Previously this only refreshed
-    // when `query` was non-empty, so a tab left in a stale/filtered state
-    // from an earlier search stayed stale until you searched again.
+   
     tab(val) {
       if (val === "projects") {
         this.searchProjects(this.query);
@@ -219,16 +279,31 @@ export default {
         this.fetchUsersFiltered(1);
       }
     },
-    // Role is a separate axis from the text search box, but both need to
-    // reach the API together (see fetchUsersFiltered) so neither one
-    // silently drops the other. Always resets back to page 1 — a role
-    // change is a new result set, not a continuation of the current page.
+    
     roleFilter() {
       this.fetchUsersFiltered(1);
     },
+    
+    projectFilter() {
+      this.fetchUsersFiltered(1);
+    },
+    projectFilterQuery(val) {
+      clearTimeout(this.projectFilterSearchTimer);
+      this.projectFilterSearchTimer = setTimeout(() => {
+        this.searchProjectPicker(val);
+      }, 300);
+    },
   },
   methods: {
-    ...mapActions(["fetchProjects", "fetchUsers", "searchProjects", "updateProject"]),
+    ...mapActions([
+      "fetchProjects",
+      "fetchUsers",
+      "searchProjects",
+      "updateProject",
+      "fetchProjectPickerPage",
+      "resetProjectPicker",
+      "searchProjectPicker",
+    ]),
     openProject(project) {
       this.activeProject = project;
       this.view = "detail";
@@ -252,21 +327,6 @@ export default {
         console.log(err);
       }
     },
-    // EditProjectModal emits the updated project object after a
-    // successful save. If the detail view is currently showing that same
-    // project, refresh `activeProject` too — otherwise ProjectDetail.vue
-    // keeps rendering the stale object it was opened with, even though
-    // fetchProjects() already refreshed the underlying list.
-    //
-    // Deliberately don't use the `project` object the event carries
-    // directly — that's the raw updateProject dispatch response, and
-    // (per the network payloads showing null/bare-id entries) its
-    // userlist/domainlist aren't shaped the same way getProjects' does
-    // (fully embedded {_id, name, ...} objects). Pulling the matching
-    // entry from `this.projects` instead — already refreshed by
-    // fetchProjects() inside the modal's own submit() — keeps
-    // ProjectDetail.vue and a subsequent re-open of EditProjectModal
-    // seeing the same consistent shape they always do.
     onProjectUpdated(project) {
       if (!project || !this.activeProject || project._id !== this.activeProject._id) return;
       const refreshed = this.projects.find((p) => p._id === project._id);
@@ -275,12 +335,6 @@ export default {
     onUserUpdated() {
       this.fetchUsersFiltered(1);
     },
-    // CreateUserModal already does an optimistic store commit (addUser) on
-    // success, but that doesn't refresh pagination totals or fields the
-    // create response doesn't fully echo back (e.g. project name) — so
-    // re-fetch from the server here too, same as after an edit. Fired
-    // right after a normal create, or once the service-account token
-    // popup is closed (see CreateUserModal's closeTokenModal).
     onUserCreated() {
       this.fetchUsersFiltered(1);
     },
@@ -288,24 +342,64 @@ export default {
       this.view = "list";
       this.activeProject = null;
     },
-    // Single place that composes the users-tab filters (text search, role,
-    // page/limit) and calls the API — used by the query/tab/role watchers,
-    // pagination, and the post-edit refresh, so all of them agree on what
-    // "current filters" means and role never gets silently dropped.
     fetchUsersFiltered(page) {
       this.fetchUsers({
-        project_id: "",
+        project_id: this.projectFilter,
         page: page || 1,
         limit: this.getUsersPagination.limit || 10,
         search: this.query,
         role: this.roleFilter,
       });
     },
-    // b-pagination re-emits 'input' with the same page number whenever
-    // its :total-rows/:per-page props change — which happens right after
-    // this handler's own fetch resolves and updates the store (that's
-    // what total-rows is bound to). Without this guard, every page click
-    // fires the fetch a second time for free with identical params.
+    toggleProjectDropdown() {
+      if (this.isFilterLoading) return;
+      if (this.projectDropdownOpen) {
+        this.closeProjectDropdown();
+        return;
+      }
+      this.projectDropdownOpen = true;
+      if (!this.getProjectPicker.items.length && !this.getProjectPicker.loading) {
+        this.fetchProjectPickerPage();
+      }
+      this.$nextTick(() => {
+        if (this.$refs.projectFilterSearchInput) this.$refs.projectFilterSearchInput.focus();
+      });
+    },
+    onProjectDropdownScroll(e) {
+      const el = e.target;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 60) {
+        this.fetchProjectPickerPage();
+      }
+    },
+    selectProjectFilter(id) {
+      this.projectFilter = id;
+      const match = this.getProjectPicker.items.find((p) => p._id === id);
+      this.projectFilterName = match ? match.projectname : "";
+      this.closeProjectDropdown();
+    },
+    // Closes the dropdown and clears its search box + loaded picker
+    // items — otherwise the next time it's opened it silently shows
+    // whatever page a previous search left behind (e.g. still filtered
+    // to "root" even though the search box looks empty) instead of the
+    // full project list.
+    closeProjectDropdown() {
+      this.projectDropdownOpen = false;
+      clearTimeout(this.projectFilterSearchTimer);
+      if (this.projectFilterQuery) {
+        this.projectFilterQuery = "";
+      } else {
+        this.resetProjectPicker("");
+      }
+    },
+    handleProjectDropdownOutsideClick(e) {
+      if (
+        this.projectDropdownOpen &&
+        this.$refs.projectFilterRoot &&
+        !this.$refs.projectFilterRoot.contains(e.target)
+      ) {
+        this.closeProjectDropdown();
+      }
+    },
     onUsersPageChange(page) {
       if (page === this.getUsersPagination.page) return;
       this.fetchUsersFiltered(page);
@@ -322,11 +416,6 @@ export default {
 </script>
 
 <style scoped>
-/*
-  Self-contained styling for the header + tab row, with colors hard-coded
-  directly (no CSS variables) so it still looks right even if the shared
-  theme.css / :root tokens aren't loaded elsewhere in the project.
-*/
 
 #dash-app {
   /* background: #f6f5f0; */
@@ -405,6 +494,93 @@ export default {
 .search-clear-btn:disabled:hover {
   background: #ffffff;
   color: #6b7280;
+}
+
+.project-filter {
+  position: relative;
+  flex: 0 0 auto;
+}
+.project-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 160px;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #e4e1d8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1c1e24;
+  font-size: 14px;
+  cursor: pointer;
+}
+.project-filter-btn:hover {
+  border-color: #128189;
+}
+.project-filter.disabled .project-filter-btn,
+.project-filter-btn:disabled {
+  background: #f6f5f0;
+  cursor: not-allowed;
+}
+.project-filter-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-filter-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  width: 100%;
+  min-width: 240px;
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(28, 30, 36, 0.12);
+  overflow: hidden;
+}
+.project-filter-search {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid #e4e1d8;
+  font-size: 13px;
+  text-align: left;
+  outline: none;
+}
+.project-filter-search:focus {
+  box-shadow: inset 0 0 0 2px rgba(18, 129, 137, 0.15);
+}
+.project-filter-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+.project-filter-option {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #1c1e24;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project-filter-option:hover {
+  background: #f6f5f0;
+}
+.project-filter-option.active {
+  background: rgba(18, 129, 137, 0.1);
+  color: #128189;
+  font-weight: 600;
+}
+.project-filter-loading {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
 }
 
 .role-filter-select {

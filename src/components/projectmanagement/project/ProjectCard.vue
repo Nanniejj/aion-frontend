@@ -246,9 +246,6 @@ export default {
   font-weight: 600;
   white-space: nowrap;
   line-height: 1.4;
-  background: #cce2e4;
-  border: 1px solid #c0d5d7;
-  box-shadow: 0 2px 0px rgba(131, 162, 168, 0.349);
 }
 
 .status-dot {
@@ -260,6 +257,9 @@ export default {
 
 .status-active {
   color: #0e5157;
+  background: #cce2e4;
+  border: 1px solid #9dc7ca;
+  box-shadow: 0 2px 0px rgba(131, 162, 168, 0.349);
 }
 
 .status-active .status-dot {
@@ -268,11 +268,15 @@ export default {
 }
 
 .status-inactive {
-  color: rgba(28, 30, 36, 0.55);
+  color: #6b7280;
+  background: #e9e7e0;
+  border: 1px solid #d8d4c8;
+  box-shadow: 0 2px 0px rgba(28, 30, 36, 0.08);
 }
 
 .status-inactive .status-dot {
-  background: rgba(28, 30, 36, 0.35);
+  background: #9aa0ac;
+  box-shadow: 0 0 0 3px rgba(28, 30, 36, 0.08);
 }
 
 .edit-btn {
@@ -295,7 +299,7 @@ export default {
 
 .edit-btn:hover {
   background: #fed16e;
-  /* border-color: #5a3f04; */
+  /* border-color: #bd9a4f; */
   color: #5a3f04;
 }
 

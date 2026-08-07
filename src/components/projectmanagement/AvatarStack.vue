@@ -44,7 +44,7 @@ export default {
     // How many avatars to show before collapsing the rest into a "+N" badge
     max: {
       type: Number,
-      default: 5,
+      default: 15,
     },
     large: {
       type: Boolean,
