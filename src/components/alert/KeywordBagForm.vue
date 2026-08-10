@@ -7,35 +7,51 @@
 
       <div>
         <h5 class="mb-0 kf-title">
-          {{ isEdit ? 'แก้ไขถุงคำ' : 'สร้างถุงคำใหม่' }}
+          {{ isEdit ? 'แก้ไข keywords' : 'สร้าง keywords' }}
         </h5>
-
-        <p class="kf-subtitle mb-0">
-          ตั้งค่าคำที่ต้องการติดตาม และเปิดแจ้งเตือนได้ในขั้นตอนเดียว
+       
+        <p v-if="isEdit" class="kf-meta mb-0">
+          <span>สร้าง: {{ formatDate(value && value.created_at) }}</span>
+          <span class="mx-2">•</span>
+          <span>อัปเดต: {{ formatDate(value && value.updated_at) }}</span>
         </p>
       </div>
     </div>
 
     <div class="kf-body">
-      <!-- Step 1: General information -->
+      <!-- Status -->
+      <section class="kf-section">
+        <label class="kf-switch-row">
+          <div>
+            <div class="kf-switch-title">
+              <b-icon :icon="form.is_active ? 'play-circle' : 'pause-circle'" class="mr-1" />
+              {{ form.is_active ? 'เปิดใช้งาน keywords นี้' : 'ปิดใช้งาน keywords นี้' }}
+            </div>
+            <div class="kf-switch-desc">
+              เมื่อปิดใช้งาน ระบบจะหยุดติดตามคำค้นหานี้ และปิดการแจ้งเตือนโดยอัตโนมัติ
+            </div>
+          </div>
+
+          <b-form-checkbox
+            v-model="form.is_active"
+            switch
+            size="lg"
+            class="kf-switch"
+          />
+        </label>
+      </section>
+
+      <!-- Step 1 -->
       <section class="kf-section">
         <div class="kf-section-head">
           <span class="kf-step">1</span>
-
-          <div>
-            <h6 class="kf-section-title mb-0">
-              ตั้งชื่อถุงคำ
-            </h6>
-          </div>
+          <h6 class="kf-section-title mb-0">ตั้งชื่อ keywords</h6>
         </div>
 
-        <b-form-group
-          label="ชื่อถุงคำ"
-          label-class="kf-label"
-        >
+        <b-form-group label="ชื่อ keywords" label-class="kf-label">
           <b-form-input
             v-model.trim="form.name"
-            placeholder="เช่น ถุงคำแบรนด์ A"
+            placeholder="เช่น keywords แบรนด์ A"
             class="kf-input"
           />
         </b-form-group>
@@ -53,193 +69,22 @@
         </b-form-group>
       </section>
 
-      <!-- Step 2: Keyword source -->
+      <!-- Step 2 -->
       <section class="kf-section">
         <div class="kf-section-head">
           <span class="kf-step">2</span>
-
-          <div>
-            <h6 class="kf-section-title mb-0">
-              เลือกแหล่งที่มาของคำค้นหา
-            </h6>
-          </div>
+          <h6 class="kf-section-title mb-0">กำหนดคำค้นหา</h6>
         </div>
 
-        <div class="kf-mode-grid">
-          <button
-            type="button"
-            class="kf-mode-card"
-            :class="{ active: form.config_mode === 'domain' }"
-            @click="setMode('domain')"
-          >
-            <div class="kf-mode-icon">
-              <b-icon icon="diagram-3" />
-            </div>
-
-            <div>
-              <div class="kf-mode-title">
-                ดึงจาก Domain
-              </div>
-
-              <div class="kf-mode-desc">
-                เลือก Domain → Subdomain → Object
-                แล้วระบบจะสร้างคำค้นหาให้อัตโนมัติ
-              </div>
-            </div>
-
-            <b-icon
-              v-if="form.config_mode === 'domain'"
-              icon="check-circle-fill"
-              class="kf-mode-check"
-            />
-          </button>
-
-          <button
-            type="button"
-            class="kf-mode-card"
-            :class="{ active: form.config_mode === 'custom' }"
-            @click="setMode('custom')"
-          >
-            <div class="kf-mode-icon">
-              <b-icon icon="pencil" />
-            </div>
-
-            <div>
-              <div class="kf-mode-title">
-                กำหนดถุงคำเอง
-              </div>
-
-              <div class="kf-mode-desc">
-                พิมพ์คำค้นหาที่ต้องการติดตามด้วยตัวเอง
-                สามารถกำหนดได้อย่างอิสระ
-              </div>
-            </div>
-
-            <b-icon
-              v-if="form.config_mode === 'custom'"
-              icon="check-circle-fill"
-              class="kf-mode-check"
-            />
-          </button>
-        </div>
-
-        <!-- Domain cascade -->
-        <transition name="kf-fade">
-          <div
-            v-if="form.config_mode === 'domain'"
-            class="kf-domain-flow"
-          >
-            <b-form-group
-              label="Domain"
-              label-class="kf-label"
-            >
-              <v-select
-                v-model="domainSelection.domain_id"
-                :options="domains"
-                label="name"
-                :reduce="(domain) => domain.id"
-                placeholder="ค้นหาหรือเลือก Domain"
-                @input="onDomainChange"
-              />
-            </b-form-group>
-
-            <b-form-group
-              v-if="domainSelection.domain_id"
-              label="Subdomain"
-              label-class="kf-label"
-            >
-              <b-spinner
-                v-if="loadingSubdomains"
-                small
-                class="my-2"
-              />
-
-              <template v-else>
-                <v-select
-                  v-model="domainSelection.subdomain_ids"
-                  :options="subdomains"
-                  label="subdomain_name"
-                  :reduce="(subdomain) => subdomain.subdomain_id"
-                  multiple
-                  placeholder="เลือก Subdomain ได้มากกว่า 1 รายการ"
-                  @input="onSubdomainChange"
-                />
-
-                <div
-                  v-if="!subdomains.length"
-                  class="small text-muted mt-1"
-                >
-                  ไม่มี Subdomain สำหรับ Domain นี้
-                </div>
-              </template>
-            </b-form-group>
-
-            <b-form-group
-              v-if="domainSelection.subdomain_ids.length"
-              label="Object (แบรนด์ / หัวข้อ)"
-              label-class="kf-label"
-              class="mb-0"
-            >
-              <b-spinner
-                v-if="loadingObjects"
-                small
-                class="my-2"
-              />
-
-              <template v-else>
-                <v-select
-                  v-model="domainSelection.object_ids"
-                  :options="objects"
-                  label="object_name"
-                  :reduce="(object) => object.object_id"
-                  multiple
-                  placeholder="เลือก Object ที่ต้องการติดตาม"
-                  @input="syncSearchQueryFromDomain"
-                />
-
-                <div
-                  v-if="!objects.length"
-                  class="small text-muted mt-1"
-                >
-                  ไม่มี Object สำหรับ Subdomain ที่เลือก
-                </div>
-              </template>
-            </b-form-group>
-
-            <div
-              v-if="
-                domainSelection.domain_id &&
-                !domainSelection.subdomain_ids.length
-              "
-              class="kf-hint"
-            >
-              <b-icon
-                icon="info-circle"
-                class="mr-1"
-              />
-
-              เลือก Subdomain อย่างน้อย 1 รายการ
-              เพื่อเลือก Object ที่ต้องการติดตาม
-            </div>
-          </div>
-        </transition>
-
-        <!-- Search query -->
         <div class="kf-query-block">
-          <b-form-group class="mb-2">
-            <template #label>
-              <span class="kf-label">
-                คำค้นหา
-              </span>
+          <b-alert show variant="light" class="kf-query-help mb-3">
+            AND ใช้ช่องว่างหรือเครื่องหมาย + และ OR ใช้เครื่องหมาย ,
+            <br />
+            ตัวอย่าง:
+            <strong>คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย</strong>
+          </b-alert>
 
-              <b-icon
-                icon="question-circle"
-                class="kf-info-icon"
-                v-b-tooltip.hover
-                title="เว้นวรรค หรือเครื่องหมาย + หมายถึงต้องพบทุกคำในกลุ่มเดียวกัน ส่วนเครื่องหมายจุลภาค (,) หมายถึงพบคำใดคำหนึ่งก็ได้"
-              />
-            </template>
-
+          <b-form-group label="คำค้นหา" label-class="kf-label" class="mb-3">
             <b-input-group>
               <template #prepend>
                 <b-input-group-text>
@@ -248,19 +93,11 @@
               </template>
 
               <b-form-input
-                v-model.trim="form.search_query"
-                placeholder="เช่น แบรนด์เอ, brand a"
-                :disabled="form.config_mode === 'domain'"
+                v-model.trim="form.keyword"
+                placeholder="คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย"
                 class="kf-input"
               />
             </b-input-group>
-
-            <small
-              v-if="form.config_mode === 'domain'"
-              class="text-muted"
-            >
-              ระบบสร้างคำค้นหาจาก Object ที่เลือกให้อัตโนมัติ
-            </small>
           </b-form-group>
 
           <b-form-group
@@ -276,24 +113,47 @@
               </template>
 
               <b-form-input
-                v-model.trim="form.exclude_query"
+                v-model.trim="form.exclude"
                 placeholder="เช่น สแปม, ร้านปิด"
                 class="kf-input"
               />
             </b-input-group>
           </b-form-group>
 
+          <b-form-group
+            label="Hashtags (ไม่ใส่ #)"
+            label-class="kf-label"
+            class="mb-3"
+          >
+            <b-form-tags
+              v-model="form.hashtags"
+              separator=",;"
+              placeholder="เพิ่มแฮชแท็กด้วย , หรือ Enter"
+              class="kf-input"
+            />
+          </b-form-group>
+
+          <b-form-group
+            label="Sentiment"
+            label-class="kf-label"
+            class="mb-3"
+          >
+            <v-select
+              v-model="form.sentiment"
+              :options="sentimentOptions"
+              :reduce="option => option.value"
+              label="label"
+              multiple
+              placeholder="เลือก Sentiment"
+            />
+          </b-form-group>
+
           <div class="kf-preview">
-            <div class="kf-preview-title">
-              ตัวอย่างเงื่อนไขที่ระบบจะใช้
-            </div>
+            <div class="kf-preview-title">ตัวอย่างเงื่อนไขที่ระบบจะใช้</div>
 
             <div class="kf-preview-row">
               <span class="kf-preview-label">
-                <b-icon
-                  icon="check-circle"
-                  class="mr-1"
-                />
+                <b-icon icon="check-circle" class="mr-1" />
                 จับคำ
               </span>
 
@@ -304,46 +164,25 @@
                     :key="`search-group-${groupIndex}`"
                     class="kf-preview-group"
                   >
-                    <span
-                      v-if="groupIndex > 0"
-                      class="kf-preview-op"
-                    >
-                      OR
-                    </span>
+                    <span v-if="groupIndex > 0" class="kf-preview-op">OR</span>
 
                     <span
                       v-for="(term, termIndex) in group"
                       :key="`search-term-${groupIndex}-${termIndex}`"
                     >
-                      <span
-                        v-if="termIndex > 0"
-                        class="kf-preview-op"
-                      >
-                        AND
-                      </span>
-
-                      <b-badge class="kf-chip kf-chip-include">
-                        {{ term }}
-                      </b-badge>
+                      <span v-if="termIndex > 0" class="kf-preview-op">AND</span>
+                      <b-badge class="kf-chip kf-chip-include">{{ term }}</b-badge>
                     </span>
                   </span>
                 </template>
 
-                <span
-                  v-else
-                  class="text-muted"
-                >
-                  ยังไม่ได้ระบุคำค้นหา
-                </span>
+                <span v-else class="text-muted">ยังไม่ได้ระบุคำค้นหา</span>
               </span>
             </div>
 
             <div class="kf-preview-row">
               <span class="kf-preview-label">
-                <b-icon
-                  icon="slash-circle"
-                  class="mr-1"
-                />
+                <b-icon icon="slash-circle" class="mr-1" />
                 ไม่เอา
               </span>
 
@@ -354,65 +193,43 @@
                     :key="`exclude-group-${groupIndex}`"
                     class="kf-preview-group"
                   >
-                    <span
-                      v-if="groupIndex > 0"
-                      class="kf-preview-op"
-                    >
-                      OR
-                    </span>
+                    <span v-if="groupIndex > 0" class="kf-preview-op">OR</span>
 
                     <span
                       v-for="(term, termIndex) in group"
                       :key="`exclude-term-${groupIndex}-${termIndex}`"
                     >
-                      <span
-                        v-if="termIndex > 0"
-                        class="kf-preview-op"
-                      >
-                        AND
-                      </span>
-
-                      <b-badge class="kf-chip kf-chip-exclude">
-                        {{ term }}
-                      </b-badge>
+                      <span v-if="termIndex > 0" class="kf-preview-op">AND</span>
+                      <b-badge class="kf-chip kf-chip-exclude">{{ term }}</b-badge>
                     </span>
                   </span>
                 </template>
 
-                <span
-                  v-else
-                  class="text-muted"
-                >
-                  ไม่มี
-                </span>
+                <span v-else class="text-muted">ไม่มี</span>
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Step 3: Alert -->
+      <!-- Step 3 -->
       <section class="kf-section kf-section-last">
         <div class="kf-section-head">
           <span class="kf-step">3</span>
-
-          <div>
-            <h6 class="kf-section-title mb-0">
-              แจ้งเตือนเมื่อมีความผิดปกติ
-            </h6>
-          </div>
+          <h6 class="kf-section-title mb-0">
+            แจ้งเตือนเมื่อมีความผิดปกติ
+          </h6>
         </div>
 
-        <label class="kf-switch-row">
+        <label
+          class="kf-switch-row"
+          :class="{ 'kf-switch-row-disabled': !form.is_active }"
+        >
           <div>
             <div class="kf-switch-title">
-              <b-icon
-                icon="bell"
-                class="mr-1"
-              />
-              เปิดการแจ้งเตือนสำหรับถุงคำนี้
+              <b-icon icon="bell" class="mr-1" />
+              เปิดการแจ้งเตือนสำหรับ keywords นี้
             </div>
-
             <div class="kf-switch-desc">
               ระบบจะแจ้งเตือนเมื่อปริมาณข้อมูลสูงกว่าระดับปกติ
             </div>
@@ -423,14 +240,53 @@
             switch
             size="lg"
             class="kf-switch"
+            :disabled="!form.is_active"
           />
         </label>
 
+        <div v-if="!form.is_active" class="kf-channel-hint">
+          <b-icon icon="info-circle" class="mr-1" />
+          ต้องเปิดใช้งาน keywords นี้ก่อน จึงจะเปิดการแจ้งเตือนได้
+        </div>
+
         <transition name="kf-fade">
-          <div
-            v-if="form.enable_alert"
-            class="kf-alert-panel"
-          >
+          <div v-if="form.enable_alert" class="kf-alert-panel">
+
+            <!-- ▼ เลือกช่องทาง (ไม่บังคับ — ยังไม่เลือก/ยังไม่เชื่อมก็บันทึกได้ก่อน ไปผูกทีหลังได้) -->
+            <b-form-group
+              label="ช่องทางแจ้งเตือน (ไม่บังคับ)"
+              label-class="kf-label-sm"
+              class="mb-2"
+            >
+              <div class="kf-channel-preview">
+           <i class="fa-brands fa-line" style="color: #00c300;font-size: 20px;"></i>
+                ระบบจะส่งแจ้งเตือนผ่าน LINE OA โดยอัตโนมัติ  <a href="#" @click.prevent="$emit('open-channel-settings')">ตั้งค่าช่องทางแจ้งเตือน</a>
+              </div>
+
+              <b-form-checkbox-group
+                v-model="alert.notify_channels"
+                :options="channelOptionsWithStatus"
+                buttons
+                button-variant="outline-info"
+                class="kf-channel-group d-none"
+                disabled
+              />
+            </b-form-group>
+
+            <div v-if="!alert.notify_channels.length" class="kf-channel-hint d-none">
+              <b-icon icon="info-circle" class="mr-1" />
+              ยังไม่ได้เลือกช่องทางแจ้งเตือน — บันทึก keywords นี้ได้เลย แล้วค่อยไปผูกช่องทาง/เลือกช่องทางทีหลังได้ที่
+              <a href="#" @click.prevent="$emit('open-channel-settings')">ตั้งค่าช่องทางแจ้งเตือน</a>
+            </div>
+
+            <div v-else-if="hasUnconnectedSelection" class="kf-channel-hint d-none">
+              <b-icon icon="info-circle" class="mr-1" />
+              บางช่องทางที่เลือกยังไม่ได้เชื่อมต่อ ไปที่
+              <a href="#" @click.prevent="$emit('open-channel-settings')">ตั้งค่าช่องทางแจ้งเตือน</a>
+              เพื่อเชื่อมต่อก่อน ระบบจะยังไม่ส่งแจ้งเตือนผ่านช่องทางนั้นจนกว่าจะเชื่อมต่อสำเร็จ
+            </div>
+            <!-- ▲ -->
+
             <div class="kf-alert-intro">
               <div class="kf-alert-intro-icon">
                 <b-icon icon="graph-up" />
@@ -440,10 +296,9 @@
                 <div class="kf-alert-intro-title">
                   ระบบตรวจจับความผิดปกติอย่างไร
                 </div>
-
                 <div class="kf-alert-intro-desc">
-                  ระบบจะเปรียบเทียบข้อมูลในช่วงเวลาปัจจุบัน
-                  กับค่าเฉลี่ยปกติของช่วงเวลาก่อนหน้า
+                  ระบบจะตรวจสอบข้อมูลตามช่วงเวลาที่กำหนด และเริ่มแจ้งเตือน
+                  เมื่อจำนวนโพสต์หรือ Engagement ถึงค่าขั้นต่ำ
                 </div>
               </div>
             </div>
@@ -465,57 +320,43 @@
                 <b-form-group
                   label="ตรวจสอบทุก"
                   label-class="kf-label-sm"
+                  :state="windowValueState"
+                  invalid-feedback="กรุณาระบุจำนวนที่มากกว่า 0"
                 >
-                  <b-form-select
-                    v-model.number="alert.window_minutes"
-                    :options="windowOptions"
-                  />
+                  <div class="d-flex">
+                    <b-form-input
+                      v-model.number="alert.window_value"
+                      type="number"
+                      min="1"
+                      step="1"
+                      placeholder="จำนวน"
+                      class="mr-2"
+                      :state="windowValueState"
+                    />
+                    <b-form-select
+                      v-model="alert.window_unit"
+                      :options="windowUnits"
+                    />
+                  </div>
                 </b-form-group>
               </b-col>
             </b-row>
 
-            <div class="kf-threshold-box">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                  <div class="kf-label-sm">
-                    แจ้งเตือนเมื่อสูงกว่าค่าเฉลี่ยปกติ
-                  </div>
-
-                  <div class="kf-threshold-help">
-                    ตัวอย่าง: 150% หมายถึงข้อมูลมากกว่าค่าเฉลี่ยปกติ 1.5 เท่า
-                  </div>
-                </div>
-
-                <span class="kf-threshold-value">
-                  {{ alert.threshold_percent }}%
-                </span>
-              </div>
-
-              <b-form-input
-                v-model.number="alert.threshold_percent"
-                type="range"
-                min="50"
-                max="500"
-                step="10"
-              />
-
-              <div class="kf-range-labels">
-                <span>50%</span>
-                <span>500%</span>
-              </div>
-            </div>
-
-            <b-row class="mt-3 mb-1">
+            <b-row class="mt-2 mb-1">
               <b-col md="6">
                 <b-form-group
-                  label="จำนวน Mention ขั้นต่ำ"
+                  label="จำนวนโพสต์ขั้นต่ำ"
                   label-class="kf-label-sm"
-                  description="ระบบจะยังไม่แจ้งเตือน หากจำนวนข้อมูลยังต่ำกว่าค่านี้"
+                  description="ระบบจะยังไม่แจ้งเตือน หากจำนวนข้อมูลต่ำกว่าค่านี้"
+                  :state="minVolumeState"
+                  invalid-feedback="กรุณาระบุจำนวนเต็มที่มากกว่า 0"
                 >
                   <b-form-input
                     v-model.number="alert.min_volume"
                     type="number"
                     min="1"
+                    step="1"
+                    :state="minVolumeState"
                   />
                 </b-form-group>
               </b-col>
@@ -525,31 +366,21 @@
                   label="เว้นระยะการแจ้งเตือน"
                   label-class="kf-label-sm"
                   description="ป้องกันการแจ้งเตือนซ้ำบ่อยเกินไป"
+                  :state="cooldownState"
+                  invalid-feedback="กรุณาระบุจำนวนตั้งแต่ 0 ขึ้นไป"
                 >
                   <b-input-group append="นาที">
                     <b-form-input
                       v-model.number="alert.cooldown_minutes"
                       type="number"
                       min="0"
+                      step="1"
+                      :state="cooldownState"
                     />
                   </b-input-group>
                 </b-form-group>
               </b-col>
             </b-row>
-
-            <b-form-group
-              label="ช่องทางแจ้งเตือน"
-              label-class="kf-label-sm"
-              class="mb-0"
-            >
-              <b-form-checkbox-group
-                v-model="alert.notify_channels"
-                :options="channelOptions"
-                buttons
-                button-variant="outline-primary"
-                class="kf-channel-group"
-              />
-            </b-form-group>
           </div>
         </transition>
       </section>
@@ -569,50 +400,54 @@
         :disabled="!canSave"
         @click="save"
       >
-        <b-spinner
-          v-if="saving"
-          small
-          class="mr-1"
-        />
-
-        <b-icon
-          v-else
-          icon="check2"
-          class="mr-1"
-        />
-
-        {{ saving ? 'กำลังบันทึก...' : 'บันทึกถุงคำ' }}
+        <b-spinner v-if="saving" small class="mr-1" />
+        <b-icon v-else icon="check2" class="mr-1" />
+        {{ saving ? 'กำลังบันทึก...' : 'บันทึก keywords' }}
       </b-button>
     </div>
   </b-card>
 </template>
 
 <script>
-import { mockApi } from './mock/store'
+import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 
-// เว้นวรรคหรือเครื่องหมาย + = AND ภายในกลุ่ม
-// เครื่องหมายจุลภาค (,) = OR ระหว่างกลุ่ม
+// ปรับ path ตรงนี้ที่เดียวถ้า backend ไม่ได้ mount ตาม default นี้
+// dev: proxy ผ่าน vue.config.js -> http://localhost:8080
+// (แก้: ตัด "/" ท้าย URL ออก กัน path ซ้อน เช่น "...alert//addKeywordBag")
+const KEYWORD_BAG_BASE = 'http://localhost:3000/api/v2/alert'
+
 function parseGroups(input) {
-  if (!input || !input.trim()) {
-    return []
-  }
+  if (!input || !input.trim()) return []
 
   return input
     .split(',')
-    .map((group) => group.trim())
+    .map(group => group.trim())
     .filter(Boolean)
-    .map((group) =>
+    .map(group =>
       group
         .split(/[\s+]+/)
-        .map((term) => term.trim().toLowerCase())
+        .map(term => term.trim().toLowerCase())
         .filter(Boolean)
     )
-    .filter((group) => group.length > 0)
+    .filter(group => group.length > 0)
+}
+
+function isPositiveInt(value, min = 1) {
+  return (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    Number.isInteger(value) &&
+    value >= min
+  )
 }
 
 export default {
   name: 'KeywordBagForm',
+
+  components: {
+    vSelect,
+  },
 
   props: {
     value: {
@@ -620,114 +455,90 @@ export default {
       default: null,
     },
 
-    alertValue: {
+    // สถานะการเชื่อมต่อของแต่ละช่องทาง ส่งมาจาก parent ซึ่งดึงมาจาก
+    // NotifyChannelSettings (หรือ store กลาง) — form นี้ "อ่านอย่างเดียว"
+    // ไม่มีสิทธิ์เชื่อม/ยกเลิกช่องทางใด ๆ เอง
+    channelStatus: {
       type: Object,
-      default: null,
+      default: () => ({ telegram: false, email: true, line_oa: false }),
     },
   },
 
   data() {
     return {
       saving: false,
-      loadingSubdomains: false,
-      loadingObjects: false,
 
+      // ── ฟอร์มหลัก — field name ตรงกับ AlertKeywordBag schema ทุกตัว ──────
       form: {
         name: this.value?.name || '',
         description: this.value?.description || '',
-        search_query: this.value?.search_query || '',
-        exclude_query: this.value?.exclude_query || '',
+        keyword: this.value?.keyword || '',
+        exclude: this.value?.exclude || '',
+        hashtags: Array.isArray(this.value?.hashtags)
+          ? [...this.value.hashtags]
+          : [],
+        sentiment: Array.isArray(this.value?.sentiment)
+          ? [...this.value.sentiment]
+          : [],
         enable_alert:
           typeof this.value?.enable_alert === 'boolean'
             ? this.value.enable_alert
             : true,
-        config_mode: this.value?.config_mode || 'custom',
+        is_active:
+          typeof this.value?.is_active === 'boolean'
+            ? this.value.is_active
+            : true,
       },
-
-      domainSelection: {
-        domain_id: this.value?.domain_id || null,
-        subdomain_ids: Array.isArray(this.value?.subdomain_ids)
-          ? [...this.value.subdomain_ids]
-          : [],
-        object_ids: Array.isArray(this.value?.object_ids)
-          ? [...this.value.object_ids]
-          : [],
-      },
-
-      domains: [],
-      subdomains: [],
-      objects: [],
 
       alert: {
-        metric: this.alertValue?.metric || 'frequency',
-        window_minutes: Number(this.alertValue?.window_minutes || 30),
-        threshold_percent: Number(
-          this.alertValue?.threshold_percent || 150
-        ),
-        min_volume: Number(this.alertValue?.min_volume || 10),
-        cooldown_minutes: Number(
-          this.alertValue?.cooldown_minutes || 120
-        ),
-        notify_channels: Array.isArray(
-          this.alertValue?.notify_channels
-        )
-          ? [...this.alertValue.notify_channels]
-          : ['in_app'],
+        metric: this.value?.alert?.metric || 'frequency',
+        window_value: Number(this.value?.alert?.window_value || 1),
+        window_unit: this.value?.alert?.window_unit || 'hours',
+        threshold_percent: Number(this.value?.alert?.threshold_percent || 150),
+        min_volume: Number(this.value?.alert?.min_volume || 10),
+        cooldown_minutes: Number(this.value?.alert?.cooldown_minutes ?? 120),
+        // เก็บเฉพาะ "ที่ผู้ใช้อยากใช้" ไม่ใช่สถานะการเชื่อมต่อจริง —
+        // ไม่บังคับต้องเลือก และไม่บังคับต้องเชื่อมต่อก่อนถึงจะบันทึกได้
+        // ยังไม่เลือก/ยังไม่เชื่อมก็บันทึก keyword ได้ก่อน ไปผูกทีหลังได้
+        notify_channels: Array.isArray(this.value?.alert?.notify_channels) &&
+        this.value.alert.notify_channels.length
+          ? [...this.value.alert.notify_channels]
+          : ['line_oa'],
       },
 
       metricOptions: [
-        {
-          value: 'frequency',
-          text: 'จำนวน Mention',
-        },
-        {
-          value: 'engagement',
-          text: 'ยอด Engagement',
-        },
-        {
-          value: 'both',
-          text: 'ทั้ง Mention และ Engagement',
-        },
+        { value: 'frequency', text: 'จำนวนโพสต์' },
+        // { value: 'engagement', text: 'ยอด Engagement' },
+        // { value: 'both', text: 'ทั้งโพสต์ และ Engagement' },
       ],
 
-      windowOptions: [
-        {
-          value: 15,
-          text: '15 นาที',
-        },
-        {
-          value: 30,
-          text: '30 นาที',
-        },
-        {
-          value: 60,
-          text: '1 ชั่วโมง',
-        },
+      windowUnits: [
+        { value: 'minutes', text: 'นาที' },
+        { value: 'hours', text: 'ชั่วโมง' },
+        { value: 'days', text: 'วัน' },
       ],
 
       channelOptions: [
-        {
-          value: 'in_app',
-          text: 'ในแอป',
-        },
-        {
-          value: 'email',
-          text: 'อีเมล',
-        },
-        {
-          value: 'line',
-          text: 'LINE',
-        },
-        {
-          value: 'telegram',
-          text: 'Telegram',
-        },
-        {
-          value: 'webhook',
-          text: 'Webhook',
-        },
+        // { value: 'telegram', text: 'Telegram' },
+        // { value: 'email', text: 'อีเมล' },
+        { value: 'line_oa', text: 'LINE OA' },
+      ],
+
+      sentimentOptions: [
+        { value: '1', label: 'เชิงบวก' },
+        { value: '0', label: 'เป็นกลาง' },
+        { value: '-1', label: 'เชิงลบ' },
       ],
     }
+  },
+
+  watch: {
+    'form.is_active'(newVal) {
+      // ปิดใช้งาน keywords ต้องปิดการแจ้งเตือนไปด้วยเสมอ
+      if (!newVal) {
+        this.form.enable_alert = false
+      }
+    },
   },
 
   computed: {
@@ -735,277 +546,228 @@ export default {
       return Boolean(this.value?._id)
     },
 
+    // เติมสถานะเชื่อมต่อ ● ต่อท้าย label ปุ่ม โดยไม่แก้ channelOptions ต้นทาง
+    channelOptionsWithStatus() {
+      return this.channelOptions.map(opt => ({
+        ...opt,
+        text: this.channelStatus[opt.value]
+          ? `${opt.text} ●`
+          : opt.text,
+      }))
+    },
+
+    hasUnconnectedSelection() {
+      return this.alert.notify_channels.some(
+        channel => !this.channelStatus[channel]
+      )
+    },
+
+    minVolumeState() {
+      if (!this.form.enable_alert) return null
+      return isPositiveInt(this.alert.min_volume, 1) ? null : false
+    },
+
+    windowValueState() {
+      if (!this.form.enable_alert) return null
+      return isPositiveInt(this.alert.window_value, 1) ? null : false
+    },
+
+    cooldownState() {
+      if (!this.form.enable_alert) return null
+      return isPositiveInt(this.alert.cooldown_minutes, 0) ? null : false
+    },
+
+    isAlertValid() {
+      if (!this.form.enable_alert) return true
+
+      // ไม่บังคับเลือกช่องทางแจ้งเตือนแล้ว — ยังไม่เลือกก็บันทึกได้
+      return (
+        isPositiveInt(this.alert.min_volume, 1) &&
+        isPositiveInt(this.alert.window_value, 1) &&
+        isPositiveInt(this.alert.cooldown_minutes, 0)
+      )
+    },
+
     canSave() {
       return Boolean(
         this.form.name &&
-        this.form.search_query &&
+        this.form.keyword &&
+        this.isAlertValid &&
         !this.saving
       )
     },
 
     searchGroups() {
-      return parseGroups(this.form.search_query)
+      return parseGroups(this.form.keyword)
     },
 
     excludeGroups() {
-      return parseGroups(this.form.exclude_query)
+      return parseGroups(this.form.exclude)
     },
-  },
-
-  async mounted() {
-    await this.loadInitialData()
   },
 
   methods: {
-    async loadInitialData() {
-      try {
-        this.domains = await mockApi.listDomains()
-
-        if (this.domainSelection.domain_id) {
-          await this.loadSubdomains(
-            this.domainSelection.domain_id
-          )
-        }
-
-        if (this.domainSelection.subdomain_ids.length) {
-          await this.loadObjects(
-            this.domainSelection.subdomain_ids
-          )
-        }
-
-        if (
-          this.form.config_mode === 'domain' &&
-          this.domainSelection.object_ids.length
-        ) {
-          this.syncSearchQueryFromDomain()
-        }
-      } catch (error) {
-        this.handleError(
-          error,
-          'ไม่สามารถโหลดข้อมูลเริ่มต้นได้'
-        )
-      }
-    },
-
-    setMode(mode) {
-      if (this.form.config_mode === mode) {
-        return
-      }
-
-      this.form.config_mode = mode
-
-      if (mode === 'domain') {
-        this.syncSearchQueryFromDomain()
-      }
-    },
-
-    async onDomainChange() {
-      this.domainSelection.subdomain_ids = []
-      this.domainSelection.object_ids = []
-      this.subdomains = []
-      this.objects = []
-
-      this.syncSearchQueryFromDomain()
-
-      if (!this.domainSelection.domain_id) {
-        return
-      }
-
-      await this.loadSubdomains(
-        this.domainSelection.domain_id
-      )
-    },
-
-    async onSubdomainChange() {
-      this.domainSelection.object_ids = []
-      this.objects = []
-
-      this.syncSearchQueryFromDomain()
-
-      if (!this.domainSelection.subdomain_ids.length) {
-        return
-      }
-
-      await this.loadObjects(
-        this.domainSelection.subdomain_ids
-      )
-    },
-
-    async loadSubdomains(domainId) {
-      this.loadingSubdomains = true
-
-      try {
-        this.subdomains =
-          await mockApi.listSubdomains(domainId)
-      } catch (error) {
-        this.subdomains = []
-        this.handleError(
-          error,
-          'ไม่สามารถโหลด Subdomain ได้'
-        )
-      } finally {
-        this.loadingSubdomains = false
-      }
-    },
-
-    async loadObjects(subdomainIds) {
-      this.loadingObjects = true
-
-      try {
-        this.objects =
-          await mockApi.listObjects(subdomainIds)
-      } catch (error) {
-        this.objects = []
-        this.handleError(
-          error,
-          'ไม่สามารถโหลด Object ได้'
-        )
-      } finally {
-        this.loadingObjects = false
-      }
-    },
-
-    syncSearchQueryFromDomain() {
-      if (this.form.config_mode !== 'domain') {
-        return
-      }
-
-      const selectedObjectIds =
-        this.domainSelection.object_ids || []
-
-      const selectedObjectNames = this.objects
-        .filter((object) =>
-          selectedObjectIds.includes(object.object_id)
-        )
-        .map((object) => object.object_name)
-        .filter(Boolean)
-
-      this.form.search_query =
-        selectedObjectNames.join(', ')
-    },
+    // ── Payload builders ───────────────────────────────────────────────────
+    // field names ต้องตรงกับ routes/alertKeywordBag.js และ models/AlertKeywordBag.js
 
     buildBagPayload() {
-      const isDomainMode =
-        this.form.config_mode === 'domain'
-
       return {
         name: this.form.name.trim(),
         description: this.form.description.trim(),
-        search_query: this.form.search_query.trim(),
-        exclude_query: this.form.exclude_query.trim(),
+        keyword: this.form.keyword.trim(),
+        exclude: this.form.exclude.trim(),
+        hashtags: [...this.form.hashtags],
+        sentiment: [...this.form.sentiment],
         enable_alert: this.form.enable_alert,
-        config_mode: this.form.config_mode,
-        domain_id: isDomainMode
-          ? this.domainSelection.domain_id
-          : null,
-        subdomain_ids: isDomainMode
-          ? [...this.domainSelection.subdomain_ids]
-          : [],
-        object_ids: isDomainMode
-          ? [...this.domainSelection.object_ids]
-          : [],
+        is_active: this.form.is_active,
       }
     },
 
     buildAlertPayload() {
+      // ส่งช่องทางที่ user เลือกไปตรงๆ ไม่กรองด้วย channelStatus แล้ว —
+      // แม้ช่องทางไหนยังไม่เชื่อมต่อก็เก็บ selection ไว้ก่อนได้ (backend จะ
+      // ยังไม่ส่งจนกว่าจะเชื่อมต่อสำเร็จ ไม่ต้องย้อนมาติ๊กเลือกใหม่ทีหลัง)
       return {
         metric: this.alert.metric,
-        window_minutes: Number(
-          this.alert.window_minutes
+        window_value: Number(this.alert.window_value),
+        window_unit: this.alert.window_unit,
+        window_minutes: this.toMinutes(
+          this.alert.window_value,
+          this.alert.window_unit
         ),
-        threshold_percent: Number(
-          this.alert.threshold_percent
-        ),
+        threshold_percent: Number(this.alert.threshold_percent),
         min_volume: Number(this.alert.min_volume),
-        cooldown_minutes: Number(
-          this.alert.cooldown_minutes
-        ),
-        notify_channels: [
-          ...this.alert.notify_channels,
-        ],
+        cooldown_minutes: Number(this.alert.cooldown_minutes),
+        notify_channels: [...this.alert.notify_channels],
       }
     },
 
-    async save() {
-      if (!this.canSave) {
-        return
+    toMinutes(value, unit) {
+      const n = Number(value) || 0
+      const factors = {
+        minutes: 1,
+        hours: 60,
+        days: 1440,
       }
+      return n * (factors[unit] || 1)
+    },
+
+    formatDate(value) {
+      if (!value) return '—'
+
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) return value
+
+      return new Intl.DateTimeFormat('th-TH', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date)
+    },
+
+    // ── Create / Update — ตรงกับ routes/alertKeywordBag.js ─────────────────
+
+    async createBagOnServer(payload) {
+      const headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('token'),
+        'Content-Type': 'application/json',
+      }
+      const { data } = await this.axios.post(
+        `${KEYWORD_BAG_BASE}/addKeywordBag`,
+        payload,
+        { headers }
+      )
+      return data.data
+    },
+
+    async updateBagOnServer(id, payload) {
+      const headers = {
+        Authorization: 'Bearer ' + localStorage.getItem('token'),
+        'Content-Type': 'application/json',
+      }
+      const { data } = await this.axios.put(
+        `${KEYWORD_BAG_BASE}/updateKeywordBag`,
+        { id, ...payload },
+        { headers }
+      )
+      return data.data
+    },
+
+    async save() {
+      if (!this.canSave) return
+
+      // หมายเหตุ: เดิมมีการเช็ค hasUnconnectedSelection แล้วเปิด modal
+      // ถามยืนยันก่อนบันทึก — ตัดออกแล้วตามที่ต้องการ ให้บันทึกได้ทันที
+      // แม้ช่องทางที่เลือกจะยังไม่ได้เชื่อมต่อ (ข้อความ hint ในฟอร์ม
+      // ด้านบนยังแจ้งเตือนผู้ใช้อยู่ตามปกติ)
 
       this.saving = true
 
       try {
-        const bagPayload = this.buildBagPayload()
-
-        const bag = this.isEdit
-          ? await mockApi.updateBag(
-              this.value._id,
-              bagPayload
-            )
-          : await mockApi.createBag(bagPayload)
-
-        if (this.form.enable_alert) {
-          await mockApi.updateAlertSettings(
-            bag._id,
-            this.buildAlertPayload()
-          )
+        const bagPayload = {
+          ...this.buildBagPayload(),
+          alert: this.buildAlertPayload(),
         }
 
-        this.$emit('saved', {
-          ...bag,
-          enable_alert: this.form.enable_alert,
-        })
+        const bag = this.isEdit
+          ? await this.updateBagOnServer(this.value._id, bagPayload)
+          : await this.createBagOnServer(bagPayload)
+
+        this.$emit('saved', bag)
       } catch (error) {
-        this.handleError(
-          error,
-          'ไม่สามารถบันทึกถุงคำได้'
-        )
+        this.handleError(error, 'ไม่สามารถบันทึก keywords ได้')
       } finally {
         this.saving = false
       }
     },
 
-    handleError(error, fallbackMessage) {
-      console.error(error)
-
-      const message =
+    extractError(error, fallbackMessage) {
+      return (
         error?.response?.data?.message ||
         error?.message ||
         fallbackMessage
+      )
+    },
 
-      if (this.$bvToast) {
-        this.$bvToast.toast(message, {
-          title: 'เกิดข้อผิดพลาด',
-          variant: 'danger',
-          solid: true,
-        })
-      }
+    handleError(error, fallbackMessage) {
+      console.error(error)
+
+      this.showToast(
+        'เกิดข้อผิดพลาด',
+        this.extractError(error, fallbackMessage),
+        'danger'
+      )
+    },
+
+    showToast(title, message, variant) {
+      if (!this.$bvToast) return
+
+      this.$bvToast.toast(message, {
+        title,
+        variant,
+        solid: true,
+      })
     },
   },
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap');
-
 .kf-card {
-  font-family: 'Noto Sans Thai', sans-serif;
   color: #2e2a26;
   border: none;
   border-radius: 18px;
   overflow: hidden;
 }
 
-/* Header */
 .kf-header {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 22px 26px;
-  background: linear-gradient(
-    to right,
-    #fed06e33,
-    #f0cfda4d
-  );
+  background: linear-gradient(to right, #fed06e33, #f0cfda4d);
   border-bottom: 1px solid #f0e9dc;
 }
 
@@ -1022,7 +784,8 @@ export default {
   flex-shrink: 0;
 }
 
-.kf-title {
+.kf-title,
+.kf-section-title {
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
 }
@@ -1032,15 +795,20 @@ export default {
   color: #8a8178;
 }
 
-/* Body and sections */
+.kf-meta {
+  font-size: 0.75rem;
+  color: #8a8178;
+  margin-top: 3px;
+}
+
 .kf-body {
   padding: 8px 26px 0;
-  max-height: 62vh;
+  max-height: 72vh;
   overflow-y: auto;
 }
 
 .kf-section {
-  padding: 22px 0;
+  padding: 15px 0;
   border-bottom: 1px solid #f2ede3;
 }
 
@@ -1062,7 +830,6 @@ export default {
   border-radius: 50%;
   background: #d9a441;
   color: #fff;
-  font-family: 'Prompt', sans-serif;
   font-weight: 600;
   font-size: 0.78rem;
   display: flex;
@@ -1072,8 +839,6 @@ export default {
 }
 
 .kf-section-title {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 600;
   font-size: 0.98rem;
 }
 
@@ -1089,10 +854,11 @@ export default {
   color: #6b6259;
 }
 
-.kf-info-icon {
-  color: #b3aaa0;
-  margin-left: 5px;
-  cursor: help;
+.kf-query-help {
+  border: 1px solid #e9e1d5;
+  background: #fbf8f3;
+  color: #6b6259;
+  font-size: 0.8rem;
 }
 
 .kf-input:focus {
@@ -1100,97 +866,6 @@ export default {
   box-shadow: 0 0 0 3px rgba(217, 164, 65, 0.15);
 }
 
-/* Mode picker */
-.kf-mode-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.kf-mode-card {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  text-align: left;
-  border: 1.5px solid #ece5da;
-  background: #fffdfa;
-  border-radius: 14px;
-  padding: 14px 16px;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
-}
-
-.kf-mode-card:hover {
-  transform: translateY(-1px);
-  border-color: #e6c98a;
-}
-
-.kf-mode-card.active {
-  border-color: #d9a441;
-  background: #fff8ea;
-  box-shadow: 0 6px 16px rgba(217, 164, 65, 0.18);
-}
-
-.kf-mode-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: #f5f1e9;
-  color: #d9a441;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.kf-mode-card.active .kf-mode-icon {
-  background: #d9a441;
-  color: #fff;
-}
-
-.kf-mode-title {
-  font-weight: 600;
-  font-size: 0.92rem;
-  margin-bottom: 2px;
-}
-
-.kf-mode-desc {
-  font-size: 0.78rem;
-  color: #8a8178;
-  line-height: 1.45;
-}
-
-.kf-mode-check {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  color: #d9a441;
-}
-
-/* Domain cascade */
-.kf-domain-flow {
-  background: #fbf8f3;
-  border: 1px solid #f0e9dc;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 14px 0 18px;
-}
-
-.kf-hint {
-  font-size: 0.8rem;
-  color: #a17a1f;
-  background: #fdf3dd;
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-top: 8px;
-}
-
-/* Transition */
 .kf-fade-enter-active,
 .kf-fade-leave-active {
   transition: opacity 0.15s ease;
@@ -1199,11 +874,6 @@ export default {
 .kf-fade-enter,
 .kf-fade-leave-to {
   opacity: 0;
-}
-
-/* Query and preview */
-.kf-query-block {
-  margin-top: 4px;
 }
 
 .kf-preview {
@@ -1232,8 +902,8 @@ export default {
 }
 
 .kf-preview-label {
-  flex-shrink: 0;
   width: 70px;
+  flex-shrink: 0;
   color: #8a8178;
   font-weight: 500;
 }
@@ -1266,7 +936,6 @@ export default {
   color: #c94a3f;
 }
 
-/* Alert */
 .kf-switch-row {
   display: flex;
   align-items: center;
@@ -1291,6 +960,11 @@ export default {
   margin-top: 2px;
 }
 
+.kf-switch-row-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .kf-alert-panel {
   border: 1px solid #f0e9dc;
   border-radius: 12px;
@@ -1306,6 +980,7 @@ export default {
   border: 1px solid #e4ebf3;
   border-radius: 10px;
   padding: 12px;
+  margin-top: 14px;
   margin-bottom: 16px;
 }
 
@@ -1334,32 +1009,22 @@ export default {
   margin-top: 2px;
 }
 
-.kf-threshold-box {
-  background: #fffaf0;
-  border: 1px solid #f1dfb9;
-  border-radius: 10px;
-  padding: 14px;
+.kf-channel-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: #f8f0dc;
+  color: #7a5c14;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
-.kf-threshold-help {
-  font-size: 0.74rem;
-  color: #9a8262;
-  margin-top: 2px;
-}
-
-.kf-threshold-value {
-  color: #d9a441;
-  font-size: 1.15rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.kf-range-labels {
-  display: flex;
-  justify-content: space-between;
-  color: #a69a8c;
-  font-size: 0.68rem;
-  margin-top: -2px;
+.kf-channel-icon {
+  color: #2c7fb8;
+  font-size: 0.95rem;
 }
 
 .kf-channel-group {
@@ -1374,6 +1039,22 @@ export default {
   margin: 0;
 }
 
+.kf-channel-hint {
+  font-size: 0.76rem;
+  color: #8a7a4e;
+  background: #fdf7e8;
+  border: 1px solid #f2e4b8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+}
+
+.kf-channel-hint a {
+  color: #8a6a1f;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 /* Footer */
 .kf-footer {
   display: flex;
@@ -1384,7 +1065,8 @@ export default {
   background: #fffdfa;
 }
 
-.kf-btn-cancel {
+.kf-btn-cancel,
+.kf-btn-save {
   border-radius: 10px;
   padding: 9px 18px;
 }
@@ -1392,8 +1074,6 @@ export default {
 .kf-btn-save {
   background: #d9a441;
   border: none;
-  border-radius: 10px;
-  padding: 9px 20px;
   font-weight: 600;
   box-shadow: 0 6px 16px rgba(217, 164, 65, 0.35);
 }
@@ -1407,17 +1087,12 @@ export default {
   box-shadow: none;
 }
 
-/* Responsive */
 @media (max-width: 576px) {
   .kf-header,
   .kf-body,
   .kf-footer {
     padding-left: 16px;
     padding-right: 16px;
-  }
-
-  .kf-mode-grid {
-    grid-template-columns: 1fr;
   }
 
   .kf-preview-row {

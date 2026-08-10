@@ -36,7 +36,7 @@
         />
       </b-col>
       <b-col md="7">
-        <SpikeEventList :events="events" @select="openEvent" />
+        <SpikeEventList :events="events" :bags="bags" @select="openEvent" />
       </b-col>
     </b-row>
   </div>
@@ -109,7 +109,7 @@ export default {
     },
     openEvent(event) {
       // ยังไม่มีหน้า detail จริง ใช้ demo alert แทนก่อน
-      this.$bvToast.toast(`${event.bag_name} เพิ่มขึ้น ${event.change_percent}% (${event.severity})`, {
+      this.$bvToast.toast(`${event.bag_name} พบ ${event.current_volume} โพสต์ (${event.severity})`, {
         title: 'รายละเอียด spike event',
         variant: event.severity === 'high' ? 'danger' : 'warning',
       })

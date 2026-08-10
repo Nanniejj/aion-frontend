@@ -3,25 +3,33 @@
     <div class="se-head">
       <div>
         <h5 class="se-title mb-0">Spike ล่าสุด</h5>
-        <p class="se-desc mb-0">ความผิดปกติที่ตรวจพบจากถุงคำทั้งหมด</p>
-      </div>
-      <div class="se-filter-group" role="tablist">
-        <button
-          v-for="f in filters"
-          :key="f.value"
-          type="button"
-          class="se-filter-chip"
-          :class="{ active: statusFilter === f.value }"
-          @click="statusFilter = f.value"
-        >
-          {{ f.label }}
-        </button>
+        <p class="se-desc mb-0">ความผิดปกติที่ตรวจพบจาก keyword ทั้งหมด</p>
       </div>
     </div>
 
-    <div v-if="filteredEvents.length" class="se-list">
+    <div class="se-stats-wrap">
+      <StatsOverview :bags="bags" :events="events" class="se-stats" />
+    </div>
+
+    <b-form-select
+      v-model="keywordFilter"
+      :options="keywordOptions"
+      size="sm"
+      class="se-keyword-select mb-3"
+    />
+
+    <div v-if="loading" class="se-loading">
+      <b-spinner small class="mr-2" />กำลังโหลด spike ล่าสุด...
+    </div>
+
+    <b-alert v-else-if="loadError" show variant="danger" class="small mb-3">
+      {{ loadError }}
+      <b-link class="ml-1" @click="fetchEvents">ลองใหม่</b-link>
+    </b-alert>
+
+    <div v-else-if="sourceEvents.length" class="se-list">
       <button
-        v-for="event in filteredEvents"
+        v-for="event in sourceEvents"
         :key="event._id"
         type="button"
         class="se-item"
@@ -33,16 +41,14 @@
         <div class="se-item-body">
           <div class="se-item-top">
             <span class="se-bag-name">{{ event.bag_name }}</span>
-            <span class="se-status-pill" :class="{ resolved: event.status === 'resolved' }">
-              {{ event.status === 'resolved' ? 'แก้ไขแล้ว' : 'ใหม่' }}
-            </span>
           </div>
           <div class="se-item-meta">
             <b-icon icon="clock-history" class="mr-1" />{{ formatWindow(event) }}
-            <span class="se-dot-sep">·</span>
-            <b-icon icon="graph-up-arrow" class="mr-1" />เพิ่มขึ้น
-            <strong class="se-change" :class="'sev-text-' + event.severity">{{ event.change_percent }}%</strong>
-            จาก baseline
+            <br>
+            <!-- <span class="se-dot-sep">·</span> -->
+            <b-icon icon="graph-up-arrow" class="mr-1" />ยอดโพสต์ในช่วงที่ตรวจพบ
+            <strong class="se-change" :class="'sev-text-' + event.severity">{{ event.current_volume }}</strong>
+            โพสต์
           </div>
         </div>
 
@@ -53,42 +59,169 @@
     <div v-else class="se-empty">
       <div class="se-empty-icon"><b-icon icon="activity" /></div>
       <div class="se-empty-title">
-        {{ events.length === 0 ? 'ยังไม่มี spike ในตอนนี้' : 'ไม่พบ spike ตามตัวกรองนี้' }}
+        {{ keywordFilter ? 'ไม่พบ spike สำหรับคำนี้' : 'ยังไม่มี spike ในตอนนี้' }}
       </div>
       <p class="se-empty-desc mb-0">
-        {{ events.length === 0
-          ? 'ระบบจะแจ้งเตือนที่นี่ทันทีที่พบความผิดปกติ'
-          : 'ลองเลือก "ทั้งหมด" เพื่อดู spike ทุกสถานะ' }}
+        {{ keywordFilter
+          ? 'ลองเลือก "ทุกคำ (ทุก keyword)" เพื่อดู spike ทั้งหมด'
+          : 'ระบบจะแจ้งเตือนที่นี่ทันทีที่พบความผิดปกติ' }}
       </p>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+import StatsOverview from './StatsOverview.vue'
+// ปรับเป็น env-based ได้ทีหลังถ้าต้อง deploy หลาย environment — ตอนนี้ตั้งตายตัวตามที่ backend รันอยู่
+const EVENTS_BASE = 'http://localhost:3000/api/v2/alert'
+
+// growth_percent ยังไม่ถูกคำนวณจริงจากฝั่ง worker (เป็น 0 เสมอ) เลยใช้อัตราส่วน
+// current_volume / min_volume แทน — สะท้อนว่ายอดเกินเกณฑ์ที่ตั้งไว้กี่เท่า
+function mapSeverity(volumeRatio) {
+  if (volumeRatio >= 3) return 'high'
+  if (volumeRatio >= 1.5) return 'medium'
+  return 'low'
+}
+
+function mapSpikeEvent(raw) {
+  const currentVolume = Number(raw.current_volume) || 0
+  const minVolume = Number(raw.min_volume) || 0
+  const volumeRatio = minVolume > 0 ? currentVolume / minVolume : 0
+
+  return {
+    _id: raw._id,
+    keyword_id: raw.keyword_id,
+    bag_name: raw.keyword_name || raw.keyword || 'ไม่ทราบชื่อ',
+    current_volume: currentVolume,
+    min_volume: minVolume,
+    severity: mapSeverity(volumeRatio),
+    status: raw.status,
+    window_start: raw.window_start,
+    window_end: raw.window_end,
+    matched_post_count: raw.matched_post_count,
+    detected_at: raw.detected_at,
+  }
+}
+
 export default {
   name: 'SpikeEventList',
   props: {
+    // fallback ก่อนที่จะโหลดจาก API จริงเสร็จ (เผื่อ parent ยังส่ง mock มาอยู่)
     events: { type: Array, default: () => [] },
+    bags: { type: Array, default: () => [] },
   },
+  components: { StatsOverview },
   data() {
     return {
-      statusFilter: '',
-      filters: [
-        { value: '', label: 'ทั้งหมด' },
-        { value: 'new', label: 'ใหม่' },
-        { value: 'resolved', label: 'แก้ไขแล้ว' },
-      ],
+      apiEvents: null, // null = ยังไม่เคย fetch, [] = fetch แล้วแต่ไม่พบ
+      loading: false,
+      loadError: '',
+      keywordFilter: '',
+      keywordOptions: [{ value: '', text: 'ทุกคำ (ทุก keyword)' }],
     }
   },
   computed: {
-    filteredEvents() {
-      return this.statusFilter ? this.events.filter((e) => e.status === this.statusFilter) : this.events
+    sourceEvents() {
+      return this.apiEvents !== null ? this.apiEvents : this.events
     },
   },
+  watch: {
+    keywordFilter() {
+      this.fetchEvents()
+    },
+  },
+  created() {
+    this.fetchEvents()
+  },
   methods: {
+   // แยก format เป็นสองส่วน: วันที่ (date) กับ เวลา (time) เพื่อให้เลือกโชว์แยกกันได้
+    // ทั้งคู่ดึงตัวเลขจาก string ตรงๆ ไม่ผ่านการแปลง timezone (ตามที่แก้ไปก่อนหน้านี้)
+    parseRaw(d) {
+      if (!d) return null
+      const m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})/)
+      if (!m) return null
+      const [, y, mo, day, h, mi] = m.map(Number)
+      return { y, mo, day, h, mi }
+    },
+    formatDatePart(p) {
+      const rawDate = new Date(Date.UTC(p.y, p.mo - 1, p.day))
+      return rawDate.toLocaleDateString('th-TH', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      })
+    },
+    formatTimePart(p) {
+      const rawDate = new Date(Date.UTC(p.y, p.mo - 1, p.day, p.h, p.mi))
+      return rawDate.toLocaleTimeString('th-TH', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+      })
+    },
+    formatDateTime(d) {
+      const p = this.parseRaw(d)
+      if (!p) return '-'
+      return `${this.formatDatePart(p)} ${this.formatTimePart(p)}`
+    },
     formatWindow(event) {
-      const time = (d) => new Date(d).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-      return `${time(event.window_start)} – ${time(event.window_end)}`
+      const start = this.parseRaw(event.window_start)
+      const end = this.parseRaw(event.window_end)
+      if (!start || !end) return '-'
+
+      const sameDay = start.y === end.y && start.mo === end.mo && start.day === end.day
+
+      if (sameDay) {
+        // วันเดียวกัน: โชว์วันที่ครั้งเดียว แล้วตามด้วยช่วงเวลา เช่น
+        // "10 ส.ค. 2569 12:34 – 13:34"
+        return `${this.formatDatePart(start)} ${this.formatTimePart(start)} – ${this.formatTimePart(end)}`
+      }
+
+      // คนละวัน: โชว์วันที่-เวลาเต็มทั้งสองฝั่งเหมือนเดิม
+      return `${this.formatDatePart(start)} ${this.formatTimePart(start)} – ${this.formatDatePart(end)} ${this.formatTimePart(end)}`
+    },
+    // เก็บตัวเลือก keyword สำหรับ dropdown filter จากผลลัพธ์แบบไม่กรอง (ครอบคลุมทุกคำ)
+    buildKeywordOptions(rawEvents) {
+      const seen = new Map()
+      for (const raw of rawEvents) {
+        if (raw.keyword_id && !seen.has(raw.keyword_id)) {
+          seen.set(raw.keyword_id, raw.keyword_name || raw.keyword || raw.keyword_id)
+        }
+      }
+      this.keywordOptions = [
+        { value: '', text: 'ทุกคำ (ทุก keyword)' },
+        ...Array.from(seen, ([value, text]) => ({ value, text })),
+      ]
+    },
+    async fetchEvents() {
+      this.loading = true
+      this.loadError = ''
+      try {
+        const params = { limit: 50 }
+        if (this.keywordFilter) params.keyword_id = this.keywordFilter
+
+        const token = localStorage.getItem('token')
+        const res = await axios.get(`${EVENTS_BASE}/getSpikeEvents`, {
+          params,
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+
+        const rawEvents = res.data && Array.isArray(res.data.data) ? res.data.data : []
+        this.apiEvents = rawEvents.map(mapSpikeEvent)
+
+        // อัปเดตตัวเลือก keyword เฉพาะตอนที่ไม่ได้กรอง เพื่อไม่ให้ dropdown ยุบเหลือคำเดียว
+        if (!this.keywordFilter) {
+          this.buildKeywordOptions(rawEvents)
+        }
+      } catch (err) {
+        console.error('SpikeEventList fetchEvents:', err)
+        this.apiEvents = []
+        this.loadError = 'โหลดข้อมูล spike ล่าสุดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'
+      } finally {
+        this.loading = false
+      }
     },
   },
 }
@@ -125,36 +258,27 @@ export default {
   margin-top: 2px;
 }
 
-.se-filter-group {
-  display: flex;
-  gap: 6px;
-  background: #f5f1e9;
-  padding: 4px;
-  border-radius: 10px;
-  margin-top: 14px;
+.se-stats-wrap {
+  margin-bottom: 16px;
 }
 
-.se-filter-chip {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 500;
+.se-stats {
+  display: block;
+}
+
+.se-keyword-select {
+  font-size: 0.82rem;
+  border-color: #f0e9dc;
+  border-radius: 10px;
+}
+
+.se-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
   color: #8a8178;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-.se-filter-chip:focus-visible {
-  outline: 2px solid #d9a441;
-  outline-offset: 1px;
-}
-.se-filter-chip.active {
-  background: #ffffff;
-  color: #2e2a26;
-  box-shadow: 0 2px 6px rgba(45, 32, 20, 0.1);
+  font-size: 0.85rem;
 }
 
 /* List */
@@ -238,20 +362,6 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.se-status-pill {
-  flex-shrink: 0;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #fdeceb;
-  color: #c94a3f;
-}
-.se-status-pill.resolved {
-  background: #eaf3ee;
-  color: #2b7a4b;
 }
 
 .se-item-meta {

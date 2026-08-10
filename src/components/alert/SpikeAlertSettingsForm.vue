@@ -88,10 +88,9 @@ export default {
         { value: 60, text: 'ทุก 1 ชั่วโมง' },
       ],
       channelOptions: [
-        { value: 'in_app', text: 'ในแอป' },
-        { value: 'email', text: 'อีเมล' },
-        { value: 'line', text: 'Line' },
-        { value: 'webhook', text: 'Webhook' },
+        // { value: 'in_app', text: 'ในแอป' },
+        // { value: 'email', text: 'อีเมล' },
+        { value: 'line_oa', text: 'Line' },
       ],
     }
   },

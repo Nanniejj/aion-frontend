@@ -618,7 +618,7 @@ const routes = [
       meta: { requiresAuth: true },
   },
   {
-    path: "/keywords",
+    path: "/alert",
     name: "KeywordBagsView",
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -626,6 +626,15 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "targetprofile" */ "../views/KeywordBagsView.vue"
+      ),
+      meta: { requiresAuth: true },
+  },
+  {
+    path: "/alert/keyword/:id",
+    name: "KeywordAlertDetailView",
+    component: () =>
+      import(
+        /* webpackChunkName: "targetprofile" */ "../views/KeywordAlertDetailView.vue"
       ),
       meta: { requiresAuth: true },
   },

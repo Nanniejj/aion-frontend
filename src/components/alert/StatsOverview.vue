@@ -1,13 +1,13 @@
 <template>
   <div class="ov-wrap">
-    <div class="ov-grid">
+    <div class="ov-grid d-none">
       <div class="ov-card">
         <div class="ov-icon ov-icon-bags"><b-icon icon="collection" /></div>
         <div class="ov-body">
           <div class="ov-value">{{ totalBags }}</div>
-          <div class="ov-label">ถุงคำทั้งหมด</div>
+          <div class="ov-label">keywords ทั้งหมด</div>
           <div class="ov-sub">
-            <span class="ov-dot pulse"></span>ทำงานอยู่ {{ activeBags }} ถุง
+            <span class="ov-dot pulse"></span>ทำงานอยู่ {{ activeBags }} keywords
           </div>
         </div>
       </div>
@@ -30,21 +30,40 @@
         </div>
       </div>
 
-      <div class="ov-card">
+      <!-- <div class="ov-card">
         <div class="ov-icon ov-icon-resolved"><b-icon icon="check-circle" /></div>
         <div class="ov-body">
           <div class="ov-value">{{ resolvedRate }}%</div>
           <div class="ov-label">อัตราแก้ไขแล้ว</div>
           <div class="ov-sub">{{ resolvedEvents }} / {{ totalEvents }} spike</div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <div class="ov-breakdown">
       <div class="ov-breakdown-head">
-        <span class="ov-breakdown-title">สัดส่วนความรุนแรงของ Spike ทั้งหมด</span>
+        <span class="ov-breakdown-title">
+          สัดส่วนความรุนแรงของ Spike ทั้งหมด
+          <b-icon
+            icon="info-circle"
+            id="ov-severity-info"
+            class="ov-info-icon"
+            role="button"
+            tabindex="0"
+          />
+        </span>
         <span class="ov-breakdown-total">{{ totalEvents }} รายการ</span>
       </div>
+
+      <b-popover target="ov-severity-info" triggers="hover focus" placement="top">
+        <template #title>เกณฑ์ความรุนแรง</template>
+        <div class="ov-popover-desc">
+          คำนวณจาก "ยอดโพสต์ที่ตรวจพบ ÷ ยอดขั้นต่ำที่ตั้งไว้ในแต่ละ keyword"
+        </div>
+        <div class="ov-popover-row"><span class="ov-legend-dot sev-high"></span>สูง — ตั้งแต่ 3 เท่าของยอดขั้นต่ำ</div>
+        <div class="ov-popover-row"><span class="ov-legend-dot sev-medium"></span>กลาง — ตั้งแต่ 1.5 เท่าของยอดขั้นต่ำ</div>
+        <div class="ov-popover-row"><span class="ov-legend-dot sev-low"></span>ต่ำ — ต่ำกว่า 1.5 เท่า (แต่ถึงขั้นต่ำแล้วจึงแจ้งเตือน)</div>
+      </b-popover>
 
       <div v-if="totalEvents" class="ov-bar">
         <div
@@ -87,17 +106,17 @@ export default {
       return this.events.length
     },
     newEvents() {
-      return this.events.filter((e) => e.status === 'new').length
+      return this.events.filter((e) => ['detected','summarizing','ready','notifying'].includes(e.status)).length
     },
     resolvedEvents() {
-      return this.events.filter((e) => e.status === 'resolved').length
+      return this.events.filter((e) => e.status === 'completed').length
     },
     resolvedRate() {
       if (!this.totalEvents) return 0
       return Math.round((this.resolvedEvents / this.totalEvents) * 100)
     },
     highSeverityNew() {
-      return this.events.filter((e) => e.status === 'new' && e.severity === 'high').length
+      return this.events.filter((e) => ['detected','summarizing','ready','notifying'].includes(e.status) && e.severity === 'high').length
     },
     severitySegments() {
       const order = [
@@ -125,7 +144,7 @@ export default {
 /* Stat cards */
 .ov-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 
@@ -231,6 +250,33 @@ export default {
   font-size: 0.85rem;
   font-weight: 600;
   color: #2e2a26;
+}
+
+.ov-info-icon {
+  color: #b3aaa0;
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  vertical-align: -1px;
+}
+
+.ov-info-icon:hover {
+  color: #d9a441;
+}
+
+.ov-popover-desc {
+  font-size: 0.78rem;
+  color: #8a8178;
+  margin-bottom: 8px;
+}
+
+.ov-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #2e2a26;
+  padding: 3px 0;
 }
 
 .ov-breakdown-total {

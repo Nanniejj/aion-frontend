@@ -196,6 +196,15 @@
           </li>
 
           <li class="nav-item" id="li-nav">
+            <router-link to="/alert" tag="p">
+              <a class="nav-link">
+                <i class="fas fa-bell img-nav" style="margin-bottom: 0px;margin-top: 12px; font-size: 23px;padding: 5px;"></i>
+               <center> <strong>Alert</strong></center>
+              </a>
+            </router-link>
+          </li>
+
+          <li class="nav-item" id="li-nav">
             <router-link to="/setting" tag="p">
               <a class="nav-link">
                 <img src="../assets/Setting.png" alt="logo" class="img-nav" style="margin-bottom: 8px" />
@@ -428,6 +437,17 @@
                   :class="{ dropdownStyle: $route.path === '/gsearch' }" id="dp-txt">Gsearch</router-link>
               </b-dropdown-item>
             </b-nav-item-dropdown>
+          </b-nav-item>
+
+          <b-nav-item id="nav-con1">
+            <router-link to="/alert" tag="p">
+              <a class="nav-link">
+                <i class="fas fa-bell img-nav" style="font-size: 23px;padding: 5px;"></i>
+                <a class="nav-link titlenav">
+                  <strong>Alert</strong>
+                </a>
+              </a>
+            </router-link>
           </b-nav-item>
 
           <b-nav-item id="nav-con1">
