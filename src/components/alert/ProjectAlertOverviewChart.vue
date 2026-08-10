@@ -90,7 +90,7 @@
 </template>
 
 <script>
-const KEYWORD_BAG_BASE = 'http://localhost:3000/api/v2/alert'
+const KEYWORD_BAG_BASE = 'https://api2.cognizata.com/api/v2/alert'
 
 const SERIES_COLORS = ['#d9a441', '#456a92', '#2b7a4b', '#c94a3f', '#7a5c9e', '#b3aaa0']
 

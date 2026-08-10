@@ -145,7 +145,7 @@ export default {
   props: {
     lineApiBase: {
       type: String,
-      default: 'http://localhost:3000/api/v2/alert',
+      default: 'https://api2.cognizata.com/api/v2/alert',
     },
   },
 

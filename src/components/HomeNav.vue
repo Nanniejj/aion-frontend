@@ -131,10 +131,10 @@
                 :class="{ dropdownStyle: $route.path === '/imagesearch' }" id="nav-router">
                 <center><strong>Image</strong><span class="small"> (beta)</span></center>
               </router-link>
-              <router-link to="/hotissue" class="dropdown-item" :class="{ dropdownStyle: $route.path === '/hotissue' }"
+              <!-- <router-link to="/hotissue" class="dropdown-item" :class="{ dropdownStyle: $route.path === '/hotissue' }"
                 id="nav-router">
                 <center><strong>Hot Issue</strong></center>
-              </router-link>
+              </router-link> -->
             </div>
           </li>
 
@@ -373,10 +373,10 @@
               </b-dropdown-item>
 
 
-              <b-dropdown-item to="/hotissue">
+              <!-- <b-dropdown-item to="/hotissue">
                 <router-link to="/hotissue" tag="a" :style="dropdownStyle"
                   :class="{ dropdownStyle: $route.path === '/hotissue' }" id="dp-txt">Hot Issue</router-link>
-              </b-dropdown-item>
+              </b-dropdown-item> -->
             </b-nav-item-dropdown>
           </b-nav-item>
 

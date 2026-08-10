@@ -277,10 +277,10 @@ import Swal from 'sweetalert2'
 // ปรับ path ตรงนี้ที่เดียวถ้า backend ไม่ได้ mount ตาม default นี้
 // dev: proxy ผ่าน vue.config.js -> http://localhost:8080
 // (แก้: ตัด "/" ท้าย URL ออก กัน path ซ้อนเวลา component ต่อ "/xxx" เพิ่ม)
-const KEYWORD_BAG_BASE = 'http://localhost:3000/api/v2/alert'
+const KEYWORD_BAG_BASE = 'https://api2.cognizata.com/api/v2/alert'
 
 // ⚠️ ยังไม่มี backend route ให้มาสำหรับ spike events — ต้อง implement เพิ่ม
-const EVENTS_BASE = 'http://localhost:3000/api/v2/alert'
+const EVENTS_BASE = 'https://api2.cognizata.com/api/v2/alert'
 
 export default {
   name: 'KeywordBagsView',

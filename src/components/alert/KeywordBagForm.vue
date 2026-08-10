@@ -415,7 +415,7 @@ import 'vue-select/dist/vue-select.css'
 // ปรับ path ตรงนี้ที่เดียวถ้า backend ไม่ได้ mount ตาม default นี้
 // dev: proxy ผ่าน vue.config.js -> http://localhost:8080
 // (แก้: ตัด "/" ท้าย URL ออก กัน path ซ้อน เช่น "...alert//addKeywordBag")
-const KEYWORD_BAG_BASE = 'http://localhost:3000/api/v2/alert'
+const KEYWORD_BAG_BASE = 'https://api2.cognizata.com/api/v2/alert'
 
 function parseGroups(input) {
   if (!input || !input.trim()) return []

@@ -70,7 +70,7 @@
 </template>
 
 <script>
-const KEYWORD_BAG_BASE = 'http://localhost:3000/api/v2/alert'
+const KEYWORD_BAG_BASE = 'https://api2.cognizata.com/api/v2/alert'
 
 function toThaiDateTime(value, opts) {
   if (!value) return '-'

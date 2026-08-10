@@ -74,7 +74,7 @@
 import axios from 'axios'
 import StatsOverview from './StatsOverview.vue'
 // ปรับเป็น env-based ได้ทีหลังถ้าต้อง deploy หลาย environment — ตอนนี้ตั้งตายตัวตามที่ backend รันอยู่
-const EVENTS_BASE = 'http://localhost:3000/api/v2/alert'
+const EVENTS_BASE = 'https://api2.cognizata.com/api/v2/alert'
 
 // growth_percent ยังไม่ถูกคำนวณจริงจากฝั่ง worker (เป็น 0 เสมอ) เลยใช้อัตราส่วน
 // current_volume / min_volume แทน — สะท้อนว่ายอดเกินเกณฑ์ที่ตั้งไว้กี่เท่า
