@@ -109,7 +109,10 @@ export default {
       .slice(0, 10);
   },
   destroyed() {
-    this.$stroe.commit('setClickDomain','')
+    // ❌ เดิมพิมพ์ผิดเป็น this.$stroe (ตัว r/o สลับกัน) — $stroe ไม่มีอยู่จริงบน Vue instance
+    // เลยเป็น undefined แล้วไปเรียก .commit(...) ต่อ กลายเป็น
+    // "Cannot read properties of undefined (reading 'commit')"
+    this.$store.commit('setClickDomain','')
   },
 };
 </script>

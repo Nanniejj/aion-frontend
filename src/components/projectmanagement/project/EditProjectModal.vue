@@ -1,208 +1,213 @@
 <template>
-  <span>
-    <b-button size="md" class="create-btn" pill @click="open = true">
-      <b-icon icon="folder-plus"></b-icon> สร้างโปรเจกต์
-    </b-button>
+  <!--
+    No trigger button here — this modal is opened externally, e.g. from a
+    ProjectCard's "แก้ไข" menu item. Project/user/domain lists are fetched
+    from the store internally, so no props are needed:
 
-    <vue-modaltor
-      :visible="open"
-      @hide="closeModal"
-      :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '100vw', 1200: '92vw', 768: '92vw', 480: '92vw' }"
-      class="create-modal"
-     
-    >
-      <div class="modal-shell">
-        <div class="modal-topbar">
-          <div class="modal-title">
-            <b-icon icon="folder-plus"></b-icon>
-            สร้างโปรเจกต์ใหม่
-          </div>
-          <button class="modal-close-btn" @click="closeModal" aria-label="ปิดหน้าต่าง">
-            <b-icon icon="x" scale="2"></b-icon>
-          </button>
+      <EditProjectModal ref="editProjectModal" @updated="onProjectUpdated" />
+      ...
+      methods: {
+        onEditProject(project) { this.$refs.editProjectModal.open(project); }
+      }
+  -->
+  <vue-modaltor
+    :visible="visible"
+    @hide="closeModal"
+    :animation-panel="'modal-slide-top'"
+    :resize-width="{ 3000: '96vw', 1200: '96vw', 768: '96vw', 480: '96vw' }"
+    class="create-modal"
+  >
+    <div class="modal-shell">
+      <div class="modal-topbar">
+        <div class="modal-title">
+          <b-icon icon="pencil"></b-icon>
+          แก้ไขโปรเจกต์
         </div>
-
-        <div class="modal-body">
-          <div class="modal-body-top">
-            <div class="form-field">
-              <label>ชื่อโปรเจกต์ <span class="req">*</span></label>
-              <input
-                ref="nameInput"
-                v-model.trim="form.projectname"
-                class="form-input"
-                placeholder="เช่น AFSC2"
-                @keyup.enter="submit"
-              />
-              <span v-if="error" class="form-error">{{ error }}</span>
-            </div>
-
-            <label class="switch-row">
-              <input type="checkbox" v-model="isActiveStatus" class="switch-input" />
-              <span class="switch-track"><span class="switch-thumb"></span></span>
-              <span class="switch-text">เปิดใช้งาน Project</span>
-            </label>
-          </div>
-
-          <div class="picker-columns">
-            <div class="picker-col">
-              <div class="picker-col-header">
-                <div>
-                  <label class="picker-col-label">
-                    ผู้ใช้ในโปรเจกต์
-                    <span class="selected-count" v-if="selectedUsers.length">({{ selectedUsers.length }} คน)</span>
-                  </label>
-                  <p class="picker-col-hint">ผู้ใช้ที่เลือกจะมีสิทธิ์เข้าถึงโปรเจกต์นี้</p>
-                </div>
-                <div class="picker-col-actions">
-                  <button type="button" class="picker-action-link" @click="selectAllUsers">เลือกทั้งหมด</button>
-                  <span class="picker-action-sep">·</span>
-                  <button type="button" class="picker-action-link" @click="form.userIds = []">ล้างทั้งหมด</button>
-                </div>
-              </div>
-
-              <div class="combo" tabindex="-1" @focusout="closeUserMenu">
-                <div class="combo-shell" @click="focusUserInput">
-                  <span v-for="u in selectedUsers" :key="u._id" class="combo-chip">
-                    <span class="combo-chip-avatar">{{ u.initial }}</span>
-                    {{ u.name || u.username }}
-                    <button type="button" class="combo-chip-remove" @click.stop="removeUser(u._id)" aria-label="เอาออก">×</button>
-                  </span>
-                  <input
-                    ref="userComboInput"
-                    v-model.trim="userSearch"
-                    class="combo-input"
-                    :placeholder="selectedUsers.length ? '' : 'ค้นหาผู้ใช้...'"
-                    @focus="userMenuOpen = true"
-                    @input="userMenuOpen = true"
-                  />
-                  <b-icon icon="chevron-down" class="combo-caret" :class="{ open: userMenuOpen }"></b-icon>
-                </div>
-
-                <div v-if="userMenuOpen" class="combo-dropdown" @mousedown.prevent>
-                  <div v-if="loadingUsers" class="pick-empty">กำลังโหลด...</div>
-                  <template v-else>
-                    <div
-                      v-for="u in filteredUsers"
-                      :key="u._id"
-                      class="user-pick-row"
-                      :class="{ checked: form.userIds.includes(u._id) }"
-                      @click="toggleUserId(u._id)"
-                    >
-                      <input type="checkbox" :checked="form.userIds.includes(u._id)" tabindex="-1" />
-                      <span class="pick-avatar">{{ u.initial }}</span>
-                      <span class="pick-text">
-                        <span class="pick-name">{{ u.name || u.username }}</span>
-                        <span class="pick-role">{{ u.role }}</span>
-                      </span>
-                    </div>
-
-                    <div v-if="filteredUsers.length === 0" class="pick-empty">
-                      ไม่พบผู้ใช้ที่ตรงกับ "{{ userSearch }}"
-                    </div>
-                  </template>
-                </div>
-              </div>
-            </div>
-
-            <div class="picker-col">
-              <div class="picker-col-header">
-                <div>
-                  <label class="picker-col-label">
-                    โดเมน
-                    <span class="selected-count" v-if="selectedDomains.length">({{ selectedDomains.length }} รายการ)</span>
-                  </label>
-                  <p class="picker-col-hint">โดเมนที่โปรเจกต์นี้จะติดตามข้อมูล</p>
-                </div>
-                <div class="picker-col-actions">
-                  <button type="button" class="picker-action-link" @click="selectAllDomains">เลือกทั้งหมด</button>
-                  <span class="picker-action-sep">·</span>
-                  <button type="button" class="picker-action-link" @click="form.domainIds = []">ล้างทั้งหมด</button>
-                </div>
-              </div>
-
-              <div class="combo" tabindex="-1" @focusout="closeDomainMenu">
-                <div class="combo-shell" @click="focusDomainInput">
-                  <span v-for="d in selectedDomains" :key="d._id" class="combo-chip domain">
-                    {{ d.name }}
-                    <button type="button" class="combo-chip-remove" @click.stop="removeDomain(d._id)" aria-label="เอาออก">×</button>
-                  </span>
-                  <input
-                    ref="domainComboInput"
-                    v-model.trim="domainSearch"
-                    class="combo-input"
-                    :placeholder="selectedDomains.length ? '' : 'ค้นหาโดเมน...'"
-                    @focus="domainMenuOpen = true"
-                    @input="domainMenuOpen = true"
-                  />
-                  <b-icon icon="chevron-down" class="combo-caret" :class="{ open: domainMenuOpen }"></b-icon>
-                </div>
-
-                <div v-if="domainMenuOpen" class="combo-dropdown" @mousedown.prevent>
-                  <div v-if="loadingDomains" class="pick-empty">กำลังโหลด...</div>
-                  <template v-else>
-                    <div
-                      v-for="d in filteredDomains"
-                      :key="d._id"
-                      class="user-pick-row"
-                      :class="{ checked: form.domainIds.includes(d._id) }"
-                      @click="toggleDomainId(d._id)"
-                    >
-                      <input type="checkbox" :checked="form.domainIds.includes(d._id)" tabindex="-1" />
-                      <span class="pick-text">
-                        <span class="pick-name-row">
-                          <span class="pick-name">{{ d.name }}</span>
-                          <span
-                            class="domain-status-badge"
-                            :class="d.display !== false ? 'is-on' : 'is-off'"
-                            :title="d.display !== false ? 'แสดงผลอยู่' : 'ซ่อนอยู่'"
-                          >
-                            <span class="domain-status-dot"></span>
-                            {{ d.display !== false ? "แสดงผล" : "ซ่อนอยู่" }}
-                          </span>
-                        </span>
-                        <span v-if="(d.permission || []).length" class="domain-permission-chips">
-                          <span v-for="p in d.permission" :key="p" class="domain-permission-chip">{{
-                            permissionLabel(p)
-                          }}</span>
-                        </span>
-                      </span>
-                    </div>
-
-                    <div v-if="filteredDomains.length === 0" class="pick-empty">
-                      ไม่พบโดเมนที่ตรงกับ "{{ domainSearch }}"
-                    </div>
-                  </template>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <b-row class=" justify-content-end mx-3">
-          <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
-            {{ submitting ? "กำลังบันทึก..." : "สร้างโปรเจกต์" }}
-          </button>
-          <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
-        </b-row>
+        <button class="modal-close-btn" @click="closeModal" aria-label="ปิดหน้าต่าง">
+          <b-icon icon="x" scale="2"></b-icon>
+        </button>
       </div>
-    </vue-modaltor>
-  </span>
+
+      <div class="modal-body">
+        <div class="modal-body-top">
+          <div class="form-field">
+            <label>ชื่อโปรเจกต์ <span class="req">*</span></label>
+            <input
+              ref="nameInput"
+              v-model.trim="form.projectname"
+              class="form-input"
+              placeholder="เช่น AFSC2"
+              @keyup.enter="submit"
+            />
+            <span v-if="error" class="form-error">{{ error }}</span>
+          </div>
+
+          <label class="switch-row">
+            <input type="checkbox" v-model="isActiveStatus" class="switch-input" />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-text">เปิดใช้งาน Project</span>
+          </label>
+        </div>
+
+        <div class="picker-columns">
+          <div class="picker-col">
+            <div class="picker-col-header">
+              <div>
+                <label class="picker-col-label">
+                  ผู้ใช้ในโปรเจกต์
+                  <span class="selected-count" v-if="selectedUsers.length">({{ selectedUsers.length }} คน)</span>
+                </label>
+                <p class="picker-col-hint">ผู้ใช้ที่เลือกจะมีสิทธิ์เข้าถึงโปรเจกต์นี้</p>
+              </div>
+              <div class="picker-col-actions">
+                <button type="button" class="picker-action-link" @click="selectAllUsers">เลือกทั้งหมด</button>
+                <span class="picker-action-sep">·</span>
+                <button type="button" class="picker-action-link" @click="form.userIds = []">ล้างทั้งหมด</button>
+              </div>
+            </div>
+
+            <div class="combo" tabindex="-1" @focusout="closeUserMenu">
+              <div class="combo-shell" @click="focusUserInput">
+                <span v-for="u in selectedUsers" :key="u._id" class="combo-chip">
+                  <span class="combo-chip-avatar">{{ u.initial }}</span>
+                  {{ u.name || u.username }}
+                  <button type="button" class="combo-chip-remove" @click.stop="removeUser(u._id)" aria-label="เอาออก">×</button>
+                </span>
+                <input
+                  ref="userComboInput"
+                  v-model.trim="userSearch"
+                  class="combo-input"
+                  :placeholder="selectedUsers.length ? '' : 'ค้นหาผู้ใช้...'"
+                  @focus="userMenuOpen = true"
+                  @input="userMenuOpen = true"
+                />
+                <b-icon icon="chevron-down" class="combo-caret" :class="{ open: userMenuOpen }"></b-icon>
+              </div>
+
+              <div v-if="userMenuOpen" class="combo-dropdown" @mousedown.prevent>
+                <div v-if="loadingUsers" class="pick-empty">กำลังโหลด...</div>
+                <template v-else>
+                  <div
+                    v-for="u in filteredUsers"
+                    :key="u._id"
+                    class="user-pick-row"
+                    :class="{ checked: form.userIds.includes(u._id) }"
+                    @click="toggleUserId(u._id)"
+                  >
+                    <input type="checkbox" :checked="form.userIds.includes(u._id)" tabindex="-1" />
+                    <span class="pick-avatar">{{ u.initial }}</span>
+                    <span class="pick-text">
+                      <span class="pick-name">{{ u.name || u.username }}</span>
+                      <span class="pick-role">{{ u.role }}</span>
+                    </span>
+                  </div>
+
+                  <div v-if="filteredUsers.length === 0" class="pick-empty">
+                    ไม่พบผู้ใช้ที่ตรงกับ "{{ userSearch }}"
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <div class="picker-col">
+            <div class="picker-col-header">
+              <div>
+                <label class="picker-col-label">
+                  โดเมน
+                  <span class="selected-count" v-if="selectedDomains.length">({{ selectedDomains.length }} รายการ)</span>
+                </label>
+                <p class="picker-col-hint">โดเมนที่โปรเจกต์นี้จะติดตามข้อมูล</p>
+              </div>
+              <div class="picker-col-actions">
+                <button type="button" class="picker-action-link" @click="selectAllDomains">เลือกทั้งหมด</button>
+                <span class="picker-action-sep">·</span>
+                <button type="button" class="picker-action-link" @click="form.domainIds = []">ล้างทั้งหมด</button>
+              </div>
+            </div>
+
+            <div class="combo" tabindex="-1" @focusout="closeDomainMenu">
+              <div class="combo-shell" @click="focusDomainInput">
+                <span v-for="d in selectedDomains" :key="d._id" class="combo-chip domain">
+                  {{ d.name }}
+                  <button type="button" class="combo-chip-remove" @click.stop="removeDomain(d._id)" aria-label="เอาออก">×</button>
+                </span>
+                <input
+                  ref="domainComboInput"
+                  v-model.trim="domainSearch"
+                  class="combo-input"
+                  :placeholder="selectedDomains.length ? '' : 'ค้นหาโดเมน...'"
+                  @focus="domainMenuOpen = true"
+                  @input="domainMenuOpen = true"
+                />
+                <b-icon icon="chevron-down" class="combo-caret" :class="{ open: domainMenuOpen }"></b-icon>
+              </div>
+
+              <div v-if="domainMenuOpen" class="combo-dropdown" @mousedown.prevent>
+                <div v-if="loadingDomains" class="pick-empty">กำลังโหลด...</div>
+                <template v-else>
+                  <div
+                    v-for="d in filteredDomains"
+                    :key="d._id"
+                    class="user-pick-row"
+                    :class="{ checked: form.domainIds.includes(d._id) }"
+                    @click="toggleDomainId(d._id)"
+                  >
+                    <input type="checkbox" :checked="form.domainIds.includes(d._id)" tabindex="-1" />
+                    <span class="pick-text">
+                      <span class="pick-name-row">
+                        <span class="pick-name">{{ d.name }}</span>
+                        <span
+                          class="domain-status-badge"
+                          :class="d.display !== false ? 'is-on' : 'is-off'"
+                          :title="d.display !== false ? 'แสดงผลอยู่' : 'ซ่อนอยู่'"
+                        >
+                          <span class="domain-status-dot"></span>
+                          {{ d.display !== false ? "แสดงผล" : "ซ่อนอยู่" }}
+                        </span>
+                      </span>
+                      <span v-if="(d.permission || []).length" class="domain-permission-chips">
+                        <span v-for="p in d.permission" :key="p" class="domain-permission-chip">{{
+                          permissionLabel(p)
+                        }}</span>
+                      </span>
+                    </span>
+                  </div>
+
+                  <div v-if="filteredDomains.length === 0" class="pick-empty">
+                    ไม่พบโดเมนที่ตรงกับ "{{ domainSearch }}"
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <b-row class=" justify-content-end mx-3">
+        <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
+          {{ submitting ? "กำลังบันทึก..." : "บันทึกการแก้ไข" }}
+        </button>
+        <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
+      </b-row>
+    </div>
+  </vue-modaltor>
 </template>
 
 <script>
 import Swal from "sweetalert2";
 
 export default {
-  name: "CreateProjectModal",
+  name: "EditProjectModal",
   data() {
     return {
-      open: false,
+      visible: false,
       error: "",
       submitting: false,
       userSearch: "",
       domainSearch: "",
       userMenuOpen: false,
       domainMenuOpen: false,
+      editingProject: null,
       form: { projectname: "", status: "inactive", userIds: [], domainIds: [] },
     };
   },
@@ -215,10 +220,8 @@ export default {
     loadingUsers() {
       return this.$store.getters.getUserPicker.loading;
     },
-    // Ordered by form.userIds (the order they were clicked), not by the
-    // picker list's original order — otherwise chips jump around to match
-    // whatever order the API happened to return, instead of the order
-    // the admin actually picked them in.
+    // Ordered by form.userIds (the order they were clicked/loaded in), not
+    // by the picker list's original order.
     selectedUsers() {
       return this.form.userIds.map((id) => this.users.find((u) => u._id === id)).filter(Boolean);
     },
@@ -255,16 +258,6 @@ export default {
       return this.domains.filter((d) => (d.name || "").toLowerCase().includes(q));
     },
   },
-  watch: {
-    open(val) {
-      if (val) {
-        // Fresh lists each time the modal opens.
-        this.$store.dispatch("fetchUserPickerList");
-        this.$store.dispatch("fetchDomainList");
-        this.$nextTick(() => this.$refs.nameInput && this.$refs.nameInput.focus());
-      }
-    },
-  },
   methods: {
     permissionLabel(key) {
       const labels = {
@@ -274,17 +267,45 @@ export default {
       };
       return labels[key] || key;
     },
+    // Public API — call from a parent via `this.$refs.editProjectModal.open(project)`.
+    open(project) {
+      this.editingProject = project;
+      this.form = {
+        projectname: project.projectname || "",
+        status: project.status === "active" ? "active" : "inactive",
+        // userlist/domainlist on a project are usually full embedded
+        // objects (per getProjects), not bare ids — pull just the ids
+        // out for the form. Guarded against a few shapes seen in
+        // practice: a dangling null entry (deleted reference), an item
+        // that's already a bare id string instead of an object, or an
+        // object missing _id — any of which would otherwise end up as a
+        // literal `null` in the save payload and get rejected by the API.
+        userIds: (project.userlist || [])
+          .filter(Boolean)
+          .map((u) => (typeof u === "string" ? u : u._id))
+          .filter(Boolean),
+        domainIds: (project.domainlist || [])
+          .filter(Boolean)
+          .map((d) => (typeof d === "string" ? d : d._id))
+          .filter(Boolean),
+      };
+      this.error = "";
+      this.visible = true;
+      this.userMenuOpen = false;
+      this.domainMenuOpen = false;
+      this.userSearch = "";
+      this.domainSearch = "";
+      // Fresh lists every time the modal opens.
+      this.$store.dispatch("fetchUserPickerList");
+      this.$store.dispatch("fetchDomainList");
+      this.$nextTick(() => this.$refs.nameInput && this.$refs.nameInput.focus());
+    },
     removeUser(id) {
       this.form.userIds = this.form.userIds.filter((existingId) => existingId !== id);
     },
     removeDomain(id) {
       this.form.domainIds = this.form.domainIds.filter((existingId) => existingId !== id);
     },
-    // Rows are plain <div>s (not <label>s wrapping the checkbox) because
-    // the dropdown's @mousedown.prevent — needed to keep the combo's text
-    // input focused while clicking inside the list — also silently blocks
-    // a <label>'s native "click toggles its checkbox" behavior in most
-    // browsers. Toggling explicitly here sidesteps that entirely.
     toggleUserId(id) {
       const idx = this.form.userIds.indexOf(id);
       if (idx === -1) this.form.userIds.push(id);
@@ -307,9 +328,6 @@ export default {
       this.filteredDomains.forEach((d) => ids.add(d._id));
       this.form.domainIds = Array.from(ids);
     },
-    // Clicking anywhere in the combobox shell (not on a chip's × button,
-    // which stops propagation itself) focuses the inner text input, same
-    // as clicking a native <select>/Vuetify combobox opens it.
     focusUserInput() {
       this.userMenuOpen = true;
       this.$nextTick(() => this.$refs.userComboInput && this.$refs.userComboInput.focus());
@@ -325,13 +343,14 @@ export default {
       this.domainMenuOpen = false;
     },
     closeModal() {
-      this.open = false;
+      this.visible = false;
       this.error = "";
       this.submitting = false;
       this.userSearch = "";
       this.domainSearch = "";
       this.userMenuOpen = false;
       this.domainMenuOpen = false;
+      this.editingProject = null;
       this.form = { projectname: "", status: "inactive", userIds: [], domainIds: [] };
     },
     async submit() {
@@ -341,6 +360,7 @@ export default {
       }
 
       const payload = {
+        _id: this.editingProject._id,
         projectname: this.form.projectname,
         status: this.form.status,
         domainlist: this.form.domainIds,
@@ -350,9 +370,11 @@ export default {
       this.error = "";
       this.submitting = true;
       try {
-        const project = await this.$store.dispatch("createProject", payload);
+        const project = await this.$store.dispatch("updateProject", payload);
+        // Re-fetch from the server so pagination/order stay in sync with
+        // the backend, same reasoning as CreateProjectModal.
         await this.$store.dispatch("fetchProjects", { page: 1 });
-        this.$emit("created", project);
+        this.$emit("updated", project);
         this.closeModal();
         Swal.fire({
           title: "บันทึกแล้ว!",
@@ -366,10 +388,10 @@ export default {
         });
       } catch (err) {
         console.log(err);
-        this.error = "สร้างโปรเจกต์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        this.error = "บันทึกการแก้ไขไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
         Swal.fire({
           icon: "error",
-          title: "สร้างโปรเจกต์ไม่สำเร็จ",
+          title: "บันทึกการแก้ไขไม่สำเร็จ",
           text: err.response?.data?.message || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง",
         });
       } finally {
@@ -381,30 +403,16 @@ export default {
 </script>
 
 <style scoped>
-
-.create-btn {
-  background: #128189 !important;
-  border-color: #128189 !important;
-  color: #ffffff !important;
-  font-weight: 500;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.create-btn:hover {
-  background: #0e6971 !important;
-  border-color: #0e6971 !important;
-}
-
 .modal-shell {
   background: #ffffff;
   border-radius: 16px;
   width: 100%;
-  /* font-family: "Inter", ui-sans-serif, system-ui, sans-serif; */
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: 85vh;
+  height: 90vh;
   overflow: hidden;
 }
 
@@ -421,7 +429,6 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  /* font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif; */
   font-weight: 700;
   font-size: 18px;
   color: #1c1e24;
@@ -441,7 +448,6 @@ export default {
 }
 
 .modal-body {
-  /* padding: 20px; */
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -559,26 +565,27 @@ export default {
   font-size: 14px;
 }
 
-/* Combobox: a select-like box with chips embedded inside it and a
-   dropdown list of checkable options underneath — modeled after Vuetify's
-   chip-autocomplete, kept in this app's own light color scheme instead of
-   Vuetify's default dark theme. */
 .combo {
   position: relative;
   outline: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .combo-shell {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  width: 100%;
   min-height: 42px;
   border: 1px solid #e4e1d8;
   border-radius: 8px;
   padding: 6px 34px 6px 8px;
   background: #ffffff;
   cursor: text;
+  box-sizing: border-box;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .combo:focus-within .combo-shell {
@@ -632,12 +639,14 @@ export default {
 .combo-input {
   flex: 1 1 80px;
   min-width: 80px;
+  max-width: 100%;
   border: none;
   outline: none;
   background: transparent;
   font-size: 14px;
   color: #1c1e24;
   padding: 4px 2px;
+  box-sizing: border-box;
 }
 
 .combo-caret {
@@ -661,7 +670,6 @@ export default {
   z-index: 20;
   width: 100%;
   box-sizing: border-box;
-  margin-top: 6px;
   max-height: 200px;
   border: 1px solid #e4e1d8;
   border-radius: 8px;
@@ -840,15 +848,6 @@ export default {
   color: #1c1e24;
 }
 
-.modal-footer {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 20px;
-  border-top: 1px solid #e4e1d8;
-}
-
 .btn-cancel {
   background: #ffffff;
   border: 1px solid #e4e1d8;
@@ -882,8 +881,6 @@ export default {
 }
 
 @media (max-width: 700px) {
-  /* Side-by-side doesn't have room on phone-width screens — stack the
-     two picker columns instead. */
   .picker-columns {
     flex-direction: column;
   }

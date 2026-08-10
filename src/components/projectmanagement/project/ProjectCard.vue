@@ -8,53 +8,43 @@
         <div class="folder-title" :title="project.projectname">{{ project.projectname }}</div>
 
         <div class="folder-top-right">
-          <span
-            v-if="(project.hotissue_list || []).length"
-            class="hotissue-dot"
-            v-b-tooltip.hover
-            :title="`ประเด็นร้อน ${(project.hotissue_list || []).length} รายการ`"
-          ></span>
-          <span
-            class="mion-dot"
-            :class="project.mion ? 'mion-on' : 'mion-off'"
-            v-b-tooltip.hover
-            :title="project.mion ? 'เปิดใช้งาน Mion' : 'ปิดใช้งาน Mion'"
-          ></span>
-          <button class="folder-menu" @click.stop title="ตัวเลือกเพิ่มเติม">
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-          </button>
+          <span v-if="(project.hotissue_list || []).length" class="hotissue-dot" v-b-tooltip.hover
+            :title="`ประเด็นร้อน ${(project.hotissue_list || []).length} รายการ`"></span>
+          <span class="status-badge" :class="project.status === 'active' ? 'status-active' : 'status-inactive'"
+            v-b-tooltip.hover :title="project.status === 'active' ? 'โปรเจกต์เปิดใช้งาน' : 'โปรเจกต์ปิดใช้งาน'">
+            <span class="status-dot"></span>
+            {{ project.status === 'active' ? 'ใช้งานอยู่' : 'ปิดใช้งาน' }}
+          </span>
+
         </div>
       </div>
 
       <!-- Stats: users / domains / hashtags / targets -->
       <div class="stats-row">
-        <span class="stat-chip" v-b-tooltip.hover :title="`ผู้ใช้ที่ดูแล ${(project.userlist || []).length} คน`">
-          <b-icon icon="people"></b-icon>{{ (project.userlist || []).length }} บัญชีผู้ใช้
+        <span class="stat-chip users" v-b-tooltip.hover :title="`ผู้ใช้ที่ดูแล ${(project.userlist || []).length} คน`">
+          <b-icon icon="people-fill"></b-icon>{{ (project.userlist || []).length }} บัญชีผู้ใช้
         </span>
-        <span class="stat-chip" v-b-tooltip.hover :title="`โดเมนที่ติดตาม ${(project.domainlist || []).length} รายการ`">
+        <span class="stat-chip domains" v-b-tooltip.hover
+          :title="`โดเมนที่ติดตาม ${(project.domainlist || []).length} รายการ`">
           <b-icon icon="globe2"></b-icon>{{ (project.domainlist || []).length }} หัวเรื่อง
         </span>
-        <!-- <span class="stat-chip" v-b-tooltip.hover :title="`แฮชแท็กที่ติดตาม ${(project.hashtaglist || []).length} รายการ`">
-          <b-icon icon="hash"></b-icon>{{ (project.hashtaglist || []).length }}
-        </span>
-        <span class="stat-chip" v-b-tooltip.hover :title="`เป้าหมายที่เฝ้าระวัง ${(project.targetlist || []).length} รายการ`">
-          <b-icon icon="bullseye"></b-icon>{{ (project.targetlist || []).length }}
-        </span> -->
       </div>
-
+      <div class="updated-note" v-b-tooltip.hover :title="'สร้างเมื่อ ' + formatDate(project.createdAt)">
+        <b-icon icon="clock"></b-icon>
+        {{ formatDate(project.createdAt) }}
+      </div>
       <div class="folder-bottom">
-        <AvatarStack :users="cardUsers" :max="3" />
+        <AvatarStack :users="cardUsers" :max="5" />
 
         <div class="bottom-right">
-          <!-- <div class="item-count" v-b-tooltip.hover title="โดเมน + แฮชแท็ก + เป้าหมาย + กลุ่ม + ประเด็นร้อน">
-            {{ totalItems }} items
-          </div> -->
-          <div class="updated-note" v-b-tooltip.hover :title="'สร้างเมื่อ ' + formatDate(project.createdAt)">
+          <!-- <div class="updated-note" v-b-tooltip.hover :title="'สร้างเมื่อ ' + formatDate(project.createdAt)">
             <b-icon icon="clock"></b-icon>
             สร้างเมื่อ {{ formatDate(project.createdAt) }}
-          </div>
+          </div> -->
+          <button type="button" class="edit-btn" @click.stop="onEdit" v-b-tooltip.hover title="แก้ไขโปรเจกต์">
+            <b-icon icon="pencil"></b-icon>
+            แก้ไข
+          </button>
         </div>
       </div>
     </div>
@@ -81,6 +71,11 @@ export default {
   props: {
     project: { type: Object, required: true },
   },
+  data() {
+    return {
+      menuOpen: false,
+    };
+  },
   computed: {
     theme() {
       const oid = (this.project._id && this.project._id) || this.project._id || "";
@@ -106,27 +101,38 @@ export default {
       );
     },
   },
-  methods: { 
+  methods: {
+    // Edit/close are just emitted here — this card is presentational and
+    // doesn't call the API itself. The parent (ProjectMain/ProjectManagement)
+    // is responsible for opening an edit form / confirming and dispatching
+    // the actual updateProject call.
+    onEdit() {
+      this.menuOpen = false;
+      this.$emit("edit", this.project);
+    },
+    // "ปิดโปรเจกต์" sets mion: false for this project (a soft
+    // deactivate, not a real delete) — parent should confirm, then call
+    // updateProject with { ...project fields, mion: false }.
+    onClose() {
+      this.menuOpen = false;
+      this.$emit("close", this.project);
+    },
     formatDate(dateStr) {
-            if (!dateStr) return "-";
-            const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return "-";
+      if (!dateStr) return "ไม่ระบุ";
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "ไม่ระบุ";
 
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-            const year = date.getFullYear();
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+      const year = date.getFullYear();
 
-            let hours = date.getHours();
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0'); // 24-hour format
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
 
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12; // Convert 0 -> 12
-            const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
-
-            return `${day}/${month}/${year}`;
-        },
-   },
+      return `${day}/${month}/${year} เวลา ${formattedTime} น.`;
+    },
+  },
 };
 </script>
 
@@ -140,10 +146,20 @@ export default {
   position: relative;
   margin-top: 14px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), filter 0.2s ease;
 }
+
 .folder-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  filter: brightness(1.01);
+}
+
+.folder-card:hover .folder-body {
+  box-shadow: 0 14px 8px 0px rgba(70, 60, 100, 0.28), 0 2px 6px rgba(28, 30, 36, 0.08);
+}
+
+.folder-card:hover .edit-btn {
+  box-shadow: 0 2px 6px rgba(18, 129, 137, 0.18);
 }
 
 .folder-tab {
@@ -154,19 +170,33 @@ export default {
   height: 18px;
   border: 1px solid;
   border-bottom: none;
-  border-radius: 8px 8px 0 0;
+  border-radius: 10px 10px 0 0;
 }
 
 .folder-body {
   position: relative;
+  overflow: hidden;
   border: 1px solid;
-  border-radius: 4px 14px 14px 14px;
+  border-radius: 4px 16px 16px 16px;
   padding: 16px;
   min-height: 150px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 3px 1px 3px rgba(82, 70, 90, 0.254), 0 1px 2px rgba(0, 0, 0, 0.374) !important;
+  box-shadow: 0 8px 6px 0px rgba(70, 60, 100, 0.22), 0 1px 3px rgba(28, 30, 36, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.folder-body::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
 }
 
 .folder-top {
@@ -177,9 +207,11 @@ export default {
 }
 
 .folder-title {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--text, #1c1e24);
+  position: relative;
+  font-weight: 600;
+  font-size: 18.5px;
+  /* letter-spacing: -0.01em; */
+  color: #0e5157;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -189,71 +221,132 @@ export default {
 }
 
 .folder-top-right {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
 
-.hotissue-dot,
-.mion-dot {
+.hotissue-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-}
-.hotissue-dot {
   background: var(--amber, #c1791f);
 }
-.mion-on {
-  background: var(--teal, #128189);
-}
-.mion-off {
-  background: rgba(28, 30, 36, 0.2);
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
-.folder-menu {
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-active {
+  color: #0e5157;
+  background: #cce2e4;
+  border: 1px solid #9dc7ca;
+  box-shadow: 0 2px 0px rgba(131, 162, 168, 0.349);
+}
+
+.status-active .status-dot {
+  background: #128189;
+  box-shadow: 0 0 0 3px rgba(18, 129, 137, 0.16);
+}
+
+.status-inactive {
+  color: #6b7280;
+  background: #e9e7e0;
+  border: 1px solid #d8d4c8;
+  box-shadow: 0 2px 0px rgba(28, 30, 36, 0.08);
+}
+
+.status-inactive .status-dot {
+  background: #9aa0ac;
+  box-shadow: 0 0 0 3px rgba(28, 30, 36, 0.08);
+}
+
+.edit-btn {
   display: flex;
   align-items: center;
-  gap: 2px;
-  background: transparent;
-  border: none;
-  padding: 4px;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 5px 5px;
+  border: 1px solid rgba(28, 30, 36, 0.08);
+  border-radius: 8px;
+  background: #fff4de;
+  color: #5a3f04;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
   cursor: pointer;
-  border-radius: 6px;
-  line-height: 0;
+  box-shadow: 0 1px 2px rgba(28, 30, 36, 0.06);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
-.folder-menu:hover {
-  background: rgba(28, 30, 36, 0.06);
-}
-.folder-menu .dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: rgba(28, 30, 36, 0.45);
-  display: inline-block;
+
+.edit-btn:hover {
+  background: #fed16e;
+  /* border-color: #bd9a4f; */
+  color: #5a3f04;
 }
 
 .stats-row {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 10px 0;
+  margin: 12px 0;
 }
 
 .stat-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 5px;
+  flex: 1 1 calc(50% - 3px);
+  min-width: 0;
+  box-sizing: border-box;
   border-radius: 7px;
-  padding: 2px 7px;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(28, 30, 36, 0.08);
-  font-size: 14px;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(28, 30, 36, 0.06);
+  font-size: 16px;
+  font-weight: 500;
   color: rgba(28, 30, 36, 0.75);
+  box-shadow: 0 1px 2px rgba(28, 30, 36, 0.04);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-chip .b-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.stat-chip.users .b-icon {
+  color: #0e5157;
+}
+
+.stat-chip.domains .b-icon {
+  color: #6b4fa0;
 }
 
 .folder-bottom {
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -269,7 +362,7 @@ export default {
 }
 
 .item-count {
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(28, 30, 36, 0.55);
   white-space: nowrap;
 }
@@ -279,7 +372,7 @@ export default {
   align-items: center;
   gap: 4px;
   font-size: 14px;
-  color: rgba(28, 30, 36, 0.45);
+  color: rgb(108, 74, 126);
   white-space: nowrap;
 }
 </style>

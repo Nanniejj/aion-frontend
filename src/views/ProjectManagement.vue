@@ -9,26 +9,7 @@
           <h1 class="page-title">Projects & Users Management</h1>
         </div>
 
-        <div class="d-flex align-items-center flex-wrap header-actions">
-          <!-- <b-input-group class="search-box">
-            <b-input-group-prepend is-text>
-              <b-icon icon="search" font-scale="0.85"></b-icon>
-            </b-input-group-prepend>
-            <b-form-input v-model="query" placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."></b-form-input>
-          </b-input-group> -->
-          <b-input-group size="lg" class="search-box">
-            <b-form-input
-              id="filter-input"
-              v-model="query"
-              type="search"
-              name="project-search-query"
-              autocomplete="off"
-              :readonly="searchLocked"
-              @focus="searchLocked = false"
-              placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."
-            ></b-form-input>
-          </b-input-group>
-        </div>
+        
       </div>
 
       <!-- ===== Tabs + create buttons (right-aligned) ===== -->
@@ -37,28 +18,175 @@
           <button class="tab-btn" :class="{ active: tab === 'projects' }" @click="tab = 'projects'">
             <b-icon icon="grid"></b-icon>
             Projects
-            <span class="count">{{ projects.length }}</span>
+            <span class="count">{{ getProjectsPagination.total }}</span>
           </button>
           <button class="tab-btn" :class="{ active: tab === 'users' }" @click="tab = 'users'">
             <b-icon icon="people"></b-icon>
             Users
-            <span class="count">{{ users.length }}</span>
+            <span class="count">{{ getUsersPagination.total }}</span>
           </button>
         </div>
 
         <div class="d-flex align-items-center flex-wrap tab-actions">
-          <CreateProjectModal v-if="tab === 'projects'" :users="users" @created="addProject" />
-          <CreateUserModal v-if="tab === 'users'" :projects="projects" @created="addUser" />
+          <div class="d-flex align-items-center flex-wrap header-actions">
+          <b-input-group size="lg" class="search-box">
+            <b-form-input
+              id="filter-input"
+              v-model="query"
+              type="text"
+              name="project-search-query"
+              autocomplete="off"
+              :readonly="searchLocked"
+              :disabled="isFilterLoading"
+              @focus="searchLocked = false"
+              placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."
+            ></b-form-input>
+            <b-input-group-append v-if="query">
+              <button
+                type="button"
+                class="search-clear-btn"
+                :disabled="isFilterLoading"
+                @click="query = ''"
+                aria-label="ล้างคำค้นหา"
+              >
+                <b-icon icon="x"></b-icon>
+              </button>
+            </b-input-group-append>
+          </b-input-group>
+          <div
+            v-if="tab === 'users'"
+            class="project-filter"
+            :class="{ disabled: isFilterLoading }"
+            ref="projectFilterRoot"
+          >
+            <button
+              type="button"
+              class="project-filter-btn"
+              @click="toggleProjectDropdown"
+              :disabled="isFilterLoading"
+              aria-haspopup="listbox"
+              :aria-expanded="projectDropdownOpen"
+            >
+              <span class="project-filter-label">{{ projectFilterLabel }}</span>
+              <b-icon icon="chevron-down"></b-icon>
+            </button>
+            <div
+              v-if="projectDropdownOpen"
+              class="project-filter-menu"
+            >
+              <input
+                type="text"
+                class="project-filter-search"
+                v-model="projectFilterQuery"
+                placeholder="ค้นหาโปรเจกต์..."
+                autocomplete="off"
+                @click.stop
+                ref="projectFilterSearchInput"
+              />
+              <div
+                class="project-filter-list"
+                role="listbox"
+                @scroll="onProjectDropdownScroll"
+                ref="projectDropdownMenu"
+              >
+                <div
+                  class="project-filter-option"
+                  :class="{ active: projectFilter === '' }"
+                  role="option"
+                  @click="selectProjectFilter('')"
+                >
+                  ทุกโปรเจกต์
+                </div>
+                <div
+                  v-for="p in getProjectPicker.items"
+                  :key="p._id"
+                  class="project-filter-option"
+                  :class="{ active: projectFilter === p._id }"
+                  role="option"
+                  @click="selectProjectFilter(p._id)"
+                >
+                  {{ p.projectname }}
+                </div>
+                <div v-if="getProjectPicker.loading" class="project-filter-loading">กำลังโหลด...</div>
+                <div
+                  v-else-if="!getProjectPicker.items.length"
+                  class="project-filter-loading"
+                >
+                  ไม่พบโปรเจกต์
+                </div>
+              </div>
+            </div>
+          </div>
+          <select
+            v-if="tab === 'users'"
+            v-model="roleFilter"
+            class="project-filter-btn w-auto"
+            :disabled="isFilterLoading"
+            aria-label="กรอง Role"
+          >
+            <option value="">ทุก Role</option>
+            <option value="superadmin">Superadmin</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+            <option value="service">Service</option>
+          </select>
+          <CreateUserModal v-if="tab === 'users'" @created="onUserCreated" />
+        </div>
+          <div v-if="tab === 'projects'" class="view-toggle" role="group" aria-label="สลับรูปแบบการแสดงผล">
+            <button
+              type="button"
+              class="view-toggle-btn"
+              :class="{ active: viewMode === 'cards' }"
+              @click="viewMode = 'cards'"
+            >
+              <i class="fas fa-credit-card"></i> Cards
+            </button>
+            <button
+              type="button"
+              class="view-toggle-btn"
+              :class="{ active: viewMode === 'progress' }"
+              @click="viewMode = 'progress'"
+            >
+              <i class="fas fa-table"></i> Table
+            </button>
+          </div>
+          <CreateProjectModal v-if="tab === 'projects'" />
+          
         </div>
       </div>
 
-      <ProjectMain v-if="tab === 'projects'" :projects="filteredProjects" :query="query" @open="openProject" />
+      <ProjectMain
+        v-if="tab === 'projects'"
+        :projects="projects"
+        :query="query"
+        :view-mode="viewMode"
+        :pagination="getProjectsPagination"
+        :loading="getLoadingProjects"
+        @open="openProject"
+        @change-page="onProjectsPageChange"
+        @edit="onEditProject"
+        @close="onCloseProject"
+      />
 
-      <UserMain v-if="tab === 'users'" :users="filteredUsers" :query="query" />
+      <UserMain
+        v-if="tab === 'users'"
+        :users="filteredUsersByRole"
+        :query="query"
+        :pagination="getUsersPagination"
+        :loading="getLoadingUsers"
+        @change-page="onUsersPageChange"
+        @delete="onProjectUpdated"
+        @updated="onUserUpdated"
+      />
     </div>
 
     <!-- ============ DETAIL (FULL PAGE) VIEW ============ -->
-    <ProjectDetail v-else :project="activeProject" @close="closeProject" />
+    <ProjectDetail v-else :project="activeProject" @close="closeProject" @edit="onEditProject" />
+
+    <!-- Rendered unconditionally (not inside the list-view v-if) so
+         $refs.editProjectModal still exists and .open() works when the
+         "แก้ไข" button is clicked from the ProjectDetail full-page view too. -->
+    <EditProjectModal ref="editProjectModal" @updated="onProjectUpdated" />
   </div>
 </template>
 
@@ -68,76 +196,226 @@ import ProjectMain from "../components/projectmanagement/ProjectMain.vue";
 import UserMain from "../components/projectmanagement/UserMain.vue";
 import ProjectDetail from "../components/projectmanagement/project/ProjectDetail.vue";
 import CreateProjectModal from "../components/projectmanagement/project/CreateProjectModal.vue";
+import EditProjectModal from "../components/projectmanagement/project/EditProjectModal.vue";
 import CreateUserModal from "../components/projectmanagement/users/CreateUserModal.vue";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "ProjectManagementView",
-  components: { HomeNav, ProjectMain, UserMain, ProjectDetail, CreateProjectModal, CreateUserModal },
+  components: { HomeNav, ProjectMain, UserMain, ProjectDetail, CreateProjectModal, EditProjectModal, CreateUserModal },
   data() {
     return {
       tab: "projects", // 'projects' | 'users'
       query: "",
-      // Starts readonly so Chrome can't autofill it on page load; removed
-      // as soon as the user focuses the field (see @focus on the input).
+      roleFilter: "",
+      projectFilter: "",
+      projectDropdownOpen: false,
+      projectFilterName: "",
+      projectFilterQuery: "",
+      projectFilterSearchTimer: null,
       searchLocked: true,
       view: "list", // 'list' | 'detail'
       activeProject: null,
+      viewMode: "cards", // 'cards' | 'progress'
+      searchTimer: null,
     };
   },
   computed: {
-    ...mapGetters(["getProjects", "getUsers"]),
+    ...mapGetters([
+      "getProjects",
+      "getUsers",
+      "getUsersPagination",
+      "getProjectsPagination",
+      "getLoadingProjects",
+      "getLoadingUsers",
+      "getProjectPicker",
+    ]),
     projects() {
       return this.getProjects;
     },
     users() {
       return this.getUsers;
     },
-    filteredProjects() {
-      const q = this.query.toLowerCase();
-      return this.projects.filter((p) => p.projectname.toLowerCase().includes(q));
+    // Label shown on the project-filter dropdown button.
+    projectFilterLabel() {
+      if (!this.projectFilter) return "ทุกโปรเจกต์";
+      return this.projectFilterName || "โปรเจกต์ที่เลือก";
     },
-    filteredUsers() {
-      const q = this.query.toLowerCase();
-      return this.users.filter(
-        (u) => u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)
-      );
+    filteredUsersByRole() {
+      if (!this.roleFilter) return this.users;
+      return this.users.filter((u) => u.role === this.roleFilter);
+    },
+    isFilterLoading() {
+      return this.tab === "projects" ? this.getLoadingProjects : this.getLoadingUsers;
     },
   },
   created() {
     this.fetchProjects();
-    // project_id/page/limit default to the values you specified;
-    // pass a payload here (e.g. { project_id, page, limit }) if these
-    // should instead come from the route or the selected project.
-    this.fetchUsers({ project_id: "606add1cc8777a79d216ecb3", page: 2, limit: 20 });
+    this.fetchUsersFiltered(1);
+  },
+  mounted() {
+    document.addEventListener("click", this.handleProjectDropdownOutsideClick);
+  },
+  beforeDestroy() {
+    document.removeEventListener("click", this.handleProjectDropdownOutsideClick);
+  },
+  watch: {
+    
+    query(val) {
+      clearTimeout(this.searchTimer);
+      this.searchTimer = setTimeout(() => {
+        if (this.tab === "projects") {
+          this.searchProjects(val);
+        } else {
+          this.fetchUsersFiltered(1);
+        }
+      }, 300);
+    },
+   
+    tab(val) {
+      if (val === "projects") {
+        this.searchProjects(this.query);
+      } else {
+        this.fetchUsersFiltered(1);
+      }
+    },
+    
+    roleFilter() {
+      this.fetchUsersFiltered(1);
+    },
+    
+    projectFilter() {
+      this.fetchUsersFiltered(1);
+    },
+    projectFilterQuery(val) {
+      clearTimeout(this.projectFilterSearchTimer);
+      this.projectFilterSearchTimer = setTimeout(() => {
+        this.searchProjectPicker(val);
+      }, 300);
+    },
   },
   methods: {
-    ...mapActions(["fetchProjects", "fetchUsers"]),
+    ...mapActions([
+      "fetchProjects",
+      "fetchUsers",
+      "searchProjects",
+      "updateProject",
+      "fetchProjectPickerPage",
+      "resetProjectPicker",
+      "searchProjectPicker",
+    ]),
     openProject(project) {
       this.activeProject = project;
       this.view = "detail";
       window.scrollTo(0, 0);
     },
+    onEditProject(project) {
+      this.$refs.editProjectModal.open(project);
+    },
+    async onCloseProject(project) {
+      if (!window.confirm(`ต้องการปิดโปรเจกต์ "${project.projectname}" ใช่หรือไม่?`)) return;
+      try {
+        await this.updateProject({
+          _id: project._id,
+          projectname: project.projectname,
+          mion: false,
+          domainlist: (project.domainlist || []).map((d) => d._id),
+          userlist: (project.userlist || []).map((u) => u._id),
+        });
+        await this.fetchProjects({ page: 1 });
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    onProjectUpdated(project) {
+      if (!project || !this.activeProject || project._id !== this.activeProject._id) return;
+      const refreshed = this.projects.find((p) => p._id === project._id);
+      this.activeProject = refreshed || project;
+    },
+    onUserUpdated() {
+      this.fetchUsersFiltered(1);
+    },
+    onUserCreated() {
+      this.fetchUsersFiltered(1);
+    },
     closeProject() {
       this.view = "list";
       this.activeProject = null;
     },
-    addProject(project) {
-      this.$store.commit("addProject", project);
+    fetchUsersFiltered(page) {
+      this.fetchUsers({
+        project_id: this.projectFilter,
+        page: page || 1,
+        limit: this.getUsersPagination.limit || 10,
+        search: this.query,
+        role: this.roleFilter,
+      });
     },
-    addUser(user) {
-      this.$store.commit("addUser", user);
+    toggleProjectDropdown() {
+      if (this.isFilterLoading) return;
+      if (this.projectDropdownOpen) {
+        this.closeProjectDropdown();
+        return;
+      }
+      this.projectDropdownOpen = true;
+      if (!this.getProjectPicker.items.length && !this.getProjectPicker.loading) {
+        this.fetchProjectPickerPage();
+      }
+      this.$nextTick(() => {
+        if (this.$refs.projectFilterSearchInput) this.$refs.projectFilterSearchInput.focus();
+      });
+    },
+    onProjectDropdownScroll(e) {
+      const el = e.target;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 60) {
+        this.fetchProjectPickerPage();
+      }
+    },
+    selectProjectFilter(id) {
+      this.projectFilter = id;
+      const match = this.getProjectPicker.items.find((p) => p._id === id);
+      this.projectFilterName = match ? match.projectname : "";
+      this.closeProjectDropdown();
+    },
+    // Closes the dropdown and clears its search box + loaded picker
+    // items — otherwise the next time it's opened it silently shows
+    // whatever page a previous search left behind (e.g. still filtered
+    // to "root" even though the search box looks empty) instead of the
+    // full project list.
+    closeProjectDropdown() {
+      this.projectDropdownOpen = false;
+      clearTimeout(this.projectFilterSearchTimer);
+      if (this.projectFilterQuery) {
+        this.projectFilterQuery = "";
+      } else {
+        this.resetProjectPicker("");
+      }
+    },
+    handleProjectDropdownOutsideClick(e) {
+      if (
+        this.projectDropdownOpen &&
+        this.$refs.projectFilterRoot &&
+        !this.$refs.projectFilterRoot.contains(e.target)
+      ) {
+        this.closeProjectDropdown();
+      }
+    },
+    onUsersPageChange(page) {
+      if (page === this.getUsersPagination.page) return;
+      this.fetchUsersFiltered(page);
+    },
+    onProjectsPageChange(page) {
+      if (page === this.getProjectsPagination.page) return;
+      this.fetchProjects({
+        page,
+        limit: this.getProjectsPagination.limit,
+      });
     },
   },
 };
 </script>
 
 <style scoped>
-/*
-  Self-contained styling for the header + tab row, with colors hard-coded
-  directly (no CSS variables) so it still looks right even if the shared
-  theme.css / :root tokens aren't loaded elsewhere in the project.
-*/
 
 #dash-app {
   /* background: #f6f5f0; */
@@ -168,9 +446,10 @@ export default {
   /* color: #1c1e24; */
 }
 
-/* .search-box {
-  width: 300px;
-} */
+.search-box {
+  width: 280px;
+  flex: 0 0 auto;
+}
 .search-box >>> .input-group-text {
   background: #ffffff;
   border-color: #e4e1d8;
@@ -185,6 +464,143 @@ export default {
   box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
   border-color:  #128189;
 }
+.search-box >>> .input-group-append {
+  display: flex;
+}
+.search-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid #e4e1d8;
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  background: #ffffff;
+  color: #6b7280;
+  cursor: pointer;
+}
+.search-clear-btn:hover {
+  background: #f6f5f0;
+  color: #1c1e24;
+}
+.search-box >>> .form-control:disabled {
+  background: #f6f5f0;
+  cursor: not-allowed;
+}
+.search-clear-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.search-clear-btn:disabled:hover {
+  background: #ffffff;
+  color: #6b7280;
+}
+
+.project-filter {
+  position: relative;
+  flex: 0 0 auto;
+}
+.project-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 160px;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #e4e1d8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1c1e24;
+  font-size: 14px;
+  cursor: pointer;
+}
+.project-filter-btn:hover {
+  border-color: #128189;
+}
+.project-filter.disabled .project-filter-btn,
+.project-filter-btn:disabled {
+  background: #f6f5f0;
+  cursor: not-allowed;
+}
+.project-filter-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-filter-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  width: 100%;
+  min-width: 240px;
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(28, 30, 36, 0.12);
+  overflow: hidden;
+}
+.project-filter-search {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid #e4e1d8;
+  font-size: 13px;
+  text-align: left;
+  outline: none;
+}
+.project-filter-search:focus {
+  box-shadow: inset 0 0 0 2px rgba(18, 129, 137, 0.15);
+}
+.project-filter-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+.project-filter-option {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #1c1e24;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project-filter-option:hover {
+  background: #f6f5f0;
+}
+.project-filter-option.active {
+  background: rgba(18, 129, 137, 0.1);
+  color: #128189;
+  font-weight: 600;
+}
+.project-filter-loading {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.role-filter-select {
+  height: 100%;
+  min-height: 46px;
+  flex: 0 0 auto;
+  border: 1px solid #e4e1d8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1c1e24;
+  font-size: 13px;
+  padding: 0 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.role-filter-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
+  border-color: #128189;
+}
 
 .tab-row {
   gap: 12px;
@@ -196,6 +612,43 @@ export default {
 
 .tab-actions {
   gap: 10px;
+}
+
+.view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #e4e1d8;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.view-toggle-btn:hover {
+  color: #664b90;
+}
+.view-toggle-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(102, 75, 144, 0.25);
+}
+.view-toggle-btn.active {
+  background: #664b90;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(28, 30, 36, 0.12);
 }
 
 .tab-btn {
@@ -222,8 +675,22 @@ export default {
   color: #5a3f04;
 }
 .tab-btn .count {
-  font-size: 11px;
-  opacity: 0.75;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  background: #ffe1a8;
+  color: #5a3f04;
+}
+.tab-btn.active .count {
+  background: #5a3f04;
+  color: #ffe1a8;
 }
 
 @media (max-width: 640px) {

@@ -160,37 +160,6 @@ export default {
         selectDomain(domain) {
            this.$emit('update-keyword', domain) 
         },
-        getWordCloudImage() {
-            this.loading = true;
-            const config = {
-                method: "get",
-                url: "https://api.cognizata.com/api/v1/getMonitor/",
-                params: {
-                    query: this.$route.query.uid,
-                    api_type: "account",
-                    top_type: "domain",
-                    // type: this.$route.query.type,
-                    // source: this.$route.query.source,
-                    // id: this.$route.query.id,
-                },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
-            console.log("word ",this.loading);
-            
-            this.axios(config)
-            .then((response) => {
-                this.wordcloud_images = response.data.wordcloud_images || [];
-                console.log('this.wordcloud_images ', this.wordcloud_images);
-                this.loading = false;
-            })
-            .catch((error) => {
-                this.loading = false;
-                console.error(error);
-            });
-        },
         apiGetProfileWordCloud() {
             this.loading = true;
             const config = {
@@ -270,7 +239,7 @@ export default {
         this.loading = this.load
         // this.updateChartFromTopDomain();
         // this.apiGetProfileWordCloud();
-        // this.getWordCloudImage();
+        
     }
 };
 </script>

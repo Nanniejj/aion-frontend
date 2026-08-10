@@ -790,7 +790,6 @@ export default {
             const config = {
                 method: "get",
                 url: isHashtagList ? hashtagApi : targetApi,
-                //url: "https://api.cognizata.com/api/v1/getsentimentdetail/",
                 params: {
                     // account: this.$route.query.uid,
                     ...(isHashtagList ? { hashtags: this.$route.query.uid } : { account: this.$route.query.uid }),

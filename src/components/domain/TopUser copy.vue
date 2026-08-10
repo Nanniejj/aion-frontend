@@ -1,26 +1,28 @@
 <template>
   <div>
     <div class="text-left">
-      <span class="h5 mr-3">Top Users</span>
-      <span class="domain-tag mr-3">สื่อสำนักข่าว</span>
-      <!-- <span class="mr-2">| สื่อสำนักข่าว</span> -->
-      <!-- <div class="d-inline-block">
+      <div class="d-inline-block mb-3">
         <div v-if="startd === endd" class="text-left onedate">
           <i class="far fa-calendar-alt"></i> {{ startd }}
         </div>
         <div v-else class="text-left twodate">
           <i class="far fa-calendar-alt"></i> {{ startd }} - {{ endd }}
         </div>
-      </div> -->
+      </div>
+    </div>
+    <div class="text-left">
+      <span class="h5 mr-3">Top Users</span>
+      <!-- <span class="mr-2">| สื่อสังคมออนไลน์</span> -->
+      <span class="domain-tag mr-3">สื่อสังคมออนไลน์</span>
     </div>
     <vue-element-loading
-      :active="getLoadTopUserF"
+      :active="getLoadTopUser"
       size="80"
       background-color="rgba(255, 255, 255, 0.5)"
       color="#b6ac9a"
     />
     <!-- <div class="mt-3 mb-3 box-domain"> -->
-      <!-- {{ topuser }} -->
+    <!-- {{ topuser }} -->
     <b-row
       class="mt-3"
       cols-sm="2"
@@ -30,9 +32,7 @@
       v-if="topuser.length"
     >
       <b-col v-for="(user, k) in topuser" :key="k">
-        <div
-          class="box-topuser mb-3"
-        >
+        <div class="box-topuser mb-3">
           <div class="mb-3">
             <b-avatar size="2em" variant="light" class="mt-2">{{
               k + 1
@@ -63,11 +63,19 @@
                   src="@/assets/News.png"
                   class="social-img"
                 />
-                <img
-                  v-if="user.source == 'pantip'"
-                  src="@/assets/Pantip.png"
-                  class="social-img"
-                />
+                <span v-if="user.source == 'pantip'">
+                  <img
+                    v-if="user.platform == 'dek-d'"
+                    src="@/assets/dekd.png"
+                    class="social-img"
+                  />
+                  <img
+                  v-else-if="user.platform == 'lemon8'"
+                    src="@/assets/lemon8.png"
+                    class="social-img"
+                  />
+                  <img v-else src="@/assets/Pantip.png" class="social-img" />
+                </span>
                 <img
                   v-if="user.source == 'instagram'"
                   src="@/assets/Instagram.png"
@@ -96,38 +104,106 @@
               </template> </b-avatar
           ></a>
           <div class="mt-2 textuser bold">
-            <a :href="user.url_post" target="_blank">{{
-              user.account_name
-            }}</a>
+            <a :href="user.url_post" target="_blank">{{ user.account_name }}</a>
           </div>
-          <span class="badge badge-pill badge-dark px-2 py-1"  @click="linkToProfile(user)" style="font-size: 13px;background-color: #4c412b;cursor: pointer;">ดูโปรไฟล์</span>
-
+          <span
+            class="badge badge-pill badge-dark px-2 py-1"
+            @click="linkToProfile(user)"
+            style="font-size: 13px;background-color: #4c412b;cursor: pointer;"
+            >ดูโปรไฟล์</span
+          >
+          <div class="mt-3">
+            <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+            <span class="mx-2">{{ user.postCount | numFormat }}</span
+            >posts
+          </div>
           <hr />
+
           <b-row cols="1">
-            <b-col > 
+            <!-- <b-col > 
               <b-row>
                 <b-col > 
             <b >Total</b>  </b-col>
             
             </b-row>
-            </b-col>
-            <b-col v-b-tooltip.hover title="posts">
+            </b-col> -->
+
+            <b-col
+              v-b-tooltip.hover
+              title="retweet"
+              v-if="user.source == 'twitter'"
+            >
               <b-row>
+                <b-col> <i class="fa fa-retweet" aria-hidden="true"></i></b-col>
+                <b-col class="text-left">
+                  {{ user.sumRetweets | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col
+              v-b-tooltip.hover
+              title="reply"
+              v-if="user.source == 'twitter'"
+            >
+              <b-row cols="12">
                 <b-col
-                  ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
+                  ><i class="fa fa-comments-o" aria-hidden="true"></i
                 ></b-col>
                 <b-col class="text-left">
-                  {{ user.postCount | numFormat }}</b-col
+                  {{ user.sumComments | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="comments" v-else>
+              <b-row cols="12">
+                <b-col
+                  ><i class="fa fa-comments-o" aria-hidden="true"></i
+                ></b-col>
+                <b-col class="text-left">
+                  {{ user.sumComments | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="likes">
+              <b-row>
+                <b-col> <i class="fa fa-heart" aria-hidden="true"></i></b-col>
+                <b-col class="text-left">
+                  {{ user.sumLikes | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="shares">
+              <b-row>
+                <b-col> <i class="fa fa-share" aria-hidden="true"></i></b-col>
+                <b-col class="text-left">
+                  {{ user.sumShares | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col
+              v-b-tooltip.hover
+              title="emotion"
+              v-if="user.source == 'pantip'"
+            >
+              <b-row>
+                <b-col> emotion </b-col>
+                <b-col class="text-left">
+                  {{ user.sumReaction | numFormat }}</b-col
+                >
+              </b-row>
+            </b-col>
+            <b-col v-b-tooltip.hover title="engages">
+              <b-row>
+                <b-col> Total </b-col>
+                <b-col class="text-left">
+                  {{ user.totalEngagePost | numFormat }}</b-col
                 >
               </b-row>
             </b-col>
           </b-row>
           <!-- ig engage -->
           <b-row
-            v-if="
-              user.source == 'instagram' ||
-                user.source == 'tiktok'
-            "
+            v-if="user.source == 'instagram' || user.source == 'tiktok'"
             id="score-data"
             cols-lg="auto"
             cols="1"
@@ -186,9 +262,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -234,9 +308,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -281,9 +353,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -328,9 +398,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -368,9 +436,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
           </b-row>
@@ -388,9 +454,7 @@
                 <b-col
                   ><i class="fa fa-paper-plane-o" aria-hidden="true"></i
                 ></b-col>
-                <b-col class="text-left">
-                  {{ user.allPost | numFormat }}</b-col
-                >
+                <b-col class="text-left"> {{ user.allPost | numFormat }}</b-col>
               </b-row>
             </b-col>
             <b-col v-b-tooltip.hover title="comments">
@@ -446,18 +510,14 @@ export default {
       "getEdateDm",
       "getArrDate",
       "getClickDomain",
-      "getLoadTopUserF",
-      "getClickDomainId",
-      "getSourceNews",
+      "getLoadTopUser",
+      "getClickDomainId"
     ]),
   },
   watch: {
     getArrDate: function() {
       this.startd = this.getSdateDm.slice(0, 10);
       this.endd = this.getEdateDm.slice(0, 10);
-      this.selectDate();
-    },
-    getSourceNews: function() {
       this.selectDate();
     },
   },
@@ -472,7 +532,7 @@ export default {
   },
   methods: {
     linkToProfile(item) {
-      // console.log("dddd", item);
+      console.log("dddd", item);
       // let acc = item.account_name;
       // if (item.source == "youtube") {
       //   acc = item.account_name.replace("@", "");
@@ -485,38 +545,33 @@ export default {
       // this.$router.push({ name: "Profile" });
 
       const routeData = this.$router.resolve({
-          name: "MonitorProfile",
-          query: {
-              id: item.account_name,
-              uid: item.account_name,
-              source: item.source,
-              // type: 'topuser',
-          },
-      });
-      window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
+            name: "MonitorProfile",
+            query: {
+                id: item.account_name,
+                uid: item.account_name,
+                source: item.source,
+                // type: this.type
+            },
+        });
+        window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
     },
     selectDate() {
-      this.$store.commit("setLoadTopUserF", true);
+      this.$store.commit("setLoadTopUser", true);
       let sdate, edate;
       //today = moment(new Date()).format().slice(0, 10);
       sdate = "&start=" + this.getSdateDm;
       edate = "&end=" + this.getEdateDm;
-      let sourceNewsParam = '';
-      if (this.getSourceNews === 'internal') {
-        sourceNewsParam = '&source_news=internal';
-      } else if (this.getSourceNews === 'external') {
-        sourceNewsParam = '&source_news=external';
-      }
+      let source_news = "";
       //http://139.59.103.67:3000/api/v2/userposts/getInfluDomain?&domain=
       // "https://api2.cognizata.com/api/v2/userposts/getInfluDomain?domain="
       var config = {
         method: "get",
         url:
-        "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain_id=" +
-        this.getClickDomainId +'&source=news'+
-        sdate +
-        edate +
-        sourceNewsParam,
+          "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain_id=" +
+          this.getClickDomainId +
+          "&source=twitter,facebook,youtube,tiktok,instagram,pantip,threads,blockdit" +
+          sdate +
+          edate,
         // +"&source="+this.source,
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -525,13 +580,13 @@ export default {
       };
       this.axios(config)
         .then((response) => {
-          // console.log("Toppp response.data", response.data);   
+          // console.log("Toppp response.data", response.data);
           this.topuser = response.data.slice(0, 5);
-          this.$store.commit("setLoadTopUserF", false);
+          this.$store.commit("setLoadTopUser", false);
         })
         .catch(function(error) {
           console.log(error);
-          this.$store.commit("setLoadTopUserF", false);
+          this.$store.commit("setLoadTopUser", false);
         });
     },
   },
@@ -549,21 +604,15 @@ export default {
       .slice(0, 10);
     sdate = "&start=" + today + "T00:00:00";
     edate = "&end=" + today + "T23:59:59";
-     let sourceNewsParam = '';
-      if (this.getSourceNews === 'internal') {
-        sourceNewsParam = '&source_news=internal';
-      } else if (this.getSourceNews === 'external') {
-        sourceNewsParam = '&source_news=external';
-      }
-    this.$store.commit("setLoadTopUserF", true);
+    this.$store.commit("setLoadTopUser", true);
     var config = {
       method: "get",
       url:
         "https://api2.cognizata.com/api/v2/userposts/getInfluencerNormalize?domain_id=" +
-        this.getClickDomainId +'&source=news'+
+        this.getClickDomainId +
+        "&source=twitter,facebook,youtube,tiktok,instagram,pantip,threads,blockdit" +
         sdate +
-        edate +
-        sourceNewsParam,
+        edate,
       // +"&source="+this.source,
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token"),
@@ -574,10 +623,10 @@ export default {
       .then((response) => {
         // ---------------------------------------------------------------------------------------------------------
         this.topuser = response.data.slice(0, 5);
-        this.$store.commit("setLoadTopUserF", false);
+        this.$store.commit("setLoadTopUser", false);
       })
       .catch((error) => {
-        this.$store.commit("setLoadTopUserF", false);
+        this.$store.commit("setLoadTopUser", false);
         console.log(error);
       });
   },

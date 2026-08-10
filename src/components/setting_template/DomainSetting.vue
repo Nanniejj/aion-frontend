@@ -27,7 +27,7 @@
             </b-input-group>
         </b-col>
         <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0">
-          <TemplateAddDomain />
+          <TemplateAddDomain @domain-added="fetchDomainList()"/>
           <!-- <button class="btn btn-add" ><i class="fa fa-plus"/><span  style="font-size:16px;"> เพิ่ม Domain </span></button> -->
         </b-col>
         <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0">
@@ -262,7 +262,7 @@ export default {
       return forbiddenPattern.test(String(value || ""));
     },
     removeRow: function (index, item) {
-      console.log("delete");
+      // console.log("delete");
       this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
         this.$store.dispatch("deleteDomain", {
           id: item.id,
@@ -271,47 +271,21 @@ export default {
         this.totalRows = this.getItemsDomain.length;
       });
     },
-    editDomain() {
+    async editDomain() {
       let tdomain = this.textDomain.trim();
       if (tdomain.length === 0 || this.hasForbiddenChars(tdomain)) return;
-      this.$store.dispatch("updateDomain", {
-        name: tdomain,
-        id: this.idDomain,
-        display: this.selected,
-      });
+      try {
+        await this.$store.dispatch("updateDomain", {
+          name: tdomain,
+          id: this.idDomain,
+          // display: this.selected,
+        });
+      } catch (error) {
+        console.log("errrrrrr", error);
+      } finally {
+        this.fetchDomainList();
+      }
       this.open = false;
-
-      // this.$confirm("กรุณายืนยันข้อมูล").then(() => {
-      //   var _this = this;
-      //   var token='8ed9acde328c317fef0afce75850dc637e674174';
-      //   const AuthStr = "Token " + token;
-      //   var data = JSON.stringify({"name":_this.textDomain,"display":_this.selected,"id":_this.idDomain});
-      // console.log(data);
-      //   var config = {
-      //     method: 'put',
-      //     url: API_URL+'/v1/domain/'+_this.idDomain+'/',
-      //     headers: {
-      //       Authorization: AuthStr,
-      //       "Content-Type": "application/json",
-      //     },
-      //     data : data
-      //   };
-      //   axios(config)
-      //   .then(function () {
-      //     _this.$fire({
-      //         title: "บันทึกข้อมูลสำเร็จ",
-      //         type: "success",
-      //       showConfirmButton: false,
-      //         timer: 1000,
-      //       })
-      //       _this.hideModal()
-      //       location.reload();
-      //   })
-      //   .catch(function () {
-      //    _this.$alert("ไม่สามารถดำเนินการได้").then(() => {});
-      //   });
-
-      // });
     },
     createClone() {
       let newName = this.domainClone.new_domain_name.trim();
@@ -352,7 +326,7 @@ export default {
     },
     linkToSubDomain(item) {
       // this.$store.dispatch("fetchListSubDomain",{name:item.name})
-      console.log(item.id);
+      // console.log(item.id);
       this.$store.commit("setDomainName", item.name);
       this.$store.commit("setDomainId", item.id);
       this.$router.push({ name: "SettingSubDomain"  ,params: { domain: item.name},query: { id:item.id}});
@@ -373,11 +347,11 @@ export default {
       // this.infoModal.title = `Row index: ${index}`;
       this.open = true;
       this.idDomain = item.id;
-      console.log(this.idDomain);
+      // console.log(this.idDomain);
       this.infoModal.content = item.name;
       this.textDomain = item.name;
       this.selected = item.display;
-      console.log( this.options);
+      // console.log( this.options);
       this.$root.$emit("bv::show::modal", this.infoModal.id, button);
     },
     buildCloneInfo(item, index, button) {
@@ -396,7 +370,7 @@ export default {
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
       this.totalRows = filteredItems.length;
-      console.log("item", filteredItems);
+      // console.log("item", filteredItems);
       this.currentPage = 1;
     },
     // ✅ เรียก fetch รายการ domain ใหม่ ใช้ทั้งตอนโหลดหน้าครั้งแรกและตอนนำเข้าไฟล์สำเร็จ

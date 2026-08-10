@@ -66,7 +66,7 @@ export default {
       // debounce + cancel state, ไม่เกี่ยวกับ render เลยไม่จำเป็นต้องเป็น reactive
       // แต่เก็บไว้ใน data() ก็ใช้งานได้ปกติ
       _updateTimer: null,
-      _cancelSource: null,
+      _abortController: null,
       platformConfig: [
         {
           source: "facebook",
@@ -246,12 +246,16 @@ export default {
     },
 
     async updateChart() {
-      // ถ้ามี request ก่อนหน้ายังไม่เสร็จ ให้ยกเลิกทิ้งก่อน
-      // กัน response เก่ามาถึงทีหลังแล้วทับข้อมูลที่ใหม่กว่า (race condition)
-      if (this._cancelSource) {
-        this._cancelSource.cancel();
+      // ✅ เดิมใช้ axios.CancelToken (deprecated) — พอ .cancel() ตอนมี request ใหม่มาแทรก
+      // บางครั้ง axios เวอร์ชันที่ใช้อยู่จะ throw TypeError จากภายในของมันเอง
+      // ("Cannot read properties of undefined (reading 'status')" ที่เจอใน console)
+      // แทนที่จะ reject เป็น Cancel error ปกติ ทำให้ axios.isCancel(error) เช็คไม่เจอ
+      // แล้วโค้ดด้านล่างเข้าใจผิดว่าเป็น error จริง ไปเคลียร์ rawData/total ทิ้งทั้งที่แค่ยกเลิกเอง
+      // เปลี่ยนมาใช้ AbortController (มาตรฐานปัจจุบัน ไม่ deprecated) แทน ปัญหานี้จะไม่เกิดขึ้นอีก
+      if (this._abortController) {
+        this._abortController.abort();
       }
-      this._cancelSource = axios.CancelToken.source();
+      this._abortController = new AbortController();
 
       try {
         const urlapi = this.getApiUrl();
@@ -263,7 +267,7 @@ export default {
             Authorization: "Bearer " + localStorage.getItem("token"),
             "Content-Type": "application/json",
           },
-          cancelToken: this._cancelSource.token,
+          signal: this._abortController.signal,
         };
 
         const response = await this.axios(config);
@@ -273,8 +277,14 @@ export default {
         this.total = data.reduce((sum, item) => sum + (item.count || 0), 0);
         this.range = `${this.getSdateDm || ""} - ${this.getEdateDm || ""}`;
       } catch (error) {
-        if (axios.isCancel(error)) {
-          // request ถูกยกเลิกเอง (มี request ใหม่กว่ามาแทนที่) ไม่ใช่ error จริง ไม่ต้อง log
+        // ✅ เช็คทุกรูปแบบที่ axios ใช้บอกว่า request ถูกยกเลิกเอง (คนละเวอร์ชัน/คนละ API กันมีชื่อไม่เหมือนกัน)
+        // กันไม่ให้ "การยกเลิก request เก่าเพราะมี request ใหม่กว่ามาแทน" ถูกนับเป็น error จริง
+        const isCanceled =
+          axios.isCancel(error) ||
+          error?.name === "CanceledError" ||
+          error?.code === "ERR_CANCELED" ||
+          error?.name === "AbortError";
+        if (isCanceled) {
           return;
         }
         console.error("updateChart error:", error);
@@ -290,8 +300,8 @@ export default {
 
   beforeDestroy() {
     clearTimeout(this._updateTimer);
-    if (this._cancelSource) {
-      this._cancelSource.cancel();
+    if (this._abortController) {
+      this._abortController.abort();
     }
     this.rawData = [];
     this.total = 0;

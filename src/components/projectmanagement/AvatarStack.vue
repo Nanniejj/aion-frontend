@@ -5,10 +5,10 @@
       :key="u.id || i"
       class="mini-avatar"
       :style="avatarStyle(i)"
-      v-b-tooltip.hover
-      :title="u.name || u.initial"
+      v-b-tooltip.hover.top="{ boundary: 'viewport' }"
+      :title="u.name || u.initial || u.username"
     >
-      {{ u.name ? u.name.charAt(0).toUpperCase() : u.initial }}
+      {{ avatarLetter(u) }}
     </div>
     
     <div v-if="extraCount > 0" class="mini-avatar extra" :style="sizeStyle">
@@ -44,7 +44,7 @@ export default {
     // How many avatars to show before collapsing the rest into a "+N" badge
     max: {
       type: Number,
-      default: 3,
+      default: 15,
     },
     large: {
       type: Boolean,
@@ -82,6 +82,12 @@ export default {
   methods: {
     avatarColor(i) {
       return AVATAR_COLORS[(this.startIndex + i) % AVATAR_COLORS.length];
+    },
+    avatarLetter(u) {
+      if (u.name) return u.name.charAt(0).toUpperCase();
+      if (u.initial) return u.initial;
+      if (u.username) return u.username.charAt(0).toUpperCase();
+      return "?";
     },
     avatarStyle(i) {
       return {
@@ -124,7 +130,7 @@ export default {
 }
 
 .empty-note {
-  font-size: 11px;
+  font-size: 16px;
   font-style: italic;
   color: rgba(28, 30, 36, 0.45);
 }

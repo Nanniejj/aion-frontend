@@ -1,9 +1,10 @@
 <template>
   <!--
     No trigger button here — this modal is opened externally, e.g. from a
-    table row's edit button:
+    table row's edit button. Project list is fetched from the store
+    internally, so no :projects prop is needed:
 
-      <EditUserModal ref="editUserModal" :projects="projects" @updated="onUserUpdated" />
+      <EditUserModal ref="editUserModal" @updated="onUserUpdated" />
       ...
       methods: {
         onEditUser(user) { this.$refs.editUserModal.open(user); }
@@ -85,15 +86,47 @@
 
           <div class="form-field">
             <label>โปรเจกต์</label>
-            <select v-model="form.project_id" class="form-input form-select">
-              <option value="">— ไม่ระบุ —</option>
-              <option v-for="p in projects" :key="p._id.$oid" :value="p._id.$oid">
-                {{ p.projectname }}
-              </option>
-            </select>
+            <div class="project-picker" tabindex="-1" @focusout="closeProjectMenu">
+              <input
+                v-model="projectSearch"
+                type="text"
+                class="form-input project-picker-input"
+                placeholder="พิมพ์เพื่อค้นหาโปรเจกต์..."
+                autocomplete="off"
+                @focus="openProjectMenu"
+                @input="onProjectSearchInput"
+              />
+              <b-icon icon="chevron-down" class="project-picker-caret"></b-icon>
+              <div v-if="projectMenuOpen" class="project-picker-menu" @scroll="onProjectMenuScroll" @mousedown.prevent>
+                <div
+                  class="project-picker-item"
+                  :class="{ active: !form.project_id }"
+                  @click="selectProject(null)"
+                >
+                  — ไม่ระบุ —
+                </div>
+                <div
+                  v-for="p in projectPicker.items"
+                  :key="p._id"
+                  class="project-picker-item"
+                  :class="{ active: form.project_id === p._id }"
+                  @click="selectProject(p)"
+                >
+                  {{ p.projectname }}
+                </div>
+                <div
+                  v-if="!projectPicker.loading && !projectPicker.items.length"
+                  class="project-picker-empty"
+                >
+                  <template v-if="projectSearch">ไม่พบโปรเจกต์ที่ตรงกับ "{{ projectSearch }}"</template>
+                  <template v-else>ไม่พบโปรเจกต์</template>
+                </div>
+                <div v-if="projectPicker.loading" class="project-picker-loading">กำลังโหลด...</div>
+              </div>
+            </div>
           </div>
 
-          <div class="form-field form-field-full">
+          <div v-if="form.role !== 'service'" class="form-field form-field-full">
             <label>อีเมล <span class="req">*</span></label>
             <input
               v-model.trim="form.email"
@@ -104,32 +137,6 @@
               name="edit-user-email"
               @keyup.enter="submit"
             />
-          </div>
-
-          <div class="form-field form-field-full">
-            <label>
-              รหัสผ่านใหม่
-              <span class="field-note">(เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</span>
-            </label>
-            <div class="password-row">
-              <input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                class="form-input"
-                placeholder="เว้นว่างไว้หากไม่เปลี่ยนรหัสผ่าน"
-                autocomplete="new-password"
-                name="edit-user-password"
-                @keyup.enter="submit"
-              />
-              <button
-                type="button"
-                class="password-toggle"
-                @click="showPassword = !showPassword"
-                :aria-label="showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'"
-              >
-                <b-icon :icon="showPassword ? 'eye-slash' : 'eye'"></b-icon>
-              </button>
-            </div>
           </div>
 
           <div class="form-field form-field-full">
@@ -168,16 +175,25 @@
                 กำหนดเอง
               </button>
               <button
-                v-if="form.expiresAt"
+                type="button"
+                class="preset-btn"
+                :class="{ active: expiryPreset === 'never' }"
+                @click="setNeverExpire"
+              >
+                ไม่กำหนดวันหมดอายุ
+              </button>
+              <button
+                v-if="form.expiresAt || expiryPreset === 'never'"
                 type="button"
                 class="preset-clear"
                 @click="clearExpiry"
-                title="ไม่กำหนดวันหมดอายุ"
+                title="ล้างการตั้งค่าวันหมดอายุ"
               >
                 <b-icon icon="x-circle"></b-icon>
               </button>
             </div>
             <date-picker
+              v-if="expiryPreset !== 'never'"
               ref="expiryInput"
               v-model="form.expiresAt"
               type="date"
@@ -189,7 +205,10 @@
               class="expiry-datepicker"
               @change="onExpiryChange"
             ></date-picker>
-            <span v-if="form.expiresAt" class="expiry-hint">
+            <span v-if="expiryPreset === 'never'" class="expiry-hint">
+              บัญชีนี้จะไม่มีวันหมดอายุ
+            </span>
+            <span v-else-if="form.expiresAt" class="expiry-hint">
               บัญชีจะหมดอายุวันที่ {{ formatExpiry(form.expiresAt) }}
             </span>
           </div>
@@ -199,7 +218,9 @@
       </div>
 
       <b-row class=" justify-content-end mx-3">
-        <button class="btn-submit mx-3" @click="submit">บันทึกการแก้ไข</button>
+        <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
+          {{ submitting ? "กำลังบันทึก..." : "บันทึกการแก้ไข" }}
+        </button>
         <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
       </b-row>
     </div>
@@ -207,6 +228,8 @@
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 function toISODate(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -225,24 +248,32 @@ function emptyForm() {
     password: "",
     role: "user",
     expiresAt: "",
+    expiresInDays: null,
+    neverExpire: false,
   };
 }
 
 export default {
   name: "EditUserModal",
-  props: {
-    // Full project list to pick from, e.g. `:projects="projects"` from mock.js PROJECTS
-    projects: { type: Array, default: () => [] },
-  },
   data() {
     return {
       visible: false,
       error: "",
+      submitting: false,
       showPassword: false,
       expiryPreset: "",
       editingUser: null,
+      projectMenuOpen: false,
+      projectSearch: "",
+      projectSearchTimer: null,
       form: emptyForm(),
     };
+  },
+  computed: {
+    // Paginated project list backing the autocomplete dropdown.
+    projectPicker() {
+      return this.$store.getters.getProjectPicker;
+    },
   },
   methods: {
     // Public API — call from a parent via `this.$refs.editUserModal.open(user)`.
@@ -257,12 +288,63 @@ export default {
         email: user.email || "",
         password: "", // left blank — only sent if the admin types a new one
         role: user.role || "user",
-        expiresAt: user.expiresAt || "",
+        expiresAt: user.accountExpiresAt ? toISODate(new Date(user.accountExpiresAt)) : "",
+        expiresInDays: null,
+        neverExpire: !!user.accountNeverExpire,
       };
-      this.expiryPreset = user.expiresAt ? "custom" : "";
+      if (user.accountNeverExpire) {
+        this.expiryPreset = "never";
+      } else if (user.accountExpiresAt) {
+        this.expiryPreset = "custom";
+      } else {
+        this.expiryPreset = "";
+      }
       this.error = "";
       this.visible = true;
+      this.projectMenuOpen = false;
+      // Pre-fill the search box with the user's current project name so
+      // it reads like a normal filled-in field until they start typing.
+      this.projectSearch = user.projectname && user.projectname !== "-" ? user.projectname : "";
+      // Fresh picker each time the modal opens, so paging/search state
+      // from a previously edited user isn't reused.
+      this.$store.dispatch("resetProjectPicker");
+      this.$store.dispatch("fetchProjectPickerPage");
       this.$nextTick(() => this.$refs.nameInput && this.$refs.nameInput.focus());
+    },
+    openProjectMenu() {
+      this.projectMenuOpen = true;
+    },
+    closeProjectMenu() {
+      this.projectMenuOpen = false;
+      // If the admin typed something but never picked an option, revert
+      // the box back to whatever project is actually selected.
+      if (!this.form.project_id) {
+        this.projectSearch = "";
+        return;
+      }
+      const match = this.projectPicker.items.find((p) => p._id === this.form.project_id);
+      if (match) this.projectSearch = match.projectname;
+      // else: selected project isn't in the currently loaded/filtered
+      // items — leave the box showing whatever name was set on select.
+    },
+    selectProject(p) {
+      this.form.project_id = p ? p._id : "";
+      this.projectSearch = p ? p.projectname : "";
+      this.projectMenuOpen = false;
+    },
+    onProjectSearchInput() {
+      this.projectMenuOpen = true;
+      clearTimeout(this.projectSearchTimer);
+      this.projectSearchTimer = setTimeout(() => {
+        this.$store.dispatch("searchProjectPicker", this.projectSearch.trim());
+      }, 300);
+    },
+    onProjectMenuScroll(e) {
+      const el = e.target;
+      const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+      if (nearBottom) {
+        this.$store.dispatch("fetchProjectPickerPage");
+      }
     },
     isPastDate(date) {
       const today = new Date();
@@ -278,24 +360,43 @@ export default {
     },
     onExpiryChange() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.closeExpiryPicker();
     },
     setExpiryMonths(months, key) {
       const d = new Date();
       d.setMonth(d.getMonth() + months);
+      const today0 = new Date();
+      today0.setHours(0, 0, 0, 0);
+      const target0 = new Date(d);
+      target0.setHours(0, 0, 0, 0);
       this.form.expiresAt = toISODate(d);
+      this.form.expiresInDays = Math.round((target0 - today0) / 86400000);
+      this.form.neverExpire = false;
       this.expiryPreset = key;
       this.closeExpiryPicker();
     },
     useCustomExpiry() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.$nextTick(() => {
         const picker = this.$refs.expiryInput;
         if (picker && typeof picker.focus === "function") picker.focus();
       });
     },
+    setNeverExpire() {
+      this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = true;
+      this.expiryPreset = "never";
+      this.closeExpiryPicker();
+    },
     clearExpiry() {
       this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.expiryPreset = "";
       this.closeExpiryPicker();
     },
@@ -309,12 +410,17 @@ export default {
       this.error = "";
       this.showPassword = false;
       this.expiryPreset = "";
+      this.submitting = false;
       this.editingUser = null;
       this.form = emptyForm();
     },
-    submit() {
-      if (!this.form.name || !this.form.lastname || !this.form.email) {
-        this.error = "กรุณากรอกชื่อ, นามสกุล และอีเมลให้ครบ";
+    async submit() {
+      const missing = [];
+      if (!this.form.name) missing.push("ชื่อ");
+      if (!this.form.lastname) missing.push("นามสกุล");
+      if (this.form.role !== "service" && !this.form.email) missing.push("อีเมล");
+      if (missing.length) {
+        this.error = `กรุณากรอก${missing.join(", ")}ให้ครบ`;
         return;
       }
       if (this.form.password && this.form.password.length < 8) {
@@ -322,22 +428,53 @@ export default {
         return;
       }
 
-      const updated = {
-        ...this.editingUser,
+      const payload = {
+        _id: this.editingUser._id,
         name: this.form.name,
         lastname: this.form.lastname,
         company: this.form.company,
         email: this.form.email,
         role: this.form.role,
         project_id: this.form.project_id || null,
-        expiresAt: this.form.expiresAt || null,
-        initial: this.form.name.trim().charAt(0),
       };
-      // Only overwrite the stored password if the admin actually typed one.
-      if (this.form.password) updated.password = this.form.password;
 
-      this.$emit("updated", updated);
-      this.closeModal();
+      if (this.form.neverExpire) {
+        payload.neverExpire = true;
+      } else if (this.expiryPreset === "custom" && this.form.expiresAt) {
+        payload.expiresAt = new Date(`${this.form.expiresAt}T23:59:59.000Z`).toISOString();
+      } else if (this.form.expiresInDays != null) {
+        payload.expiresInDays = this.form.expiresInDays;
+      }
+      // Only overwrite the stored password if the admin actually typed one.
+      if (this.form.password) payload.password = this.form.password;
+
+      this.error = "";
+      this.submitting = true;
+      try {
+        const user = await this.$store.dispatch("updateUserDetails", payload);
+        this.$emit("updated", user);
+        this.closeModal();
+        Swal.fire({
+          title: "บันทึกแล้ว!",
+          text: "ข้อมูลของคุณถูกบันทึกเรียบร้อย",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          buttonsStyling: false,
+        });
+      } catch (err) {
+        console.log(err);
+        this.error = "บันทึกการแก้ไขไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        Swal.fire({
+          icon: "error",
+          title: "บันทึกการแก้ไขไม่สำเร็จ",
+          text: err.response?.data?.message || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง",
+        });
+      } finally {
+        this.submitting = false;
+      }
     },
   },
 };
@@ -569,6 +706,65 @@ export default {
   cursor: pointer;
 }
 
+.project-picker {
+  position: relative;
+  outline: none;
+}
+
+.project-picker-input {
+  padding-right: 32px;
+  cursor: text;
+}
+.project-picker-caret {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.project-picker-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(28, 30, 36, 0.12);
+  padding: 4px;
+}
+
+.project-picker-item {
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #1c1e24;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project-picker-item:hover {
+  background: #f6f5f0;
+}
+.project-picker-item.active {
+  background: #128189;
+  color: #ffffff;
+}
+
+.project-picker-loading,
+.project-picker-empty {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
 .modal-footer {
   flex-shrink: 0;
   display: flex;
@@ -604,6 +800,10 @@ export default {
 }
 .btn-submit:hover {
   background: #0e6971;
+}
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 480px) {

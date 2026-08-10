@@ -66,6 +66,14 @@ export default {
   },
 
   methods: {
+    // Shared auth header block for every axios.get below — one place to
+    // update if the token key or header shape ever changes.
+    authHeaders() {
+      return {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+        "Content-Type": "application/json",
+      };
+    },
     clampExcelCell(str, addNote = true) {
       const MAX = 32767;
       if (str == null) return '';
@@ -138,7 +146,7 @@ export default {
       const params = this.baseParams();
       params.page = 1;
       params.limit = this.count > 0 ? this.count : 2000;
-      const { data } = await axios.get(this.apiBase, { params });
+      const { data } = await axios.get(this.apiBase, { params, headers: this.authHeaders() });
       return data?.data || [];
     },
 
@@ -151,7 +159,7 @@ export default {
       const all = [];
       for (let page = 1; page <= pages; page++) {
         const params = { ...paramsBase, page, limit: pageSize };
-        const { data } = await axios.get(this.apiBase, { params });
+        const { data } = await axios.get(this.apiBase, { params, headers: this.authHeaders() });
         const chunk = data?.data || [];
         all.push(...chunk);
         if (chunk.length < pageSize) break;
@@ -185,7 +193,7 @@ export default {
           start: `${ymd}T00:00:00`,
           end: `${ymd}T23:59:59`
         };
-        const { data } = await axios.get(this.apiBase, { params });
+        const { data } = await axios.get(this.apiBase, { params, headers: this.authHeaders() });
         const rows = data?.data || [];
         rows.forEach(r => (r.__export_date = ymd));
         all.push(...rows);

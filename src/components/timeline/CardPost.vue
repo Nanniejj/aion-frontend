@@ -222,6 +222,7 @@ background: linear-gradient(90deg,rgba(42, 123, 155, 0.38) 0%, rgba(87, 199, 133
   margin-top: 10px;
   margin-bottom: 10px;
   border-radius: 20px;
+  min-width: 270px;
 }
 
 .account-name {

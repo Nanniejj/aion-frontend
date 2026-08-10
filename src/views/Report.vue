@@ -9,7 +9,7 @@
           style="position:relative;margin-left: auto; 
 margin-right: 0;"
         >
-          <div class="mr-3 icon-monitor1" @click="toMonitor('Monitor')">
+          <div class="mr-3 icon-monitor1" @click="$router.push('/monitorlist')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
               <!-- <img
@@ -29,13 +29,13 @@ margin-right: 0;"
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Politician</div>
           </div>
-          <div class="mr-3 icon-monitor1" @click="toMonitor('Feed')">
+          <!-- <div class="mr-3 icon-monitor1" @click="toMonitor('Feed')">
             <b-iconstack font-scale="2">
               <b-icon stacked icon="circle"></b-icon>
               <b-icon stacked icon="file-post" scale="0.5"></b-icon>
             </b-iconstack>
             <div class="d-block h6 text-center my-0">Feed</div>
-          </div>
+          </div> -->
           
         </div>
       </div>

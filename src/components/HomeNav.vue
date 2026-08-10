@@ -214,13 +214,21 @@
           </li>
 
           <li class="nav-item" id="li-nav" v-if="seen">
+            <router-link to="/projectmanagement" tag="p">
+              <a class="nav-link">
+                <img src="../assets/userx.png" alt="logo" class="img-nav" style="margin-bottom: 8px" />
+                <strong>Projects</strong>
+              </a>
+            </router-link>
+          </li>
+          <!-- <li class="nav-item" id="li-nav" v-if="seen">
             <router-link to="/templateusermanagement" tag="p">
               <a class="nav-link">
                 <img src="../assets/userx.png" alt="logo" class="img-nav" style="margin-bottom: 8px" />
                 <strong>User Management</strong>
               </a>
             </router-link>
-          </li>
+          </li> -->
         </ul>
       </div>
     </nav>
@@ -462,6 +470,16 @@
           </b-nav-item>
 
           <b-nav-item id="nav-con1" v-if="seen">
+            <router-link to="/projectmanagement" tag="p">
+              <a class="nav-link">
+                <img src="@/assets/userx.png" alt="logo" class="img-nav" />
+                <a class="nav-link titlenav">
+                  <strong>Project Management</strong>
+                </a>
+              </a>
+            </router-link>
+          </b-nav-item>
+          <!-- <b-nav-item id="nav-con1" v-if="seen">
             <router-link to="/templateusermanagement" tag="p">
               <a class="nav-link">
                 <img src="@/assets/userx.png" alt="logo" class="img-nav" />
@@ -470,7 +488,7 @@
                 </a>
               </a>
             </router-link>
-          </b-nav-item>
+          </b-nav-item> -->
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
@@ -599,7 +617,7 @@ export default {
     this.$store.commit("setToSection", localStorage.getItem("section"));
     this.username = localStorage.getItem("username");
     const reftokenOpt = localStorage.getItem("reftokenOpt");
-    if (reftokenOpt === "admin") this.seen = true;
+    if (reftokenOpt === "superadmin") this.seen = true;
   },
 };
 </script>

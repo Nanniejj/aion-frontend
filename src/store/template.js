@@ -113,7 +113,7 @@ export default {
       console.log(state.itemsDomain);
       state.itemsDomain = state.itemsDomain.map((item) => {
         if (item.id === payload.id) {
-          console.log("1");
+          console.log("updateDomain", item.id, payload);
           item.name = payload.name;
           item.display = payload.display;
           return item;

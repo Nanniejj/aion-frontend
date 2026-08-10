@@ -8,7 +8,7 @@
       :visible="open"
       @hide="closeModal"
       :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '660px', 1200: '520px', 768: '92vw', 480: '92vw' }"
+      :resize-width="{ 3000: '680px', 1200: '520px', 768: '92vw', 480: '92vw' }"
       class="create-modal"
     >
       <div class="modal-shell">
@@ -40,7 +40,7 @@
             </div>
 
             <div class="form-field">
-              <label>Role</label>
+              <label>Role <span class="req">*</span></label>
               <select v-model="form.role" class="form-input form-select">
                 <option value="superadmin">superadmin</option>
                 <option value="admin">admin</option>
@@ -49,7 +49,7 @@
               </select>
             </div>
 
-            <div class="form-field">
+            <div v-if="form.role !== 'service'" class="form-field">
               <label>ชื่อ <span class="req">*</span></label>
               <input
                 v-model.trim="form.name"
@@ -61,7 +61,7 @@
               />
             </div>
 
-            <div class="form-field">
+            <div v-if="form.role !== 'service'" class="form-field">
               <label>นามสกุล <span class="req">*</span></label>
               <input
                 v-model.trim="form.lastname"
@@ -73,7 +73,7 @@
               />
             </div>
 
-            <div class="form-field">
+            <div v-if="form.role !== 'service'" class="form-field">
               <label>บริษัท</label>
               <input
                 v-model.trim="form.company"
@@ -87,15 +87,47 @@
 
             <div class="form-field">
               <label>โปรเจกต์</label>
-              <select v-model="form.project_id" class="form-input form-select">
-                <option value="">— ไม่ระบุ —</option>
-                <option v-for="p in projects" :key="p._id.$oid" :value="p._id.$oid">
-                  {{ p.projectname }}
-                </option>
-              </select>
+              <div class="project-picker" tabindex="-1" @focusout="closeProjectMenu">
+                <input
+                  v-model="projectSearch"
+                  type="text"
+                  class="form-input project-picker-input"
+                  placeholder="พิมพ์เพื่อค้นหาโปรเจกต์..."
+                  autocomplete="off"
+                  @focus="openProjectMenu"
+                  @input="onProjectSearchInput"
+                />
+                <b-icon icon="chevron-down" class="project-picker-caret"></b-icon>
+                <div v-if="projectMenuOpen" class="project-picker-menu" @scroll="onProjectMenuScroll" @mousedown.prevent>
+                  <div
+                    class="project-picker-item"
+                    :class="{ active: !form.project_id }"
+                    @click="selectProject(null)"
+                  >
+                    — ไม่ระบุ —
+                  </div>
+                  <div
+                    v-for="p in projectPicker.items"
+                    :key="p._id"
+                    class="project-picker-item"
+                    :class="{ active: form.project_id === p._id }"
+                    @click="selectProject(p)"
+                  >
+                    {{ p.projectname }}
+                  </div>
+                  <div
+                    v-if="!projectPicker.loading && !projectPicker.items.length"
+                    class="project-picker-empty"
+                  >
+                    <template v-if="projectSearch">ไม่พบโปรเจกต์ที่ตรงกับ "{{ projectSearch }}"</template>
+                    <template v-else>ไม่พบโปรเจกต์</template>
+                  </div>
+                  <div v-if="projectPicker.loading" class="project-picker-loading">กำลังโหลด...</div>
+                </div>
+              </div>
             </div>
 
-            <div class="form-field form-field-full">
+            <div v-if="form.role !== 'service'" class="form-field form-field-full">
               <label>อีเมล <span class="req">*</span></label>
               <input
                 v-model.trim="form.email"
@@ -108,7 +140,7 @@
               />
             </div>
 
-            <div class="form-field form-field-full">
+            <div v-if="form.role !== 'service'" class="form-field form-field-full">
               <label>รหัสผ่าน <span class="req">*</span></label>
               <div class="password-row">
                 <input
@@ -167,16 +199,25 @@
                   กำหนดเอง
                 </button>
                 <button
-                  v-if="form.expiresAt"
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === 'never' }"
+                  @click="setNeverExpire"
+                >
+                  ไม่กำหนดวันหมดอายุ
+                </button>
+                <button
+                  v-if="form.expiresAt || expiryPreset === 'never'"
                   type="button"
                   class="preset-clear"
                   @click="clearExpiry"
-                  title="ไม่กำหนดวันหมดอายุ"
+                  title="ล้างการตั้งค่าวันหมดอายุ"
                 >
                   <b-icon icon="x-circle"></b-icon>
                 </button>
               </div>
               <date-picker
+                v-if="expiryPreset !== 'never'"
                 ref="expiryInput"
                 v-model="form.expiresAt"
                 type="date"
@@ -188,7 +229,10 @@
                 class="expiry-datepicker"
                 @change="onExpiryChange"
               ></date-picker>
-              <span v-if="form.expiresAt" class="expiry-hint">
+              <span v-if="expiryPreset === 'never'" class="expiry-hint">
+                บัญชีนี้จะไม่มีวันหมดอายุ
+              </span>
+              <span v-else-if="form.expiresAt" class="expiry-hint">
                 บัญชีจะหมดอายุวันที่ {{ formatExpiry(form.expiresAt) }}
               </span>
             </div>
@@ -198,8 +242,83 @@
         </div>
 
         <b-row class=" justify-content-end mx-3">
-          <button class="btn-submit mx-3" @click="submit">สร้างผู้ใช้</button>
+          <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
+            {{ submitting ? "กำลังบันทึก..." : "สร้างผู้ใช้" }}
+          </button>
           <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
+        </b-row>
+      </div>
+    </vue-modaltor>
+
+    <!-- Shown once, right after a role=service user is created — the API
+         only returns the token this one time, so the admin must copy it
+         here before closing. Dismissal via ESC/overlay-click is ignored
+         (see onTokenModalHide); the only way out is the "ปิดหน้าต่าง"
+         button, which stays disabled until the token has been copied. -->
+    <vue-modaltor
+      :visible="tokenModalOpen"
+      @hide="onTokenModalHide"
+      :animation-panel="'modal-slide-top'"
+      :resize-width="{ 3000: '560px', 1200: '480px', 768: '92vw', 480: '92vw' }"
+      class="create-modal token-modal"
+    >
+      <div class="modal-shell">
+        <div class="modal-topbar pb-3">
+          <div class="modal-title">
+            <b-icon icon="key-fill"></b-icon>
+            Token สำหรับ Service Account
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <div class="token-warning">
+            <b-icon icon="exclamation-triangle-fill"></b-icon>
+            <span>
+              กรุณาคัดลอก Token นี้เก็บไว้ในที่ปลอดภัยก่อนปิดหน้าต่างนี้ ระบบจะ<strong>ไม่แสดง Token นี้อีก</strong>
+              หลังจากปิดหน้าต่างไปแล้ว
+            </span>
+          </div>
+
+          <div class="form-field">
+            <label>Username</label>
+            <div class="token-static-value">{{ serviceTokenData && serviceTokenData.username }}</div>
+          </div>
+
+          <div class="form-field">
+            <label class="d-flex justify-content-between">Token
+              <button type="button" class="token-copy-btn" :class="{ copied: tokenCopied }" @click="copyServiceToken">
+                <b-icon :icon="tokenCopied ? 'check2' : 'clipboard'"></b-icon>
+                <!-- {{ tokenCopied ? "คัดลอกแล้ว" : "คัดลอก" }} -->
+              </button>
+            </label>
+            <div class="token-copy-row">
+              <textarea
+                readonly
+                class="form-input token-textarea"
+                :value="serviceTokenData && serviceTokenData.token"
+                @focus="$event.target.select()"
+              ></textarea>
+              
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>วันหมดอายุ Token</label>
+            <div class="token-static-value">
+              {{ serviceTokenData && serviceTokenData.neverExpire ? "ไม่มีกำหนด" : (serviceTokenData && serviceTokenData.expiresAtThai) || "-" }}
+            </div>
+          </div>
+        </div>
+
+        <b-row class="justify-content-end mx-3">
+          <button
+            class="btn-submit mx-3"
+            :disabled="!tokenCopied"
+            :title="!tokenCopied ? 'กรุณาคัดลอก Token ก่อนปิดหน้าต่าง' : ''"
+            @click="closeTokenModal"
+          >
+            ปิดหน้าต่าง
+          </button>
         </b-row>
       </div>
     </vue-modaltor>
@@ -207,18 +326,7 @@
 </template>
 
 <script>
-function newId() {
-  const hex = "0123456789abcdef";
-  let id = "";
-  for (let i = 0; i < 24; i++) id += hex[Math.floor(Math.random() * 16)];
-  return id;
-}
-
-function todayJoined() {
-  const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-  const d = new Date();
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
-}
+import Swal from "sweetalert2";
 
 function toISODate(d) {
   const y = d.getFullYear();
@@ -238,33 +346,92 @@ function emptyForm() {
     password: "",
     role: "user",
     expiresAt: "",
+    expiresInDays: null,
+    neverExpire: false,
   };
 }
 
 export default {
   name: "CreateUserModal",
-  props: {
-    projects: { type: Array, default: () => [] },
-  },
   data() {
     return {
       open: false,
       error: "",
+      submitting: false,
       showPassword: false,
       usernameLocked: true,
       expiryPreset: "",
+      projectMenuOpen: false,
+      projectSearch: "",
+      projectSearchTimer: null,
       form: emptyForm(),
+      // Service-account token popup — shown once right after a role=service
+      // user is created (see submit()).
+      tokenModalOpen: false,
+      tokenCopied: false,
+      serviceTokenData: null, // { token, username, neverExpire, expiresAtThai }
+      // Holds the created user between openTokenModal() and closeTokenModal()
+      // so the "created" event (which the parent uses to refresh the users
+      // table) fires only once the admin has actually copied the token and
+      // closed the popup — not while it's still open behind the overlay.
+      pendingCreatedUser: null,
     };
+  },
+  computed: {
+    // Paginated project list backing the autocomplete dropdown.
+    projectPicker() {
+      return this.$store.getters.getProjectPicker;
+    },
   },
   watch: {
     open(val) {
       if (val) {
         this.usernameLocked = true;
+        this.projectMenuOpen = false;
+        this.projectSearch = "";
+        // Fresh picker each time the modal opens.
+        this.$store.dispatch("resetProjectPicker");
+        this.$store.dispatch("fetchProjectPickerPage");
         this.$nextTick(() => this.$refs.usernameInput && this.$refs.usernameInput.focus());
       }
     },
   },
   methods: {
+    openProjectMenu() {
+      this.projectMenuOpen = true;
+    },
+    closeProjectMenu() {
+      this.projectMenuOpen = false;
+      // If the admin typed something but never picked an option, revert
+      // the box back to whatever project is actually selected.
+      if (!this.form.project_id) {
+        this.projectSearch = "";
+        return;
+      }
+      const match = this.projectPicker.items.find((p) => p._id === this.form.project_id);
+      if (match) this.projectSearch = match.projectname;
+      // else: selected project isn't in the currently loaded/filtered
+      // items — leave the box showing whatever name was set on select.
+    },
+    selectProject(p) {
+      this.form.project_id = p ? p._id : "";
+      this.projectSearch = p ? p.projectname : "";
+      this.projectMenuOpen = false;
+    },
+    onProjectSearchInput() {
+      this.projectMenuOpen = true;
+      clearTimeout(this.projectSearchTimer);
+      this.projectSearchTimer = setTimeout(() => {
+        this.$store.dispatch("searchProjectPicker", this.projectSearch.trim());
+      }, 300);
+    },
+    onProjectMenuScroll(e) {
+      const el = e.target;
+      const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+      if (nearBottom) {
+        this.$store.dispatch("fetchProjectPickerPage");
+      }
+    },
     isPastDate(date) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -279,24 +446,43 @@ export default {
     },
     onExpiryChange() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.closeExpiryPicker();
     },
     setExpiryMonths(months, key) {
       const d = new Date();
       d.setMonth(d.getMonth() + months);
+      const today0 = new Date();
+      today0.setHours(0, 0, 0, 0);
+      const target0 = new Date(d);
+      target0.setHours(0, 0, 0, 0);
       this.form.expiresAt = toISODate(d);
+      this.form.expiresInDays = Math.round((target0 - today0) / 86400000);
+      this.form.neverExpire = false;
       this.expiryPreset = key;
       this.closeExpiryPicker();
     },
     useCustomExpiry() {
       this.expiryPreset = "custom";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.$nextTick(() => {
         const picker = this.$refs.expiryInput;
         if (picker && typeof picker.focus === "function") picker.focus();
       });
     },
+    setNeverExpire() {
+      this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = true;
+      this.expiryPreset = "never";
+      this.closeExpiryPicker();
+    },
     clearExpiry() {
       this.form.expiresAt = "";
+      this.form.expiresInDays = null;
+      this.form.neverExpire = false;
       this.expiryPreset = "";
       this.closeExpiryPicker();
     },
@@ -311,35 +497,145 @@ export default {
       this.showPassword = false;
       this.usernameLocked = true;
       this.expiryPreset = "";
+      this.submitting = false;
+      this.projectMenuOpen = false;
       this.form = emptyForm();
     },
-    submit() {
-      if (!this.form.username || !this.form.name || !this.form.lastname || !this.form.email || !this.form.password) {
-        this.error = "กรุณากรอก Username, ชื่อ, นามสกุล, อีเมล และรหัสผ่านให้ครบ";
+    async submit() {
+      const isService = this.form.role === "service";
+      if (!this.form.username || (!isService && (!this.form.name || !this.form.lastname || !this.form.email || !this.form.password))) {
+        this.error = isService
+          ? "กรุณากรอก Username ให้ครบ"
+          : "กรุณากรอก Username, ชื่อ, นามสกุล, อีเมล และรหัสผ่านให้ครบ";
         return;
       }
-      if (this.form.password.length < 8) {
+      if (!isService && this.form.password.length < 8) {
         this.error = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
         return;
       }
 
-      const user = {
+      const payload = {
         username: this.form.username,
-        name: this.form.name,
-        lastname: this.form.lastname,
-        company: this.form.company,
-        email: this.form.email,
-        password: this.form.password,
         role: this.form.role,
         project_id: this.form.project_id || null,
-        expiresAt: this.form.expiresAt || null,
-        _id: newId(),
-        initial: this.form.name.trim().charAt(0),
-        status: "ใช้งานอยู่",
-        joined: todayJoined(),
       };
-      this.$emit("created", user);
-      this.closeModal();
+      // service accounts don't have a person behind them, so skip the
+      // name/contact/login fields entirely instead of sending blanks.
+      if (!isService) {
+        payload.name = this.form.name;
+        payload.lastname = this.form.lastname;
+        payload.company = this.form.company;
+        payload.email = this.form.email;
+        payload.password = this.form.password;
+      }
+
+      if (this.form.neverExpire) {
+        payload.neverExpire = true;
+      } else if (this.expiryPreset === "custom" && this.form.expiresAt) {
+        payload.expiresAt = new Date(`${this.form.expiresAt}T23:59:59.000Z`).toISOString();
+      } else if (this.form.expiresInDays != null) {
+        payload.expiresInDays = this.form.expiresInDays;
+      }
+
+      this.error = "";
+      this.submitting = true;
+      try {
+        const result = await this.$store.dispatch("createUser", payload);
+        // project.js's createUser action resolves with { user, serviceAccount }
+        // — serviceAccount (and its one-time token) is only present when
+        // role === "service".
+        const createdUser = result && result.user ? result.user : result;
+        const serviceAccount = result && result.serviceAccount ? result.serviceAccount : null;
+
+        this.closeModal();
+
+        if (isService && serviceAccount && serviceAccount.token) {
+          // Don't emit "created" yet — the parent's refresh would happen
+          // while the token popup is still open behind the overlay, easy
+          // to miss. Emit it from closeTokenModal() instead, once the
+          // admin has copied the token and actually closed the popup.
+          this.openTokenModal(serviceAccount, createdUser);
+        } else {
+          this.$emit("created", createdUser);
+          Swal.fire({
+            title: "บันทึกแล้ว!",
+            text: "ข้อมูลของคุณถูกบันทึกเรียบร้อย",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 3000,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            buttonsStyling: false,
+          });
+        }
+      } catch (err) {
+        console.log(err);
+        this.error = "สร้างผู้ใช้ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+        Swal.fire({
+          icon: "error",
+          title: "สร้างผู้ใช้ไม่สำเร็จ",
+          text: err.response?.data?.message || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง",
+        });
+      } finally {
+        this.submitting = false;
+      }
+    },
+    openTokenModal(serviceAccount, user) {
+      this.tokenCopied = false;
+      this.pendingCreatedUser = user;
+      this.serviceTokenData = {
+        token: serviceAccount.token,
+        username: (user && user.username) || this.form.username,
+        neverExpire: !!serviceAccount.neverExpire,
+        expiresAtThai: serviceAccount.expiresAtThai || "",
+      };
+      this.tokenModalOpen = true;
+    },
+    onTokenModalHide() {
+      // Deliberately ignore ESC / overlay-click dismissal — the token is
+      // shown only this one time, so closing is only allowed through the
+      // explicit "ปิดหน้าต่าง" button, which itself stays disabled until
+      // the token has been copied.
+    },
+    async copyServiceToken() {
+      const token = this.serviceTokenData && this.serviceTokenData.token;
+      if (!token) return;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(token);
+        } else {
+          // Fallback for non-secure contexts / older browsers where the
+          // Clipboard API isn't available.
+          const textarea = document.createElement("textarea");
+          textarea.value = token;
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+        }
+        this.tokenCopied = true;
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          icon: "error",
+          title: "คัดลอกไม่สำเร็จ",
+          text: "กรุณาคัดลอก Token ด้วยตนเอง",
+        });
+      }
+    },
+    closeTokenModal() {
+      if (!this.tokenCopied) return;
+      this.tokenModalOpen = false;
+      this.serviceTokenData = null;
+      this.tokenCopied = false;
+      const createdUser = this.pendingCreatedUser;
+      this.pendingCreatedUser = null;
+      // Table refresh (see ProjectManagement.vue's @created listener)
+      // happens now, right as the popup actually closes.
+      this.$emit("created", createdUser);
     },
   },
 };
@@ -581,6 +877,65 @@ export default {
   cursor: pointer;
 }
 
+.project-picker {
+  position: relative;
+  outline: none;
+}
+
+.project-picker-input {
+  padding-right: 32px;
+  cursor: text;
+}
+.project-picker-caret {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.project-picker-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(28, 30, 36, 0.12);
+  padding: 4px;
+}
+
+.project-picker-item {
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #1c1e24;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project-picker-item:hover {
+  background: #f6f5f0;
+}
+.project-picker-item.active {
+  background: #128189;
+  color: #ffffff;
+}
+
+.project-picker-loading,
+.project-picker-empty {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
 .modal-footer {
   flex-shrink: 0;
   display: flex;
@@ -616,6 +971,79 @@ export default {
 }
 .btn-submit:hover {
   background: #0e6971;
+}
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.token-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff4e5;
+  border: 1px solid #f0c780;
+  color: #7a4a00;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.token-warning .b-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #e0a458;
+}
+
+.token-static-value {
+  padding: 8px 12px;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  background: #f6f5f0;
+  font-size: 14px;
+  color: #1c1e24;
+  word-break: break-word;
+}
+
+.token-copy-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.token-textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  height: 80px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.4;
+  word-break: break-all;
+  background: #f6f5f0;
+}
+.token-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  background: #128189;
+  border: 1px solid #128189;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.token-copy-btn:hover {
+  background: #0e6971;
+}
+.token-copy-btn.copied {
+  background: #6fbf73;
+  border-color: #6fbf73;
 }
 
 @media (max-width: 480px) {
@@ -687,4 +1115,4 @@ export default {
   margin: 0 !important;
   z-index: 2001 !important;
 }
-</style>
+</style>v

@@ -19,7 +19,7 @@
           <b-row>
             <span class="d-flex box-flex-small" style="width:85vw;padding: 0px 20px;">
               <b-card img-alt="Image" img-top class="box-spotnews black slider-item mx-2 p-1 position-relative"
-                v-for="(item, index) in items[selectIndex].data" :key="index" v-if="item.posts && item.posts.length">
+                v-for="(item, index) in (items[selectIndex] ? items[selectIndex].data : [])" :key="index" v-if="item.posts && item.posts.length">
                 <div class="position-relative" v-if="item && item.posts && item.posts[0]">
                   <b-card-img cover :src="item.posts[0].photos[0]" v-if="
                     item &&
@@ -149,15 +149,23 @@ export default {
   },
   watch: {
     selectIndex() {
+      // ✅ <div ref="slider"> อยู่ใน v-if="items && items.length" — ถ้า items ว่าง ref จะไม่มี element
+      // เลย เซ็ต scrollLeft ตรงๆ ไม่ได้ (undefined.scrollLeft) ต้องเช็คก่อนเสมอ
       const slider = this.$refs.slider;
-      slider.scrollLeft = 0; // เลื่อนซ้าย 300px
+      if (slider) slider.scrollLeft = 0; // เลื่อนซ้าย 300px
     },
     getArrDate() {
-      let from = this.getSdateDm.slice(0, 10);
-      let to = this.getEdateDm.slice(0, 10);
-      this.apiSpotNews(from, to);
+      // ✅ เดิมตรงนี้ใช้ this.getSdateDm/this.getEdateDm ตรงๆ (เป็น "วันนี้")
+      // แต่ mounted() คำนวณเป็น "เมื่อวาน" (ลบ 1 วัน) → คนละวันกัน
+      // ทำให้ยิง apiSpotNews 2 ครั้งด้วยคนละ from/to ตอน component เพิ่งโหลด
+      // แก้โดยรวม logic ให้ผ่านฟังก์ชันเดียว ที่คำนวณ "ย้อนหลัง 1 วัน" เสมอ
+      // และกันเรียกซ้ำถ้าช่วงวันที่ที่คำนวณได้เหมือนครั้งล่าสุด
+      this.fetchSpotNewsByFilter();
+      // ✅ ตอนที่ getArrDate เปลี่ยน ข้อมูลเก่า (items) อาจยังไม่ถูกแทนที่ด้วยข้อมูลใหม่ทันที (เพราะ apiSpotNews
+      // เป็น async) หรือช่วงวันที่ใหม่อาจไม่มีข้อมูลเลย (items ว่าง) → ref="slider" จะไม่มี element
+      // ต้องเช็คก่อนเซ็ต scrollLeft ไม่งั้น Vue warn "Cannot set properties of undefined (setting 'scrollLeft')"
       const slider = this.$refs.slider;
-      slider.scrollLeft = 0; // เลื่อนซ้าย 300px
+      if (slider) slider.scrollLeft = 0; // เลื่อนซ้าย 300px
     },
   },
   data() {
@@ -167,6 +175,7 @@ export default {
       slide: 0,
       selectIndex: 0,
       load: false,
+      lastRange: null, // ✅ เก็บ from/to ที่ยิง apiSpotNews ล่าสุด + filterKey (start/end ที่เลือกจริง) กันเรียกซ้ำ
     };
   },
   methods: {
@@ -211,6 +220,44 @@ export default {
     onSlideEnd(slide) {
       this.sliding = false;
     },
+    // ✅ ถ้า filter เลือกหลายวัน (start !== end) ใช้ช่วงวันที่ตามที่เลือกจริง
+    // ถ้าเลือกวันเดียว (start === end) ใช้ข้อมูลย้อนหลัง 1 วันจากวันที่เลือก (ตาม logic เดิม)
+    getFetchRange() {
+      if (!this.getSdateDm || !this.getEdateDm) {
+        // ยังไม่มี filter (เช่นตอนเพิ่งเข้าหน้า ก่อน DomainBackBar commit ค่าเริ่มต้น) → ใช้เมื่อวานของวันนี้
+        let day = moment().subtract(1, "days").format().slice(0, 10);
+        return { from: day, to: day };
+      }
+      const start = moment(this.getSdateDm).format("YYYY-MM-DD");
+      const end = moment(this.getEdateDm).format("YYYY-MM-DD");
+      if (start === end) {
+        // เลือกวันเดียว → เอาข้อมูลย้อนหลัง 1 วันจากวันนั้น
+        let day = moment(this.getEdateDm)
+          .clone()
+          .subtract(1, "days")
+          .format()
+          .slice(0, 10);
+        return { from: day, to: day };
+      }
+      // เลือกหลายวัน → เอาตามช่วงที่เลือกจริง
+      return { from: start, to: end };
+    },
+    // ✅ จุดเดียวที่เรียก apiSpotNews ตาม filter ปัจจุบัน (ดู logic ใน getFetchRange ด้านบน)
+    // กันเรียกซ้ำถ้า filter (getSdateDm/getEdateDm) เหมือนกับครั้งล่าสุดที่เรียกไปแล้ว
+    // (เดิม mounted() กับ watch getArrDate() ต่างคนต่างเรียก apiSpotNews คนละวันกัน ทำให้ยิงซ้ำ 2 ครั้ง)
+    // ⚠️ เดิมเทียบด้วย from/to ที่ "คำนวณ" ได้ (เมื่อวานของ getEdateDm) ซึ่งถ้าผู้ใช้เปลี่ยน filter
+    // แต่ end date ยังเป็นวันเดิม (เช่นเปลี่ยนแค่ start date, หรือสลับ preset ที่ end date คือ "วันนี้"
+    // เหมือนกันหมด) ค่าที่คำนวณได้จะเท่าเดิมทุกครั้ง → guard บล็อกไม่ยิง API ทั้งที่ filter เปลี่ยนจริง
+    // แก้โดยเทียบจาก filter จริง (start+end ที่เลือก) แทน
+    fetchSpotNewsByFilter() {
+      const { from, to } = this.getFetchRange();
+      const filterKey = `${this.getSdateDm || ""}_${this.getEdateDm || ""}`;
+      if (this.lastRange && this.lastRange.filterKey === filterKey) {
+        return; // filter เดิม ไม่ต้องเรียกซ้ำ
+      }
+      this.lastRange = { from, to, filterKey };
+      this.apiSpotNews(from, to);
+    },
     apiSpotNews(from, to) {
       this.load = true;
       var config = {
@@ -238,6 +285,12 @@ export default {
               })),
             };
           });
+          // ✅ รีเซ็ต selectIndex ทุกครั้งที่ได้ข้อมูลชุดใหม่ (เช่นตอนเปลี่ยน filter วันที่)
+          // เพราะถ้า items ชุดใหม่มีจำนวนน้อยกว่า selectIndex เดิม (เช่นเดิมเลือกอันที่ 3
+          // แต่ filter ใหม่มีแค่ 1 คลัสเตอร์) items[selectIndex] จะเป็น undefined
+          // ทำให้ template ที่อ่าน items[selectIndex].data ตรงๆ (ใน v-for) พังด้วย
+          // "Cannot read properties of undefined (reading 'data')"
+          this.selectIndex = 0;
           this.load = false;
         //  console.log('item', this.items);
         })
@@ -248,18 +301,9 @@ export default {
     },
   },
   mounted() {
-    let from = moment(new Date())
-      .subtract(1, "days") // ลบ 1 วันเพื่อให้ได้วันที่เมื่อวาน
-      .format()
-      .slice(0, 10);
-
-    let to = moment(new Date())
-      .subtract(1, "days") // ลบ 1 วันเพื่อให้ได้วันที่เมื่อวาน
-      .format()
-      .slice(0, 10);
-    // let from = "2024-11-29";
-    // let to = "2024-12-03";
-    this.apiSpotNews(from, to);
+    // ✅ ใช้ฟังก์ชันกลางเดียวกับ watcher getArrDate() เพื่อให้คำนวณ "เมื่อวาน" แบบเดียวกัน
+    // และมี guard กันเรียกซ้ำในตัว
+    this.fetchSpotNewsByFilter();
   },
 };
 </script>

@@ -112,7 +112,7 @@
                                     {{ getDepartmentType(profile.department) }}
                                 </b-badge>
                             </b-col>
-                            <b-col cols="12" class="text-left">
+                            <b-col v-if="type" cols="12" class="text-left">
                                 <b-row cols="2" cols-sm="4" class="">
                                     <b-col class="my-2">
                                         <b-row class="justify-content-center">
@@ -457,7 +457,7 @@
             <b-col>
                 <b-row class="justify-content-center justify-content-sm-start">
                     <b-col cols="auto">
-                        <a style="color: #2c3e50;" class="align-items-center" v-bind:href="profile.link_original"
+                        <a style="color: #2c3e50;" class="align-items-center" v-bind:href="profile.link_original || profile.account_url"
                             target="_blank">
                             <h5 v-if="profile.target_type === 'group'" class="py-2 mb-0 bold">
                                 {{ profile.name || profile.uid }}
@@ -539,17 +539,16 @@
             </div> -->
             <div class="col-12">
              <WordcloudDomain
-    v-if="wordcloudDomainData !== null || wordcloudDomainLoading || wordcloudDomainError"
-    :data="wordcloudDomainData"
-    :is-loading="wordcloudDomainLoading"
-    :error="wordcloudDomainError"
-    :start="valueDate[0]"
-    :end="valueDate[1]"
-    storage-key="dashboard-a"
-    @select="onSelectWord"
-    :type="type"
-    :id="$route.query.id"
-/>
+                v-if="wordcloudDomainData !== null || wordcloudDomainLoading || wordcloudDomainError"
+                :data="wordcloudDomainData"
+                :is-loading="wordcloudDomainLoading"
+                :error="wordcloudDomainError"
+                :start="valueDate[0]"
+                :end="valueDate[1]"
+                storage-key="dashboard-a"
+                :type="type"
+                :id="$route.query.id"
+            />
             </div>
         </b-row>
 
@@ -596,7 +595,7 @@
 
                             <b-col cols="12" md="4">
                                 <b-form-select v-model="selectedSource" class="mb-2" :options="sourceOptions"
-                                    :disabled="type === 'targetlist'" />
+                                    :disabled="type !== 'hashtaglist'" />
                             </b-col>
 
                             <b-col cols="12" md="4">
@@ -886,9 +885,7 @@ export default {
                 this.selectedSource = 'all';
             }
             this.apiTimelineUserPosts();
-            if (this.type === 'hashtaglist' || this.type === 'targetlist') {
-                this.getWordCloudImage();
-            }
+            this.getWordCloudImage();
         },
         formatNumber(num) {
             if (num == null) {
@@ -909,9 +906,10 @@ export default {
             if (this.type === 'hashtaglist') {
                 await this.apiTimelineUserPosts();
             }
-            if (this.type === 'hashtaglist' || this.type === 'targetlist') {
-                await this.getWordCloudImage();
-            }
+            // ✅ getWordCloudImage ต้องเรียกทุก type (รวมถึงหน้า profile ปกติที่ไม่มี query.type)
+            //    เพราะ mounted() ก็เรียกแบบไม่มีเงื่อนไข type เช่นกัน — เดิม guard ตรงนี้ทำให้
+            //    การเปลี่ยน filter วันที่ในหน้า profile (type undefined) ไม่ยิง API ใหม่
+            await this.getWordCloudImage();
             console.log('this.timelinePosts ==== ', this.timelinePosts);
 
 
@@ -1615,6 +1613,8 @@ export default {
         } else if (this.$route.query.type === 'hashtaglist') {
             this.selectedSource = 'all'
             await this.apiTimelineUserPosts();
+        }else {
+            this.selectedSource = this.$route.query.source;
         }
         this.$store.commit('setNamePlatform', this.selectedSource);
         await this.apiMonitorProfile();
