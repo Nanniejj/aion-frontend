@@ -131,7 +131,7 @@
 import HomeNav from '@/components/HomeNav.vue'
 import KeywordAlertTimeseriesChart from '@/components/alert/KeywordAlertTimeseriesChart.vue'
 
-const KEYWORD_BAG_BASE = 'http://localhost:3000/api/v2/alert'
+const KEYWORD_BAG_BASE = 'https://api2.cognizata.com/api/v2/alert'
 
 // รายงานจาก Gemini (src/services/spikeAlertSummary.service.js) มีหลายหัวข้อ
 // (หัวข้อข่าว/ช่วงเวลา/การสอบทาน/สถานะเดิม/สาระสำคัญ/เหตุผลเด่น/sentiment/สรุป/ลิงก์)

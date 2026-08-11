@@ -198,8 +198,8 @@
           <li class="nav-item" id="li-nav">
             <router-link to="/alert" tag="p">
               <a class="nav-link">
-                <i class="fas fa-bell img-nav" style="margin-bottom: 0px;margin-top: 12px; font-size: 23px;padding: 5px;"></i>
-               <center> <strong>Alert</strong></center>
+                <i class="fas fa-bell img-nav" style="margin-bottom: 0px;margin-top: 12px; font-size: 40px;padding: 5px;"></i>
+              <strong>Alert</strong>
               </a>
             </router-link>
           </li>
@@ -450,7 +450,7 @@
           <b-nav-item id="nav-con1">
             <router-link to="/alert" tag="p">
               <a class="nav-link">
-                <i class="fas fa-bell img-nav" style="font-size: 23px;padding: 5px;"></i>
+                <i class="fas fa-bell img-nav" style="font-size: 23px;padding:4px;"></i>
                 <a class="nav-link titlenav">
                   <strong>Alert</strong>
                 </a>
@@ -717,9 +717,13 @@ export default {
 }
 
 a {
-  color: #504b3c;
+  color: #4c412b ;
 }
+.navbar-light .navbar-nav .nav-link
 
+ {
+    color: #4c412b;
+}
 .colorbg {
   background-color: #fff;
   margin: 0;

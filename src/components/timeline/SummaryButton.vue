@@ -46,7 +46,7 @@
                         style="filter: brightness(0) invert(1);"
                     />
                     <span class="md-font">
-                        {{ analyzing ? analyzingLabel : 'Analysis (beta)' }}
+                        {{ analyzing ? analyzingLabel : 'Analysis' }}
                     </span>
                 </button>
                 <a v-b-toggle v-if="fullSummary && !open && !analyzing" @click.prevent="toggle" class="px-2">บทวิเคราะห์ล่าสุด</a>

@@ -20,7 +20,7 @@
                 style="filter: brightness(0) invert(1);"
             />
             <span class="md-font">
-                {{ analyzing ? 'Analyzing...' : 'Chart Analyze (beta)' }}
+                {{ analyzing ? 'Analyzing...' : 'Chart Analyze' }}
             </span>
         </button>
     </template>
