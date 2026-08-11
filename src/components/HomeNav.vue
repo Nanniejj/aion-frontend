@@ -131,10 +131,10 @@
                 :class="{ dropdownStyle: $route.path === '/imagesearch' }" id="nav-router">
                 <center><strong>Image</strong><span class="small"> (beta)</span></center>
               </router-link>
-              <router-link to="/hotissue" class="dropdown-item" :class="{ dropdownStyle: $route.path === '/hotissue' }"
+              <!-- <router-link to="/hotissue" class="dropdown-item" :class="{ dropdownStyle: $route.path === '/hotissue' }"
                 id="nav-router">
                 <center><strong>Hot Issue</strong></center>
-              </router-link>
+              </router-link> -->
             </div>
           </li>
 
@@ -193,6 +193,15 @@
                 <center><strong>Gsearch</strong></center>
               </router-link>
             </div>
+          </li>
+
+          <li class="nav-item" id="li-nav">
+            <router-link to="/alert" tag="p">
+              <a class="nav-link">
+                <i class="fas fa-bell img-nav" style="margin-bottom: 0px;margin-top: 12px; font-size: 40px;padding: 5px;"></i>
+              <strong>Alert</strong>
+              </a>
+            </router-link>
           </li>
 
           <li class="nav-item" id="li-nav">
@@ -364,10 +373,10 @@
               </b-dropdown-item>
 
 
-              <b-dropdown-item to="/hotissue">
+              <!-- <b-dropdown-item to="/hotissue">
                 <router-link to="/hotissue" tag="a" :style="dropdownStyle"
                   :class="{ dropdownStyle: $route.path === '/hotissue' }" id="dp-txt">Hot Issue</router-link>
-              </b-dropdown-item>
+              </b-dropdown-item> -->
             </b-nav-item-dropdown>
           </b-nav-item>
 
@@ -436,6 +445,17 @@
                   :class="{ dropdownStyle: $route.path === '/gsearch' }" id="dp-txt">Gsearch</router-link>
               </b-dropdown-item>
             </b-nav-item-dropdown>
+          </b-nav-item>
+
+          <b-nav-item id="nav-con1">
+            <router-link to="/alert" tag="p">
+              <a class="nav-link">
+                <i class="fas fa-bell img-nav" style="font-size: 23px;padding:4px;"></i>
+                <a class="nav-link titlenav">
+                  <strong>Alert</strong>
+                </a>
+              </a>
+            </router-link>
           </b-nav-item>
 
           <b-nav-item id="nav-con1">
@@ -697,9 +717,13 @@ export default {
 }
 
 a {
-  color: #504b3c;
+  color: #4c412b ;
 }
+.navbar-light .navbar-nav .nav-link
 
+ {
+    color: #4c412b;
+}
 .colorbg {
   background-color: #fff;
   margin: 0;

@@ -54,23 +54,21 @@
                   class="fa fa-trash-alt text-danger pointer" v-b-tooltip.hover title="ลบ"> </span> delete group</div>
 
 
-<b-row >
-            <b-col cols="auto" >
-              <div class="h6"> เลือกโหมด</div>
-            </b-col>
-            <b-col> <b-button-group>
-
-
-                <b-button :variant="groupMode === 'domain' ? 'info' : 'outline-info'" @click="groupMode = 'domain'"
-                  size="sm">Domain</b-button>
-                <b-button :variant="groupMode === 'group' ? 'info' : 'outline-info'" @click="groupMode = 'group'"
-                  size="sm">Group</b-button>
-              </b-button-group></b-col>
-          </b-row>
+              <b-row>
+                <b-col cols="auto">
+                  <div class="h6"> เลือกโหมด</div>
+                </b-col>
+                <b-col> <b-button-group>
+                    <b-button :variant="groupMode === 'domain' ? 'info' : 'outline-info'" @click="groupMode = 'domain'"
+                      size="sm">Domain</b-button>
+                    <b-button :variant="groupMode === 'group' ? 'info' : 'outline-info'" @click="groupMode = 'group'"
+                      size="sm">Group</b-button>
+                  </b-button-group></b-col>
+              </b-row>
 
             </b-col>
           </b-row>
-          
+
         </div>
 
         <div class="mt-2">
@@ -92,13 +90,12 @@
           </div>
 
           <!-- โหมด Group: แสดงตัวเลือก Group จาก API -->
-        
+
           <div v-else>
-               <!-- {{ groupOptions }} -->
-           
+            <!-- {{ groupOptions }} -->
+
             <v-select class="mb-3" multiple :options="groupOptions" v-model="groupSetting.monitorGroupId"
-              :reduce="g => g.group_id" label="group_name" placeholder="ค้นหา/เลือก Group" 
-            />
+              :reduce="g => g.group_id" label="group_name" placeholder="ค้นหา/เลือก Group" />
             <div v-if="groupSetting.monitorGroupId" class="text-muted small">
               เลือก: {{ selectedGroupName }}
             </div>
@@ -191,34 +188,34 @@
 import axios from "axios";
 export default {
   watch: {
-        'groupSetting.domain_idText'(newVal, oldVal) {
-            if (this.groupMode !== 'group'&& (!Array.isArray(newVal) || newVal.length > 0)) {
-                this.getSubdomain()
-            }
-        },
-        'groupSetting.monitorGroupId'(val) {
-            if (!Array.isArray(val)) return;
+    'groupSetting.domain_idText'(newVal, oldVal) {
+      if (this.groupMode !== 'group' && (!Array.isArray(newVal) || newVal.length > 0)) {
+        this.getSubdomain()
+      }
+    },
+    'groupSetting.monitorGroupId'(val) {
+      if (!Array.isArray(val)) return;
 
-            const cleaned = val.filter(v => v != null);
-            // ✅ เขียนกลับเฉพาะถ้าไม่เหมือนของเดิม
-            if (cleaned.length !== val.length) {
-                this.groupSetting.monitorGroupId = cleaned;
-            }
-        },
-        // domain: {
-        //     handler() {
-        //         this.fetchGroups();
-        //     },
-        //         // deep: true
-        // }
+      const cleaned = val.filter(v => v != null);
+      // ✅ เขียนกลับเฉพาะถ้าไม่เหมือนของเดิม
+      if (cleaned.length !== val.length) {
+        this.groupSetting.monitorGroupId = cleaned;
+      }
+    },
+    // domain: {
+    //     handler() {
+    //         this.fetchGroups();
+    //     },
+    //         // deep: true
+    // }
   },
   props: {
     domain: Array,
     searchText: String
   },
   data() {
-      return {
-        username: "",
+    return {
+      username: "",
       showToggleModal: false,
       showDeleteModal: false,
       groups: [],
@@ -275,8 +272,8 @@ export default {
     };
   },
   computed: {
-      filteredGroups() {
-        // let userGroup = this.groups.filter(group => group.isMyGroup === true);
+    filteredGroups() {
+      // let userGroup = this.groups.filter(group => group.isMyGroup === true);
       return this.groups.filter(group =>
         (group.groupTitle || "").toLowerCase().includes(this.searchText.toLowerCase())
       );
@@ -292,7 +289,7 @@ export default {
       return found ? found.group_name : this.groupSetting.monitorGroupName || '';
     }
   },
-    async mounted() {
+  async mounted() {
     this.username = localStorage.getItem("username");
     await this.fetchGroupOptions('');
     await this.fetchGroups();
@@ -308,10 +305,10 @@ export default {
     },
 
     // ---------- โหมด Group ----------
-   
-   
-      async fetchGroupOptions(search = '') {
-        this.loading = true;
+
+
+    async fetchGroupOptions(search = '') {
+      this.loading = true;
       try {
         const token = localStorage.getItem("token");
         const url = `https://api2.cognizata.com/api/v2/monitor/monitorGroupDropdown?limit=all&search=${encodeURIComponent(search)}`;
@@ -320,7 +317,7 @@ export default {
         });
         // แมปให้เหลือเฉพาะที่ใช้แสดง
         // console.log('res',res.data);
-        
+
         const list = Array.isArray(res.data.data) ? res.data.data : [];
         this.groupOptions = list;
         this.loading = false;
@@ -387,9 +384,9 @@ export default {
       this.loading = true;
       try {
         const res = await axios.get("https://api2.cognizata.com/api/v2/alert_telegram/getgrouptelegram");
-            let telegram = res.data || [];
-            this.groups = this.checkUserGroup(telegram);
-            //console.log('fetched groups', telegram);
+        let telegram = res.data || [];
+        this.groups = this.checkUserGroup(telegram);
+        //console.log('fetched groups', telegram);
         //   this.groups = res.data || [];
       } catch (err) {
         this.error = "ไม่สามารถโหลดข้อมูลกลุ่ม Telegram ได้";
@@ -398,18 +395,18 @@ export default {
       }
     },
     checkUserGroup(telegram) {
-        if (this.username === 'adminatapy') {
-            return telegram;
-        }
-        let filtered = telegram.filter(group =>
-            (group.groupTitle === this.username) 
-            // ||(Array.isArray(group.domain_id) &&
-            //   group.domain_id.some(id => this.domain.some(d => d.id === id)))
-            ||
-            (Array.isArray(group.group_id) &&
-            group.group_id.some(id => this.groupOptions.some(d => d.group_id === id)))
-        );
-        return filtered;
+      if (this.username === 'adminatapy') {
+        return telegram;
+      }
+      let filtered = telegram.filter(group =>
+        (group.groupTitle === this.username)
+        // ||(Array.isArray(group.domain_id) &&
+        //   group.domain_id.some(id => this.domain.some(d => d.id === id)))
+        ||
+        (Array.isArray(group.group_id) &&
+          group.group_id.some(id => this.groupOptions.some(d => d.group_id === id)))
+      );
+      return filtered;
     },
     cancelToggle() {
       this.selectedGroup = null
@@ -433,7 +430,7 @@ export default {
 
     openSetting(group) {
       this.selectedGroup = group;
-        
+
       axios
         .get(`https://api2.cognizata.com/api/v2/alert_telegram/getgroupsetting/${group._id}`)
         .then(async (res) => {
@@ -441,15 +438,15 @@ export default {
           const isGroupMode =
             (Array.isArray(res.data?.group_id) ? res.data.group_id.length > 0 : !!res.data?.group_id) ||
             !!res.data?.monitorGroupName;
-            // console.log("isGroupMode === ", isGroupMode);
-            // console.log("groupOptions === ", this.groupOptions);
-            
+          // console.log("isGroupMode === ", isGroupMode);
+          // console.log("groupOptions === ", this.groupOptions);
+
           this.groupMode = isGroupMode ? 'group' : 'domain';
-            // const validGroupId = (res.data.group_id || []).filter(id =>
-            //     this.groupOptions.some(opt => opt.group_id === id)
-            // );
-            // console.log("validGroupId === ", validGroupId);
-            this.oldGroup_id = res.data.group_id || [];
+          // const validGroupId = (res.data.group_id || []).filter(id =>
+          //     this.groupOptions.some(opt => opt.group_id === id)
+          // );
+          // console.log("validGroupId === ", validGroupId);
+          this.oldGroup_id = res.data.group_id || [];
           this.groupSetting = {
             // domain mode fields
             domain_idText: isGroupMode ? null : (res.data.domain_id || null),
@@ -516,7 +513,7 @@ export default {
         spikePosts: this.groupSetting.spikePosts || null,
         lastSentPostId: null
       };
-    //   console.log('payload === ', payload);
+      //   console.log('payload === ', payload);
       axios
         .put(`https://api2.cognizata.com/api/v2/alert_telegram/updategroupsetting/${this.selectedGroup._id}`, payload)
         .then(() => {
@@ -529,9 +526,9 @@ export default {
     cancelSetting() {
       this.selectedGroup = null;
       this.showSettingModal = false;
-      
+
     }
-    },
+  },
 };
 </script>
 
