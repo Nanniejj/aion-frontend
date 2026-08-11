@@ -19,12 +19,12 @@
         :visible="open"
         @hide="hideModal"
         :animation-panel="'modal-slide-top'"
-        :resize-width="{ 3000: '100%', 1350: '90%', 768: '90%' }"
-        class="h-100"
+        :resize-width='{ 3000: "100%", 1200: "100%", 768: "100%" }'
+        class="import-fullscreen-modal"
     >
       <!-- :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }" -->
         <div v-if="tabsMonitor == 'targetlist'">
-            <h5><b>เพิ่มบัญชี</b></h5>
+            <h5><b>เพิ่มบัญชีเป้าหมาย</b></h5>
             <hr />
         </div>
         <div v-else-if="tabsMonitor == 'hashtaglist'">
@@ -76,6 +76,8 @@
                 <label class="mt-3" for="textarea-default"><b>url บัญชี ({{ addTarget.length }})</b></label>
                 <!-- :disabled="!selectSource" -->
                 <b-form-tags
+                    ref="targetTags"
+                    :key="tagsResetKeyTarget"
                     input-id="tags-pills"
                     v-model="addTarget"
                     tag-variant="light"
@@ -86,13 +88,13 @@
                     :tag-formatter="formatTag" 
                     @input="onTagsInput"
                     @tag-state="onTagState"
+                    @paste.native="handlePasteTarget"
                     separator=" ,;"
                     remove-on-delete
                 />
                 <!-- {{ targetLists }} -->
                 <div class="col-12 px-0" v-if="addTarget.length">
 
-                    <!-- {{ facebook }} -->
                     <div class="col-12 px-0 pt-3" v-for="(platform, platformName) in platforms" :key="platformName" v-if="platform.length">
                         <div v-if="platform.length" >
                             <b class="mb-2 text-capitalize">{{ platformName }} ({{ platform.length }})</b>
@@ -143,6 +145,8 @@
             <b-col sm="12" v-else-if="tabsMonitor == 'hashtaglist'">
                 <label class="mt-4" for="textarea-default"><b>ชื่อแฮชแท็ก</b></label>
                 <b-form-tags
+                    ref="hashtagTags"
+                    :key="tagsResetKeyHashtag"
                     input-id="tags-pills"
                     v-model="addHashtag"
                     tag-variant="light"
@@ -154,45 +158,7 @@
                     :tag-formatter="(tag) => tag"
                     @input="onTagsInput"
                 ></b-form-tags>
-                <!-- <div class="col-12 px-0" v-if="addHashtag.length">
-                    <div class="col-12 px-0 pt-3">
-                        <b>รายการแฮชแท็ก ({{ addHashtag.length }})</b>
-                    </div>
-                    <hr class="my-2"/>
-                    <div class="row justify-content-between mb-3 mx-0" v-for="(item, i) in hashtagLists" :key="'hashtag- ' +i">
-                        
-                        <div class="col d-sm-none text-truncate px-0" style="max-width: 300px;">
-                            {{ i + 1 }}. #{{ item.uid }}
-                        </div>
-                        <div class="col d-none d-sm-block text-truncate w-100 px-0" style="">
-                            {{ i + 1 }}. #{{ item.uid }}
-                        </div>
-                        
-                        <b-button class="col-auto" variant="info" v-if="!item.editable" @click="toggleEdited(item)">
-                            <i class="fa fa-edit"></i>
-                        </b-button>
-                        
-                        <div class="col-auto d-flex pl-1 pr-0" v-else>
-                            <b-button class="mr-2" variant="success" @click="toggleEdited(item)">
-                                <i class="fa fa-save"></i>
-                            </b-button>
-                            <b-button variant="danger" @click="toggleEdited(item)">
-                                <i class="fa fa-times"></i>
-                            </b-button>
-                        </div>
-                        <div class="col-12 mt-3 p-0">
-                            <CardInput 
-                                v-if="checkLableData(item) || item.editable"
-                                :targetInfo="item"
-                                :provinces="provinces"
-                                :influencerTypes="influencerTypes"
-                                source="blockdit"
-                                :editable="item.editable" 
-                                @update:targetInfo="(data) => handleLabelData(data,item)"
-                            />
-                        </div>
-                    </div>
-                </div> -->
+                
             </b-col>
             
         </b-row>
@@ -346,13 +312,20 @@ export default {
             ],
             provinces: [],
             country: [],
-            influencerTypes:[]
+            influencerTypes:[],
+            tagsResetKeyTarget: 0,
+            tagsResetKeyHashtag: 0,
+            isClearingTags: false,
         };
     },
     methods: {
         clear() {
+            this.isClearingTags = true;
             this.resetHashtagList();
             this.resetTargetList();
+            this.$nextTick(() => {
+                this.isClearingTags = false;
+            });
         },
         handleLabelData(data, itemPlatform) {
             // คัดลอกทุก key จาก data ไปยัง itemPlatform (รวมทั้งเพิ่ม key ใหม่)
@@ -414,7 +387,46 @@ export default {
             if (tag.includes("threads.com")) return 'threads';
             return 'news';
         },
+        // ✂️ แยกลิงก์ที่ถูกใส่ติดกันโดยไม่มีตัวคั่น (เช่น วางลิงก์หลายอันพร้อมกัน)
+        // ตัวอย่าง: "https://tiktok.com/@aaahttps://p16-sign.tiktokcdn.com/xxx.jpeg"
+        // -> ["https://tiktok.com/@aaa", "https://p16-sign.tiktokcdn.com/xxx.jpeg"]
+        splitConcatenatedUrls(text) {
+            if (!text) return [];
+            return text
+                .split(/(?=https?:\/\/)/gi)
+                .map(s => s.trim())
+                .filter(Boolean);
+        },
+        handlePasteTarget(e) {
+            const clipboard = e.clipboardData || window.clipboardData;
+            const pasteText = clipboard ? clipboard.getData('text') : '';
+            if (!pasteText) return;
+
+            const urls = this.splitConcatenatedUrls(pasteText);
+
+            // ถ้าแยกได้มากกว่า 1 ลิงก์ (คือมีลิงก์ติดกัน) ให้จัดการเอง แล้วกันไม่ให้วางแบบปกติ
+            if (urls.length > 1) {
+                e.preventDefault();
+
+                urls.forEach(rawUrl => {
+                    if (this.addTarget.length >= 100) return;
+                    const normalized = this.normalizeUrl(rawUrl);
+                    if (
+                        normalized &&
+                        this.validator(normalized) &&
+                        !this.addTarget.includes(normalized)
+                    ) {
+                        this.addTarget.push(normalized);
+                    }
+                });
+
+                this.onTagsInput(this.addTarget);
+            }
+        },
         onTagsInput(tags) {
+            if (this.isClearingTags) {
+                return;
+            }
             
             // ✨ 1. Normalize URLs
             let normalizedTags = tags.map(tag => this.normalizeUrl(tag));
@@ -455,6 +467,21 @@ export default {
                 } catch (e) {
                     // ถ้าไม่ใช่ URL ที่ถูกต้องก็เก็บไว้ (ไม่ตัดทิ้ง)
                     return true;
+                }
+                return true; // ✅ เก็บไว้
+            });
+
+            // 🚫 ลบลิงก์ที่คาดว่าเป็นลิงก์รูปภาพออกไปเลย (เกราะป้องกันชั้นที่ 2 เผื่อ
+            // หลุดผ่าน validator() มาได้ เช่น ถูก set ผ่าน v-model โดยตรงจากที่อื่น)
+            normalizedTags = normalizedTags.filter(tag => {
+                if (this.isLikelyImageUrl(tag)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'พบลิงก์รูปภาพในรายการ',
+                        text: 'ลิงก์รูปภาพถูกลบออกโดยอัตโนมัติ กรุณาใส่ลิงก์โปรไฟล์/บัญชีแทน',
+                        showConfirmButton: true
+                    });
+                    return false; // ❌ filter ทิ้ง
                 }
                 return true; // ✅ เก็บไว้
             });
@@ -537,6 +564,9 @@ export default {
                 .replace(/\/+$/, '');                // ตัด / ท้ายสุด
         },
         validator(tag) {
+            if (this.isClearingTags) {
+                return true;
+            }
             // ❌ จำกัดไม่เกิน 100 รายการ
             if (this.addTarget.length >= 100) {
                 Swal.fire({
@@ -562,6 +592,19 @@ export default {
                 // text: 'กรุณาใส่ลิงก์ให้ถูกต้อง เช่น https://facebook.com/xxx',
                 // showConfirmButton: true
                 // });
+                return false;
+            }
+
+            // ❌ กันไม่ให้ใส่ลิงก์ที่คาดว่าเป็นลิงก์รูปภาพ (เช่น รูปโปรไฟล์/avatar ที่ก็อปมาผิด
+            // แทนที่จะเป็นลิงก์บัญชี/โพสต์จริงๆ เช่น รูปจาก scontent.fbcdn.net หรือ
+            // p16-common-sign.tiktokcdn.com ที่ลงท้ายด้วย .jpg/.png ฯลฯ)
+            if (this.isLikelyImageUrl(tag)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ลิงก์นี้ดูเหมือนเป็นลิงก์รูปภาพ',
+                    text: 'กรุณาใส่ลิงก์โปรไฟล์/บัญชีแทน ไม่ใช่ลิงก์รูปภาพโดยตรง',
+                    showConfirmButton: true
+                });
                 return false;
             }
 
@@ -591,6 +634,43 @@ export default {
             //     return false;
             // }
             return true;
+        },
+        // ตรวจว่า URL ที่ให้มา "น่าจะ" เป็นลิงก์รูปภาพ (ไม่ใช่ลิงก์บัญชี/โพสต์)
+        // เช็ค 2 ทาง: (1) นามสกุลไฟล์รูปภาพใน path (2) โดเมน CDN รูปภาพที่รู้จักกันทั่วไป
+        isLikelyImageUrl(tag) {
+            try {
+                const urlObj = new URL(tag.trim());
+                const pathname = urlObj.pathname.toLowerCase();
+                const hostname = urlObj.hostname.toLowerCase();
+
+                // 1) นามสกุลไฟล์รูปภาพที่ปรากฏใน path (เช่น .jpg, .jpeg, .png, .webp, .gif)
+                //    เช็คทั้งกรณีจบท้าย path เลย และกรณีตามด้วย : (เช่น ...cropcenter:100:100.jpeg)
+                const imageExtPattern = /\.(jpg|jpeg|png|gif|webp|bmp|svg|heic|heif)(?:$|[/:?#])/i;
+                if (imageExtPattern.test(pathname)) {
+                    return true;
+                }
+
+                // 2) โดเมน CDN รูปภาพที่รู้จัก — มักเป็นลิงก์รูปโปรไฟล์/avatar
+                //    ไม่ใช่ลิงก์หน้าบัญชี/โพสต์จริงๆ
+                const imageCdnHosts = [
+                    'fbcdn.net',       // Facebook CDN (scontent.xxx.fbcdn.net)
+                    'cdninstagram.com',
+                    'tiktokcdn',       // p16-common-sign.tiktokcdn.com ฯลฯ
+                    'ibyteimg.com',    // TikTok/ByteDance image CDN
+                    'pstatic.net',
+                    'ggpht.com',       // Google/YouTube profile image CDN
+                    'googleusercontent.com',
+                    'twimg.com',       // Twitter/X image CDN
+                    'akamaized.net',
+                ];
+                if (imageCdnHosts.some((host) => hostname.includes(host))) {
+                    return true;
+                }
+
+                return false;
+            } catch (e) {
+                return false;
+            }
         },
         // validator(tag) {
         //     // const normalizedTag = tag.replace("://www.", "://");
@@ -758,10 +838,15 @@ export default {
         resetTargetList() {
             this.targetLists = [];
             this.addTarget = [];
+            this.tagsResetKeyTarget += 1;
+            Object.keys(this.platforms).forEach((platform) => {
+                this.platforms[platform] = [];
+            });
         },
         resetHashtagList() {
             this.hashtagLists = [];
             this.addHashtag = [];
+            this.tagsResetKeyHashtag += 1;
         },
         collectAllTargets(list) { 
 
@@ -873,22 +958,14 @@ export default {
         await this.apiGetCountry();
         await this.apiGetInfluencerType();
     },
-    // watch() {
-    //     addTarget: {
-            
-    //     }
-    // }
 };
 </script>
 
 <style scoped>
 .modal-body-scrollable {
-    /* min-height: 65vh; */
-    max-height: 60vh;         
+    max-height: 79vh;          /* กำหนดความสูงสูงสุดของ modal body */
     overflow-y: auto;         /* ให้ scroll เฉพาะแนวตั้ง */
     overflow-x: hidden;       /* ❌ ปิดการ scroll แนวนอน */
-    padding-right: 10px;
-    box-sizing: border-box;   /* เผื่อขนาด scrollbar */
 }
 
 .btn-close {
@@ -932,14 +1009,14 @@ td {
     margin-top: 20px;
   }
 }
-/* ::v-deep(.vue-modaltor__panel) {
-  width: 100% !important;
-  height: 100vh !important; 
-  max-width: 100% !important;
-  max-height: 100vh !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  display: flex;
-  flex-direction: column;
-} */
+
+.import-fullscreen-modal ::v-deep .modal-vue-panel.modal-vue-show {
+    height: 100% !important;
+}
+.import-fullscreen-modal ::v-deep .modal-vue--content {
+    display: flex;
+    align-items: start !important;   /* start ทำให้เนื้อหาไม่ยืดเต็มความสูง จึงเปลี่ยนเป็น stretch */
+    line-height: 1.5;
+    height: 100% !important;
+}
 </style>

@@ -18,38 +18,45 @@
           <button class="tab-btn" :class="{ active: tab === 'projects' }" @click="tab = 'projects'">
             <b-icon icon="grid"></b-icon>
             Projects
-            <span class="count">{{ getProjectsPagination.total }}</span>
+            <!-- <span class="count">{{ getProjectsPagination.total }}</span> -->
           </button>
           <button class="tab-btn" :class="{ active: tab === 'users' }" @click="tab = 'users'">
             <b-icon icon="people"></b-icon>
             Users
-            <span class="count">{{ getUsersPagination.total }}</span>
+            <!-- <span class="count">{{ getUsersPagination.total }}</span> -->
+          </button>
+          <button class="tab-btn" :class="{ active: tab === 'logs' }" @click="tab = 'logs'">
+            <b-icon icon="card-list"></b-icon>
+            Logs
           </button>
         </div>
 
-        <div class="d-flex align-items-center flex-wrap tab-actions">
+        <div v-if="tab !== 'logs'" class="d-flex align-items-center flex-wrap tab-actions">
           <div class="d-flex align-items-center flex-wrap header-actions">
           <b-input-group size="lg" class="search-box">
             <b-form-input
               id="filter-input"
               v-model="query"
-              type="text"
+              type="search"
               name="project-search-query"
               autocomplete="off"
               :readonly="searchLocked"
               :disabled="isFilterLoading"
               @focus="searchLocked = false"
-              placeholder="ค้นหาโปรเจกต์หรือสมาชิก..."
+              @keyup.enter.native="runSearch"
+              @input="onQueryInput"
+              placeholder="ค้นหา..."
             ></b-form-input>
-            <b-input-group-append v-if="query">
+            <b-input-group-append>
+              
               <button
                 type="button"
-                class="search-clear-btn"
+                class="search-submit-btn"
                 :disabled="isFilterLoading"
-                @click="query = ''"
-                aria-label="ล้างคำค้นหา"
+                @click="runSearch"
+                aria-label="ค้นหา"
               >
-                <b-icon icon="x"></b-icon>
+                <b-icon icon="search"></b-icon>
               </button>
             </b-input-group-append>
           </b-input-group>
@@ -178,6 +185,8 @@
         @delete="onProjectUpdated"
         @updated="onUserUpdated"
       />
+
+      <LogsMain v-if="tab === 'logs'" />
     </div>
 
     <!-- ============ DETAIL (FULL PAGE) VIEW ============ -->
@@ -198,11 +207,12 @@ import ProjectDetail from "../components/projectmanagement/project/ProjectDetail
 import CreateProjectModal from "../components/projectmanagement/project/CreateProjectModal.vue";
 import EditProjectModal from "../components/projectmanagement/project/EditProjectModal.vue";
 import CreateUserModal from "../components/projectmanagement/users/CreateUserModal.vue";
+import LogsMain from "../components/projectmanagement/LogsMain.vue";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "ProjectManagementView",
-  components: { HomeNav, ProjectMain, UserMain, ProjectDetail, CreateProjectModal, EditProjectModal, CreateUserModal },
+  components: { HomeNav, ProjectMain, UserMain, ProjectDetail, CreateProjectModal, EditProjectModal, CreateUserModal, LogsMain },
   data() {
     return {
       tab: "projects", // 'projects' | 'users'
@@ -217,7 +227,6 @@ export default {
       view: "list", // 'list' | 'detail'
       activeProject: null,
       viewMode: "cards", // 'cards' | 'progress'
-      searchTimer: null,
     };
   },
   computed: {
@@ -226,6 +235,7 @@ export default {
       "getUsers",
       "getUsersPagination",
       "getProjectsPagination",
+      "getLogsPagination",
       "getLoadingProjects",
       "getLoadingUsers",
       "getProjectPicker",
@@ -260,21 +270,16 @@ export default {
     document.removeEventListener("click", this.handleProjectDropdownOutsideClick);
   },
   watch: {
-    
-    query(val) {
-      clearTimeout(this.searchTimer);
-      this.searchTimer = setTimeout(() => {
-        if (this.tab === "projects") {
-          this.searchProjects(val);
-        } else {
-          this.fetchUsersFiltered(1);
-        }
-      }, 300);
-    },
-   
-    tab(val) {
-      if (val === "projects") {
-        this.searchProjects(this.query);
+
+    // `query` no longer auto-fires the search while typing — the search
+    // button (or Enter) triggers it explicitly via runSearch(). Switching
+    // tabs clears whatever was typed and reloads that tab unfiltered,
+    // since a query typed for one tab (e.g. project names) isn't a
+    // meaningful filter for the other (e.g. users).
+    tab() {
+      this.query = "";
+      if (this.tab === "projects") {
+        this.searchProjects("");
       } else {
         this.fetchUsersFiltered(1);
       }
@@ -308,6 +313,26 @@ export default {
       this.activeProject = project;
       this.view = "detail";
       window.scrollTo(0, 0);
+    },
+    // Explicit search trigger — the search button (or Enter) calls this
+    // directly instead of the query being watched/debounced as the user
+    // types.
+    runSearch() {
+      if (this.tab === "projects") {
+        this.searchProjects(this.query);
+      } else {
+        this.fetchUsersFiltered(1);
+      }
+    },
+    // type="search" inputs render a native browser "x" clear button —
+    // clicking it empties the field via the DOM directly, which v-model
+    // picks up, but no keyup/click handler of ours fires. Catch that
+    // specific transition here and reload rather than leaving stale
+    // filtered results on screen.
+    onQueryInput(val) {
+      if (!val) {
+        this.runSearch();
+      }
     },
     onEditProject(project) {
       this.$refs.editProjectModal.open(project);
@@ -346,7 +371,7 @@ export default {
       this.fetchUsers({
         project_id: this.projectFilter,
         page: page || 1,
-        limit: this.getUsersPagination.limit || 10,
+        limit: 10,
         search: this.query,
         role: this.roleFilter,
       });
@@ -474,7 +499,6 @@ export default {
   padding: 0 10px;
   border: 1px solid #e4e1d8;
   border-left: none;
-  border-radius: 0 6px 6px 0;
   background: #ffffff;
   color: #6b7280;
   cursor: pointer;
@@ -482,6 +506,28 @@ export default {
 .search-clear-btn:hover {
   background: #f6f5f0;
   color: #1c1e24;
+}
+.search-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid #128189;
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  background: #128189;
+  color: #ffffff;
+  cursor: pointer;
+}
+.search-submit-btn:hover {
+  background: #0e6870;
+}
+.search-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.search-submit-btn:disabled:hover {
+  background: #128189;
 }
 .search-box >>> .form-control:disabled {
   background: #f6f5f0;

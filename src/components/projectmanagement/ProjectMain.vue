@@ -1,5 +1,11 @@
 <template>
   <div>
+    <b-row class="text-start mx-0 mb-3">
+      <h5>
+        โปรเจกต์ทั้งหมด
+        <span v-if="pagination.total" class="count">{{ pagination.total || 0 | numFormat}} รายการ</span>
+      </h5>
+    </b-row>
     <div v-if="loading" class="suggest-loading">
       <div class="suggest-loading-spinner">
         <vue-element-loading
@@ -222,7 +228,20 @@ export default {
 </script>
 
 <style scoped>
-
+.count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    background: #ffe1a8;
+    color: #5a3f04;
+}
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

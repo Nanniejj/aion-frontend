@@ -1,270 +1,286 @@
 <template>
-  <div class="users-card">
-    <div v-if="loading" class="suggest-loading">
-      <div class="suggest-loading-spinner">
-        <vue-element-loading
-          :active="loading"
-          size="60"
-          background-color="rgba(255, 255, 255, 0.3)"
-          color="#ede7dd"
-        />
-      </div>
-      <span>กำลังโหลดผู้ใช้...</span>
-    </div>
-
-    <div v-else class="table-scroll">
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>ผู้ใช้</th>
-          <th v-for="f in fields" :key="f.key" :class="'col-' + f.key">{{ f.label }}</th>
-          <th>วันหมดอายุ</th>
-          <th class="actions-col">การจัดการ</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-for="(u, i) in users">
-        <tr :key="u._id || i">
-          <td class="name-td">
-            <div class="name-cell">
-              <div class="user-avatar" :style="{ background: avatarColor(i) }">{{ u.initial }}</div>
-              <div class="name-cell-text">
-                <span class="user-name">{{ displayName(u) }}
-                  <span class="role-badge" :class="'role-' + u.role">
-                    <b-icon :icon="roleIcon(u.role)"></b-icon>
-                    {{ u.role }}
-                  </span>
-                </span>
-                <span class="user-subline">{{ u.username }} 
-                  <span v-if="u.role !== 'service'"> · {{ u.email }}</span>
-                </span>
-                <span v-if="u.role !== 'service'" class="user-subline">
-                  <b-icon icon="building"></b-icon>
-                  {{ u.company }}
-                </span>
-              </div>
-            </div>
-          </td>
-          <td data-label="สถานะ">
-            <span class="status-pill" :class="statusClass(u.accountStatus)">
-              {{ statusLabel(u.accountStatus) }}
-            </span>
-          </td>
-          <!-- <td data-label="บริษัท" class="company-cell">{{ u.company }}</td> -->
-          <td data-label="โปรเจกต์" class="company-cell">{{ u.projectname }}</td>
-          <td class="mono joined-cell" data-label="เข้าร่วมเมื่อ">{{ u.joined }}</td>
-          <td class="mono expiry-cell" data-label="วันหมดอายุ">
-            <span v-if="u.accountNeverExpire || !u.accountExpiresAt" class="expiry-none">ไม่มีกำหนด</span>
-            <span v-else class="expiry-value" :class="{ expired: isExpired(u.accountExpiresAt) }">
-              {{ formatExpiry(u.accountExpiresAt) }}
-              <span v-if="isExpired(u.accountExpiresAt)" class="expiry-badge">หมดอายุแล้ว</span>
-            </span>
-          </td>
-          <td data-label="การจัดการ">
-            <div class="row-actions">
-              <button
-                type="button"
-                class="row-action-btn history"
-                title="ดูประวัติการใช้งาน"
-                @click="openLogModal(u)"
-              >
-                <b-icon icon="clock-history"></b-icon>
-              </button>
-              <button
-                v-if="u.role !== 'service'"
-                type="button"
-                class="row-action-btn edit"
-                title="แก้ไขผู้ใช้"
-                @click="$refs.editModal.open(u)"
-              >
-                <b-icon icon="pencil-square"></b-icon>
-              </button>
-              <button
-                type="button"
-                class="row-action-btn delete"
-                :class="{ 'is-suspended': !u.isActive }"
-                :title="u.isActive ? 'ระงับบัญชีผู้ใช้' : 'เปิดใช้งานบัญชีผู้ใช้'"
-                @click="confirmToggleActive(u)"
-              >
-                <b-icon :icon="u.isActive ? 'lock-fill' : 'unlock-fill'"></b-icon>
-              </button>
-            </div>
-          </td>
-        </tr>
-        </template>
-      </tbody>
-    </table>
-    </div>
-
-    <div v-if="!loading && users.length === 0" class="empty-state">
-      ไม่พบผู้ใช้งานที่ตรงกับ "{{ query }}"
-    </div>
-
-    <div v-if="pagination && totalPages > 1" class="pagination-bar">
-      <span class="pagination-info">
-        หน้า {{ pagination.page }} จาก {{ totalPages }} ( ทั้งหมด {{ pagination.total }} รายการ )
-      </span>
-      <b-pagination
-        v-model="currentPage"
-        :total-rows="totalRows"
-        :per-page="perPage"
-        align="center"
-        class="my-2"
-        @input="onPageChange"
-      />
-    </div>
-
-    <b-modal
-      v-model="logModalOpen"
-      size="lg"
-      hide-footer
-      scrollable
-      no-fade
-      dialog-class="log-history-dialog"
-      content-class="log-history-content"
-      @hidden="onLogModalHidden"
-    >
-      <template #modal-title>
-        <div class="log-modal-title py-2">
-          <b-icon icon="clock-history"></b-icon>
-          ประวัติการใช้งาน — {{ logModalUser ? displayName(logModalUser) : "" }}
-        </div>
-      </template>
-
-      <div class="log-modal-body">
-        <div class="log-modal-filters">
-          <div class="log-search">
-            <b-icon icon="search"></b-icon>
-            <input
-              v-model="logFilters.search"
-              type="text"
-              placeholder="ค้นหา action, endpoint..."
-              :disabled="userLogsLoading"
-              @input="onLogFilterInput"
-            />
-          </div>
-          <select
-            v-model="logFilters.method"
-            class="log-filter-select"
-            :disabled="userLogsLoading"
-            @change="applyLogFilters"
-          >
-            <option value="">ทุก Method</option>
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
-            <option value="PUT">PUT</option>
-            <option value="PATCH">PATCH</option>
-            <option value="DELETE">DELETE</option>
-          </select>
-          <span class="log-filter-divider"></span>
-          <button
-            v-for="preset in logDatePresets"
-            :key="preset.key"
-            type="button"
-            class="log-preset-btn"
-            :class="{ active: logDatePreset === preset.key }"
-            :disabled="userLogsLoading"
-            @click="setLogDateMonths(preset.months, preset.key)"
-          >
-            {{ preset.label }}
-          </button>
-          <button
-            type="button"
-            class="log-preset-btn"
-            :class="{ active: logDatePreset === 'custom' }"
-            :disabled="userLogsLoading"
-            @click="useCustomLogDate"
-          >
-            กำหนดเอง
-          </button>
-          <button
-            v-if="hasActiveLogFilters"
-            type="button"
-            class="log-filter-clear"
-            :disabled="userLogsLoading"
-            @click="clearLogFilters"
-          >
-            <b-icon icon="x-circle"></b-icon> ล้างตัวกรอง
-          </button>
-        </div>
-
-        <div v-if="logDatePreset === 'custom'" class="log-date-range">
-          <date-picker
-            v-model="valueDate"
-            type="date"
-            range
-            placeholder="เลือกช่วงเวลา"
-            size="sm"
-            :disabled-date="(date) => date >= new Date()"
-            :disabled="userLogsLoading"
-            value-type="format"
-            format="YYYY-MM-DD"
-            @change="checkDateRange()"
-            id="date-log-user"
-          >{{ valueDate }}</date-picker>
-        </div>
-        <div v-else-if="logFilters.startDate && logFilters.endDate" class="log-date-hint">
-          {{ formatExpiry(logFilters.startDate) }} — {{ formatExpiry(logFilters.endDate) }}
-        </div>
-
-        <div v-if="userLogsLoading" class="user-log-empty">กำลังโหลด...</div>
-        <div v-else-if="userLogs.length === 0" class="user-log-empty">
-          {{ hasActiveLogFilters ? "ไม่พบประวัติการใช้งานที่ตรงกับตัวกรอง" : "ไม่มีประวัติการใช้งาน" }}
-        </div>
-        <template v-else>
-          <div class="user-log-list">
-            <div
-              v-for="log in userLogs"
-              :key="log._id"
-              class="user-log-item"
-              :class="{ expanded: expandedLogId === log._id }"
-              @click="toggleLogDetails(log)"
-            >
-              <span class="user-log-dot" :class="log.success ? 'is-ok' : 'is-fail'"></span>
-              <div class="user-log-main">
-                <div class="user-log-top">
-                  <div class="user-log-title">
-                    <span class="user-log-action">{{ actionLabel(log.action) }}</span>
-                    <span class="user-log-method" :class="'method-' + (log.method || '').toLowerCase()">{{ log.method }}</span>
-                  </div>
-                  <span class="user-log-time">{{ log.createdAtThai || log.createdAt }}</span>
-                </div>
-                <div class="user-log-bottom">
-                  <div class="user-log-endpoint">{{ log.endpoint }}</div>
-                  <span class="user-log-status" :class="log.success ? 'is-ok' : 'is-fail'">
-                    <b-icon :icon="log.success ? 'check-circle-fill' : 'exclamation-circle-fill'" font-scale="0.8"></b-icon>
-                    {{ log.success ? "สำเร็จ" : "ล้มเหลว" }}
-                    <span class="log-status-code">{{ log.statusCode }}</span>
-                  </span>
-                </div>
-                <div v-if="log.errorMessage" class="user-log-error">{{ log.errorMessage }}</div>
-
-                <div v-if="expandedLogId === log._id" @click.stop>
-                  <LogDetailPanel :log="log" :show-user="false" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="log-modal-pagination">
-            <span class="log-pagination-info">
-              หน้า {{ userLogsPagination.page }} จาก {{ userLogsPagination.totalPages }}
-              ( ทั้งหมด {{ userLogsPagination.total }} รายการ )
-            </span>
-            <b-pagination
-              v-model="userLogsPage"
-              :total-rows="userLogsPagination.total"
-              :per-page="userLogsPagination.limit"
-            align="center"
-            class="my-2"
-            @input="onUserLogsPageChange"
+  <div>
+    <b-row class="text-start mx-0 mb-3">
+      <h5>
+        บัญชีผู้ใช้ทั้งหมด
+        <span v-if="pagination.total" class="count">{{ pagination.total|| 0 | numFormat }} รายการ</span>
+      </h5>
+    </b-row>
+    <div class="users-card">
+      <div v-if="loading" class="suggest-loading">
+        <div class="suggest-loading-spinner">
+          <vue-element-loading
+            :active="loading"
+            size="60"
+            background-color="rgba(255, 255, 255, 0.3)"
+            color="#ede7dd"
           />
         </div>
-      </template>
+        <span>กำลังโหลดผู้ใช้...</span>
       </div>
-    </b-modal>
-
-    <EditUserModal ref="editModal" @updated="$emit('updated', $event)" />
+  
+      <div v-else class="table-scroll">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>ผู้ใช้</th>
+            <th v-for="f in fields" :key="f.key" :class="'col-' + f.key">{{ f.label }}</th>
+            <th>วันหมดอายุ</th>
+            <th class="actions-col">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template v-for="(u, i) in users">
+          <tr :key="u._id || i">
+            <td class="name-td">
+              <div class="name-cell">
+                <div class="user-avatar" :style="{ background: avatarColor(i) }">{{ u.initial }}</div>
+                <div class="name-cell-text">
+                  <span class="user-name">{{ displayName(u) }}
+                    <span class="role-badge" :class="'role-' + u.role">
+                      <b-icon :icon="roleIcon(u.role)"></b-icon>
+                      {{ u.role }}
+                    </span>
+                  </span>
+                  <span class="user-subline">{{ u.username }} 
+                    <span v-if="u.role !== 'service'"> · {{ u.email }}</span>
+                  </span>
+                  <span v-if="u.role !== 'service'" class="user-subline">
+                    <b-icon icon="building"></b-icon>
+                    {{ u.company }}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td data-label="สถานะ">
+              <span class="status-pill" :class="statusClass(u.accountStatus)">
+                {{ statusLabel(u.accountStatus) }}
+              </span>
+            </td>
+            <!-- <td data-label="บริษัท" class="company-cell">{{ u.company }}</td> -->
+            <td data-label="โปรเจกต์" class="company-cell">{{ u.projectname }}</td>
+            <td class="mono joined-cell" data-label="เข้าร่วมเมื่อ">{{ u.joined }}</td>
+            <td class="mono expiry-cell" data-label="วันหมดอายุ">
+              <span v-if="u.accountNeverExpire || !u.accountExpiresAt" class="expiry-none">ไม่มีกำหนด</span>
+              <span v-else class="expiry-value" :class="{ expired: isExpired(u.accountExpiresAt) }">
+                {{ formatExpiry(u.accountExpiresAt) }}
+                <span v-if="isExpired(u.accountExpiresAt)" class="expiry-badge">หมดอายุแล้ว</span>
+              </span>
+            </td>
+            <td data-label="การจัดการ">
+              <div class="row-actions">
+                <button
+                  type="button"
+                  class="row-action-btn history"
+                  title="ดูประวัติการใช้งาน"
+                  @click="openLogModal(u)"
+                >
+                  <b-icon icon="clock-history"></b-icon>
+                </button>
+                <button
+                  v-if="u.role !== 'service'"
+                  type="button"
+                  class="row-action-btn edit"
+                  title="แก้ไขผู้ใช้"
+                  @click="$refs.editModal.open(u)"
+                >
+                  <b-icon icon="pencil-square"></b-icon>
+                </button>
+                <button
+                  type="button"
+                  class="row-action-btn delete"
+                  :class="{ 'is-suspended': !u.isActive }"
+                  :title="u.isActive ? 'ระงับบัญชีผู้ใช้' : 'เปิดใช้งานบัญชีผู้ใช้'"
+                  @click="confirmToggleActive(u)"
+                >
+                  <b-icon :icon="u.isActive ? 'lock-fill' : 'unlock-fill'"></b-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+          </template>
+        </tbody>
+      </table>
+      </div>
+  
+      <div v-if="!loading && users.length === 0" class="empty-state">
+        ไม่พบผู้ใช้งานที่ตรงกับ "{{ query }}"
+      </div>
+  
+      <div v-if="pagination && totalPages > 1" class="pagination-bar">
+        <span class="pagination-info">
+          หน้า {{ pagination.page }} จาก {{ totalPages }} ( ทั้งหมด {{ pagination.total }} รายการ )
+        </span>
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="totalRows"
+          :per-page="perPage"
+          align="center"
+          class="my-2"
+          @input="onPageChange"
+        />
+      </div>
+  
+      <b-modal
+        v-model="logModalOpen"
+        size="lg"
+        hide-footer
+        scrollable
+        no-fade
+        dialog-class="log-history-dialog"
+        content-class="log-history-content"
+        @hidden="onLogModalHidden"
+      >
+        <template #modal-title>
+          <div class="log-modal-title py-2">
+            <b-icon icon="clock-history"></b-icon>
+            ประวัติการใช้งาน — {{ logModalUser ? displayName(logModalUser) : "" }}
+          </div>
+        </template>
+  
+        <div class="log-modal-body">
+          <div class="log-modal-filters">
+            <div class="log-search">
+              <b-icon icon="search"></b-icon>
+              <input
+                v-model="logFilters.search"
+                type="text"
+                placeholder="ค้นหา action, endpoint..."
+                :disabled="userLogsLoading"
+                @keyup.enter="applyLogFilters"
+              />
+              <button
+                type="button"
+                class="log-search-btn"
+                :disabled="userLogsLoading"
+                @click="applyLogFilters"
+              >
+                ค้นหา
+              </button>
+            </div>
+            <select
+              v-model="logFilters.method"
+              class="log-filter-select"
+              :disabled="userLogsLoading"
+              @change="applyLogFilters"
+            >
+              <option value="">ทุก Method</option>
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+            <span class="log-filter-divider"></span>
+            <button
+              v-for="preset in logDatePresets"
+              :key="preset.key"
+              type="button"
+              class="log-preset-btn"
+              :class="{ active: logDatePreset === preset.key }"
+              :disabled="userLogsLoading"
+              @click="setLogDateMonths(preset.months, preset.key)"
+            >
+              {{ preset.label }}
+            </button>
+            <button
+              type="button"
+              class="log-preset-btn"
+              :class="{ active: logDatePreset === 'custom' }"
+              :disabled="userLogsLoading"
+              @click="useCustomLogDate"
+            >
+              กำหนดเอง
+            </button>
+            <button
+              v-if="hasActiveLogFilters"
+              type="button"
+              class="log-filter-clear"
+              :disabled="userLogsLoading"
+              @click="clearLogFilters"
+            >
+              <b-icon icon="x-circle"></b-icon> ล้างตัวกรอง
+            </button>
+          </div>
+  
+          <div v-if="logDatePreset === 'custom'" class="log-date-range">
+            <date-picker
+              v-model="valueDate"
+              type="date"
+              range
+              placeholder="เลือกช่วงเวลา"
+              size="sm"
+              :disabled-date="(date) => date >= new Date()"
+              :disabled="userLogsLoading"
+              value-type="format"
+              format="YYYY-MM-DD"
+              @change="checkDateRange()"
+              id="date-log-user"
+            >{{ valueDate }}</date-picker>
+          </div>
+          <div v-else-if="logFilters.startDate && logFilters.endDate" class="log-date-hint">
+            {{ formatExpiry(logFilters.startDate) }} — {{ formatExpiry(logFilters.endDate) }}
+          </div>
+  
+          <div v-if="userLogsLoading" class="user-log-empty">กำลังโหลด...</div>
+          <div v-else-if="userLogs.length === 0" class="user-log-empty">
+            {{ hasActiveLogFilters ? "ไม่พบประวัติการใช้งานที่ตรงกับตัวกรอง" : "ไม่มีประวัติการใช้งาน" }}
+          </div>
+          <template v-else>
+            <div class="user-log-list">
+              <div
+                v-for="log in userLogs"
+                :key="log._id"
+                class="user-log-item"
+                :class="{ expanded: expandedLogId === log._id }"
+                @click="toggleLogDetails(log)"
+              >
+                <span class="user-log-dot" :class="log.success ? 'is-ok' : 'is-fail'"></span>
+                <div class="user-log-main">
+                  <div class="user-log-top">
+                    <div class="user-log-title">
+                      <span class="user-log-action">{{ actionLabel(log.action) }}</span>
+                      <span class="user-log-method" :class="'method-' + (log.method || '').toLowerCase()">{{ log.method }}</span>
+                    </div>
+                    <span class="user-log-time">{{ log.createdAtThai || log.createdAt }}</span>
+                  </div>
+                  <div class="user-log-bottom">
+                    <div class="user-log-endpoint">{{ log.endpoint }}</div>
+                    <span class="user-log-status" :class="log.success ? 'is-ok' : 'is-fail'">
+                      <b-icon :icon="log.success ? 'check-circle-fill' : 'exclamation-circle-fill'" font-scale="0.8"></b-icon>
+                      {{ log.success ? "สำเร็จ" : "ล้มเหลว" }}
+                      <span class="log-status-code">{{ log.statusCode }}</span>
+                    </span>
+                  </div>
+                  <div v-if="log.errorMessage" class="user-log-error">{{ log.errorMessage }}</div>
+  
+                  <div v-if="expandedLogId === log._id" @click.stop>
+                    <LogDetailPanel :log="log" :show-user="false" />
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+            <div class="log-modal-pagination">
+              <span class="log-pagination-info">
+                หน้า {{ userLogsPagination.page }} จาก {{ userLogsPagination.totalPages }}
+                ( ทั้งหมด {{ userLogsPagination.total }} รายการ )
+              </span>
+              <b-pagination
+                v-model="userLogsPage"
+                :total-rows="userLogsPagination.total"
+                :per-page="userLogsPagination.limit"
+              align="center"
+              class="my-2"
+              @input="onUserLogsPageChange"
+            />
+          </div>
+        </template>
+        </div>
+      </b-modal>
+  
+      <EditUserModal ref="editModal" @updated="$emit('updated', $event)" />
+    </div>
   </div>
 </template>
 
@@ -341,7 +357,6 @@ export default {
       },
       logFilters: { search: "", method: "", startDate: "", endDate: "" },
       logDatePreset: "",
-      logSearchTimer: null,
       logDatePresets: [
         { months: 1, key: "1", label: "1 เดือน" },
         { months: 3, key: "3", label: "3 เดือน" },
@@ -564,10 +579,6 @@ export default {
         }
       }
     },
-    onLogFilterInput() {
-      clearTimeout(this.logSearchTimer);
-      this.logSearchTimer = setTimeout(() => this.applyLogFilters(), 400);
-    },
     applyLogFilters() {
       this.expandedLogId = null;
       this.fetchUserLogs(1);
@@ -661,12 +672,20 @@ export default {
 </script>
 
 <style scoped>
-/*
-  Self-contained: plain <table> instead of b-card/b-table, with colors
-  hard-coded directly (no CSS variables) so it renders correctly even
-  without the shared theme.css loaded.
-*/
-
+.count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    background: #ffe1a8;
+    color: #5a3f04;
+}
 .users-card {
   background: #ffffff;
   border: 1px solid #e4e1d8;
@@ -1201,6 +1220,25 @@ export default {
 }
 .log-search input::placeholder {
   color: #9aa0ac;
+}
+.log-search-btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: #128189;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.log-search-btn:hover {
+  background: #0f6b72;
+}
+.log-search-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .log-filter-select,
 .log-filter-date {

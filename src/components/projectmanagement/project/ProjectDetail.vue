@@ -170,8 +170,9 @@
           <div class="search-box log-search">
             <b-icon icon="search"></b-icon>
             <input v-model="logFilters.search" type="text" placeholder="ค้นหา action, endpoint, ผู้ใช้..."
-              @input="onLogFilterInput" />
+              @keyup.enter="applyLogFilters" />
           </div>
+          <button type="button" class="log-search-btn" @click="applyLogFilters">ค้นหา</button>
           <select v-model="logFilters.method" class="log-filter-select" @change="applyLogFilters">
             <option value="">ทุก Method</option>
             <option value="GET">GET</option>
@@ -225,6 +226,9 @@
             </div>
           </div>
 
+        </div>
+
+        <div class="log-date-presets">
           <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '1' }"
             @click="setLogDateMonths(1, '1')">
             1 เดือน
@@ -249,7 +253,6 @@
           <button v-if="hasActiveLogFilters" type="button" class="log-filter-clear" @click="clearLogFilters">
             <b-icon icon="x-circle"></b-icon> ล้าง
           </button>
-          
         </div>
 
         <div v-if="logDatePreset === 'custom' || (logFilters.startDate && logFilters.endDate)" class="log-date-filters">
@@ -367,7 +370,6 @@ export default {
       userFilterSearch: "",
       userFilterMenuOpen: false,
       logDatePreset: "",
-      logSearchTimer: null,
       localStatus: this.project.status,
       statusUpdating: false,
       expandedLogId: null,
@@ -598,13 +600,10 @@ export default {
         end_date: f.endDate ? `${f.endDate}T23:59:59` : "",
       });
     },
-    // Search box: debounce so we're not firing a request on every
-    // keystroke. Other filters (method/user/date) call applyLogFilters
-    // directly on change instead, since those don't need debouncing.
-    onLogFilterInput() {
-      clearTimeout(this.logSearchTimer);
-      this.logSearchTimer = setTimeout(() => this.applyLogFilters(), 400);
-    },
+    // Search box: requires an explicit click on the search button (or
+    // Enter) instead of firing on every keystroke — applyLogFilters is
+    // called directly from the template for both this and the other
+    // filters (method/user/date).
     applyLogFilters() {
       this.expandedLogId = null;
       this.fetchLogs(1);
@@ -1220,10 +1219,43 @@ export default {
   gap: 8px;
 }
 
+.log-date-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.log-date-presets .log-filter-clear {
+  margin-left: auto;
+}
+
 .log-search {
   flex: 1 1 220px;
   min-width: 180px;
   padding: 8px 14px;
+}
+.log-search-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  align-self: stretch;
+  border: none;
+  border-radius: 8px;
+  background: #128189;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 18px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.log-search-btn:hover {
+  background: #0f6b72;
+}
+.log-search-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .log-filter-select {
@@ -1428,9 +1460,6 @@ export default {
   text-decoration: underline;
 }
 
-/* Medium screens (e.g. iPad Mini ~768px): search/method/user fit on one
-   line, but the 5 date-preset buttons only half-fit next to them and
-   wrap unevenly. Force them onto their own line instead. */
 @media (min-width: 701px) and (max-width: 1180px) {
   .tab-btn {
     margin-right: 3px;
