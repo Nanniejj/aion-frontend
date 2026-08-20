@@ -390,12 +390,12 @@ export default {
     //   end_date: this.end_date,
     //   domain: 'All'
     // });
-    await this.$store.dispatch("fetchDomain");
-    let domainName = this.getShowDomain.map(key => {
-      return key.name;
-    });
-    this.domainData = domainName;
-    this.$store.commit("setDomainArr", this.domainData);
+    // await this.$store.dispatch("fetchDomain");
+    // let domainName = this.getShowDomain.map(key => {
+    //   return key.name;
+    // });
+    // this.domainData = domainName;
+    // this.$store.commit("setDomainArr", this.domainData);
     // console.log(domainName);
     // await this.$store.dispatch("fetchSentimentStatDashboard", {
     //   start_date: this.start_date,

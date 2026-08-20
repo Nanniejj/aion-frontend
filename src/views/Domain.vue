@@ -135,7 +135,7 @@ export default {
     this.$store.commit("setPushDomainStat", false);
   },
   created() {
-    this.$store.dispatch("fetchListIssue");
+    // this.$store.dispatch("fetchListIssue");
     // let ar = []
     //  var ar_cleaned = ar.filter(function(url) {
     //     return (
