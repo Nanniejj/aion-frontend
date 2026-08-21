@@ -653,6 +653,46 @@ const router = new VueRouter({
 
 export default router;
 
+const refreshTokenUrl = "https://api2.cognizata.com/api/auth/reftoken";
+let refreshRequest = null;
+
+function logoutAndRedirect() {
+  store.commit("setLogout");
+  if (router.currentRoute.path !== "/login") {
+    router.push("/login");
+  }
+}
+
+function refreshAccessToken() {
+  if (!refreshRequest) {
+    refreshRequest = axios
+      .post(refreshTokenUrl, {
+        reftoken: localStorage.getItem("reftoken")
+      })
+      .then(response => {
+        const accessToken = response.data && response.data.accessToken;
+        if (response.status !== 200 || !accessToken) {
+          return Promise.reject(new Error("Unable to refresh access token"));
+        }
+
+        localStorage.setItem("token", accessToken);
+        return accessToken;
+      })
+      .then(
+        accessToken => {
+          refreshRequest = null;
+          return accessToken;
+        },
+        error => {
+          refreshRequest = null;
+          return Promise.reject(error);
+        }
+      );
+  }
+
+  return refreshRequest;
+}
+
 axios.interceptors.response.use(
   response => {
     // console.log("res1 ", response);
@@ -660,45 +700,30 @@ axios.interceptors.response.use(
   },
   function(error) {
     const originalRequest = error.config;
-    //when refresh token expired go to login to get access token first
-    // console.log(originalRequest.url);
-    if (
-      error.response.status === 401 &&
-      originalRequest.url === "https://api2.cognizata.com/api/auth/reftoken"
-    ) {
-      store.commit("setLogout");
-      router.push("/login");
+    const status = error.response && error.response.status;
+    const isRefreshRequest =
+      originalRequest && originalRequest.url === refreshTokenUrl;
+
+    if (status === 401 && isRefreshRequest) {
+      logoutAndRedirect();
       return Promise.reject(error);
     }
 
-    if (error.response.status === 401 && !originalRequest._retry) {
-      console.log("org2 ", originalRequest._retry);
+    if (status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = localStorage.getItem("reftoken");
-      console.log("error 401");
-      // console.log(refreshToken);
-      return axios
-        .post("https://api2.cognizata.com/api/auth/reftoken", {
-          reftoken: refreshToken
+
+      return refreshAccessToken()
+        .then(accessToken => {
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = "Bearer " + accessToken;
+          return axios(originalRequest);
         })
-        .then(res => {
-          if (res.status === 200) {
-            console.log("200");
-            localStorage.setItem("token", res.data.accessToken);
-            //setUsername(getUsername());
-            originalRequest.headers.Authorization =
-              "Bearer " + res.data.accessToken;
-            return axios(originalRequest);
-          }
-        })
-        .catch(err => {
-          console.log("res error");
-          console.log(err);
-          store.commit("setLogout");
-          router.push("/login");
+        .catch(refreshError => {
+          logoutAndRedirect();
+          return Promise.reject(refreshError);
         });
     }
-    console.log("err2d ", error);
+
     return Promise.reject(error);
   }
 );
