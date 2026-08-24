@@ -384,8 +384,16 @@ export default {
     },
     watch: {
         type(val) {
+            // เคลียร์ข้อมูล/ตัวเลขของโหมดก่อนหน้าทันที กันไม่ให้ค่าเก่าค้างแสดงระหว่างรอ api โหมดใหม่
+            this.data = [];
+            this.totalRows = 0;
+            this.currentPage = 1;
+            // แก้ไข: เดิมโค้ดจุดนี้เรียก apiMonitorList() ตรงๆ และยังไปแก้ filters.type
+            // ซึ่งไป trigger deep watcher ของ filters ให้เรียก apiMonitorList() อีกรอบซ้อนกัน
+            // ทำให้มี request 2 ตัวยิงพร้อมกันสำหรับการสลับโหมดครั้งเดียว และถ้า response กลับมาไม่เรียงลำดับ
+            // (ตัวที่ยิงก่อนแต่ตอบช้ากว่า) ค่าของโหมดเก่าจะไปทับค่าของโหมดใหม่ที่เพิ่งโหลดเสร็จ
+            // ให้ปล่อยเป็นหน้าที่ของ filters watcher (deep) เรียก apiMonitorList() แค่ครั้งเดียวพอ
             this.filters.type = val;
-            this.apiMonitorList();
         },
         // เวลา parent สลับค่า reface (เช่น หลังกดเพิ่มเป้าหมายจาก MonitorSuggestTarget) ให้ดึงลิสต์ใหม่
         reface() {
@@ -647,7 +655,14 @@ export default {
         async apiMonitorList() {
             this.load = true;
             // console.log('apiMonitorList ===',this.currentPage);
-            
+
+            // ป้องกัน race condition: ถ้ามีการยิง apiMonitorList() หลายครั้งซ้อนกัน
+            // (เช่น สลับโหมดเร็วๆ) response ที่ตอบกลับมาช้ากว่าของโหมด/หน้าเก่า
+            // จะถูกเพิกเฉย ไม่ให้ไปทับค่าที่โหลดของโหมด/หน้าปัจจุบัน
+            const requestId = (this._requestId || 0) + 1;
+            this._requestId = requestId;
+            const requestType = this.filters.type;
+
             const config = {
                 method: "get",
                 url: "https://api2.cognizata.com/api/v2/monitor/getMonitor",
@@ -669,6 +684,11 @@ export default {
 
             this.axios(config)
             .then((response) => {
+                // ถ้าระหว่างรอ response มีการยิง request ใหม่ (เช่น เปลี่ยนโหมด/หน้า/ค้นหา) แซงไปแล้ว
+                // หรือโหมดตอนนี้ไม่ตรงกับตอนที่ยิง request นี้ออกไป ให้ทิ้ง response นี้ไปเลย
+                if (requestId !== this._requestId || requestType !== this.filters.type) {
+                    return;
+                }
                 const resData = response.data;
                 this.data = resData.data || [];
                 this.totalRows = resData.pagination?.totalCount || this.data.length;
@@ -681,6 +701,9 @@ export default {
                 // }
             })
             .catch((error) => {
+                if (requestId !== this._requestId || requestType !== this.filters.type) {
+                    return;
+                }
                 this.load = false;
                 this.data = [];
                 console.error(error);

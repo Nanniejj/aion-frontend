@@ -52,8 +52,8 @@
         <MonitorSuggestTarget v-if="activeButton == 'profile'" :reface="refaceStat" @setReface="handleReface"/>
         
         <!-- table -->
-        <MonitorTable v-if="activeButton == 'profile'" :type="'targetlist'" :reface="tableRefreshKey" @setReface="handleReface"/>
-        <MonitorTable v-if="activeButton == 'hashtag'" :type="'hashtaglist'" :reface="tableRefreshKey" @setReface="handleReface" @total="(data) => total = data"/>
+        <MonitorTable key="targetlist" v-if="activeButton == 'profile'" :type="'targetlist'" :reface="tableRefreshKey" @setReface="handleReface"/>
+        <MonitorTable key="hashtaglist" v-if="activeButton == 'hashtag'" :type="'hashtaglist'" :reface="tableRefreshKey" @setReface="handleReface" @total="(data) => total = data"/>
         <MonitorGroupTable v-if="activeButton == 'group'" :type="'grouplist'"  @setReface="handleReface" @total="(data) => total = data"/>
         <MonitorCommunity v-if="activeButton == 'community'" :type="'communitylist'"/>
     </div>

@@ -5,13 +5,13 @@
     <!-- https://open.spotify.com/track/5Zlwu2g4rzTNfyu28L1bWv?si=71c2e60ee36243f0 -->
 
     <b-row>
-      <b-col lg="8" class="text-left">
+      <b-col lg="8" class="text-left px-0 px-md-2">
         <!-- <div class="mb-sm-4">
           <span class="h5 mr-3">จำนวน {{ select }} เกี่ยวกับ</span>
           <span id="domain-tag" class="">{{ getClickDomain }}</span>
           <span class="h5 mr-3">{{ selectFilter }}</span>
         </div> -->
-        <div class="text-right my-3 mb-8">
+        <div  v-if="viewMode === 'overview'" class="text-right my-3 mb-8">
           <!-- {{ selectFilter }} -->
           <b-row align-h="end">
             <b-col cols="auto" class="" vertical="center">
@@ -37,8 +37,36 @@
             ></b-col>
           </b-row>
         </div>
-
-        <LineChartFilter :typeChart="selectFilter" :label="select" />
+        <b-row v-if="viewMode === 'overview'">
+          <b-col cols="12">
+            <LineChartFilter :typeChart="selectFilter" :label="select" />
+          </b-col>
+        </b-row>
+        <b-row v-else class="m-0">
+          <b-col cols="12" class="px-0 px-md-2">
+            <div class="h5 text-left mb-5">
+              <span class="d-inline-block mr-3">สถิติรายชั่วโมง</span>
+              <div class="d-inline-block">
+                <div v-if="startd === endd" class="text-left onedate">
+                  <i class="far fa-calendar-alt"></i> {{ startd }}
+                </div>
+                <div v-else class="text-left twodate">
+                  <i class="far fa-calendar-alt"></i> {{ startd }} - {{ endd }}
+                </div>
+              </div>
+            </div>
+            <ChartHourlyDomain
+              v-if="domainId"
+              :domain-id="domainId"
+              :start="hourlyStart"
+              :end="hourlyEnd"
+              :source-news="getSourceNews"
+            />
+            <div v-else class="text-muted text-left">
+              ไม่พบ domain ที่เลือก
+            </div>
+          </b-col>
+        </b-row>
         <!-- <LineChart /> -->
       </b-col>
       <b-col lg="4">
@@ -56,6 +84,8 @@
         <BarChart />
       </b-col>
     </b-row>
+
+    
   </div>
 </template>
 
@@ -67,6 +97,7 @@ import { mapGetters } from "vuex";
 // import LineChart from "@/components/chart/LineChart.vue";
 import BarChart from "@/components/chart/BarChart.vue";
 import LineChartFilter from "../chart/LineChartFilter.vue";
+import ChartHourlyDomain from "./ChartHourlyDomain.vue";
 import moment from "moment";
 export default {
   watch: {
@@ -80,9 +111,26 @@ export default {
     BarChart,
     vSelect,
     LineChartFilter,
+    ChartHourlyDomain,
   },
   computed: {
-    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate"]),
+    ...mapGetters(["getClickDomain", "getSdateDm", "getEdateDm", "getArrDate","getClickDomainId","getSourceNews"]),
+    // ID ของ domain ที่เลือกอยู่ ใช้เป็น domain_id ในการเรียก API รายชั่วโมง
+    // หากชื่อ getter สำหรับ domain id ของโปรเจกต์จริงต่างจากนี้ ให้ปรับตรงนี้
+    domainId() {
+      return this.getClickDomainId;
+    },
+    // ช่วงเวลาที่ใช้เรียก API รายชั่วโมง (แปลงจากวันที่ที่เลือกใน store)
+    hourlyStart() {
+      return `${this.startd}T00:00:00`;
+    },
+    hourlyEnd() {
+      return `${this.endd}T23:59:59`;
+    },
+    // เลือกช่วงเวลาแค่ 1 วัน -> แสดงกราฟรายชั่วโมง, มากกว่านั้น -> แสดงกราฟภาพรวม
+    viewMode() {
+      return this.startd === this.endd ? "hourly" : "overview";
+    },
   },
   data() {
     return {
