@@ -182,6 +182,118 @@
             </div>
           </div>
         </div>
+
+        <div class="copy-section">
+          <div class="copy-section-header">
+            <div>
+              <label class="picker-col-label">คัดลอก Target / Hashtag จากโปรเจกต์อื่น</label>
+              <p class="picker-col-hint">
+                ติ๊กรายการที่จะคัดลอก แล้วเลือกโปรเจกต์ต้นทาง — คัดลอกทันทีที่เลือก และเพิ่มเข้าไปโดยไม่ลบของเดิม
+              </p>
+            </div>
+          </div>
+
+          <div class="copy-checkboxes">
+            <label class="copy-checkbox-row">
+              <input type="checkbox" v-model="copyTargetChecked" />
+              <span>คัดลอก Target</span>
+            </label>
+            <label class="copy-checkbox-row">
+              <input type="checkbox" v-model="copyHashtagChecked" />
+              <span>คัดลอก Hashtag</span>
+            </label>
+          </div>
+
+          <div v-if="copyTargetChecked || copyHashtagChecked" class="picker-columns">
+            <div v-if="copyTargetChecked" class="picker-col">
+              <label class="picker-col-label">โปรเจกต์ต้นทาง (Target)</label>
+              <div class="combo" tabindex="-1" @focusout="closeTargetSourceMenu">
+                <div class="combo-shell" @click="focusTargetSourceInput">
+                  <span v-if="selectedTargetSourceProject" class="combo-chip source">
+                    {{ selectedTargetSourceProject.projectname }}
+                    <button type="button" class="combo-chip-remove" @click.stop="clearTargetSource" aria-label="เอาออก">×</button>
+                  </span>
+                  <input
+                    ref="targetSourceInput"
+                    v-model.trim="targetSourceSearch"
+                    class="combo-input"
+                    :placeholder="selectedTargetSourceProject ? '' : 'ค้นหาโปรเจกต์ต้นทาง...'"
+                    @focus="targetSourceMenuOpen = true"
+                    @input="targetSourceMenuOpen = true"
+                  />
+                  <b-icon icon="chevron-down" class="combo-caret" :class="{ open: targetSourceMenuOpen }"></b-icon>
+                </div>
+
+                <div v-if="targetSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll">
+                  <div v-if="copySourceLoading" class="pick-empty">กำลังโหลด...</div>
+                  <template v-else>
+                    <div
+                      v-for="p in filteredTargetSourceProjects"
+                      :key="p._id"
+                      class="user-pick-row"
+                      :class="{ checked: targetSourceProjectId === p._id }"
+                      @click="selectTargetSourceProject(p._id)"
+                    >
+                      <span class="pick-text">
+                        <span class="pick-name">{{ p.projectname }}</span>
+                        <span class="pick-role">{{ (p.targetlist || []).length }} target</span>
+                      </span>
+                    </div>
+
+                    <div v-if="filteredTargetSourceProjects.length === 0" class="pick-empty">
+                      ไม่พบโปรเจกต์ที่ตรงกับ "{{ targetSourceSearch }}"
+                    </div>
+                    <div v-if="copySourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="copyHashtagChecked" class="picker-col">
+              <label class="picker-col-label">โปรเจกต์ต้นทาง (Hashtag)</label>
+              <div class="combo" tabindex="-1" @focusout="closeHashtagSourceMenu">
+                <div class="combo-shell" @click="focusHashtagSourceInput">
+                  <span v-if="selectedHashtagSourceProject" class="combo-chip source">
+                    {{ selectedHashtagSourceProject.projectname }}
+                    <button type="button" class="combo-chip-remove" @click.stop="clearHashtagSource" aria-label="เอาออก">×</button>
+                  </span>
+                  <input
+                    ref="hashtagSourceInput"
+                    v-model.trim="hashtagSourceSearch"
+                    class="combo-input"
+                    :placeholder="selectedHashtagSourceProject ? '' : 'ค้นหาโปรเจกต์ต้นทาง...'"
+                    @focus="hashtagSourceMenuOpen = true"
+                    @input="hashtagSourceMenuOpen = true"
+                  />
+                  <b-icon icon="chevron-down" class="combo-caret" :class="{ open: hashtagSourceMenuOpen }"></b-icon>
+                </div>
+
+                <div v-if="hashtagSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll">
+                  <div v-if="copySourceLoading" class="pick-empty">กำลังโหลด...</div>
+                  <template v-else>
+                    <div
+                      v-for="p in filteredHashtagSourceProjects"
+                      :key="p._id"
+                      class="user-pick-row"
+                      :class="{ checked: hashtagSourceProjectId === p._id }"
+                      @click="selectHashtagSourceProject(p._id)"
+                    >
+                      <span class="pick-text">
+                        <span class="pick-name">{{ p.projectname }}</span>
+                        <span class="pick-role">{{ (p.hastaglist || []).length }} hashtag</span>
+                      </span>
+                    </div>
+
+                    <div v-if="filteredHashtagSourceProjects.length === 0" class="pick-empty">
+                      ไม่พบโปรเจกต์ที่ตรงกับ "{{ hashtagSourceSearch }}"
+                    </div>
+                    <div v-if="copySourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <b-row class=" justify-content-end mx-3">
         <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
@@ -208,7 +320,26 @@ export default {
       userMenuOpen: false,
       domainMenuOpen: false,
       editingProject: null,
-      form: { projectname: "", status: "inactive", userIds: [], domainIds: [] },
+      form: { projectname: "", status: "inactive", userIds: [], domainIds: [], targetlist: [], hastaglist: [] },
+      // "Copy from another project" state — kept separate from `form`
+      // since these are pickers for a *source*, not fields being saved.
+      // Target and Hashtag each get their own independent source project
+      // so you can copy Target from one project and Hashtag from another.
+      copyTargetChecked: false,
+      copyHashtagChecked: false,
+      targetSourceProjectId: null,
+      targetSourceSearch: "",
+      targetSourceMenuOpen: false,
+      hashtagSourceProjectId: null,
+      hashtagSourceSearch: "",
+      hashtagSourceMenuOpen: false,
+      // Accumulated pages of projects for the two pickers above (both draw
+      // from this same pool — see loadCopySourceProjects()).
+      copySourceProjectsList: [],
+      copySourcePage: 1,
+      copySourceHasMore: true,
+      copySourceLoading: false,
+      copySourceLoadingMore: false,
     };
   },
   computed: {
@@ -257,6 +388,35 @@ export default {
       if (!q) return this.domains;
       return this.domains.filter((d) => (d.name || "").toLowerCase().includes(q));
     },
+    // Own accumulated list, built up page-by-page via loadCopySourceProjects()
+    // below, rather than reading getProjects directly. getProjects/
+    // getProjectsPagination are the SAME store state ProjectMain's grid
+    // renders — repeatedly calling fetchProjects({ page }) as you scroll
+    // this dropdown would overwrite that shared state page-by-page and
+    // could leave the grid on a different page once this modal closes.
+    // Keeping our own copy of the results sidesteps that. The project
+    // currently being edited is excluded — copying a project's
+    // target/hashtag list into itself is a no-op.
+    copySourceProjects() {
+      const currentId = this.editingProject && this.editingProject._id;
+      return this.copySourceProjectsList.filter((p) => p && p._id && p._id !== currentId);
+    },
+    filteredTargetSourceProjects() {
+      const q = this.targetSourceSearch.toLowerCase();
+      if (!q) return this.copySourceProjects;
+      return this.copySourceProjects.filter((p) => (p.projectname || "").toLowerCase().includes(q));
+    },
+    selectedTargetSourceProject() {
+      return this.copySourceProjects.find((p) => p._id === this.targetSourceProjectId) || null;
+    },
+    filteredHashtagSourceProjects() {
+      const q = this.hashtagSourceSearch.toLowerCase();
+      if (!q) return this.copySourceProjects;
+      return this.copySourceProjects.filter((p) => (p.projectname || "").toLowerCase().includes(q));
+    },
+    selectedHashtagSourceProject() {
+      return this.copySourceProjects.find((p) => p._id === this.hashtagSourceProjectId) || null;
+    },
   },
   methods: {
     permissionLabel(key) {
@@ -288,6 +448,10 @@ export default {
           .filter(Boolean)
           .map((d) => (typeof d === "string" ? d : d._id))
           .filter(Boolean),
+        // Plain string arrays, unlike userlist/domainlist — no id lookups
+        // needed, just guard against non-string/empty entries.
+        targetlist: (project.targetlist || []).filter((t) => typeof t === "string" && t),
+        hastaglist: (project.hastaglist || []).filter((h) => typeof h === "string" && h),
       };
       this.error = "";
       this.visible = true;
@@ -295,9 +459,21 @@ export default {
       this.domainMenuOpen = false;
       this.userSearch = "";
       this.domainSearch = "";
+      this.copyTargetChecked = false;
+      this.copyHashtagChecked = false;
+      this.targetSourceProjectId = null;
+      this.targetSourceSearch = "";
+      this.targetSourceMenuOpen = false;
+      this.hashtagSourceProjectId = null;
+      this.hashtagSourceSearch = "";
+      this.hashtagSourceMenuOpen = false;
+      this.copySourceProjectsList = [];
+      this.copySourcePage = 1;
+      this.copySourceHasMore = true;
       // Fresh lists every time the modal opens.
       this.$store.dispatch("fetchUserPickerList");
       this.$store.dispatch("fetchDomainList");
+      this.loadCopySourceProjects(1);
       this.$nextTick(() => this.$refs.nameInput && this.$refs.nameInput.focus());
     },
     removeUser(id) {
@@ -342,6 +518,99 @@ export default {
     closeDomainMenu() {
       this.domainMenuOpen = false;
     },
+    focusTargetSourceInput() {
+      this.targetSourceMenuOpen = true;
+      this.$nextTick(() => this.$refs.targetSourceInput && this.$refs.targetSourceInput.focus());
+    },
+    closeTargetSourceMenu() {
+      this.targetSourceMenuOpen = false;
+    },
+    // Selecting a project copies immediately — merges into whatever's
+    // already in form.targetlist rather than overwriting, so picking a
+    // second source afterwards adds to it instead of replacing it.
+    // Exact-match dedupe since target keywords are usually meant to stay
+    // as typed.
+    selectTargetSourceProject(id) {
+      this.targetSourceProjectId = id;
+      this.targetSourceSearch = "";
+      this.targetSourceMenuOpen = false;
+
+      const source = this.copySourceProjects.find((p) => p._id === id);
+      if (!source) return;
+
+      const targets = new Set(this.form.targetlist);
+      (source.targetlist || []).forEach((t) => t && targets.add(t));
+      this.form.targetlist = Array.from(targets);
+    },
+    clearTargetSource() {
+      this.targetSourceProjectId = null;
+    },
+    focusHashtagSourceInput() {
+      this.hashtagSourceMenuOpen = true;
+      this.$nextTick(() => this.$refs.hashtagSourceInput && this.$refs.hashtagSourceInput.focus());
+    },
+    closeHashtagSourceMenu() {
+      this.hashtagSourceMenuOpen = false;
+    },
+    selectHashtagSourceProject(id) {
+      this.hashtagSourceProjectId = id;
+      this.hashtagSourceSearch = "";
+      this.hashtagSourceMenuOpen = false;
+
+      const source = this.copySourceProjects.find((p) => p._id === id);
+      if (!source) return;
+
+      const hashtags = new Set(this.form.hastaglist);
+      (source.hastaglist || []).forEach((h) => h && hashtags.add(h));
+      this.form.hastaglist = Array.from(hashtags);
+    },
+    clearHashtagSource() {
+      this.hashtagSourceProjectId = null;
+    },
+    // Loads one page of projects into copySourceProjectsList, appending
+    // rather than replacing (except for page 1, which starts fresh).
+    // Dispatches the same fetchProjects({ page, limit }) action the main
+    // grid's pagination uses, but immediately reads the result back into
+    // our own local array instead of leaving the picker bound to the
+    // shared getProjects/getProjectsPagination state — see the comment on
+    // copySourceProjects above for why.
+    async loadCopySourceProjects(page) {
+      if (page === 1) {
+        this.copySourceLoading = true;
+      } else {
+        this.copySourceLoadingMore = true;
+      }
+      try {
+        await this.$store.dispatch("fetchProjects", { page, limit: 20 });
+        const items = (this.$store.getters.getProjects || []).filter((p) => p && p._id);
+        if (page === 1) {
+          this.copySourceProjectsList = items;
+        } else {
+          const existingIds = new Set(this.copySourceProjectsList.map((p) => p._id));
+          items.forEach((p) => {
+            if (!existingIds.has(p._id)) this.copySourceProjectsList.push(p);
+          });
+        }
+        this.copySourcePage = page;
+        const pagination = this.$store.getters.getProjectsPagination || {};
+        const totalPages =
+          pagination.totalPages || (pagination.limit ? Math.ceil((pagination.total || 0) / pagination.limit) : page);
+        this.copySourceHasMore = page < totalPages;
+      } finally {
+        this.copySourceLoading = false;
+        this.copySourceLoadingMore = false;
+      }
+    },
+    // Shared scroll handler for both the Target and Hashtag dropdowns —
+    // same near-bottom threshold as ProjectManagement.vue's project
+    // filter dropdown.
+    onCopySourceDropdownScroll(e) {
+      if (this.copySourceLoading || this.copySourceLoadingMore || !this.copySourceHasMore) return;
+      const el = e.target;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 60) {
+        this.loadCopySourceProjects(this.copySourcePage + 1);
+      }
+    },
     closeModal() {
       this.visible = false;
       this.error = "";
@@ -351,7 +620,18 @@ export default {
       this.userMenuOpen = false;
       this.domainMenuOpen = false;
       this.editingProject = null;
-      this.form = { projectname: "", status: "inactive", userIds: [], domainIds: [] };
+      this.copyTargetChecked = false;
+      this.copyHashtagChecked = false;
+      this.targetSourceProjectId = null;
+      this.targetSourceSearch = "";
+      this.targetSourceMenuOpen = false;
+      this.hashtagSourceProjectId = null;
+      this.hashtagSourceSearch = "";
+      this.hashtagSourceMenuOpen = false;
+      this.copySourceProjectsList = [];
+      this.copySourcePage = 1;
+      this.copySourceHasMore = true;
+      this.form = { projectname: "", status: "inactive", userIds: [], domainIds: [], targetlist: [], hastaglist: [] };
     },
     async submit() {
       if (!this.form.projectname) {
@@ -365,6 +645,8 @@ export default {
         status: this.form.status,
         domainlist: this.form.domainIds,
         userlist: this.form.userIds,
+        targetlist: this.form.targetlist,
+        hastaglist: this.form.hastaglist,
       };
 
       this.error = "";
@@ -802,6 +1084,52 @@ export default {
   color: #6b7280;
   font-style: italic;
   text-align: center;
+}
+
+.copy-section {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px dashed #e4e1d8;
+}
+
+.copy-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.copy-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.copy-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #1c1e24;
+  cursor: pointer;
+  user-select: none;
+}
+
+.copy-checkbox-row input[type="checkbox"] {
+  accent-color: #128189;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.combo-chip.source {
+  background: rgba(139, 127, 224, 0.14);
+  color: #4b3f9e;
+  padding-left: 12px;
 }
 
 .switch-row {
