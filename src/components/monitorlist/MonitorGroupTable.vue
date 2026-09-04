@@ -46,7 +46,7 @@
         <div class="boxlist-card py-3">
             <br>
             <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
-            <b-table ref="table" v-if="data.length !== 0" show-details :items="data || []" :fields="fields" hover
+            <b-table ref="table" v-if="data.length !== 0" :items="data || []" :fields="fields" hover
                 responsive :busy="load" :head-variant="headVariant" :table-variant="tableVariant" :striped="striped"
                 :bordered="bordered" :borderless="borderless" :outlined="outlined" empty-filtered-text="ไม่พบข้อมูล"
                 :small="small" thead-class="d-none" stacked="md">
@@ -60,24 +60,18 @@
                 </template>
 
                 <template #cell(source)="data">
-                    <b-avatar-group size="40px">
-                        <b-avatar 
-                            v-for="(target, index) in data.item.targetlist.slice(0, 4)" 
-                            :key="index"
-                            :src="target.profile_image"
-                            button
-                            @click="openMembersDetails(data.item)"
-                        >
-                        </b-avatar>
-
-                        <!-- ถ้าเกิน 5 ตัว ให้แสดง Avatar +เพิ่มอีก n -->
-                        <b-avatar button @click="openMembersDetails(data.item)" v-if="data.item.targetlist.length > 4" :text="'+' + (data.item.targetlist.length - 4)"
-                            variant="secondary">
-                        </b-avatar>
-                        <!-- <b-avatar v-else button @click="openMembersDetails(data.item)" text="+"
-                            variant="secondary">
-                        </b-avatar> -->
-                    </b-avatar-group>
+                    <b-badge
+                        pill
+                        button
+                        variant="warning"
+                        style="background-color: #fed06ea4; color: #2c3e50; font-size: 14px; width: 72px; display: inline-flex; justify-content: center; align-items: center;"
+                        class="px-2 py-2"
+                        v-b-tooltip="{ title: 'ดูรายชื่อบัญชีในกลุ่ม', trigger: 'hover', placement: 'top', boundary: 'window' }"
+                        @click="openMembersDetails(data.item)"
+                    >
+                        <i class="fas fa-users mr-1" aria-hidden="true" style="font-size: 13px; line-height: 1; width: 14px; display: inline-block; text-align: center;"></i>
+                        {{ formatCompactNumber(targetCount(data.item.targetlist)) }}
+                    </b-badge>
                 </template>
                 <template #cell(type)="data">
                     <b-badge variant="warning" style="background-color: #fed06ea4; color: #2c3e50;"
@@ -86,222 +80,14 @@
                 </template>
 
                 <template #cell(action)="data">
-                    <span class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขกลุ่ม"
+                    <span class="fas fa-pen text-custom px-2" v-b-tooltip="{ title: 'แก้ไขกลุ่ม', trigger: 'hover', placement: 'top', boundary: 'window' }"
                         @click="openEditGroup(data.item)" size="sm"></span>
-                    <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="แก้ไขสมาชิกกลุ่ม"
+                    <span class="fas fa-user-plus text-custom px-2" v-b-tooltip="{ title: 'แก้ไขสมาชิกกลุ่ม', trigger: 'hover', placement: 'top', boundary: 'window' }"
                         @click="openEditGroupMember(data.item)" size="sm"></span>
-                    <!-- <span class="fas fa-user-plus text-custom px-2" v-b-tooltip.hover title="เพิ่มสมาชิกกลุ่ม"
-                        @click="toggleDetails(data)" size="sm"></span> -->
-                    <span class="fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
+                    <span class="fas fa-list-ul text-info" v-b-tooltip="{ title: 'ดูรายละเอียด', trigger: 'hover', placement: 'top', boundary: 'window' }" size="sm"
                         @click="linkToProfileGroup(data.item)"></span>
-                    <span class="fas fa-trash text-danger" v-b-tooltip.hover title="ลบกลุ่ม"
+                    <span class="fas fa-trash text-danger" v-b-tooltip="{ title: 'ลบกลุ่ม', trigger: 'hover', placement: 'top', boundary: 'window' }"
                         @click="deleteGroup(data.item.group_id)" size="sm"></span>
-                </template>
-                <template #row-details="data">
-                    <!-- {{ data.toggleDetails }} -->
-                    <!-- <b-card class="text-left" style="max-height:300px;overflow-y:auto;"> -->
-                    <b-row v-show="expandedRow === data.index"  cols="1" cols-md="2" class="mx-0">
-                        <b-col class="p-0 border-right">
-                            <b-row v-if="data.item.targetlist && data.item.targetlist.length !== 0" class="bold my-2 mx-0 px-0">
-                                รายชื่อบัญชีในกลุ่ม {{ data.item.targetlist.length }} รายการ
-                            </b-row>
-                            <b-row cols="1" cols-lg="1" cols-xl="2" class="m-0">
-                                <b-col class="h-auto pl-0 pr-2 mb-2" v-for="target in data.item.targetlist" :key="target.id" >
-                                    <b-card bg-variant="white" text-variant=""
-                                        class="h-100" body-class="px-2 pt-0 pb-2"
-                                    >
-                                        <b-card-text class="h-100">
-                                            <!-- <b-row class="m-0 justify-content-end">
-                                                <i class="fa fa-close text-danger" @click="deleteTarget(target)" style="font-size:14px;cursor: pointer;"></i>
-                                            </b-row> -->
-                                            <b-row class="m-0 flex-nowrap h-100">
-                                                <b-col cols="auto" class="p-0">
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
-                                                    </b-avatar>
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
-                                                </b-col>
-                                                <b-col class="text-left p-2 w-50">
-                                                    <!-- <b-row class="m-0"> -->
-                                                        <span>{{ target.name || target.uid }}</span>
-                                                        <!-- {{ target.source }} -->
-
-                                                    <!-- </b-row> -->
-                                                    <a class="text-truncate d-block" 
-                                                        href="#" 
-                                                        @click.prevent="openLink(target.link_crawl)">
-                                                        {{ target.link_crawl }}
-                                                    </a>
-                                                </b-col>
-                                                <b-col cols="auto" class="p-0 text-right">
-                                                    <b-row cols="1" class="m-0 h-100 justify-content-end">
-                                                        <b-col class="px-1 py-0">
-                                                            <i class="fa fa-close text-danger" @click="confirmDeleteTarget(data,target._id)" style="font-size:14px;cursor: pointer;"></i>
-                                                        </b-col>
-                                                        <b-col align-self="end" class="p-0 text-right">
-                                                            <b-avatar class="" size="25px" :src="target.image">
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
-                                                            </b-avatar>
-                                                        </b-col>
-                                                    </b-row>
-                                                </b-col>
-                                            </b-row>
-                                        </b-card-text>
-                                    </b-card>
-                                </b-col>
-                            </b-row>
-                            <hr v-if="(newTargets.length > 0) && (data.item.targetlist.length !== 0)">
-                            <b-col cols="12" class="p-0">
-                                <b-row v-if="newTargets.length > 0" class="bold my-2 mx-0 px-0">
-                                    <b-col class="p-0 text-left">
-                                        รายชื่อบัญชีใหม่ {{ newTargets.length }} รายการ
-                                    </b-col>
-                                    <b-col class="d-flex justify-content-end">
-                                        <b-button class="mr-2" variant="success" @click="confirmAddTargets(data)">
-                                            <i class="fa fa-save"></i>
-                                        </b-button>
-                                        <b-button variant="danger" @click="newTargets = []">
-                                            <i class="fa fa-times"></i>
-                                        </b-button>
-                                    </b-col>
-                                </b-row>
-                                <b-row cols="1" class="m-0 pr-3">
-                                    <b-card v-for="(target,index) in newTargets" :key="target.id" 
-                                        bg-variant="white" text-variant=""
-                                        class="mb-2" body-class="px-2 pt-0 pb-2"
-
-                                    >
-                                    <b-card-text class="h-100">
-
-                                        <b-row class="m-0 flex-nowrap h-100">
-                                            <b-col cols="auto" class="p-0">
-                                                <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
-                                                </b-avatar>
-                                                <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
-                                            </b-col>
-                                            <b-col class="text-left p-2 w-50">
-                                                <span>{{ target.name || target.uid }}</span>
-
-                                                <div class="d-flex">
-                                                    <a @click.prevent="openLink(target.link_crawl)" class="text-truncate d-block text-info">
-                                                        {{ target.link_crawl }}
-                                                    </a>
-                                                </div>
-                                            </b-col>
-                                            <b-col cols="auto" class="p-0 text-right">
-                                                <b-row cols="1" class="m-0 h-100 justify-content-end">
-                                                    <b-col class="px-1 py-0">
-                                                        <i class="fa fa-close text-danger" @click="deleteNewTarget(index)" style="font-size:14px;cursor: pointer;"></i>
-                                                    </b-col>
-                                                    <b-col align-self="end" class="p-0 text-right">
-                                                        <b-avatar class="" size="25px" :src="target.image">
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                            <img @click="openLink(target.link_crawl)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
-                                                        </b-avatar>
-                                                    </b-col>
-                                                </b-row>
-                                            </b-col>
-                                        </b-row>
-                                    </b-card-text>
-                                </b-card>
-                                </b-row>
-                            </b-col>
-                        </b-col>
-
-                        <b-col class="pr-0 mt-3 mt-md-0">
-                            <b-col cols="12" class="p-0">
-                                <b-row class="m-0 mb-2">
-                                    <b-col cols="auto" class="d-flex pl-0 text-info justify-content-between align-items-center">
-                                        <span>รายชื่อบัญชีที่แนะนำ</span>
-                                    </b-col>
-                                    <b-col cols="" class="p-0 d-flex justify-content-end">
-                                        <b-form-input v-model="searchTarget" placeholder="ค้นหา"
-                                            class="" ></b-form-input>
-                                            <b-button size="sm" variant="info" pill :pressed="false" @click="apiMonitorList"
-                                            class="shadow-r ml-2">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fa fa-search mr-2"></i> ค้นหา
-                                            </div>
-                                            </b-button>
-                                    </b-col>
-                                </b-row>
-                            </b-col>
-                            <vue-element-loading :active="loadTargets" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
-                            <b-row cols="1" cols-lg="1" cols-xl="2" class="m-0 body-scrollable">
-                                <b-col v-for="target in targetLists.filter(t => !data.item.targetlist.some(x => x._id === t._id))" :key="target.id" class="h-auto pl-0 pr-2 mb-2">
-                                    <b-card
-                                        bg-variant="white" text-variant=""
-                                        class="card-target mb-2 h-100" body-class="px-2 pt-0 pb-2"
-                                        :class="['card-target mb-2 h-100', { 'is-selected': newTargets.includes(target) }]"
-                                        @click="handleNewTarget(target)"
-                                    >
-                                        <b-card-text class="h-100">
-                                            <!-- <b-row class="m-0 justify-content-end">
-                                                <i class="fa fa-close text-danger" @click="deleteTarget(target)" style="font-size:14px;cursor: pointer;"></i>
-                                            </b-row> -->
-                                            <b-row class="m-0 flex-nowrap h-100">
-                                                <b-col cols="auto" class="p-0">
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-if="target && target.profile_image">
-                                                    </b-avatar>
-                                                    <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
-                                                </b-col>
-                                                <b-col class="text-left p-2 w-50">
-                                                    <!-- <b-row class="m-0"> -->
-                                                    <span>{{ target.name || target.uid }}</span>
-                                                        <!-- {{ target.source }} -->
-
-                                                    <!-- </b-row> -->
-                                                    <div class="d-flex">
-                                                        <a @click.prevent="openLink(target.link_crawl)" class="text-truncate d-block text-info">
-                                                            {{ target.link_crawl }}
-                                                        </a>
-                                                    </div>
-                                                </b-col>
-                                                <b-col cols="auto" class="p-0 text-right">
-                                                    <b-row cols="1" class="m-0 h-100 justify-content-end">
-                                                        <!-- <b-col class="px-1 py-0">
-                                                            <i class="fas fa-plus-square text-info" @click="apiAddTarget(data.item.group_id,target._id)" style="font-size:14px;cursor: pointer;"></i>
-                                                        </b-col> -->
-                                                        <b-col align-self="end" class="p-0 text-right">
-                                                            <b-avatar class="" size="25px" :src="target.image">
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                                                                <img @click="openLink(target.link_crawl)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
-                                                            </b-avatar>
-                                                        </b-col>
-                                                    </b-row>
-                                                </b-col>
-                                            </b-row>
-                                        </b-card-text>
-                                    </b-card>
-                                </b-col>
-                            </b-row>
-                            <b-col cols="12" align-self="end">
-                                <b-pagination v-model="currentPageTarget" :total-rows="totalRowsTarget" :per-page="perPageTarget" align="center" class="my-2"
-                                @input="onPageChangeTargets"/>
-                            </b-col>
-                        </b-col>
-                    </b-row>
                 </template>
             </b-table>
             <div v-if="data.length === 0 && !load">
@@ -323,7 +109,7 @@
             @close="closeEditGroup"
             @update-group="apiMonitorGroupList" 
         />
-        <GroupMembers :groupName="groupDetails.group_name" :openModal="openMembersModal" :targetlist="groupDetails.targetlist" @close="openMembersModal = false"/>
+        <GroupMembers :groupName="groupDetails.group_name" :groupId="groupDetails.group_id" :openModal="openMembersModal" @close="openMembersModal = false"/>
     </div>
 </template>
 
@@ -356,27 +142,19 @@ export default {
     data() {
         return {
             groupDetails: {},
-            newTarget: {link_crawl: "", source: null},
             // openRowId: null, // เก็บ ID ของแถวที่เปิดอยู่
             openEditGroupModal: false,
             openEditGroupMemberModal: false,
             openMembersModal: false,
-            expandedRow: null,
-            expandedRowData: null, // เก็บ data object ของแถวที่เปิด
             load: false,
-            loadTargets: false,
             allData: [],  // เก็บข้อมูลทั้งหมด
             data: [],
             missingTargets: {},
             search: '',
-            searchTarget: '',
             debounceTimeout: null,
             currentPage: 1,
             totalRows: 0,
             perPage: 10,
-            currentPageTarget: 1,
-            totalRowsTarget: 0,
-            perPageTarget: 10,
             followers: null,
             filters: {
                 type: '',
@@ -420,8 +198,6 @@ export default {
                 { value: 'tiktok', text: 'Tiktok' },
                 { value: 'threads', text: 'Threads' }
             ],
-            targetLists: [],
-            newTargets: [],
             selectedGroup: {}
         };
     },
@@ -455,6 +231,29 @@ export default {
         }
     },
     methods: {
+        checkSearch() {
+            // ดีบาวซ์การค้นหาระหว่างพิมพ์ ไม่ให้ยิง API ถี่เกินไป
+            clearTimeout(this.debounceTimeout);
+            this.debounceTimeout = setTimeout(() => {
+                this.currentPage = 1;
+                this.apiMonitorGroupList();
+            }, 500);
+        },
+        onSearch() {
+            // กดปุ่ม "ค้นหา" ให้ค้นหาทันที ไม่ต้องรอดีบาวซ์
+            clearTimeout(this.debounceTimeout);
+            this.currentPage = 1;
+            this.apiMonitorGroupList();
+        },
+        onPageChange(page) {
+            this.currentPage = page;
+            this.apiMonitorGroupList();
+        },
+        reload() {
+            // เรียกใหม่หลังสร้าง/แก้ไขกลุ่มสำเร็จ
+            this.currentPage = 1;
+            this.apiMonitorGroupList();
+        },
         linkToProfile(item) {
             const routeData = this.$router.resolve({
                 name: "MonitorProfile",
@@ -463,6 +262,16 @@ export default {
                     uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
                     source: item.source,
                     type: 'targetlist'
+                },
+            });
+            window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
+        },
+        linkToProfileGroup(item) {
+            const routeData = this.$router.resolve({
+                name: "GroupProfile",
+                query: {
+                    id: item.group_id,
+                    name: item.group_name,
                 },
             });
             window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
@@ -485,271 +294,6 @@ export default {
             this.openEditGroupModal = false;
             this.selectedGroup = {};
             // this.apiMonitorGroupList();
-        },
-        deleteNewTarget(index) {
-            this.newTargets.splice(index, 1);
-        },
-        handleNewTarget(item) {
-            let newItem = item
-
-            // เช็คว่ามีอยู่แล้วหรือยัง
-            const exists = this.newTargets.some(t =>
-                t.link_crawl === newItem.link_crawl && t.source === newItem.source
-            );
-
-            if (!exists) {
-                this.newTargets.push(newItem);
-            } else {
-                // จะ alert หรือ return อย่างเดียวก็ได้
-                console.warn("ข้อมูลนี้มีอยู่แล้ว:", newItem);
-                Swal.fire({
-                title: 'ข้อมูลสมาชิกนี้ถูกเพิ่มแล้ว',
-                text: 'กรุณากรอกรายละเอียดสมาชิกบัญชีอื่น',
-                icon: 'error',
-                customClass: {
-                    confirmButton: 'btn btn-danger'
-                },
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                buttonsStyling: false
-                });
-            }
-        },
-        handleNewUrl() {
-            // regex ตรวจสอบ url (เริ่มต้นด้วย http:// หรือ https://)
-            const urlPattern = /^(https?:\/\/)([\w.-]+)(:\d+)?(\/.*)?$/i;
-
-            if (
-                !this.newTarget.link_crawl ||
-                this.newTarget.link_crawl.trim() === "" ||
-                !this.newTarget.source
-            ) {
-                Swal.fire({
-                title: 'กรุณากรอกรายละเอียดสมาชิก',
-                text: 'กรุณากรอกรายละเอียดสมาชิกก่อนกดปุ่มเพิ่ม',
-                icon: 'error',
-                customClass: {
-                    confirmButton: 'btn btn-danger'
-                },
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                buttonsStyling: false
-                });
-            } else if (!urlPattern.test(this.newTarget.link_crawl.trim())) {
-                Swal.fire({
-                title: 'URL ไม่ถูกต้อง',
-                text: 'กรุณากรอก URL ที่ขึ้นต้นด้วย http:// หรือ https://',
-                icon: 'error',
-                customClass: {
-                    confirmButton: 'btn btn-danger'
-                },
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                buttonsStyling: false
-                });
-            } else {
-                this.handleNewTarget(this.newTarget);
-                this.newTarget = { link_crawl: "", source: null };
-            }
-        },
-        toggleDetails(data) {
-            console.log("toggleDetails data === ", data);
-            
-            // ถ้าเป็นแถวเดิม -> ปิด
-            if (this.expandedRow === data.index) {
-                data.toggleDetails(false)
-                this.expandedRow = null
-                this.expandedRowData = null
-                return
-            }
-
-            // ถ้ามีแถวเก่าเปิดอยู่ -> ปิดก่อน
-            if (this.expandedRowData) {
-                this.expandedRowData.toggleDetails(false)
-            }
-
-            // เปิดแถวใหม่
-            data.toggleDetails(true);
-            this.newTargets = [];
-            this.targetLists = [];
-            this.expandedRow = data.index;
-            this.expandedRowData = data;
-            this.setSelectedGroup(data.item);
-        },
-        async setSelectedGroup(item) {
-            this.searchTarget = item.group_name || '';
-            this.selectedGroup = item;
-            await this.apiMonitorList();
-            console.log("this.selectedGroup ==== ",this.selectedGroup);
-        },
-        openLink(url) {
-            if (url) {
-                window.open(url, "_blank"); // เปิดในแท็บใหม่
-            }
-        },
-        checkSearch() {
-            if (!this.search) {
-                this.apiMonitorGroupList();
-            }
-        },
-        onSearch() {
-            clearTimeout(this.debounceTimeout);
-            this.debounceTimeout = setTimeout(() => {
-                this.currentPage = 1; // รีเซ็ตกลับหน้าแรก
-                this.apiMonitorGroupList();
-            }, 500);
-        },
-        onPageChange(page) {
-            this.currentPage = page;
-            this.apiMonitorGroupList();
-        },
-        onPageChangeTargets(page) {
-            this.currentPageTarget = page;
-            this.apiMonitorList();
-        },
-        linkToProfileGroup(item) {
-            const routeData = this.$router.resolve({
-                name: "GroupProfile",
-                query: {
-                    id: item.group_id,
-                    name: item.group_name,
-                    groupType: item.group_type
-                    // uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
-                    // source: item.source,
-                    // type: this.type
-                },
-            });
-            window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่
-        },
-        reload() {
-            // console.log("reloadddddd");
-
-            // this.$emit('setReface')
-            this.apiMonitorGroupList()
-        },
-        transformToTarget(data) {
-            return data.map(item => ({
-                URL: item.link_crawl,
-                source: item.source
-            }))
-        },
-        confirmAddTargets(data) {
-            if (this.newTargets.length > 0) {
-                Swal.fire({
-                    title: 'ยืนยันการเพิ่มเป้าหมาย',
-                    text: `คุณต้องการเพิ่มเป้าหมาย ${this.newTargets.length} รายการนี้หรือไม่?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'เพิ่ม',
-                    cancelButtonText: 'ยกเลิก',
-                    didOpen: () => {
-                        const iconContent = document.querySelector('.swal2-icon-content');
-                        if (iconContent) iconContent.style.display = 'none';
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.toggleDetails(data)
-                        let newTargets = this.transformToTarget(this.newTargets);
-                        this.apiAddTarget(newTargets);
-                    }
-                });
-            } else {
-                Swal.fire('ไม่มีเป้าหมายใหม่', 'กรุณาเลือกเป้าหมายก่อนเพิ่ม', 'info');
-            }
-        },
-        confirmDeleteTarget(data, target_id) {
-            console.log(data, target_id);
-
-            Swal.fire({
-                title: 'ยืนยันการลบเป้าหมาย',
-                text: "คุณต้องการลบเป้าหมายนี้หรือไม่?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'ลบ',
-                cancelButtonText: 'ยกเลิก',
-                didOpen: () => {
-                    const iconContent = document.querySelector('.swal2-icon-content');
-                    if (iconContent) iconContent.style.display = 'none';
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    this.apiDeleteTarget(data.item.group_id, target_id);
-                    this.toggleDetails(data);
-                }
-            });
-        },
-        async apiAddTarget(newTargets) {
-            this.load = true;
-            const config = {
-                method: "put",
-                url: `https://api2.cognizata.com/api/v2/monitor/putTargetlist`,
-                data: {
-                    group_id: this.selectedGroup.group_id,
-                    target: newTargets
-                },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
-            console.log("apiAddTarget config", config);
-
-            this.axios(config)
-                .then((response) => {
-                    this.load = false;
-                    Swal.fire({
-                        title: 'สำเร็จ',
-                        text: 'เพิ่มเป้าหมายเรียบร้อยแล้ว',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                    this.apiMonitorGroupList();
-                })
-                .catch((error) => {
-                    this.load = false;
-                    console.error(error);
-                    Swal.fire('ผิดพลาด', 'ไม่สามารถเพิ่มเป้าหมายได้', 'error');
-                });
-        },
-        async apiDeleteTarget(group_id, target_id) {
-            this.load = true;
-            const config = {
-                method: "delete",
-                url: `https://api2.cognizata.com/api/v2/monitor/deleteTargetlist`,
-                data: {
-                    group_id: group_id,
-                    targetlist_id: target_id
-                },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
-
-            this.axios(config)
-                .then((response) => {
-                    this.load = false;
-                    Swal.fire({
-                        title: 'สำเร็จ',
-                        text: 'ลบเป้าหมายเรียบร้อยแล้ว',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                    this.newTargets = [];
-                    this.apiMonitorGroupList();
-                })
-                .catch((error) => {
-                    this.load = false;
-                    console.error(error);
-                    Swal.fire('ผิดพลาด', 'ไม่สามารถลบเป้าหมายได้', 'error');
-                });
-
         },
         async deleteGroup(group_id) {
             const result = await Swal.fire({
@@ -842,43 +386,33 @@ export default {
                     console.error(error);
                 });
         },
-        async apiMonitorList() {
-            this.loadTargets = true;
-            // console.log('apiMonitorList ===',this.currentPage);
+        // targetlist มาจาก API ได้ 2 แบบ: จำนวนล้วนๆ (number) หรือ array รายชื่อบัญชีเต็ม
+        // ฟังก์ชันนี้ทำให้ใช้งานได้ปลอดภัยทั้งสองแบบ
+        targetCount(targetlist) {
+            if (Array.isArray(targetlist)) {
+                return targetlist.length;
+            }
+            return targetlist || 0;
+        },
+        targetArray(targetlist) {
+            return Array.isArray(targetlist) ? targetlist : [];
+        },
+        // แปลงตัวเลขให้เป็นรูปแบบย่อ เช่น 1200 -> 1.2K, 1000000 -> 1M
+        formatCompactNumber(num) {
+            const n = Number(num) || 0;
+            if (n < 1000) return n.toLocaleString();
 
-            const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/monitor/getMonitor",
-                params: {
-                    type: 'targetlist',
-                    page: this.currentPageTarget,
-                    limit: this.perPageTarget,
-                    search: this.searchTarget,
-                },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
-            };
+            const units = [
+                { value: 1_000_000_000, symbol: 'B' },
+                { value: 1_000_000, symbol: 'M' },
+                { value: 1_000, symbol: 'K' },
+            ];
 
-            this.axios(config)
-                .then((response) => {
-                    const resData = response.data;
-                    this.targetLists = resData.data || [];
-                    this.totalRowsTarget = resData.pagination?.totalCount || this.targetLists.length;
-                    // console.log(this.totalRows);
-                    // console.log(this.currentPage);                
-                    // this.currentPage = resData.pagination?.currentPage || 1;
-                    this.loadTargets = false;
-                    // if (this.filters.type) {
-                    //     this.$emit('total', this.totalRows)
-                    // }
-                })
-                .catch((error) => {
-                    this.loadTargets = false;
-                    this.data = [];
-                    console.error(error);
-                });
+            const unit = units.find(u => n >= u.value);
+            const shortNum = n / unit.value;
+            // ตัดทศนิยม .0 ทิ้ง เช่น 1.0K -> 1K แต่เก็บ 1.2K ไว้
+            const formatted = shortNum.toFixed(1).replace(/\.0$/, '');
+            return formatted + unit.symbol;
         },
         formatDate(dateStr) {
             const date = new Date(dateStr);
@@ -908,37 +442,6 @@ export default {
 </script>
 
 <style scoped>
-.card-target {
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-}
-
-.card-target:hover {
-    border-color: #17a2b8;
-    box-shadow: 10px 10px 15px rgba(23, 162, 184, 0.6);
-    /* กรอบเรืองแสงสีน้ำเงิน */
-    cursor: pointer;
-}
-
-.card-target.is-selected {
-    border: 2px solid #17a2b8;
-    /* ขอบสีฟ้าเมื่ออยู่ใน newTargets */
-    box-shadow: 0 0 12px rgba(23, 162, 184, 0.6);
-}
-
-.body-scrollable {
-    /* min-height: 70vh; */
-    max-height: 50vh;
-    /* max-width: 95vw; */
-    overflow-y: auto;
-    /* ให้ scroll เฉพาะแนวตั้ง */
-    overflow-x: hidden;
-    /* ❌ ปิดการ scroll แนวนอน */
-    /* padding-left: 10px; */
-    padding-right: 10px;
-    box-sizing: border-box;
-    /* เผื่อขนาด scrollbar */
-}
-
 .text-custom {
     background: linear-gradient(90deg, #e8acac 0%, #e9c068 50%);
     -webkit-background-clip: text;
@@ -1010,5 +513,10 @@ export default {
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
     border-radius: 15px;
     min-height: 400px;
+}
+
+/* กันไม่ให้ tooltip ทับ chip/ไอคอนในตาราง ให้ลอยอยู่เหนือเนื้อหาเสมอ */
+::v-deep .tooltip {
+    z-index: 1080;
 }
 </style>

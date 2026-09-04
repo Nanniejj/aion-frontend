@@ -9,64 +9,68 @@
                     </b-avatar>
                     <b-col v-if="groupDetails" class="text-center px-0">
                         <h4 class="mt-2 mb-0" style="color: #776167;">{{ groupDetails.group_name || 'N/A' }}</h4>
-                        <p v-if="groupDetails.targetlist" class="mb-1 text-muted" style="font-size: 0.9rem;">
+                        <p v-if="groupDetails.targetlist !== undefined && groupDetails.targetlist !== null" class="mb-1 text-muted" style="font-size: 0.9rem;">
                             <!-- ประเภท: {{ groupDetails.category || 'N/A' }} <br>
                             แพลตฟอร์ม: {{ groupDetails.source || 'N/A' }} <br> -->
-                            จำนวนสมาชิก: {{ groupDetails.targetlist.length || 'N/A' }} บัญชี
+                            จำนวนสมาชิก: {{ targetCount(groupDetails.targetlist) || '0' }} บัญชี
                         </p>
                     </b-col>
                 </div>
             </b-col>
             <b-col lg="8" class="text-left px-0">
                 <h5 class="font-weight-bold text-info p-0 mb-3">รายการสมาชิก</h5>
-                <b-row v-if="groupDetails.targetlist" cols="2" cols-sm="3" cols-lg="4" cols-xl="6"
-                    class="h-75 align-items-center">
-                    <b-col v-for="target in groupDetails.targetlist.slice(0, 5)" :key="target.id" class="px-0 mb-3">
-                        <b-row class="m-0 text-center align-items-center">
-                            <b-col style="cursor: pointer;" @click="linkToProfile(target)" cols="12" class="px-1 mb-2">
-                                <b-avatar :src="target.profile_image">
-                                </b-avatar>
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'"
-                                    src="@/assets/Facebook.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'"
-                                    src="@/assets/Twitter.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'"
-                                    src="@/assets/board.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'"
-                                    src="@/assets/Blockdit.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'"
-                                    src="@/assets/Instagram.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'"
-                                    src="@/assets/Youtube.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'news'"
-                                    src="@/assets/News.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'"
-                                    src="@/assets/Tiktok.png" class="social-img" />
-                                <img @click="openLink(target.link_original)" v-if="target.source == 'threads'"
-                                    src="@/assets/Threads.png" class="social-img" />
-                                <!-- <b-avatar
-                                    v-if="groupDetails.targetlist.length > 5"
-                                    :text="'+' + (groupDetails.targetlist.length - 5)"
-                                    variant="secondary"
-                                ></b-avatar> -->
-                            </b-col>
-                            <b-col class="text-truncate">
-                                {{ target.name || target.uid || 'N/A' }}
-                            </b-col>
-                        </b-row>
-                    </b-col>
-                    <b-col v-if="groupDetails.targetlist.length > 5" class="px-0 mb-3">
-                        <b-row class="m-0 text-center align-items-center">
-                            <b-col @click="openGroupMembers" style="cursor: pointer;" cols="12" class="px-1 mb-2">
-                                <b-avatar :text="'+' + (groupDetails.targetlist.length - 5)"
-                                    variant="secondary"></b-avatar>
-                            </b-col>
-                            <b-col>
-                                สมาชิกอื่น ๆ
-                            </b-col>
-                        </b-row>
-                    </b-col>
-                </b-row>
+                <div class="position-relative" style="min-height: 60px;">
+                    <vue-element-loading :active="loadingTargets" size="60" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
+                    <b-row v-if="groupTargets.length" cols="2" cols-sm="3" cols-lg="4" cols-xl="6"
+                        class="h-75 align-items-center">
+                        <b-col v-for="target in groupTargets.slice(0, 5)" :key="target._id || target.id" class="px-0 mb-3">
+                            <b-row class="m-0 text-center align-items-center">
+                                <b-col style="cursor: pointer;" @click="linkToProfile(target)" cols="12" class="px-1 mb-2">
+                                    <b-avatar :src="target.profile_image">
+                                    </b-avatar>
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'"
+                                        src="@/assets/Facebook.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'"
+                                        src="@/assets/Twitter.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'"
+                                        src="@/assets/board.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'"
+                                        src="@/assets/Blockdit.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'"
+                                        src="@/assets/Instagram.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'"
+                                        src="@/assets/Youtube.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'news'"
+                                        src="@/assets/News.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'"
+                                        src="@/assets/Tiktok.png" class="social-img" />
+                                    <img @click="openLink(target.link_original)" v-if="target.source == 'threads'"
+                                        src="@/assets/Threads.png" class="social-img" />
+                                    <!-- <b-avatar
+                                        v-if="groupTargets.length > 5"
+                                        :text="'+' + (groupTargets.length - 5)"
+                                        variant="secondary"
+                                    ></b-avatar> -->
+                                </b-col>
+                                <b-col class="text-truncate">
+                                    {{ target.name || target.uid || 'N/A' }}
+                                </b-col>
+                            </b-row>
+                        </b-col>
+                        <b-col v-if="groupTargets.length > 5" class="px-0 mb-3">
+                            <b-row class="m-0 text-center align-items-center">
+                                <b-col @click="openGroupMembers" style="cursor: pointer;" cols="12" class="px-1 mb-2">
+                                    <b-avatar :text="'+' + (groupTargets.length - 5)"
+                                        variant="secondary"></b-avatar>
+                                </b-col>
+                                <b-col>
+                                    สมาชิกอื่น ๆ
+                                </b-col>
+                            </b-row>
+                        </b-col>
+                    </b-row>
+                    <p v-else-if="!loadingTargets" class="text-muted mb-0">ไม่พบรายชื่อสมาชิกในกลุ่ม</p>
+                </div>
             </b-col>
         </b-row>
 
@@ -325,7 +329,7 @@
                 </b-col>
             </b-col>
         </b-row>
-        <GroupMembers :groupName="groupDetails.group_name" :openModal="openModal" :targetlist="groupDetails.targetlist"
+        <GroupMembers :groupName="groupDetails.group_name" :groupId="groupDetails.group_id || $route.query.id" :openModal="openModal"
             @close="openModal = false" />
     </div>
 
@@ -372,6 +376,8 @@ export default {
             loadingChart: false,
             loadAllPost: false,
             groupDetails: {},
+            groupTargets: [],
+            loadingTargets: false,
             openModal: false,
             showFilters: true,
             search: '',
@@ -1083,6 +1089,42 @@ export default {
                 this.loadAllPost = false;
             });
         },
+        // targetlist จาก monitorGroupName API เป็นแค่จำนวน (number) ไม่ใช่ array แล้ว
+        // ฟังก์ชันนี้ทำให้ใช้แสดงจำนวนได้ปลอดภัยไม่ว่าจะได้ number หรือ array มา
+        targetCount(targetlist) {
+            if (Array.isArray(targetlist)) {
+                return targetlist.length;
+            }
+            return targetlist || 0;
+        },
+        async apiGetGroupTargets() {
+            const groupId = this.groupDetails.group_id || this.$route.query.id;
+            if (!groupId) return;
+            this.loadingTargets = true;
+            const config = {
+                method: "get",
+                url: `https://api2.cognizata.com/api/v2/monitor/monitorGroupTargets/${groupId}`,
+                params: {
+                    limit: 'all',
+                    page: 1,
+                },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            try {
+                const response = await this.axios(config);
+                const resData = response.data;
+                this.groupTargets = resData.data || resData.targetlist || [];
+            } catch (error) {
+                console.error(error);
+                this.groupTargets = [];
+            } finally {
+                this.loadingTargets = false;
+            }
+        },
         async getGroupDetail() {
             this.loading = true;
             // console.log('apiMonitorGroupList ===',this.currentPage);
@@ -1191,6 +1233,7 @@ export default {
     async mounted() {
         this.submittedFilters = await this.checkSubmittedFilters();
         await this.getGroupDetail();
+        await this.apiGetGroupTargets();
         await this.fetchDataGroupChart();
         await this.apiGetPost();
         // console.log(this.$route.query.name);

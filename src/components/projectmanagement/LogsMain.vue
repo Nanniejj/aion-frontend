@@ -103,7 +103,7 @@
 
             <button v-for="preset in datePresets" :key="preset.key" type="button" class="log-preset-btn"
                 :class="{ active: datePreset === preset.key }" :disabled="loading"
-                @click="setDateMonths(preset.months, preset.key)">
+                @click="setDatePreset(preset)">
                 {{ preset.label }}
             </button>
             <button type="button" class="log-preset-btn" :class="{ active: datePreset === 'custom' }"
@@ -223,12 +223,11 @@ export default {
                 hasNextPage: false,
                 hasPreviousPage: false,
             },
-            datePreset: "1",
+            datePreset: "7d",
             datePresets: [
+                { days: 7, key: "7d", label: "7 วัน" },
                 { months: 1, key: "1", label: "1 เดือน" },
                 { months: 3, key: "3", label: "3 เดือน" },
-                { months: 6, key: "6", label: "6 เดือน" },
-                { months: 12, key: "12", label: "12 เดือน" },
             ],
             expandedLogId: null,
             // Project filter combo — backed by the shared project-picker store
@@ -303,9 +302,9 @@ export default {
         },
         hasActiveFilters() {
             const f = this.f;
-            // The default 1-month range isn't a user-applied filter — only flag
+            // The default 7-day range isn't a user-applied filter — only flag
             // "active" once something differs from that default state.
-            return !!(f.search || f.userId || f.projectId || f.method || this.datePreset !== "1");
+            return !!(f.search || f.userId || f.projectId || f.method || this.datePreset !== "7d");
         },
         // date-picker (range mode) wants/emits a single [start, end] array —
         // f keeps startDate/endDate as separate strings everywhere else in
@@ -326,7 +325,7 @@ export default {
         // page only once opened (see toggleProjectFilter). The user picker
         // loads its full list once here, same as ProjectDetail.vue does
         // when its logs tab is opened.
-        this.setDateMonths(1, "1");
+        this.setDatePreset(this.datePresets[0]);
         this.$store.dispatch("fetchUserPickerList");
     },
     mounted() {
@@ -539,13 +538,20 @@ export default {
             const day = String(d.getDate()).padStart(2, "0");
             return `${y}-${m}-${day}`;
         },
-        setDateMonths(months, key) {
+        // Generic preset handler: a preset can define either `days` (e.g. the
+        // 7-day quick filter) or `months` (the longer-range presets) — only
+        // one of the two units is ever set per preset.
+        setDatePreset(preset) {
             const end = new Date();
             const start = new Date();
-            start.setMonth(start.getMonth() - months);
+            if (preset.days) {
+                start.setDate(start.getDate() - preset.days);
+            } else {
+                start.setMonth(start.getMonth() - (preset.months || 0));
+            }
             this.f.startDate = this.toISODate(start);
             this.f.endDate = this.toISODate(end);
-            this.datePreset = key;
+            this.datePreset = preset.key;
             this.applyFilters();
         },
         useCustomDate() {
@@ -555,7 +561,7 @@ export default {
             this.f = { userId: "", projectId: "", projectName: "", search: "", method: "", startDate: "", endDate: "" };
             this.userFilterSearch = "";
             this.userFilterMenuOpen = false;
-            this.setDateMonths(1, "1");
+            this.setDatePreset(this.datePresets[0]);
         },
         onPageChange(page) {
             // b-pagination is bound to :value (not v-model), so its displayed

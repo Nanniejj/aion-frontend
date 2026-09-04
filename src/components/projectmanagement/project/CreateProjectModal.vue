@@ -236,7 +236,6 @@
                     >
                       <span class="pick-text">
                         <span class="pick-name">{{ p.projectname }}</span>
-                        <span class="pick-role">{{ (p.domainlist || []).length }} โดเมน</span>
                       </span>
                     </div>
 
@@ -303,7 +302,6 @@
                       >
                         <span class="pick-text">
                           <span class="pick-name">{{ p.projectname }}</span>
-                          <span class="pick-role">{{ (p.targetlist || []).length }} target</span>
                         </span>
                       </div>
 
@@ -347,7 +345,6 @@
                       >
                         <span class="pick-text">
                           <span class="pick-name">{{ p.projectname }}</span>
-                          <span class="pick-role">{{ (p.hastaglist || []).length }} hashtag</span>
                         </span>
                       </div>
 
@@ -387,20 +384,20 @@ export default {
       domainSearch: "",
       userMenuOpen: false,
       domainMenuOpen: false,
-      form: { projectname: "", status: "inactive", userIds: [], domainIds: [], targetlist: [], hastaglist: [] },
+      form: { projectname: "", status: "inactive", userIds: [], domainIds: [] },
       // Domain field has two modes: "custom" (default — pick individual
-      // domains via the existing multi-select combo) or "copy" (pick a
-      // source project and use its domain list instead). Both write to
-      // the same form.domainIds, so switching back to "custom" after a
-      // copy shows the copied domains pre-checked and still editable.
+      // domains via the existing multi-select combo, written to
+      // form.domainIds) or "copy" (pick a source project and send its id
+      // as clone_sources.domainlist — the backend does the actual copying,
+      // so domainIds stays empty in this mode; see submit() below).
       domainSelectMode: "custom",
       domainSourceProjectId: null,
       domainSourceSearch: "",
       domainSourceMenuOpen: false,
-      // "Copy from another project" state — kept separate from `form`
-      // since these are pickers for a *source*, not fields being saved.
-      // Target and Hashtag each get their own independent source project
-      // so you can copy Target from one project and Hashtag from another.
+      // "Copy from another project" state. Target/Hashtag can now ONLY be
+      // set this way (no manual entry) — checking the box and picking a
+      // project just records that project's id; the actual list is cloned
+      // server-side via clone_sources in submit() below, not copied here.
       copyTargetChecked: false,
       copyHashtagChecked: false,
       targetSourceProjectId: null,
@@ -409,14 +406,6 @@ export default {
       hashtagSourceProjectId: null,
       hashtagSourceSearch: "",
       hashtagSourceMenuOpen: false,
-      // Accumulated pages of projects for the pickers above (Target,
-      // Hashtag, and Domain source pickers all draw from this same pool —
-      // see loadCopySourceProjects()).
-      copySourceProjectsList: [],
-      copySourcePage: 1,
-      copySourceHasMore: true,
-      copySourceLoading: false,
-      copySourceLoadingMore: false,
     };
   },
   computed: {
@@ -467,16 +456,33 @@ export default {
       if (!q) return this.domains;
       return this.domains.filter((d) => (d.name || "").toLowerCase().includes(q));
     },
-    // Own accumulated list, built up page-by-page via loadCopySourceProjects()
-    // below, rather than reading getProjects directly. getProjects/
-    // getProjectsPagination are the SAME store state ProjectMain's grid
-    // renders — repeatedly calling fetchProjects({ page }) as you scroll
-    // this dropdown would overwrite that shared state page-by-page and
-    // could leave the grid on a different page once this modal closes.
-    // Keeping our own copy of the results sidesteps that.
+    // Sourced from the store's dedicated project-picker state
+    // (getProjectPicker), NOT getProjects/getProjectsPagination — that pair
+    // is the same state ProjectMain's grid renders, so fetching pages into
+    // it from here would overwrite what the grid is showing. projectPicker
+    // is a separate, purpose-built slice (see project.js: resetProjectPicker
+    // / fetchProjectPickerPage) already used the same way by
+    // EditUserModal/CreateUserModal's project picker, so paging or
+    // searching it here can't affect the main table.
     copySourceProjects() {
-      return this.copySourceProjectsList.filter((p) => p && p._id);
+      const items = this.$store.getters.getProjectPicker.items || [];
+      return items.filter((p) => p && p._id);
     },
+    // The picker has a single `loading` flag covering both the first page
+    // and subsequent pages — split it here so the dropdown can show
+    // "กำลังโหลด..." only before anything has loaded, and
+    // "กำลังโหลดเพิ่มเติม..." while paging in more underneath existing rows.
+    copySourceLoading() {
+      const picker = this.$store.getters.getProjectPicker;
+      return !!picker.loading && this.copySourceProjects.length === 0;
+    },
+    copySourceLoadingMore() {
+      const picker = this.$store.getters.getProjectPicker;
+      return !!picker.loading && this.copySourceProjects.length > 0;
+    },
+    // Target, Hashtag, and Domain source pickers all read from the same
+    // loaded pool above and each just filters it client-side by their own
+    // search box — searching one doesn't refetch or affect the others.
     filteredTargetSourceProjects() {
       const q = this.targetSourceSearch.toLowerCase();
       if (!q) return this.copySourceProjects;
@@ -508,10 +514,10 @@ export default {
         // Fresh lists each time the modal opens.
         this.$store.dispatch("fetchUserPickerList");
         this.$store.dispatch("fetchDomainList");
-        this.copySourceProjectsList = [];
-        this.copySourcePage = 1;
-        this.copySourceHasMore = true;
-        this.loadCopySourceProjects(1);
+        // Reset + load page 1 of the store's dedicated project picker
+        // (see the comment on copySourceProjects above) — this only
+        // touches projectPicker, never projects/projectsPagination.
+        this.$store.dispatch("searchProjectPicker", "");
         this.$nextTick(() => this.$refs.nameInput && this.$refs.nameInput.focus());
       }
     },
@@ -582,22 +588,14 @@ export default {
     closeDomainSourceMenu() {
       this.domainSourceMenuOpen = false;
     },
-    // Replaces form.domainIds rather than merging — this is a mode for
-    // *defining* the domain list from a source project, not layering
-    // extra domains on top, so picking a different source project should
-    // swap to that project's domains rather than accumulate.
+    // Just records which project to clone domains from — the backend does
+    // the actual copying server-side via clone_sources.domainlist in
+    // submit() below, so there's nothing to compute or store here beyond
+    // the id.
     selectDomainSourceProject(id) {
       this.domainSourceProjectId = id;
       this.domainSourceSearch = "";
       this.domainSourceMenuOpen = false;
-
-      const source = this.copySourceProjects.find((p) => p._id === id);
-      if (!source) return;
-
-      this.form.domainIds = (source.domainlist || [])
-        .filter(Boolean)
-        .map((d) => (typeof d === "string" ? d : d._id))
-        .filter(Boolean);
     },
     clearDomainSource() {
       this.domainSourceProjectId = null;
@@ -609,22 +607,12 @@ export default {
     closeTargetSourceMenu() {
       this.targetSourceMenuOpen = false;
     },
-    // Selecting a project copies immediately — merges into whatever's
-    // already in form.targetlist rather than overwriting, so picking a
-    // second source afterwards adds to it instead of replacing it.
-    // Exact-match dedupe since target keywords are usually meant to stay
-    // as typed.
+    // Just records which project to clone the target list from — see
+    // clone_sources.targetlist in submit() below.
     selectTargetSourceProject(id) {
       this.targetSourceProjectId = id;
       this.targetSourceSearch = "";
       this.targetSourceMenuOpen = false;
-
-      const source = this.copySourceProjects.find((p) => p._id === id);
-      if (!source) return;
-
-      const targets = new Set(this.form.targetlist);
-      (source.targetlist || []).forEach((t) => t && targets.add(t));
-      this.form.targetlist = Array.from(targets);
     },
     clearTargetSource() {
       this.targetSourceProjectId = null;
@@ -636,63 +624,25 @@ export default {
     closeHashtagSourceMenu() {
       this.hashtagSourceMenuOpen = false;
     },
+    // Just records which project to clone the hashtag list from — see
+    // clone_sources.hashtaglist in submit() below.
     selectHashtagSourceProject(id) {
       this.hashtagSourceProjectId = id;
       this.hashtagSourceSearch = "";
       this.hashtagSourceMenuOpen = false;
-
-      const source = this.copySourceProjects.find((p) => p._id === id);
-      if (!source) return;
-
-      const hashtags = new Set(this.form.hastaglist);
-      (source.hastaglist || []).forEach((h) => h && hashtags.add(h));
-      this.form.hastaglist = Array.from(hashtags);
     },
     clearHashtagSource() {
       this.hashtagSourceProjectId = null;
     },
-    // Loads one page of projects into copySourceProjectsList, appending
-    // rather than replacing (except for page 1, which starts fresh).
-    // Dispatches the same fetchProjects({ page, limit }) action the main
-    // grid's pagination uses, but immediately reads the result back into
-    // our own local array instead of leaving the picker bound to the
-    // shared getProjects/getProjectsPagination state — see the comment on
-    // copySourceProjects above for why.
-    async loadCopySourceProjects(page) {
-      if (page === 1) {
-        this.copySourceLoading = true;
-      } else {
-        this.copySourceLoadingMore = true;
-      }
-      try {
-        await this.$store.dispatch("fetchProjects", { page, limit: 20 });
-        const items = (this.$store.getters.getProjects || []).filter((p) => p && p._id);
-        if (page === 1) {
-          this.copySourceProjectsList = items;
-        } else {
-          const existingIds = new Set(this.copySourceProjectsList.map((p) => p._id));
-          items.forEach((p) => {
-            if (!existingIds.has(p._id)) this.copySourceProjectsList.push(p);
-          });
-        }
-        this.copySourcePage = page;
-        const pagination = this.$store.getters.getProjectsPagination || {};
-        const totalPages =
-          pagination.totalPages || (pagination.limit ? Math.ceil((pagination.total || 0) / pagination.limit) : page);
-        this.copySourceHasMore = page < totalPages;
-      } finally {
-        this.copySourceLoading = false;
-        this.copySourceLoadingMore = false;
-      }
-    },
-    // Shared scroll handler for both the Target and Hashtag dropdowns —
-    // same near-bottom threshold as ProjectManagement.vue's project
-    // filter dropdown.
+    // Shared scroll handler for the Target/Hashtag/Domain source
+    // dropdowns — same near-bottom threshold as ProjectManagement.vue's
+    // project filter dropdown. fetchProjectPickerPage itself already
+    // no-ops if a page is already loading or the last page was reached,
+    // so no extra guard is needed here.
     onCopySourceDropdownScroll(e) {
-      if (this.copySourceLoading || this.copySourceLoadingMore || !this.copySourceHasMore) return;
       const el = e.target;
       if (el.scrollHeight - el.scrollTop - el.clientHeight < 60) {
-        this.loadCopySourceProjects(this.copySourcePage + 1);
+        this.$store.dispatch("fetchProjectPickerPage");
       }
     },
     closeModal() {
@@ -715,10 +665,11 @@ export default {
       this.hashtagSourceProjectId = null;
       this.hashtagSourceSearch = "";
       this.hashtagSourceMenuOpen = false;
-      this.copySourceProjectsList = [];
-      this.copySourcePage = 1;
-      this.copySourceHasMore = true;
-      this.form = { projectname: "", status: "inactive", userIds: [], domainIds: [], targetlist: [], hastaglist: [] };
+      // Clear the shared project picker so the next thing that opens it
+      // (this modal again, or EditUserModal/CreateUserModal elsewhere)
+      // doesn't briefly show our leftover list.
+      this.$store.dispatch("resetProjectPicker");
+      this.form = { projectname: "", status: "inactive", userIds: [], domainIds: [] };
     },
     async submit() {
       if (!this.form.projectname) {
@@ -726,14 +677,35 @@ export default {
         return;
       }
 
+      // Only include a source project id for whichever fields are
+      // actually set to clone from another project — the backend does the
+      // real copying server-side from these ids, so there's no local
+      // array to send for target/hashtag (they can't be entered manually
+      // at all), and domainlist is left empty when cloning domains too.
+      const cloneSources = {};
+      if (this.domainSelectMode === "copy" && this.domainSourceProjectId) {
+        cloneSources.domainlist = this.domainSourceProjectId;
+      }
+      if (this.copyTargetChecked && this.targetSourceProjectId) {
+        cloneSources.targetlist = this.targetSourceProjectId;
+      }
+      if (this.copyHashtagChecked && this.hashtagSourceProjectId) {
+        cloneSources.hashtaglist = this.hashtagSourceProjectId;
+      }
+
       const payload = {
         projectname: this.form.projectname,
         status: this.form.status,
-        domainlist: this.form.domainIds,
+        // Same on/off switch as "status" ("เปิดใช้งาน Project"), sent as a
+        // boolean too since the backend expects both (see the updateProject
+        // payload shape noted in project.js).
+        mion: this.form.status === "active",
         userlist: this.form.userIds,
-        targetlist: this.form.targetlist,
-        hastaglist: this.form.hastaglist,
+        domainlist: this.domainSelectMode === "custom" ? this.form.domainIds : [],
       };
+      if (Object.keys(cloneSources).length > 0) {
+        payload.clone_sources = cloneSources;
+      }
 
       this.error = "";
       this.submitting = true;
@@ -886,7 +858,6 @@ export default {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: end;
   gap: 6px;
   padding-top: 2px;
   white-space: nowrap;

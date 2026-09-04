@@ -1,8 +1,9 @@
 <template>
     <div>
         <vue-modaltor :visible="openModal" @hide="hideModal" :animation-panel="'modal-slide-top'"
-        :resize-width="{ 3000: '100%', 1350: '100%', 768: '100%' }"
+        :resize-width="{ 3000: '100%', 1350: '100%', 768: '100%', 480: '100%', 0: '100%' }"
         >
+            <div class="modal-content-wrap">
             <div>
                 <h5><b>แก้ไขบัญชีในกลุ่ม</b></h5>
                 <hr />
@@ -18,14 +19,20 @@
             <b-row cols="1" class="my-1 mx-0" :class="showTargetLists ? 'row-cols-lg-3' : 'row-cols-lg-2'">
                 <!-- create new Groups dashed-border-->
                 <b-col class="p-0 border-right">
-                    <b-row v-if="selectedGroup.targetlist && selectedGroup.targetlist.length !== 0" class="bold my-2 mx-0 px-0">
-                        รายชื่อบัญชีในกลุ่ม {{ selectedGroup.targetlist.length }} รายการ
+                    <b-row v-if="groupTargets.length !== 0" class="bold my-2 mx-0 px-0">
+                        รายชื่อบัญชีในกลุ่ม {{ groupTargets.length }} รายการ
                     </b-row>
-                    <b-row cols="1" cols-lg="1" cols-xl="1" class="m-0 modal-body-scrollable" style="max-height:65vh;">
-                        <b-col class="h-auto pl-0 pr-2 mb-2" v-for="target in selectedGroup.targetlist" :key="target.id" >
-                            <target-card :target="target" @delete-target="confirmDeleteTarget(target._id)"/>
-                        </b-col>
-                    </b-row>
+                    <div class="position-relative modal-body-scrollable" style="max-height:65vh;">
+                        <vue-element-loading :active="loadTargets" size="80" background-color="rgba(255, 255, 255, 0.3)" color="#ede7dd" />
+                        <b-row cols="1" cols-lg="1" cols-xl="1" class="m-0">
+                            <b-col class="h-auto pl-0 pr-2 mb-2" v-for="target in groupTargets" :key="target._id || target.id" >
+                                <target-card :target="target" @delete-target="confirmDeleteTarget(target._id)"/>
+                            </b-col>
+                            <b-col v-if="!loadTargets && groupTargets.length === 0" cols="12" class="text-center text-muted py-4">
+                                ไม่พบรายชื่อบัญชีในกลุ่ม
+                            </b-col>
+                        </b-row>
+                    </div>
                     <!-- <hr/> -->
                 </b-col>
                 <b-col>
@@ -71,7 +78,7 @@
                         </b-button>
                     </b-col>
 
-                    <!-- <hr v-if="(newTargets.length > 0) && (selectedGroup.targetlist.length !== 0)"> -->
+                    <!-- <hr v-if="(newTargets.length > 0) && (groupTargets.length !== 0)"> -->
                     <b-col cols="12" class="p-0 " >
                         <b-row cols="1" class="m-0 pr-3 modal-body-scrollable" style="max-height: 40vh;">
                             <target-card v-for="(target,index) in newTargets" :key="target.id" 
@@ -87,20 +94,20 @@
                 <b-col v-if="showTargetLists" class="">
                     
                     <b-row class="m-0 mb-2">
-                        <b-col cols="auto" class="d-flex pl-0 text-info justify-content-between align-items-center">
+                        <b-col class="">
                             <span>รายชื่อบัญชีใน monitor ที่แนะนำ</span>
                         </b-col>
-                        <b-col class="p-0 d-flex justify-content-end">
-                            <b-form-input v-model="search" placeholder="ค้นหา" class="" ></b-form-input>
+                        <b-col cols="12" class="d-lg-flex flex-column flex-sm-row justify-content-sm-end">
+                            <b-form-input v-model="search" placeholder="ค้นหา" class="mb-2 mb-sm-0" ></b-form-input>
                             <b-button size="sm" variant="info" pill :pressed="false" @click="apiMonitorList"
-                                class="shadow-r ml-2">
-                                <div class="d-flex align-items-center">
+                                class="shadow-r ml-sm-2 text-nowrap">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <i class="fa fa-search mr-2"></i> ค้นหา
                                 </div>
                             </b-button>
                         </b-col>
                     </b-row>
-                    <b-row cols="1" class="m-0 modal-body-scrollable" style="max-height: 60vh;">
+                    <b-row cols="1" class="m-0 modal-body-scrollable">
                         <b-col class="mb-2 px-2" v-for="target in targetLists" :key="target.id" >
                             <b-card
                                 bg-variant="white" text-variant=""
@@ -115,9 +122,9 @@
                                             </b-avatar>
                                             <b-avatar rounded="bottom" :src="target.profile_image" v-else> </b-avatar>
                                         </b-col>
-                                        <b-col class="text-left p-2 w-50">
-                                            <span>{{ target.name || target.uid }}</span>
-                                            <div class="d-flex">
+                                        <b-col class="text-left p-2 flex-grow-1" style="min-width: 0;">
+                                            <span class="text-truncate d-block">{{ target.name || target.uid }}</span>
+                                            <div class="d-flex" style="min-width: 0;">
                                                 <a @click.prevent="openLink(target.link_crawl)" class="text-truncate d-block text-info">
                                                     {{ target.link_crawl }}
                                                 </a>
@@ -156,17 +163,18 @@
             <!-- footer -->
             <b-row class="m-0  justify-content-end mt-3">
                 <b-col cols="auto">
-                    <b-button @click="clear" size="sm" variant="outline-danger">
+                    <b-button @click="clear" :disabled="newTargets.length === 0" size="sm" variant="outline-danger">
                         <i class="fa fa-eraser" aria-hidden="true"></i>
                         clear
                     </b-button>
                 </b-col>
                 <b-col cols="auto">
-                    <b-button @click="apiAddTarget()" class="btn btn-save" size="sm">
+                    <b-button @click="apiAddTarget()" :disabled="newTargets.length === 0" class="btn btn-save" size="sm">
                         บันทึก
                     </b-button>
                 </b-col>
             </b-row>
+            </div>
         </vue-modaltor>
     </div>
 </template>
@@ -200,6 +208,16 @@ export default {
             return this.groups.every(item => item.name && item.group_type) && this.groups.length > 0;
         },
     },
+    watch: {
+        openModal(val) {
+            if (val && this.selectedGroup?.group_id) {
+                this.groupTargets = [];
+                this.apiGetGroupTargets();
+            } else if (!val) {
+                this.groupTargets = [];
+            }
+        }
+    },
     data() {
         return {
             showTargetLists:false,
@@ -211,6 +229,8 @@ export default {
             newTarget: {link_crawl: "", source: null},
             groups: [],
             targetLists: [],
+            groupTargets: [],
+            loadTargets: false,
             open: false,
             totalRows: 0,
             currentPage: 1,
@@ -237,6 +257,34 @@ export default {
         };
     },
     methods: {
+        async apiGetGroupTargets() {
+            if (!this.selectedGroup?.group_id) return;
+            this.loadTargets = true;
+            const config = {
+                method: "get",
+                url: `https://api2.cognizata.com/api/v2/monitor/monitorGroupTargets/${this.selectedGroup.group_id}`,
+                params: {
+                    limit: 'all',
+                    page: 1,
+                },
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                    "Content-Type": "application/json",
+                },
+            };
+
+            try {
+                const response = await this.axios(config);
+                const resData = response.data;
+                this.groupTargets = resData.data || resData.targetlist || [];
+            } catch (error) {
+                console.error(error);
+                this.groupTargets = [];
+                Swal.fire('ผิดพลาด', 'ไม่สามารถโหลดรายชื่อบัญชีในกลุ่มได้', 'error');
+            } finally {
+                this.loadTargets = false;
+            }
+        },
         openLink(url) {
             if (!url) return;
             // ถ้าไม่มี http/https ให้เติม http:// ให้ก่อน
@@ -288,11 +336,35 @@ export default {
             if (url.includes("threads.com")) return 'threads';
             return 'news';
         },
+        normalizeLink(url) {
+            if (!url) return '';
+            return url
+                .toString()
+                .trim()
+                .toLowerCase()
+                .replace(/^https?:\/\//i, '')
+                .replace(/^www\./i, '')
+                .replace(/\/$/, '');
+        },
+        // เทียบว่าเป็นบัญชีเดียวกันหรือไม่ โดยไม่สนใจว่าแต่ละแหล่งข้อมูลจะใช้ field ชื่อ
+        // link_original (จาก API สมาชิกกลุ่ม), link_crawl (จาก monitor list), หรือ url (บัญชีที่เพิ่งเพิ่ม) ก็ตาม
+        isSameTarget(a, b) {
+            if (!a || !b) return false;
+            if (a.source && b.source && a.source !== b.source) return false;
+
+            const uidA = (a.uid ?? '').toString().trim().toLowerCase();
+            const uidB = (b.uid ?? '').toString().trim().toLowerCase();
+            if (uidA && uidB) return uidA === uidB;
+
+            const linkA = this.normalizeLink(a.link_original || a.link_crawl || a.url);
+            const linkB = this.normalizeLink(b.link_original || b.link_crawl || b.url);
+            return !!linkA && linkA === linkB;
+        },
         isTargetSelected(target) {
             // console.log(target);
-            
-            const inNewTargets = this.newTargets?.some(t => t.url === target.link_crawl || t.uid === target.uid);
-            const inSelectedGroup = this.selectedGroup?.targetlist?.some(t => t.link_crawl === target.link_crawl);
+
+            const inNewTargets = this.newTargets?.some(t => this.isSameTarget(t, target));
+            const inSelectedGroup = this.groupTargets?.some(t => this.isSameTarget(t, target));
             return inNewTargets || inSelectedGroup;
             // return this.newTargets.some(t => t.url === target.url || t.uid === target.uid);
         },
@@ -315,18 +387,9 @@ export default {
                 source: target.source
             };
 
-            // ✅ ตรวจสอบซ้ำทั้งใน newTargets และ selectedGroup.targetlist
-            const inNewTargets = this.newTargets?.some(
-                t => t.url === newTarget.url && t.source === newTarget.source
-            );
-
-            // const inSelectedGroup = this.selectedGroup.targetlist?.some(
-            //     t => t.url === newTarget.url && t.source === newTarget.source
-            // );
-            const inSelectedGroup = this.selectedGroup.targetlist?.some(
-                t => (t.link_crawl === newTarget.url) &&
-                    t.source === newTarget.source
-            );
+            // ✅ ตรวจสอบซ้ำทั้งใน newTargets และ groupTargets (รายชื่อในกลุ่มที่ดึงจาก API)
+            const inNewTargets = this.newTargets?.some(t => this.isSameTarget(t, newTarget));
+            const inSelectedGroup = this.groupTargets?.some(t => this.isSameTarget(t, newTarget));
 
             // 👉 ถ้าอยู่ในที่ใดที่หนึ่ง ให้ถือว่าซ้ำ
             const isExist = inNewTargets || inSelectedGroup;
@@ -481,7 +544,6 @@ export default {
             return ""
         },
         deleteGroup(group, index) {
-            // console.log(group, index);
             if (this.selectedGroup === group) {
                 this.selectedGroup = {};
             }
@@ -525,7 +587,6 @@ export default {
         },
         async apiMonitorList() {
             this.load = true;
-            // console.log('apiMonitorList ===',this.currentPage);
             
             const config = {
                 method: "get",
@@ -556,7 +617,6 @@ export default {
             });
         },
         confirmDeleteTarget(target_id) {
-            // console.log(target_id);
             Swal.fire({
                 title: 'ยืนยันการลบสมาชิก',
                 text: "คุณต้องการลบสมาชิกคนนี้หรือไม่?",
@@ -597,7 +657,6 @@ export default {
                     "Content-Type": "application/json",
                 },
             };
-            // console.log("apiAddTarget config", config);
 
             this.axios(config)
                 .then((response) => {
@@ -621,7 +680,6 @@ export default {
                 });
         },
         async apiDeleteTarget(target_id) {
-            console.log("_id == ", target_id);
             
             this.load = true;
             const config = {
@@ -648,12 +706,12 @@ export default {
                         timer: 2000
                     });
                     this.newTargets = [];
-                    if (this.selectedGroup && Array.isArray(this.selectedGroup.targetlist)) {
-                        this.selectedGroup.targetlist = this.selectedGroup.targetlist.filter(
+                    if (Array.isArray(this.groupTargets)) {
+                        this.groupTargets = this.groupTargets.filter(
                             t => t._id !== target_id // ลบ item ที่ตรง _id
                         );
                         } else {
-                        console.warn('selectedGroup หรือ targetLists ยังไม่ถูกกำหนดค่า');
+                        console.warn('groupTargets ยังไม่ถูกกำหนดค่า');
                         }
                     // this.hideModal();
                     this.$emit('update-group');
@@ -674,10 +732,31 @@ export default {
 </script>
 
 <style scoped>
+.modal-content-wrap {
+    max-width: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+/* vue-modaltor's panel sets overflow-y:auto ซึ่งตาม CSS spec จะบังคับ overflow-x เป็น auto ไปด้วย
+   ถ้าเนื้อหาข้างในล้นแม้เพียงเล็กน้อยจะโผล่ scrollbar แนวนอนที่ตัว panel เอง บังคับปิดไว้ตรงนี้เลย */
+::v-deep .modaltor__panel {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+/* บังคับให้ column ใน flex/grid ยอม shrink ได้ ไม่ดันความกว้างจนเกิด scrollbar แนวนอน
+   (ค่า default ของ flex item คือ min-width: auto ซึ่งกันไม่ให้ text-truncate/ellipsis ทำงาน) */
+.modal-content-wrap .row > [class*="col"] {
+    min-width: 0;
+}
 .card-target:hover {
     border: 2px solid #17a2b8;
     box-shadow: 10px 10px 15px rgba(23, 162, 184, 0.6); /* กรอบเรืองแสงสีน้ำเงิน */
     cursor: pointer;
+}
+.card-target {
+    max-width: 100%;
+    overflow: hidden;
 }
 .card-target.is-selected {
   border: 2px solid #17a2b8; /* ขอบสีฟ้าเมื่ออยู่ใน newTargets */
@@ -703,8 +782,9 @@ export default {
 .modal-body-scrollable {
     /* min-height: 45vh;
     max-height: 45vh; */
-    max-width: 95vw;
+    max-width: 94vw;
     overflow-y: auto;
+    max-height: 60vh;
     /* ให้ scroll เฉพาะแนวตั้ง */
     overflow-x: hidden;
     /* ❌ ปิดการ scroll แนวนอน */
@@ -712,6 +792,9 @@ export default {
     padding-right: 10px;
     box-sizing: border-box;
     /* เผื่อขนาด scrollbar */
+}
+.position-relative {
+    min-height: 100px;
 }
 
 .btn-close {
@@ -731,6 +814,15 @@ export default {
     border-color: #FFDEED;
     color: #4c412b;
     box-shadow: 1px 1px 3px #666666;
+}
+
+.btn-save:disabled,
+.btn-save.disabled {
+    background: #eee;
+    border-color: #ddd;
+    color: #999;
+    box-shadow: none;
+    cursor: not-allowed;
 }
 
 td {
@@ -759,6 +851,10 @@ td {
 @media only screen and (min-width: 0px) and (max-width: 600px) {
     .btn-add {
         margin-top: 20px;
+    }
+    .modal-body-scrollable{
+        max-width: 80vw;
+        padding: 0;
     }
 }
 

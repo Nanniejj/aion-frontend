@@ -14,28 +14,31 @@
                     <b-avatar :src="target.profile_image" v-else> </b-avatar>
                     <b-col class="p-0 text-right">
                     <b-avatar class="position-absolute" style="top: -20px;left: -10px;" size="25px" :src="target.image">
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
-                        <img @click="openLink(target.link_original)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'facebook'" src="@/assets/Facebook.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'twitter'" src="@/assets/Twitter.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'pantip'" src="@/assets/board.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'blockdit'" src="@/assets/Blockdit.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'instagram'" src="@/assets/Instagram.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'youtube'" src="@/assets/Youtube.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'news'" src="@/assets/News.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'tiktok'" src="@/assets/Tiktok.png" class="platform-imgs" />
+                        <img @click="openLink(displayLink)" v-if="target.source == 'threads'" src="@/assets/Threads.png" class="platform-imgs" />
                     </b-avatar>
                 </b-col>
                 </b-col>
-                <b-col class="text-left px-2 w-50">
+                <b-col class="text-left px-2 flex-grow-1" style="min-width: 0;">
                     <!-- <b-row class="m-0"> -->
-                        <span>{{ target.name || target.uid }}</span>
+                        <span class="text-truncate d-block">{{ target.name || target.uid }}</span>
                         <!-- {{ target.source }} -->
 
                     <!-- </b-row> -->
                     <a class="text-truncate text-info d-block" 
                         href="#" 
-                        @click.prevent="openLink(target.link_crawl)">
-                        {{ target.link_crawl || target.url}}
+                        @click.prevent="openLink(displayLink)"
+                        v-b-tooltip.hover
+                        :title="displayLink"
+                    >
+                        {{ displayLink || 'ไม่มีลิงก์' }}
                     </a>
                 </b-col>
                 <b-col cols="auto" class="p-0 text-right">
@@ -67,6 +70,11 @@ export default {
             default: true
         }
     },
+    computed: {
+        displayLink() {
+            return this.target?.link_original || this.target?.link_crawl || this.target?.url || '';
+        }
+    },
     methods: {
         deletedTarget() {
             this.$emit('delete-target')
@@ -87,5 +95,9 @@ export default {
 <style scoped>
     .platform-imgs {
         width:25px;
-    }   
+    }
+    ::v-deep .b-card, ::v-deep .card {
+        max-width: 100%;
+        overflow: hidden;
+    }
 </style>
