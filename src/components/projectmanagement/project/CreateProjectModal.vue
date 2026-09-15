@@ -224,8 +224,8 @@
                   <b-icon icon="chevron-down" class="combo-caret" :class="{ open: domainSourceMenuOpen }"></b-icon>
                 </div>
 
-                <div v-if="domainSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll">
-                  <div v-if="copySourceLoading" class="pick-empty">กำลังโหลด...</div>
+                <div v-if="domainSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll($event, 'domain')">
+                  <div v-if="domainSourceLoading" class="pick-empty">กำลังโหลด...</div>
                   <template v-else>
                     <div
                       v-for="p in filteredDomainSourceProjects"
@@ -242,7 +242,7 @@
                     <div v-if="filteredDomainSourceProjects.length === 0" class="pick-empty">
                       ไม่พบโปรเจกต์ที่ตรงกับ "{{ domainSourceSearch }}"
                     </div>
-                    <div v-if="copySourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
+                    <div v-if="domainSourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
                   </template>
                 </div>
               </div>
@@ -290,8 +290,8 @@
                     <b-icon icon="chevron-down" class="combo-caret" :class="{ open: targetSourceMenuOpen }"></b-icon>
                   </div>
 
-                  <div v-if="targetSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll">
-                    <div v-if="copySourceLoading" class="pick-empty">กำลังโหลด...</div>
+                  <div v-if="targetSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll($event, 'target')">
+                    <div v-if="targetSourceLoading" class="pick-empty">กำลังโหลด...</div>
                     <template v-else>
                       <div
                         v-for="p in filteredTargetSourceProjects"
@@ -308,7 +308,7 @@
                       <div v-if="filteredTargetSourceProjects.length === 0" class="pick-empty">
                         ไม่พบโปรเจกต์ที่ตรงกับ "{{ targetSourceSearch }}"
                       </div>
-                      <div v-if="copySourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
+                      <div v-if="targetSourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
                     </template>
                   </div>
                 </div>
@@ -333,8 +333,8 @@
                     <b-icon icon="chevron-down" class="combo-caret" :class="{ open: hashtagSourceMenuOpen }"></b-icon>
                   </div>
 
-                  <div v-if="hashtagSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll">
-                    <div v-if="copySourceLoading" class="pick-empty">กำลังโหลด...</div>
+                  <div v-if="hashtagSourceMenuOpen" class="combo-dropdown" @mousedown.prevent @scroll="onCopySourceDropdownScroll($event, 'hashtag')">
+                    <div v-if="hashtagSourceLoading" class="pick-empty">กำลังโหลด...</div>
                     <template v-else>
                       <div
                         v-for="p in filteredHashtagSourceProjects"
@@ -351,7 +351,7 @@
                       <div v-if="filteredHashtagSourceProjects.length === 0" class="pick-empty">
                         ไม่พบโปรเจกต์ที่ตรงกับ "{{ hashtagSourceSearch }}"
                       </div>
-                      <div v-if="copySourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
+                      <div v-if="hashtagSourceLoadingMore" class="pick-empty">กำลังโหลดเพิ่มเติม...</div>
                     </template>
                   </div>
                 </div>
@@ -392,6 +392,10 @@ export default {
       // so domainIds stays empty in this mode; see submit() below).
       domainSelectMode: "custom",
       domainSourceProjectId: null,
+      // Snapshot of the selected project (id + projectname) taken at the
+      // moment of selection, so the chip doesn't depend on this id still
+      // being present in the (mutable, re-searched) picker pool later.
+      domainSourceProjectSnapshot: null,
       domainSourceSearch: "",
       domainSourceMenuOpen: false,
       // "Copy from another project" state. Target/Hashtag can now ONLY be
@@ -401,11 +405,36 @@ export default {
       copyTargetChecked: false,
       copyHashtagChecked: false,
       targetSourceProjectId: null,
+      targetSourceProjectSnapshot: null,
       targetSourceSearch: "",
       targetSourceMenuOpen: false,
       hashtagSourceProjectId: null,
+      hashtagSourceProjectSnapshot: null,
       hashtagSourceSearch: "",
       hashtagSourceMenuOpen: false,
+      // Debounce handle for the shared project-picker search below.
+      _copySourceSearchTimer: null,
+      // Set right before clearing a source-search box ourselves (after a
+      // selection, where resetCopySourceBucket already fires the reset
+      // immediately) so the watcher below doesn't ALSO queue a redundant,
+      // delayed duplicate of the same empty-query search.
+      _skipNextSourceSearchWatch: false,
+      // Domain/Target/Hashtag source dropdowns each keep their OWN copy of
+      // the option list (populated below whenever the shared API call that
+      // *they* triggered comes back), instead of all three reading
+      // getProjectPicker.items live. They still hit the exact same
+      // searchProjectPicker/fetchProjectPickerPage API — this only changes
+      // where the response is stored client-side. Without this split,
+      // whichever dropdown searched most recently overwrote what every
+      // other dropdown's list showed too (e.g. open Target right after
+      // searching in Domain and it still shows Domain's results).
+      domainSourceItems: [],
+      targetSourceItems: [],
+      hashtagSourceItems: [],
+      // Which bucket the in-flight/most recent shared API call should land
+      // in: 'domain' | 'target' | 'hashtag' | 'all' (the initial load on
+      // open, before any dropdown-specific search has happened) | null.
+      _activeCopySourcePicker: null,
     };
   },
   computed: {
@@ -469,43 +498,81 @@ export default {
       return items.filter((p) => p && p._id);
     },
     // The picker has a single `loading` flag covering both the first page
-    // and subsequent pages — split it here so the dropdown can show
-    // "กำลังโหลด..." only before anything has loaded, and
-    // "กำลังโหลดเพิ่มเติม..." while paging in more underneath existing rows.
-    copySourceLoading() {
+    // and subsequent pages, shared across all three dropdowns — gate it
+    // by _activeCopySourcePicker too so a dropdown that ISN'T the one
+    // currently being searched/paged doesn't show a stray "กำลังโหลด...".
+    domainSourceLoading() {
       const picker = this.$store.getters.getProjectPicker;
-      return !!picker.loading && this.copySourceProjects.length === 0;
+      return (
+        !!picker.loading &&
+        (this._activeCopySourcePicker === "domain" || this._activeCopySourcePicker === "all") &&
+        this.domainSourceItems.length === 0
+      );
     },
-    copySourceLoadingMore() {
+    domainSourceLoadingMore() {
       const picker = this.$store.getters.getProjectPicker;
-      return !!picker.loading && this.copySourceProjects.length > 0;
+      return (
+        !!picker.loading &&
+        (this._activeCopySourcePicker === "domain" || this._activeCopySourcePicker === "all") &&
+        this.domainSourceItems.length > 0
+      );
     },
-    // Target, Hashtag, and Domain source pickers all read from the same
-    // loaded pool above and each just filters it client-side by their own
-    // search box — searching one doesn't refetch or affect the others.
+    targetSourceLoading() {
+      const picker = this.$store.getters.getProjectPicker;
+      return (
+        !!picker.loading &&
+        (this._activeCopySourcePicker === "target" || this._activeCopySourcePicker === "all") &&
+        this.targetSourceItems.length === 0
+      );
+    },
+    targetSourceLoadingMore() {
+      const picker = this.$store.getters.getProjectPicker;
+      return (
+        !!picker.loading &&
+        (this._activeCopySourcePicker === "target" || this._activeCopySourcePicker === "all") &&
+        this.targetSourceItems.length > 0
+      );
+    },
+    hashtagSourceLoading() {
+      const picker = this.$store.getters.getProjectPicker;
+      return (
+        !!picker.loading &&
+        (this._activeCopySourcePicker === "hashtag" || this._activeCopySourcePicker === "all") &&
+        this.hashtagSourceItems.length === 0
+      );
+    },
+    hashtagSourceLoadingMore() {
+      const picker = this.$store.getters.getProjectPicker;
+      return (
+        !!picker.loading &&
+        (this._activeCopySourcePicker === "hashtag" || this._activeCopySourcePicker === "all") &&
+        this.hashtagSourceItems.length > 0
+      );
+    },
+    // Target, Hashtag, and Domain source pickers all still hit the same
+    // searchProjectPicker/fetchProjectPickerPage API (see copySourceProjects
+    // above and the watcher below that copies each response into the right
+    // bucket) but each renders its OWN list from domainSourceItems/
+    // targetSourceItems/hashtagSourceItems, not the shared pool directly —
+    // otherwise whichever dropdown searched most recently would overwrite
+    // what every other dropdown's list showed.
     filteredTargetSourceProjects() {
-      const q = this.targetSourceSearch.toLowerCase();
-      if (!q) return this.copySourceProjects;
-      return this.copySourceProjects.filter((p) => (p.projectname || "").toLowerCase().includes(q));
+      return this.targetSourceItems;
     },
     selectedTargetSourceProject() {
-      return this.copySourceProjects.find((p) => p._id === this.targetSourceProjectId) || null;
+      return this.targetSourceProjectSnapshot;
     },
     filteredHashtagSourceProjects() {
-      const q = this.hashtagSourceSearch.toLowerCase();
-      if (!q) return this.copySourceProjects;
-      return this.copySourceProjects.filter((p) => (p.projectname || "").toLowerCase().includes(q));
+      return this.hashtagSourceItems;
     },
     selectedHashtagSourceProject() {
-      return this.copySourceProjects.find((p) => p._id === this.hashtagSourceProjectId) || null;
+      return this.hashtagSourceProjectSnapshot;
     },
     filteredDomainSourceProjects() {
-      const q = this.domainSourceSearch.toLowerCase();
-      if (!q) return this.copySourceProjects;
-      return this.copySourceProjects.filter((p) => (p.projectname || "").toLowerCase().includes(q));
+      return this.domainSourceItems;
     },
     selectedDomainSourceProject() {
-      return this.copySourceProjects.find((p) => p._id === this.domainSourceProjectId) || null;
+      return this.domainSourceProjectSnapshot;
     },
   },
   watch: {
@@ -517,9 +584,60 @@ export default {
         // Reset + load page 1 of the store's dedicated project picker
         // (see the comment on copySourceProjects above) — this only
         // touches projectPicker, never projects/projectsPagination.
+        // Tagged 'all' since none of the three dropdown-specific searches
+        // has happened yet — the initial page seeds every bucket.
+        this._activeCopySourcePicker = "all";
         this.$store.dispatch("searchProjectPicker", "");
         this.$nextTick(() => this.$refs.nameInput && this.$refs.nameInput.focus());
+      } else {
+        this._activeCopySourcePicker = null;
       }
+    },
+    // Copies each response from the shared searchProjectPicker/
+    // fetchProjectPickerPage API into whichever bucket(s) triggered it —
+    // see _activeCopySourcePicker above and queueCopySourceSearch/
+    // onCopySourceDropdownScroll below, which set that tag right before
+    // dispatching. This is what keeps the three dropdowns' lists
+    // independent while still sharing one API call.
+    copySourceProjects(items) {
+      if (this._activeCopySourcePicker === "all") {
+        this.domainSourceItems = items;
+        this.targetSourceItems = items;
+        this.hashtagSourceItems = items;
+      } else if (this._activeCopySourcePicker === "domain") {
+        this.domainSourceItems = items;
+      } else if (this._activeCopySourcePicker === "target") {
+        this.targetSourceItems = items;
+      } else if (this._activeCopySourcePicker === "hashtag") {
+        this.hashtagSourceItems = items;
+      }
+    },
+    // The three source-project search boxes (domain/target/hashtag) all
+    // share the same projectPicker pool in the store, which is paginated —
+    // only the first page (or whatever's been scrolled into) is loaded
+    // client-side. Without this, typing only filtered that already-loaded
+    // page, so any project not on it could never be found ("พิมพ์ค้นหาแล้ว
+    // หาไม่เจอ"). Debounced so we don't hit the API on every keystroke.
+    domainSourceSearch(q) {
+      if (this._skipNextSourceSearchWatch) {
+        this._skipNextSourceSearchWatch = false;
+        return;
+      }
+      this.queueCopySourceSearch(q, "domain");
+    },
+    targetSourceSearch(q) {
+      if (this._skipNextSourceSearchWatch) {
+        this._skipNextSourceSearchWatch = false;
+        return;
+      }
+      this.queueCopySourceSearch(q, "target");
+    },
+    hashtagSourceSearch(q) {
+      if (this._skipNextSourceSearchWatch) {
+        this._skipNextSourceSearchWatch = false;
+        return;
+      }
+      this.queueCopySourceSearch(q, "hashtag");
     },
   },
   methods: {
@@ -594,11 +712,15 @@ export default {
     // the id.
     selectDomainSourceProject(id) {
       this.domainSourceProjectId = id;
+      this.domainSourceProjectSnapshot = this.domainSourceItems.find((p) => p._id === id) || null;
+      this._skipNextSourceSearchWatch = true;
       this.domainSourceSearch = "";
       this.domainSourceMenuOpen = false;
+      this.resetCopySourceBucket("domain");
     },
     clearDomainSource() {
       this.domainSourceProjectId = null;
+      this.domainSourceProjectSnapshot = null;
     },
     focusTargetSourceInput() {
       this.targetSourceMenuOpen = true;
@@ -611,11 +733,15 @@ export default {
     // clone_sources.targetlist in submit() below.
     selectTargetSourceProject(id) {
       this.targetSourceProjectId = id;
+      this.targetSourceProjectSnapshot = this.targetSourceItems.find((p) => p._id === id) || null;
+      this._skipNextSourceSearchWatch = true;
       this.targetSourceSearch = "";
       this.targetSourceMenuOpen = false;
+      this.resetCopySourceBucket("target");
     },
     clearTargetSource() {
       this.targetSourceProjectId = null;
+      this.targetSourceProjectSnapshot = null;
     },
     focusHashtagSourceInput() {
       this.hashtagSourceMenuOpen = true;
@@ -628,24 +754,56 @@ export default {
     // clone_sources.hashtaglist in submit() below.
     selectHashtagSourceProject(id) {
       this.hashtagSourceProjectId = id;
+      this.hashtagSourceProjectSnapshot = this.hashtagSourceItems.find((p) => p._id === id) || null;
+      this._skipNextSourceSearchWatch = true;
       this.hashtagSourceSearch = "";
       this.hashtagSourceMenuOpen = false;
+      this.resetCopySourceBucket("hashtag");
     },
     clearHashtagSource() {
       this.hashtagSourceProjectId = null;
+      this.hashtagSourceProjectSnapshot = null;
     },
     // Shared scroll handler for the Target/Hashtag/Domain source
     // dropdowns — same near-bottom threshold as ProjectManagement.vue's
     // project filter dropdown. fetchProjectPickerPage itself already
     // no-ops if a page is already loading or the last page was reached,
-    // so no extra guard is needed here.
-    onCopySourceDropdownScroll(e) {
+    // so no extra guard is needed here. `picker` tags the response so it
+    // lands back in the scrolling dropdown's own bucket, not the others.
+    onCopySourceDropdownScroll(e, picker) {
       const el = e.target;
       if (el.scrollHeight - el.scrollTop - el.clientHeight < 60) {
+        this._activeCopySourcePicker = picker;
         this.$store.dispatch("fetchProjectPickerPage");
       }
     },
+    // Debounced trigger for the shared project-picker search (see the
+    // domainSourceSearch/targetSourceSearch/hashtagSourceSearch watchers
+    // above). All three boxes still drive the same store slice/API call —
+    // `picker` just tags which dropdown's bucket the response belongs in
+    // (see the copySourceProjects watcher above).
+    queueCopySourceSearch(query, picker) {
+      clearTimeout(this._copySourceSearchTimer);
+      this._copySourceSearchTimer = setTimeout(() => {
+        this._activeCopySourcePicker = picker;
+        this.$store.dispatch("searchProjectPicker", query || "");
+      }, 300);
+    },
+    // Fires the same searchProjectPicker("") call as queueCopySourceSearch
+    // but immediately, no 300ms debounce. Used right after selecting a
+    // project (selectDomainSourceProject/selectTargetSourceProject/
+    // selectHashtagSourceProject below), which also clears that dropdown's
+    // search box — the debounce is only needed to avoid hammering the API
+    // on every keystroke, but a selection is a single deliberate action,
+    // so waiting doesn't help here and only left a window where reopening
+    // the dropdown right after picking still showed the old filtered list.
+    resetCopySourceBucket(picker) {
+      clearTimeout(this._copySourceSearchTimer);
+      this._activeCopySourcePicker = picker;
+      this.$store.dispatch("searchProjectPicker", "");
+    },
     closeModal() {
+      clearTimeout(this._copySourceSearchTimer);
       this.open = false;
       this.error = "";
       this.submitting = false;
@@ -655,16 +813,23 @@ export default {
       this.domainMenuOpen = false;
       this.domainSelectMode = "custom";
       this.domainSourceProjectId = null;
+      this.domainSourceProjectSnapshot = null;
       this.domainSourceSearch = "";
       this.domainSourceMenuOpen = false;
       this.copyTargetChecked = false;
       this.copyHashtagChecked = false;
       this.targetSourceProjectId = null;
+      this.targetSourceProjectSnapshot = null;
       this.targetSourceSearch = "";
       this.targetSourceMenuOpen = false;
       this.hashtagSourceProjectId = null;
+      this.hashtagSourceProjectSnapshot = null;
       this.hashtagSourceSearch = "";
       this.hashtagSourceMenuOpen = false;
+      this.domainSourceItems = [];
+      this.targetSourceItems = [];
+      this.hashtagSourceItems = [];
+      this._activeCopySourcePicker = null;
       // Clear the shared project picker so the next thing that opens it
       // (this modal again, or EditUserModal/CreateUserModal elsewhere)
       // doesn't briefly show our leftover list.

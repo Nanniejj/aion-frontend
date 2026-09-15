@@ -41,7 +41,6 @@
               name="project-search-query"
               autocomplete="off"
               :readonly="searchLocked"
-              :disabled="isFilterLoading"
               @focus="searchLocked = false"
               @keyup.enter.native="runSearch"
               @input="onQueryInput"

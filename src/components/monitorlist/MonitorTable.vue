@@ -181,7 +181,7 @@
 
                 <template #cell(action)="data">
                     <b-row cols="3" class="m-0 justify-content-end align-items-center flex-nowrap">
-                        <b-col v-if="username === 'adminatapy'" cols="auto" class="p-0">
+                        <b-col v-if="role === 'superadmin' || role === 'admin' " cols="auto" class="p-0">
                             <b-button v-if="data.item.followers >= 100000 && !data.item.influencer_condition" 
                                 @click="data.toggleDetails" variant="warning" size="sm" pill style="background-color: #fed16e;">
                                 <span v-b-tooltip.hover title="ตรวจพบบัญชีที่อาจเป็น Influencer" class="float-right">
@@ -191,7 +191,7 @@
                                 </span>
                             </b-button>
                         </b-col>
-                        <b-col v-if="username === 'adminatapy'" cols="auto" class="p-0">
+                        <b-col v-if="role === 'superadmin' || role === 'admin' " cols="auto" class="p-0">
                             <span v-if="type === 'targetlist' && (data.item.followers < 100000 || !data.item.followers || data.item.influencer_condition)" class="fas fa-pen text-custom px-2" v-b-tooltip.hover title="แก้ไขข้อมูล"
                             @click="openEditProfile(data.item)" size="sm"></span>
                         </b-col>
@@ -351,6 +351,7 @@ export default {
             tableVariant: '',
             noCollapse: false,
             username: "",
+            role: "",
             selectedProfile: null,
             sourceOptions: [
                 { value: '', text: 'All Platform' },
@@ -738,6 +739,7 @@ export default {
     async mounted() {
         this.filters.type = this.type;
         this.username = localStorage.getItem("username");
+        this.role = localStorage.getItem("reftokenOpt");
         // await this.getMissingTargets();
     }
 };

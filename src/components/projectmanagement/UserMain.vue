@@ -179,7 +179,7 @@
               class="log-preset-btn"
               :class="{ active: logDatePreset === preset.key }"
               :disabled="userLogsLoading"
-              @click="setLogDateMonths(preset.months, preset.key)"
+              @click="setLogDatePreset(preset)"
             >
               {{ preset.label }}
             </button>
@@ -357,11 +357,13 @@ export default {
       },
       logFilters: { search: "", method: "", startDate: "", endDate: "" },
       logDatePreset: "",
+      // "custom" (the free date-range picker) has its own button in the
+      // template and isn't listed here. First entry is the default applied
+      // on open/clear — see openLogModal/clearLogFilters below.
       logDatePresets: [
-        { months: 1, key: "1", label: "1 เดือน" },
-        { months: 3, key: "3", label: "3 เดือน" },
-        { months: 6, key: "6", label: "6 เดือน" },
-        { months: 12, key: "12", label: "12 เดือน" },
+        { days: 7, key: "7d", label: "7 วัน" },
+        { months: 1, key: "1m", label: "1 เดือน" },
+        { months: 3, key: "3m", label: "3 เดือน" },
       ],
       expandedLogId: null,
     };
@@ -381,9 +383,10 @@ export default {
     },
     hasActiveLogFilters() {
       const f = this.logFilters;
-      // The 1-month date range is the default state, not a user-applied
-      // filter — only flag it as "active" once something differs from it.
-      return !!(f.search || f.method || this.logDatePreset !== "1");
+      // The default preset (logDatePresets[0], currently "7 วัน") is the
+      // default state, not a user-applied filter — only flag it as
+      // "active" once something differs from it.
+      return !!(f.search || f.method || this.logDatePreset !== this.logDatePresets[0].key);
     },
     // date-picker (range mode) wants/emits a single [start, end] array —
     // logFilters keeps startDate/endDate as separate strings everywhere
@@ -504,7 +507,7 @@ export default {
       this.expandedLogId = null;
       this.userLogsRequestedPage = null;
       this.logFilters = { search: "", method: "", startDate: "", endDate: "" };
-      this.setLogDateRangeOnly(1, "1"); // default to the last 1 month
+      this.setLogDateRangeOnly(this.logDatePresets[0]); // default: most recent preset (7 วัน)
       this.fetchUserLogs(1);
     },
     onLogModalHidden() {
@@ -593,7 +596,7 @@ export default {
     },
     clearLogFilters() {
       this.logFilters = { search: "", method: "", startDate: "", endDate: "" };
-      this.setLogDateRangeOnly(1, "1");
+      this.setLogDateRangeOnly(this.logDatePresets[0]);
       this.expandedLogId = null;
       this.fetchUserLogs(1);
     },
@@ -603,16 +606,20 @@ export default {
       const day = String(d.getDate()).padStart(2, "0");
       return `${y}-${m}-${day}`;
     },
-    setLogDateRangeOnly(months, key) {
+    setLogDateRangeOnly(preset) {
       const end = new Date();
       const start = new Date();
-      start.setMonth(start.getMonth() - months);
+      if (preset.days) {
+        start.setDate(start.getDate() - preset.days);
+      } else if (preset.months) {
+        start.setMonth(start.getMonth() - preset.months);
+      }
       this.logFilters.startDate = this.toISODate(start);
       this.logFilters.endDate = this.toISODate(end);
-      this.logDatePreset = key;
+      this.logDatePreset = preset.key;
     },
-    setLogDateMonths(months, key) {
-      this.setLogDateRangeOnly(months, key);
+    setLogDatePreset(preset) {
+      this.setLogDateRangeOnly(preset);
       this.applyLogFilters();
     },
     useCustomLogDate() {

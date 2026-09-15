@@ -252,7 +252,7 @@
             <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
               <a v-bind:href="profilePost.url_post" target="_blank">
                 <img :src="profilePost.photos && profilePost.photos[0]" onerror="this.style.display='none'"
-                  style="height:450px;border-radius: 10px;" class="my-3" />
+                  style="border-radius: 10px;" class="my-3 tiktok-post-img" />
                 <!-- <lite-tiktok :videoid="profilePost.uid" style=" pointer-events: none; "></lite-tiktok> -->
               </a>
 
@@ -1743,6 +1743,10 @@ iframe html {
 }
 </style>
 <style scoped>
+.tiktok-post-img {
+  height: 450px;
+}
+
 #box-summarize {
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   /* background-image: linear-gradient(to right, #7cccb8 0%, #1185c9  51%, #4b9ed4  100%); */
@@ -2174,6 +2178,10 @@ a {
     position: relative;
     top: 3px;
     height: 38px;
+  }
+
+  .tiktok-post-img {
+    height: 230px;
   }
 }
 </style>

@@ -177,7 +177,7 @@
                 <div v-if="postDomain.source == 'tiktok' && postDomain.uid" class="">
                   <a v-bind:href="postDomain.url_post" target="_blank">
                     <img :src="postDomain.photos && postDomain.photos[0]" onerror="this.style.display='none'"
-                      style="height:450px;border-radius: 10px;" class="my-3" />
+                      style="border-radius: 10px;" class="my-3 tiktok-post-img" />
                     <!-- <lite-tiktok :videoid="postDomain.uid" style=" pointer-events: none; "></lite-tiktok> -->
                   </a>
 
@@ -1084,6 +1084,10 @@ export default {
 </script>
 
 <style scoped>
+.tiktok-post-img {
+  height: 450px;
+}
+
 .rich .p {
   margin: 0 0 6px;
   line-height: 1.4;
@@ -1588,6 +1592,10 @@ a {
     position: relative;
     top: 3px;
     height: 38px;
+  }
+
+  .tiktok-post-img {
+    height: 230px;
   }
 }
 </style>

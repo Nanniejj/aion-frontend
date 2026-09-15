@@ -11,7 +11,7 @@
                 <span class="suggest-count" v-if="!isLoading && suggestList.length">{{ suggestList.length }}</span>
             </div>
             <div class="d-flex align-items-center">
-                <div class="suggest-updated-at" v-if="generated_at">อัพเดต : {{ formatThaiDate(generated_at) }}</div>
+                <div class="suggest-updated-at" v-if="updated_at">อัพเดต : {{ formatThaiDate(updated_at) }}</div>
                 <button type="button" class="suggest-refresh-btn" :disabled="isLoading" @click="fetchSuggestions">
                     <b-icon icon="arrow-clockwise" :animation="isLoading ? 'spin' : ''" font-scale="0.9"></b-icon>
                     <span class="d-none d-md-inline pl-1">รีเฟรช</span>
@@ -170,7 +170,7 @@ export default {
             isLoading: false,
             canScrollLeft: false,
             canScrollRight: false,
-            generated_at: null,
+            updated_at: null,
             // สีวนซ้ำสำหรับ avatar / badge แต่ละใบ ให้แยกแยะการ์ดได้ง่ายขึ้นด้วยสายตา
             palette: [
                 { bg: "#E9F6F8", fg: "#0F8A9C" }, // teal
@@ -225,7 +225,7 @@ export default {
                     const payload = response.data;
                     const list = payload.data || payload.result || [];
                     this.internalList = list.filter(Boolean).map(this.mapApiItem);
-                    this.generated_at = response.data.generated_at || null;
+                    this.updated_at = response.data.updated_at || null;
                     this.isLoading = false;
                 })
                 .catch((error) => {
