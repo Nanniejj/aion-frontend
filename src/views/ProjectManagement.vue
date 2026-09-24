@@ -6,7 +6,7 @@
       <!-- ===== Header: title + search ===== -->
       <div class="d-flex justify-content-between align-items-start flex-wrap mb-4 page-header">
         <div>
-          <h1 class="page-title">Projects & Users Management</h1>
+          <h1 class="page-title">{{ canManageProjects ? "Projects & Users Management" : "Logs" }}</h1>
         </div>
 
         
@@ -15,12 +15,12 @@
       <!-- ===== Tabs + create buttons (right-aligned) ===== -->
       <div class="d-flex align-items-center justify-content-between flex-wrap mb-4 tab-row">
         <div class="d-flex flex-wrap tab-buttons">
-          <button class="tab-btn" :class="{ active: tab === 'projects' }" @click="tab = 'projects'">
+          <button v-if="canManageProjects" class="tab-btn" :class="{ active: tab === 'projects' }" @click="tab = 'projects'">
             <b-icon icon="grid"></b-icon>
             Projects
             <!-- <span class="count">{{ getProjectsPagination.total }}</span> -->
           </button>
-          <button class="tab-btn" :class="{ active: tab === 'users' }" @click="tab = 'users'">
+          <button v-if="canManageProjects" class="tab-btn" :class="{ active: tab === 'users' }" @click="tab = 'users'">
             <b-icon icon="people"></b-icon>
             Users
             <!-- <span class="count">{{ getUsersPagination.total }}</span> -->
@@ -214,7 +214,8 @@ export default {
   components: { HomeNav, ProjectMain, UserMain, ProjectDetail, CreateProjectModal, EditProjectModal, CreateUserModal, LogsMain },
   data() {
     return {
-      tab: "projects", // 'projects' | 'users'
+      tab: "projects", // 'projects' | 'users' | 'logs'
+      role: "",
       query: "",
       roleFilter: "",
       projectFilter: "",
@@ -257,8 +258,19 @@ export default {
     isFilterLoading() {
       return this.tab === "projects" ? this.getLoadingProjects : this.getLoadingUsers;
     },
+    // superadmin และ admin เท่านั้นที่จัดการ Projects/Users ได้ (รวมถึงสร้างบัญชีผู้ใช้)
+    // role อื่นๆ ทั้งหมดดูได้เฉพาะแท็บ Logs
+    canManageProjects() {
+      return this.role === "superadmin" || this.role === "admin";
+    },
   },
   created() {
+    this.role = localStorage.getItem("reftokenOpt") || "";
+    if (!this.canManageProjects) {
+      // role ที่ไม่มีสิทธิ์จัดการ Projects/Users ให้บังคับเปิดแท็บ Logs เท่านั้น
+      this.tab = "logs";
+      return;
+    }
     this.fetchProjects();
     this.fetchUsersFiltered(1);
   },
@@ -275,11 +287,16 @@ export default {
     // tabs clears whatever was typed and reloads that tab unfiltered,
     // since a query typed for one tab (e.g. project names) isn't a
     // meaningful filter for the other (e.g. users).
-    tab() {
+    tab(newTab) {
+      // กัน role ที่ไม่มีสิทธิ์ไม่ให้สลับไปแท็บ Projects/Users ได้ไม่ว่าจะด้วยวิธีใด
+      if (!this.canManageProjects && newTab !== "logs") {
+        this.tab = "logs";
+        return;
+      }
       this.query = "";
-      if (this.tab === "projects") {
+      if (newTab === "projects") {
         this.searchProjects("");
-      } else {
+      } else if (newTab === "users") {
         this.fetchUsersFiltered(1);
       }
     },

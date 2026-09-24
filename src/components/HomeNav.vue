@@ -213,11 +213,11 @@
             </router-link>
           </li>
 
-          <li class="nav-item" id="li-nav" v-if="seen">
+          <li class="nav-item" id="li-nav">
             <router-link to="/projectmanagement" tag="p">
               <a class="nav-link">
                 <img src="../assets/userx.png" alt="logo" class="img-nav" style="margin-bottom: 8px" />
-                <strong>Projects</strong>
+                <strong>{{ canManageProjects ? "Projects" : "Logs" }}</strong>
               </a>
             </router-link>
           </li>
@@ -469,12 +469,12 @@
             </router-link>
           </b-nav-item>
 
-          <b-nav-item id="nav-con1" v-if="seen">
+          <b-nav-item id="nav-con1">
             <router-link to="/projectmanagement" tag="p">
               <a class="nav-link">
                 <img src="@/assets/userx.png" alt="logo" class="img-nav" />
                 <a class="nav-link titlenav">
-                  <strong>Project Management</strong>
+                  <strong>{{ canManageProjects ? "Project Management" : "Logs" }}</strong>
                 </a>
               </a>
             </router-link>
@@ -534,7 +534,7 @@ export default {
     return {
       msg: "HomeNav",
       username: "",
-      seen: false,
+      role: "",
       allStyle: { pointerEvents: "all" },
       dropdownStyle: {
         borderBottom: "0px solid #4c412b",
@@ -544,6 +544,11 @@ export default {
   },
   computed: {
     ...mapGetters(["getToSection"]),
+    // superadmin และ admin จัดการ Project/User ได้ (เห็นแท็บ Projects และ Users)
+    // ส่วน role อื่นๆ (user, service ฯลฯ) จะเห็นเฉพาะเมนู Logs
+    canManageProjects() {
+      return this.role === "superadmin" || this.role === "admin";
+    },
     isActiveRanking() {
       return this.$route.path === "/ranking" || this.$route.path === "/personranking";
     },
@@ -616,8 +621,7 @@ export default {
   created() {
     this.$store.commit("setToSection", localStorage.getItem("section"));
     this.username = localStorage.getItem("username");
-    const reftokenOpt = localStorage.getItem("reftokenOpt");
-    if (reftokenOpt === "superadmin") this.seen = true;
+    this.role = localStorage.getItem("reftokenOpt") || "";
   },
 };
 </script>

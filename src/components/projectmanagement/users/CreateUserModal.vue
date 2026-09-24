@@ -30,6 +30,7 @@
                 ref="usernameInput"
                 v-model.trim="form.username"
                 class="form-input"
+                :class="{ 'is-invalid': usernameInvalid }"
                 placeholder="เช่น yellydev"
                 autocomplete="off"
                 name="new-user-username"
@@ -37,15 +38,18 @@
                 @focus="usernameLocked = false"
                 @keyup.enter="submit"
               />
+              <span v-if="usernameInvalid" class="field-note d-block mt-1" style="color: #c0392b">
+                ใช้ได้เฉพาะตัวอักษร a-z, A-Z และตัวเลข 0-9 เท่านั้น
+              </span>
             </div>
 
             <div class="form-field">
               <label>Role <span class="req">*</span></label>
               <select v-model="form.role" class="form-input form-select">
-                <option value="superadmin">superadmin</option>
-                <option value="admin">admin</option>
+                <option v-if="canAssignSuperadmin" value="superadmin">superadmin</option>
+                <option v-if="canAssignSuperadmin" value="admin">admin</option>
                 <option value="user">user</option>
-                <option value="service">service</option>
+                <option v-if="canAssignSuperadmin" value="service">service</option>
               </select>
             </div>
 
@@ -242,7 +246,7 @@
         </div>
 
         <b-row class=" justify-content-end mx-3">
-          <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
+          <button class="btn-submit mx-3" :disabled="submitting || usernameInvalid || isFormIncomplete" @click="submit">
             {{ submitting ? "กำลังบันทึก..." : "สร้างผู้ใช้" }}
           </button>
           <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
@@ -382,6 +386,27 @@ export default {
     projectPicker() {
       return this.$store.getters.getProjectPicker;
     },
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับ HomeNav/ProjectManagement)
+    currentUserRole() {
+      return localStorage.getItem("reftokenOpt") || "";
+    },
+    // มีเฉพาะ superadmin เท่านั้นที่สร้างผู้ใช้ role superadmin ได้ — admin ทำไม่ได้
+    canAssignSuperadmin() {
+      return this.currentUserRole === "superadmin";
+    },
+    // true เมื่อพิมพ์อะไรมาแล้วแต่มีอักขระที่ไม่ใช่ a-z, A-Z, 0-9 ปนอยู่
+    usernameInvalid() {
+      return !!this.form.username && !/^[a-zA-Z0-9]+$/.test(this.form.username);
+    },
+    // true เมื่อยังกรอกข้อมูลที่จำเป็น (required) ไม่ครบตาม role ที่เลือกอยู่
+    isFormIncomplete() {
+      if (!this.form.username) return true;
+      if (this.form.role !== "service") {
+        if (!this.form.name || !this.form.lastname || !this.form.email || !this.form.password) return true;
+        if (this.form.password.length < 8) return true;
+      }
+      return false;
+    },
   },
   watch: {
     open(val) {
@@ -503,6 +528,19 @@ export default {
     },
     async submit() {
       const isService = this.form.role === "service";
+      // กันไว้อีกชั้น เผื่อ option ถูกบังคับเลือกผ่านทางอื่น (เช่น devtools)
+      // — admin สร้างผู้ใช้ได้เฉพาะ role user เท่านั้น ส่วน role อื่น (superadmin/admin/service)
+      // สร้างได้เฉพาะ superadmin
+      if (this.form.role !== "user" && !this.canAssignSuperadmin) {
+        this.error = "คุณไม่มีสิทธิ์สร้างผู้ใช้ role นี้ (สร้างได้เฉพาะ role user)";
+        return;
+      }
+      // ปุ่มสร้างผู้ใช้ถูก disabled อยู่แล้วเมื่อ username ไม่ถูกต้อง แต่กันไว้เผื่อ
+      // กด Enter ในช่อง username ซึ่งไม่ผ่านปุ่มที่ถูก disabled
+      if (this.usernameInvalid) {
+        this.error = "Username ใช้ได้เฉพาะตัวอักษร a-z, A-Z และตัวเลข 0-9 เท่านั้น";
+        return;
+      }
       if (!this.form.username || (!isService && (!this.form.name || !this.form.lastname || !this.form.email || !this.form.password))) {
         this.error = isService
           ? "กรุณากรอก Username ให้ครบ"
@@ -754,6 +792,14 @@ export default {
 .form-input:focus {
   border-color: #128189;
   box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
+}
+
+.form-input.is-invalid {
+  border-color: #c0392b;
+}
+.form-input.is-invalid:focus {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.15);
 }
 
 .form-input:-webkit-autofill,
@@ -1115,4 +1161,4 @@ export default {
   margin: 0 !important;
   z-index: 2001 !important;
 }
-</style>v
+</style>

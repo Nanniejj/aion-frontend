@@ -39,12 +39,15 @@
 
           <div class="form-field">
             <label>Role</label>
-            <select v-model="form.role" class="form-input form-select">
-              <option value="superadmin">superadmin</option>
+            <select v-model="form.role" class="form-input form-select" :disabled="roleFieldLocked">
+              <option v-if="canAssignSuperadmin || form.role === 'superadmin'" value="superadmin">superadmin</option>
               <option value="admin">admin</option>
               <option value="user">user</option>
               <option value="service">service</option>
             </select>
+            <span v-if="roleFieldLocked" class="field-note d-block mt-1">
+              คุณไม่มีสิทธิ์แก้ไข role ของบัญชี superadmin
+            </span>
           </div>
 
           <div class="form-field">
@@ -274,6 +277,19 @@ export default {
     projectPicker() {
       return this.$store.getters.getProjectPicker;
     },
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับ HomeNav/ProjectManagement)
+    currentUserRole() {
+      return localStorage.getItem("reftokenOpt") || "";
+    },
+    // มีเฉพาะ superadmin เท่านั้นที่ตั้ง/แก้ไข role เป็น superadmin ได้ — admin ทำไม่ได้
+    canAssignSuperadmin() {
+      return this.currentUserRole === "superadmin";
+    },
+    // ถ้าผู้ที่กำลังแก้ไขอยู่เป็น superadmin อยู่แล้ว และคนที่แก้ไข (admin) ไม่ใช่ superadmin
+    // ให้ล็อกฟิลด์ role ทั้งฟิลด์ ห้ามเปลี่ยนทั้งขึ้น (upgrade) และลง (downgrade)
+    roleFieldLocked() {
+      return !this.canAssignSuperadmin && !!this.editingUser && this.editingUser.role === "superadmin";
+    },
   },
   methods: {
     // Public API — call from a parent via `this.$refs.editUserModal.open(user)`.
@@ -415,6 +431,16 @@ export default {
       this.form = emptyForm();
     },
     async submit() {
+      // กันไว้อีกชั้น เผื่อฟิลด์ role ถูกเปลี่ยนผ่านทางอื่น (เช่น devtools)
+      // — admin ไม่มีสิทธิ์ตั้ง role เป็น superadmin หรือแก้ไข role ของบัญชี superadmin
+      if (this.form.role === "superadmin" && !this.canAssignSuperadmin) {
+        this.error = "คุณไม่มีสิทธิ์กำหนด role เป็น superadmin";
+        return;
+      }
+      if (this.roleFieldLocked && this.form.role !== "superadmin") {
+        this.error = "คุณไม่มีสิทธิ์แก้ไข role ของบัญชี superadmin";
+        return;
+      }
       const missing = [];
       if (!this.form.name) missing.push("ชื่อ");
       if (!this.form.lastname) missing.push("นามสกุล");
