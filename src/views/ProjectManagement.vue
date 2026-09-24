@@ -60,7 +60,7 @@
             </b-input-group-append>
           </b-input-group>
           <div
-            v-if="tab === 'users'"
+            v-if="tab === 'users' && isSuperAdmin"
             class="project-filter"
             :class="{ disabled: isFilterLoading }"
             ref="projectFilterRoot"
@@ -124,7 +124,7 @@
             </div>
           </div>
           <select
-            v-if="tab === 'users'"
+            v-if="tab === 'users' && isSuperAdmin"
             v-model="roleFilter"
             class="project-filter-btn w-auto"
             :disabled="isFilterLoading"
@@ -156,7 +156,7 @@
               <i class="fas fa-table"></i> Table
             </button>
           </div>
-          <CreateProjectModal v-if="tab === 'projects'" />
+          <CreateProjectModal v-if="tab === 'projects' && canCreateProject" />
           
         </div>
       </div>
@@ -262,6 +262,16 @@ export default {
     // role อื่นๆ ทั้งหมดดูได้เฉพาะแท็บ Logs
     canManageProjects() {
       return this.role === "superadmin" || this.role === "admin";
+    },
+    // admin เห็นแท็บ Projects และดูรายการโปรเจกต์ได้ แต่สร้างโปรเจกต์ใหม่ไม่ได้
+    // มีแค่ superadmin เท่านั้นที่สร้างโปรเจกต์ได้
+    canCreateProject() {
+      return this.role === "superadmin";
+    },
+    // ใช้ซ่อน filter บางตัว (เช่น filter โปรเจกต์ในแท็บ Users) จาก admin —
+    // ให้เห็นได้เฉพาะ superadmin เท่านั้น
+    isSuperAdmin() {
+      return this.role === "superadmin";
     },
   },
   created() {

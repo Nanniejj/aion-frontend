@@ -43,14 +43,22 @@
               </span>
             </div>
 
-            <div class="form-field">
+            <div v-if="canAssignSuperadmin" class="form-field">
               <label>Role <span class="req">*</span></label>
               <select v-model="form.role" class="form-input form-select">
-                <option v-if="canAssignSuperadmin" value="superadmin">superadmin</option>
-                <option v-if="canAssignSuperadmin" value="admin">admin</option>
+                <option value="superadmin">superadmin</option>
+                <option value="admin">admin</option>
                 <option value="user">user</option>
-                <option v-if="canAssignSuperadmin" value="service">service</option>
+                <option value="service">service</option>
               </select>
+            </div>
+
+            <div v-else class="form-field">
+              <label>Role <span class="req">*</span></label>
+              <div class="project-readonly">user</div>
+              <span class="field-note d-block mt-1">
+                คุณสร้างผู้ใช้ได้เฉพาะ role user เท่านั้น
+              </span>
             </div>
 
             <div v-if="form.role !== 'service'" class="form-field">
@@ -89,7 +97,7 @@
               />
             </div>
 
-            <div class="form-field">
+            <div v-if="canPickProject" class="form-field">
               <label>โปรเจกต์</label>
               <div class="project-picker" tabindex="-1" @focusout="closeProjectMenu">
                 <input
@@ -129,6 +137,14 @@
                   <div v-if="projectPicker.loading" class="project-picker-loading">กำลังโหลด...</div>
                 </div>
               </div>
+            </div>
+
+            <div v-else class="form-field">
+              <label>โปรเจกต์</label>
+              <div class="project-readonly">{{ currentUserProjectName || "ไม่ระบุ" }}</div>
+              <span class="field-note d-block mt-1">
+                ผู้ใช้ใหม่จะถูกกำหนดให้อยู่ในโปรเจกต์เดียวกับคุณโดยอัตโนมัติ
+              </span>
             </div>
 
             <div v-if="form.role !== 'service'" class="form-field form-field-full">
@@ -357,6 +373,11 @@ function emptyForm() {
 
 export default {
   name: "CreateUserModal",
+  created() {
+    // โหลดรายชื่อผู้ใช้ทั้งระบบไว้ล่วงหน้า ใช้ match username ของตัวเอง (admin)
+    // เพื่อหา project_id ของตัวเอง — เอาไปกำหนดให้ user ที่สร้างใหม่อัตโนมัติ
+    this.$store.dispatch("fetchUserPickerList");
+  },
   data() {
     return {
       open: false,
@@ -393,6 +414,31 @@ export default {
     // มีเฉพาะ superadmin เท่านั้นที่สร้างผู้ใช้ role superadmin ได้ — admin ทำไม่ได้
     canAssignSuperadmin() {
       return this.currentUserRole === "superadmin";
+    },
+    // มีเฉพาะ superadmin เท่านั้นที่เลือกโปรเจกต์เองได้ตอนสร้างผู้ใช้ — admin ไม่ต้องเลือก
+    // เพราะระบบจะกำหนดโปรเจกต์ของตัวเอง (admin) ให้ user ใหม่โดยอัตโนมัติ
+    canPickProject() {
+      return this.currentUserRole === "superadmin";
+    },
+    // รายชื่อผู้ใช้ทั้งระบบ (เอนด์พอยต์เดียวกับที่ LogsMain ใช้หา self id) ใช้หา
+    // project_id ของ admin ที่ล็อกอินอยู่เอง โดย match จาก username
+    systemUsers() {
+      return this.$store.getters.getUserPicker.items || [];
+    },
+    currentUserProjectId() {
+      const uname = (localStorage.getItem("username") || "").trim();
+      if (!uname) return "";
+      const match = this.systemUsers.find((u) => (u.username || "").trim() === uname);
+      return (match && match.project_id) || "";
+    },
+    // ชื่อโปรเจกต์ของ admin เอง เอาไว้แสดงแบบอ่านอย่างเดียวตอนสร้างผู้ใช้ใหม่
+    // (มาจาก record เดียวกับที่ใช้หา project_id — ฟิลด์ projectname มากับ user
+    // record นี้อยู่แล้ว เหมือนที่ตาราง Users และ EditUserModal ใช้กัน)
+    currentUserProjectName() {
+      const uname = (localStorage.getItem("username") || "").trim();
+      if (!uname) return "";
+      const match = this.systemUsers.find((u) => (u.username || "").trim() === uname);
+      return (match && match.projectname) || "";
     },
     // true เมื่อพิมพ์อะไรมาแล้วแต่มีอักขระที่ไม่ใช่ a-z, A-Z, 0-9 ปนอยู่
     usernameInvalid() {
@@ -550,6 +596,11 @@ export default {
       if (!isService && this.form.password.length < 8) {
         this.error = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
         return;
+      }
+      // admin ไม่ต้องเลือกโปรเจกต์เอง — บังคับกำหนดเป็นโปรเจกต์ของตัวเอง (admin) เสมอ
+      // (ครอบคลุมทั้งกรณีปกติที่ไม่มี UI ให้เลือก และกันไว้เผื่อค่าถูกเปลี่ยนผ่านทางอื่น)
+      if (!this.canPickProject) {
+        this.form.project_id = this.currentUserProjectId;
       }
 
       const payload = {
@@ -775,6 +826,15 @@ export default {
   font-size: 12px;
   color: #6b7280;
   margin-left: 4px;
+}
+
+.project-readonly {
+  padding: 10px 14px;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  background: #f6f5f0;
+  font-size: 14px;
+  color: #1c1e24;
 }
 
 .form-input {

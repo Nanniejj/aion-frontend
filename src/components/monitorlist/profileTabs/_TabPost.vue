@@ -249,7 +249,7 @@
                                     <span v-else class="md-font">{{ post.comments_count | numFormat }}&nbsp;</span>
                                 </span>
                                 <!-- </b-badge> -->
-                                <span v-if="post.source == 'facebook'" class="px-1 ml-2" id="box-reaction">
+                                <span v-if="post.source == 'facebook' || post.source == 'youtube'" class="px-1 ml-2" id="box-reaction">
                                     <i class="far fa-thumbs-up" />
                                     <span v-if="post.likes_count !== '0' && post.likes_count" v-b-tooltip.hover
                                         title="Like">
@@ -285,12 +285,13 @@
                                         <i class="fa fa-share"></i>
                                         {{ post.shares_count | numFormat }}
                                     </span>
-                                    <span v-if="
-                                        post.views_count !== '0' && post.views_count
-                                    " id="box-reaction" v-b-tooltip.hover title="View">
-                                        <i class="fas fa-eye"></i>
-                                        {{ post.views_count | numFormat }}
-                                    </span>
+                                </span>
+                                <!-- views: แสดงทุก source ตราบใดที่มี key นี้และไม่เป็น 0 -->
+                                <span v-if="
+                                    post.views_count !== '0' && post.views_count
+                                " id="box-reaction" v-b-tooltip.hover title="View">
+                                    <i class="fas fa-eye"></i>
+                                    {{ post.views_count | numFormat }}
                                 </span>
                                 <!-- reaction-->
                                 <span v-if="post.reaction">

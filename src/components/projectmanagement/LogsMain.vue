@@ -65,7 +65,7 @@
                 </div>
             </div>
 
-            <div v-if="!isPlainUser" class="log-filter-combo" :class="{ disabled: loading }" ref="projectFilterRoot">
+            <div v-if="isSuperAdmin" class="log-filter-combo" :class="{ disabled: loading }" ref="projectFilterRoot">
                 <button type="button" class="log-filter-combo-btn" @click="toggleProjectFilter" :disabled="loading"
                     aria-haspopup="listbox" :aria-expanded="projectFilterOpen">
                     <span class="log-filter-combo-label">{{ projectFilterLabel }}</span>
@@ -249,6 +249,11 @@ export default {
         // role "user" ธรรมดา ไม่ให้เห็น filter ผู้ใช้ / โปรเจกต์ (เห็นได้เฉพาะ log ภาพรวม)
         isPlainUser() {
             return this.role === "user";
+        },
+        // filter โปรเจกต์เห็นได้เฉพาะ superadmin เท่านั้น — admin ก็ไม่ให้เห็นเช่นกัน
+        // (ต่างจาก filter ผู้ใช้ ที่ admin ยังเห็นได้ตามปกติ)
+        isSuperAdmin() {
+            return this.role === "superadmin";
         },
         // หา id ของผู้ใช้ที่ล็อกอินอยู่เอง โดย match username ที่เก็บใน localStorage
         // กับรายชื่อผู้ใช้ทั้งหมดที่โหลดมา (เอนด์พอยต์เดียวกับที่ตัวกรองผู้ใช้ของ
@@ -1268,6 +1273,12 @@ export default {
 /* b-table's stacked="md" prop switches into a label/value card list below
    md — style that mode to match the card look used elsewhere in the app. */
 @media (max-width: 767px) {
+    .log-user-combo{
+        width: 100%;
+    }
+    .log-filter-select {
+        width: 100%;
+    }
     .log-table.table {
         border: none;
         border-radius: 0;
