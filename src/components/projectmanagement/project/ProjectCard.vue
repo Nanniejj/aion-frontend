@@ -41,7 +41,7 @@
             <b-icon icon="clock"></b-icon>
             สร้างเมื่อ {{ formatDate(project.createdAt) }}
           </div> -->
-          <button type="button" class="edit-btn" @click.stop="onEdit" v-b-tooltip.hover title="แก้ไขโปรเจกต์">
+          <button v-if="isSuperAdmin" type="button" class="edit-btn" @click.stop="onEdit" v-b-tooltip.hover title="แก้ไขโปรเจกต์">
             <b-icon icon="pencil"></b-icon>
             แก้ไข
           </button>
@@ -74,9 +74,18 @@ export default {
   data() {
     return {
       menuOpen: false,
+      role: "",
     };
   },
+  created() {
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับไฟล์อื่นๆ ในระบบสิทธิ์นี้)
+    this.role = localStorage.getItem("reftokenOpt") || "";
+  },
   computed: {
+    // ปุ่ม "แก้ไข" มีแค่ superadmin เท่านั้นที่เห็น — admin มองไม่เห็นปุ่มนี้
+    isSuperAdmin() {
+      return this.role === "superadmin";
+    },
     theme() {
       const oid = (this.project._id && this.project._id) || this.project._id || "";
       return THEMES[hashCode(String(oid)) % THEMES.length];
@@ -107,6 +116,9 @@ export default {
     // is responsible for opening an edit form / confirming and dispatching
     // the actual updateProject call.
     onEdit() {
+      // กันไว้อีกชั้น เผื่อถูกเรียกผ่านทางอื่น (เช่น devtools) — มีแค่ superadmin
+      // เท่านั้นที่แก้ไขโปรเจกต์ได้
+      if (!this.isSuperAdmin) return;
       this.menuOpen = false;
       this.$emit("edit", this.project);
     },

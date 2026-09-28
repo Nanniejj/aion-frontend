@@ -361,6 +361,9 @@ export default {
       }
     },
     onEditProject(project) {
+      // กันไว้อีกชั้น เผื่อถูกเรียกผ่านทางอื่น (เช่น devtools) — มีแค่ superadmin
+      // เท่านั้นที่แก้ไขรายละเอียดโปรเจกต์ได้
+      if (!this.isSuperAdmin) return;
       this.$refs.editProjectModal.open(project);
     },
     async onCloseProject(project) {
