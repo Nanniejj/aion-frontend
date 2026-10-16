@@ -53,11 +53,9 @@
                                 </a>
                                 <a v-else class="d-flex align-items-center justify-content-center"
                                     v-bind:href="profile.link_original" target="_blank" style="color: #776167;">
-                                    <h4 v-if="profile.target_type === 'group'" class="py-2 mb-0 text-truncate">{{
-                                        profile.name || profile.uid }}</h4>
-                                    <h4 v-else class="py-2 mb-0 text-truncate">{{ profile.name || data.account_name ||
-                                        profile.uid }}</h4>
-                                    <i class="fa fa-external-link text-info mx-1" v-if="type == 'targetlist'" />
+                                    <h4 v-if="profileLoading" class="py-2 mb-0 text-muted">กำลังโหลดรายละเอียดบัญชี...</h4>
+                                    <h4 v-else class="py-2 mb-0 text-truncate">{{ profileDisplayName }}</h4>
+                                    <i class="fa fa-external-link text-info mx-1" v-if="type == 'targetlist' && !profileLoading" />
                                 </a>
                             </div>
 
@@ -102,7 +100,7 @@
                             </div>
                         </b-col>
                     </b-row>
-                    <div v-if="!editable" class="col-12">
+                    <div v-if="!editable && !profileLoading" class="col-12">
                         <b-row>
                             <b-col cols="12 mb-2 px-0">
                                 <b-badge v-if="profile.species" variant="info" class="mr-1 text-capitalize" pill>{{
@@ -459,16 +457,15 @@
                     <b-col cols="auto">
                         <a style="color: #2c3e50;" class="align-items-center" v-bind:href="profile.link_original || profile.account_url"
                             target="_blank">
-                            <h5 v-if="profile.target_type === 'group'" class="py-2 mb-0 bold">
-                                {{ profile.name || profile.uid }}
-                                <i class="fa fa-external-link text-info mx-1" />
-                            </h5>
+                            <h5 v-if="profileLoading" class="py-2 mb-0 text-muted">กำลังโหลดรายละเอียดบัญชี...</h5>
                             <h5 v-else class="py-2 mb-0 bold">
-                                {{ profile.name || data.account_name || profile.uid }}
+                                {{ profileDisplayName }}
                                 <i class="fa fa-external-link text-info mx-1" />
                             </h5>
                         </a>
                     </b-col>
+                    <!-- รายละเอียดโปรไฟล์: ซ่อนไว้ระหว่างโหลด -->
+                    <template v-if="!profileLoading">
                     <b-col v-if="data.country !== null" cols="12" class="text-left">
                         <i class="fa fa-map-marker"></i>
                         <span v-if="data.country && data.country.country_name_th">
@@ -528,6 +525,7 @@
                             </b-row>
                         </b-badge>
                     </b-col>
+                    </template>
                 </b-row>
             </b-col>
         </b-row>
@@ -760,6 +758,7 @@ export default {
             type: this.$route.query.type,
             default_avatar: "user.svg",
             load: false,
+            profileLoading: true, // สถานะโหลดข้อมูลโปรไฟล์ (แยกจาก load ที่ API อื่นใช้ร่วมกัน)
             loadPost: false,
             data: [],
             profile: {},
@@ -1278,6 +1277,7 @@ export default {
         },
         async apiMonitorProfile() {
             this.load = true;
+            this.profileLoading = true;
             const config = {
                 method: "get",
                 url: "https://api2.cognizata.com/api/v2/monitor/getProfile",
@@ -1313,9 +1313,11 @@ export default {
                     this.checkProfile();
                     this.checkLocation();
                     this.load = false;
+                    this.profileLoading = false;
                 })
                 .catch((error) => {
                     this.load = false;
+                    this.profileLoading = false;
                     // console.error(error);
                 });
         },
@@ -1630,6 +1632,23 @@ export default {
         ...mapGetters([
             'getDataWordcloud','getLoadDataWordcloud'
         ]),
+        // uid สำหรับใช้เป็นชื่อสำรอง (decode เผื่อเป็นภาษาไทยที่ถูก encode มา เช่น %E0%B8%84...)
+        profileUidText() {
+            const raw = (this.profile && this.profile.uid) || this.$route.query.uid || '';
+            try {
+                return decodeURIComponent(raw);
+            } catch (e) {
+                return raw;
+            }
+        },
+        // ชื่อที่แสดง: ใช้ name ก่อน, ถ้าไม่มีจริง ๆ (หลังโหลดเสร็จ) ค่อย fallback เป็น uid
+        profileDisplayName() {
+            const p = this.profile || {};
+            if (p.target_type === 'group') {
+                return p.name || this.profileUidText;
+            }
+            return p.name || this.data.account_name || this.profileUidText;
+        },
         location: {
             get() {
                 if (!this.province_id && !this.district_id && !this.subDistrict_id) {

@@ -226,6 +226,7 @@ export default {
       searchLocked: true,
       view: "list", // 'list' | 'detail'
       activeProject: null,
+      projectsPageBeforeEdit: null, // หน้าของลิสต์โปรเจกต์ตอนเปิด modal แก้ไข
       viewMode: "cards", // 'cards' | 'progress'
     };
   },
@@ -364,6 +365,8 @@ export default {
       // กันไว้อีกชั้น เผื่อถูกเรียกผ่านทางอื่น (เช่น devtools) — มีแค่ superadmin
       // เท่านั้นที่แก้ไขรายละเอียดโปรเจกต์ได้
       if (!this.isSuperAdmin) return;
+      // จำหน้าปัจจุบันไว้ก่อนเปิด modal เผื่อมีการโหลดลิสต์ใหม่ระหว่างแก้ไข
+      this.projectsPageBeforeEdit = this.currentProjectsPage();
       this.$refs.editProjectModal.open(project);
     },
     async onCloseProject(project) {
@@ -376,18 +379,49 @@ export default {
           domainlist: (project.domainlist || []).map((d) => d._id),
           userlist: (project.userlist || []).map((u) => u._id),
         });
-        await this.fetchProjects({ page: 1 });
+        await this.reloadProjectsCurrentPage();
       } catch (err) {
         console.log(err);
       }
     },
-    onProjectUpdated(project) {
+    async onProjectUpdated(project) {
+      // รีโหลดลิสต์โปรเจกต์โดยคงหน้าเดิมไว้ (ไม่เด้งกลับหน้า 1)
+      const page = this.projectsPageBeforeEdit || this.currentProjectsPage();
+      this.projectsPageBeforeEdit = null;
+      try {
+        await this.reloadProjectsCurrentPage(page);
+      } catch (err) {
+        console.log(err);
+      }
+
       if (!project || !this.activeProject || project._id !== this.activeProject._id) return;
       const refreshed = this.projects.find((p) => p._id === project._id);
       this.activeProject = refreshed || project;
     },
     onUserUpdated() {
-      this.fetchUsersFiltered(1);
+      // รีโหลดลิสต์ผู้ใช้โดยคงหน้าเดิมไว้
+      this.fetchUsersFiltered(this.currentUsersPage());
+    },
+    currentUsersPage() {
+      const p = this.getUsersPagination || {};
+      return p.page || 1;
+    },
+    currentProjectsPage() {
+      const p = this.getProjectsPagination || {};
+      return p.page || 1;
+    },
+    // โหลดลิสต์โปรเจกต์หน้าเดิม — ถ้าหน้านั้นว่าง (เช่น รายการสุดท้ายของหน้าหายไป)
+    // ให้ถอยไปหน้าสุดท้ายที่มีข้อมูลแทน
+    async reloadProjectsCurrentPage(page) {
+      const targetPage = page || this.currentProjectsPage();
+      const limit = (this.getProjectsPagination && this.getProjectsPagination.limit) || undefined;
+      await this.fetchProjects({ page: targetPage, ...(limit ? { limit } : {}) });
+
+      const pg = this.getProjectsPagination || {};
+      const totalPages = pg.totalPages || (pg.limit ? Math.ceil((pg.total || 0) / pg.limit) : 1);
+      if (targetPage > 1 && (!this.projects || this.projects.length === 0) && totalPages >= 1 && targetPage > totalPages) {
+        await this.fetchProjects({ page: totalPages, ...(limit ? { limit } : {}) });
+      }
     },
     onUserCreated() {
       this.fetchUsersFiltered(1);
