@@ -6,7 +6,7 @@
       <!-- ===== Header: title + search ===== -->
       <div class="d-flex justify-content-between align-items-start flex-wrap mb-4 page-header">
         <div>
-          <h1 class="page-title">Projects & Users Management</h1>
+          <h1 class="page-title">{{ canManageProjects ? "Projects & Users Management" : "Logs" }}</h1>
         </div>
 
         
@@ -15,12 +15,12 @@
       <!-- ===== Tabs + create buttons (right-aligned) ===== -->
       <div class="d-flex align-items-center justify-content-between flex-wrap mb-4 tab-row">
         <div class="d-flex flex-wrap tab-buttons">
-          <button class="tab-btn" :class="{ active: tab === 'projects' }" @click="tab = 'projects'">
+          <button v-if="canManageProjects" class="tab-btn" :class="{ active: tab === 'projects' }" @click="tab = 'projects'">
             <b-icon icon="grid"></b-icon>
             Projects
             <!-- <span class="count">{{ getProjectsPagination.total }}</span> -->
           </button>
-          <button class="tab-btn" :class="{ active: tab === 'users' }" @click="tab = 'users'">
+          <button v-if="canManageProjects" class="tab-btn" :class="{ active: tab === 'users' }" @click="tab = 'users'">
             <b-icon icon="people"></b-icon>
             Users
             <!-- <span class="count">{{ getUsersPagination.total }}</span> -->
@@ -60,7 +60,7 @@
             </b-input-group-append>
           </b-input-group>
           <div
-            v-if="tab === 'users'"
+            v-if="tab === 'users' && isSuperAdmin"
             class="project-filter"
             :class="{ disabled: isFilterLoading }"
             ref="projectFilterRoot"
@@ -124,7 +124,7 @@
             </div>
           </div>
           <select
-            v-if="tab === 'users'"
+            v-if="tab === 'users' && isSuperAdmin"
             v-model="roleFilter"
             class="project-filter-btn w-auto"
             :disabled="isFilterLoading"
@@ -156,7 +156,7 @@
               <i class="fas fa-table"></i> Table
             </button>
           </div>
-          <CreateProjectModal v-if="tab === 'projects'" />
+          <CreateProjectModal v-if="tab === 'projects' && canCreateProject" />
           
         </div>
       </div>
@@ -214,7 +214,8 @@ export default {
   components: { HomeNav, ProjectMain, UserMain, ProjectDetail, CreateProjectModal, EditProjectModal, CreateUserModal, LogsMain },
   data() {
     return {
-      tab: "projects", // 'projects' | 'users'
+      tab: "projects", // 'projects' | 'users' | 'logs'
+      role: "",
       query: "",
       roleFilter: "",
       projectFilter: "",
@@ -225,6 +226,7 @@ export default {
       searchLocked: true,
       view: "list", // 'list' | 'detail'
       activeProject: null,
+      projectsPageBeforeEdit: null, // หน้าของลิสต์โปรเจกต์ตอนเปิด modal แก้ไข
       viewMode: "cards", // 'cards' | 'progress'
     };
   },
@@ -257,8 +259,29 @@ export default {
     isFilterLoading() {
       return this.tab === "projects" ? this.getLoadingProjects : this.getLoadingUsers;
     },
+    // superadmin และ admin เท่านั้นที่จัดการ Projects/Users ได้ (รวมถึงสร้างบัญชีผู้ใช้)
+    // role อื่นๆ ทั้งหมดดูได้เฉพาะแท็บ Logs
+    canManageProjects() {
+      return this.role === "superadmin" || this.role === "admin";
+    },
+    // admin เห็นแท็บ Projects และดูรายการโปรเจกต์ได้ แต่สร้างโปรเจกต์ใหม่ไม่ได้
+    // มีแค่ superadmin เท่านั้นที่สร้างโปรเจกต์ได้
+    canCreateProject() {
+      return this.role === "superadmin";
+    },
+    // ใช้ซ่อน filter บางตัว (เช่น filter โปรเจกต์ในแท็บ Users) จาก admin —
+    // ให้เห็นได้เฉพาะ superadmin เท่านั้น
+    isSuperAdmin() {
+      return this.role === "superadmin";
+    },
   },
   created() {
+    this.role = localStorage.getItem("reftokenOpt") || "";
+    if (!this.canManageProjects) {
+      // role ที่ไม่มีสิทธิ์จัดการ Projects/Users ให้บังคับเปิดแท็บ Logs เท่านั้น
+      this.tab = "logs";
+      return;
+    }
     this.fetchProjects();
     this.fetchUsersFiltered(1);
   },
@@ -275,11 +298,16 @@ export default {
     // tabs clears whatever was typed and reloads that tab unfiltered,
     // since a query typed for one tab (e.g. project names) isn't a
     // meaningful filter for the other (e.g. users).
-    tab() {
+    tab(newTab) {
+      // กัน role ที่ไม่มีสิทธิ์ไม่ให้สลับไปแท็บ Projects/Users ได้ไม่ว่าจะด้วยวิธีใด
+      if (!this.canManageProjects && newTab !== "logs") {
+        this.tab = "logs";
+        return;
+      }
       this.query = "";
-      if (this.tab === "projects") {
+      if (newTab === "projects") {
         this.searchProjects("");
-      } else {
+      } else if (newTab === "users") {
         this.fetchUsersFiltered(1);
       }
     },
@@ -334,6 +362,11 @@ export default {
       }
     },
     onEditProject(project) {
+      // กันไว้อีกชั้น เผื่อถูกเรียกผ่านทางอื่น (เช่น devtools) — มีแค่ superadmin
+      // เท่านั้นที่แก้ไขรายละเอียดโปรเจกต์ได้
+      if (!this.isSuperAdmin) return;
+      // จำหน้าปัจจุบันไว้ก่อนเปิด modal เผื่อมีการโหลดลิสต์ใหม่ระหว่างแก้ไข
+      this.projectsPageBeforeEdit = this.currentProjectsPage();
       this.$refs.editProjectModal.open(project);
     },
     async onCloseProject(project) {
@@ -346,18 +379,49 @@ export default {
           domainlist: (project.domainlist || []).map((d) => d._id),
           userlist: (project.userlist || []).map((u) => u._id),
         });
-        await this.fetchProjects({ page: 1 });
+        await this.reloadProjectsCurrentPage();
       } catch (err) {
         console.log(err);
       }
     },
-    onProjectUpdated(project) {
+    async onProjectUpdated(project) {
+      // รีโหลดลิสต์โปรเจกต์โดยคงหน้าเดิมไว้ (ไม่เด้งกลับหน้า 1)
+      const page = this.projectsPageBeforeEdit || this.currentProjectsPage();
+      this.projectsPageBeforeEdit = null;
+      try {
+        await this.reloadProjectsCurrentPage(page);
+      } catch (err) {
+        console.log(err);
+      }
+
       if (!project || !this.activeProject || project._id !== this.activeProject._id) return;
       const refreshed = this.projects.find((p) => p._id === project._id);
       this.activeProject = refreshed || project;
     },
     onUserUpdated() {
-      this.fetchUsersFiltered(1);
+      // รีโหลดลิสต์ผู้ใช้โดยคงหน้าเดิมไว้
+      this.fetchUsersFiltered(this.currentUsersPage());
+    },
+    currentUsersPage() {
+      const p = this.getUsersPagination || {};
+      return p.page || 1;
+    },
+    currentProjectsPage() {
+      const p = this.getProjectsPagination || {};
+      return p.page || 1;
+    },
+    // โหลดลิสต์โปรเจกต์หน้าเดิม — ถ้าหน้านั้นว่าง (เช่น รายการสุดท้ายของหน้าหายไป)
+    // ให้ถอยไปหน้าสุดท้ายที่มีข้อมูลแทน
+    async reloadProjectsCurrentPage(page) {
+      const targetPage = page || this.currentProjectsPage();
+      const limit = (this.getProjectsPagination && this.getProjectsPagination.limit) || undefined;
+      await this.fetchProjects({ page: targetPage, ...(limit ? { limit } : {}) });
+
+      const pg = this.getProjectsPagination || {};
+      const totalPages = pg.totalPages || (pg.limit ? Math.ceil((pg.total || 0) / pg.limit) : 1);
+      if (targetPage > 1 && (!this.projects || this.projects.length === 0) && totalPages >= 1 && targetPage > totalPages) {
+        await this.fetchProjects({ page: totalPages, ...(limit ? { limit } : {}) });
+      }
     },
     onUserCreated() {
       this.fetchUsersFiltered(1);

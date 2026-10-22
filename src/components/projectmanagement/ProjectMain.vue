@@ -87,6 +87,7 @@
                 
               </button>
               <button
+                v-if="isSuperAdmin"
                 type="button"
                 class="row-action-btn edit"
                 title="แก้ไขโปรเจกต์"
@@ -162,9 +163,18 @@ export default {
       // echo, not two emissions firing back-to-back. Track the page we
       // already acted on ourselves instead.
       requestedPage: null,
+      role: "",
     };
   },
+  created() {
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับไฟล์อื่นๆ ในระบบสิทธิ์นี้)
+    this.role = localStorage.getItem("reftokenOpt") || "";
+  },
   computed: {
+    // ปุ่ม "แก้ไข" ในมุมมองตาราง มีแค่ superadmin เท่านั้นที่เห็น
+    isSuperAdmin() {
+      return this.role === "superadmin";
+    },
     totalPages() {
       if (!this.pagination) return 1;
       if (this.pagination.totalPages) return this.pagination.totalPages;

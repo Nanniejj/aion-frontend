@@ -30,6 +30,7 @@
                 ref="usernameInput"
                 v-model.trim="form.username"
                 class="form-input"
+                :class="{ 'is-invalid': usernameInvalid }"
                 placeholder="เช่น yellydev"
                 autocomplete="off"
                 name="new-user-username"
@@ -37,9 +38,12 @@
                 @focus="usernameLocked = false"
                 @keyup.enter="submit"
               />
+              <span v-if="usernameInvalid" class="field-note d-block mt-1" style="color: #c0392b">
+                ใช้ได้เฉพาะตัวอักษร a-z, A-Z และตัวเลข 0-9 เท่านั้น
+              </span>
             </div>
 
-            <div class="form-field">
+            <div v-if="canAssignSuperadmin" class="form-field">
               <label>Role <span class="req">*</span></label>
               <select v-model="form.role" class="form-input form-select">
                 <option value="superadmin">superadmin</option>
@@ -47,6 +51,14 @@
                 <option value="user">user</option>
                 <option value="service">service</option>
               </select>
+            </div>
+
+            <div v-else class="form-field">
+              <label>Role <span class="req">*</span></label>
+              <div class="project-readonly">user</div>
+              <span class="field-note d-block mt-1">
+                คุณสร้างผู้ใช้ได้เฉพาะ role user เท่านั้น
+              </span>
             </div>
 
             <div v-if="form.role !== 'service'" class="form-field">
@@ -85,7 +97,7 @@
               />
             </div>
 
-            <div class="form-field">
+            <div v-if="canPickProject" class="form-field">
               <label>โปรเจกต์</label>
               <div class="project-picker" tabindex="-1" @focusout="closeProjectMenu">
                 <input
@@ -125,6 +137,14 @@
                   <div v-if="projectPicker.loading" class="project-picker-loading">กำลังโหลด...</div>
                 </div>
               </div>
+            </div>
+
+            <div v-else class="form-field">
+              <label>โปรเจกต์</label>
+              <div class="project-readonly">{{ currentUserProjectName || "ไม่ระบุ" }}</div>
+              <span class="field-note d-block mt-1">
+                ผู้ใช้ใหม่จะถูกกำหนดให้อยู่ในโปรเจกต์เดียวกับคุณโดยอัตโนมัติ
+              </span>
             </div>
 
             <div v-if="form.role !== 'service'" class="form-field form-field-full">
@@ -242,7 +262,7 @@
         </div>
 
         <b-row class=" justify-content-end mx-3">
-          <button class="btn-submit mx-3" :disabled="submitting" @click="submit">
+          <button class="btn-submit mx-3" :disabled="submitting || usernameInvalid || isFormIncomplete" @click="submit">
             {{ submitting ? "กำลังบันทึก..." : "สร้างผู้ใช้" }}
           </button>
           <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
@@ -353,6 +373,11 @@ function emptyForm() {
 
 export default {
   name: "CreateUserModal",
+  created() {
+    // โหลดรายชื่อผู้ใช้ทั้งระบบไว้ล่วงหน้า ใช้ match username ของตัวเอง (admin)
+    // เพื่อหา project_id ของตัวเอง — เอาไปกำหนดให้ user ที่สร้างใหม่อัตโนมัติ
+    this.$store.dispatch("fetchUserPickerList");
+  },
   data() {
     return {
       open: false,
@@ -381,6 +406,52 @@ export default {
     // Paginated project list backing the autocomplete dropdown.
     projectPicker() {
       return this.$store.getters.getProjectPicker;
+    },
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับ HomeNav/ProjectManagement)
+    currentUserRole() {
+      return localStorage.getItem("reftokenOpt") || "";
+    },
+    // มีเฉพาะ superadmin เท่านั้นที่สร้างผู้ใช้ role superadmin ได้ — admin ทำไม่ได้
+    canAssignSuperadmin() {
+      return this.currentUserRole === "superadmin";
+    },
+    // มีเฉพาะ superadmin เท่านั้นที่เลือกโปรเจกต์เองได้ตอนสร้างผู้ใช้ — admin ไม่ต้องเลือก
+    // เพราะระบบจะกำหนดโปรเจกต์ของตัวเอง (admin) ให้ user ใหม่โดยอัตโนมัติ
+    canPickProject() {
+      return this.currentUserRole === "superadmin";
+    },
+    // รายชื่อผู้ใช้ทั้งระบบ (เอนด์พอยต์เดียวกับที่ LogsMain ใช้หา self id) ใช้หา
+    // project_id ของ admin ที่ล็อกอินอยู่เอง โดย match จาก username
+    systemUsers() {
+      return this.$store.getters.getUserPicker.items || [];
+    },
+    currentUserProjectId() {
+      const uname = (localStorage.getItem("username") || "").trim();
+      if (!uname) return "";
+      const match = this.systemUsers.find((u) => (u.username || "").trim() === uname);
+      return (match && match.project_id) || "";
+    },
+    // ชื่อโปรเจกต์ของ admin เอง เอาไว้แสดงแบบอ่านอย่างเดียวตอนสร้างผู้ใช้ใหม่
+    // (มาจาก record เดียวกับที่ใช้หา project_id — ฟิลด์ projectname มากับ user
+    // record นี้อยู่แล้ว เหมือนที่ตาราง Users และ EditUserModal ใช้กัน)
+    currentUserProjectName() {
+      const uname = (localStorage.getItem("username") || "").trim();
+      if (!uname) return "";
+      const match = this.systemUsers.find((u) => (u.username || "").trim() === uname);
+      return (match && match.projectname) || "";
+    },
+    // true เมื่อพิมพ์อะไรมาแล้วแต่มีอักขระที่ไม่ใช่ a-z, A-Z, 0-9 ปนอยู่
+    usernameInvalid() {
+      return !!this.form.username && !/^[a-zA-Z0-9]+$/.test(this.form.username);
+    },
+    // true เมื่อยังกรอกข้อมูลที่จำเป็น (required) ไม่ครบตาม role ที่เลือกอยู่
+    isFormIncomplete() {
+      if (!this.form.username) return true;
+      if (this.form.role !== "service") {
+        if (!this.form.name || !this.form.lastname || !this.form.email || !this.form.password) return true;
+        if (this.form.password.length < 8) return true;
+      }
+      return false;
     },
   },
   watch: {
@@ -503,6 +574,19 @@ export default {
     },
     async submit() {
       const isService = this.form.role === "service";
+      // กันไว้อีกชั้น เผื่อ option ถูกบังคับเลือกผ่านทางอื่น (เช่น devtools)
+      // — admin สร้างผู้ใช้ได้เฉพาะ role user เท่านั้น ส่วน role อื่น (superadmin/admin/service)
+      // สร้างได้เฉพาะ superadmin
+      if (this.form.role !== "user" && !this.canAssignSuperadmin) {
+        this.error = "คุณไม่มีสิทธิ์สร้างผู้ใช้ role นี้ (สร้างได้เฉพาะ role user)";
+        return;
+      }
+      // ปุ่มสร้างผู้ใช้ถูก disabled อยู่แล้วเมื่อ username ไม่ถูกต้อง แต่กันไว้เผื่อ
+      // กด Enter ในช่อง username ซึ่งไม่ผ่านปุ่มที่ถูก disabled
+      if (this.usernameInvalid) {
+        this.error = "Username ใช้ได้เฉพาะตัวอักษร a-z, A-Z และตัวเลข 0-9 เท่านั้น";
+        return;
+      }
       if (!this.form.username || (!isService && (!this.form.name || !this.form.lastname || !this.form.email || !this.form.password))) {
         this.error = isService
           ? "กรุณากรอก Username ให้ครบ"
@@ -512,6 +596,11 @@ export default {
       if (!isService && this.form.password.length < 8) {
         this.error = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
         return;
+      }
+      // admin ไม่ต้องเลือกโปรเจกต์เอง — บังคับกำหนดเป็นโปรเจกต์ของตัวเอง (admin) เสมอ
+      // (ครอบคลุมทั้งกรณีปกติที่ไม่มี UI ให้เลือก และกันไว้เผื่อค่าถูกเปลี่ยนผ่านทางอื่น)
+      if (!this.canPickProject) {
+        this.form.project_id = this.currentUserProjectId;
       }
 
       const payload = {
@@ -739,6 +828,15 @@ export default {
   margin-left: 4px;
 }
 
+.project-readonly {
+  padding: 10px 14px;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  background: #f6f5f0;
+  font-size: 14px;
+  color: #1c1e24;
+}
+
 .form-input {
   border: 1px solid #e4e1d8;
   border-radius: 8px;
@@ -754,6 +852,14 @@ export default {
 .form-input:focus {
   border-color: #128189;
   box-shadow: 0 0 0 2px rgba(18, 129, 137, 0.15);
+}
+
+.form-input.is-invalid {
+  border-color: #c0392b;
+}
+.form-input.is-invalid:focus {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.15);
 }
 
 .form-input:-webkit-autofill,
@@ -1115,4 +1221,4 @@ export default {
   margin: 0 !important;
   z-index: 2001 !important;
 }
-</style>v
+</style>

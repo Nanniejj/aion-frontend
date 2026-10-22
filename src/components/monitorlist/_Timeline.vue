@@ -140,7 +140,10 @@
                                     {{ item.likes_count | numFormat }} </span>
 
                                     <!-- {{item}} -->
-                                    <span class="d-inline-block box-link ml-2">
+                                    <span class="d-inline-block box-link ml-2"
+                                        :class="{ 'comment-toggle': hasComments(item), 'text-info': isCommentOpen(item) }"
+                                        v-b-tooltip.hover :title="hasComments(item) ? 'ดูคอมเมนต์' : 'ไม่มีคอมเมนต์'"
+                                        @click="toggleComments(item)">
                                     <i class="fa fa-comment" aria-hidden="true"></i>
                                     <span>
                                         {{ item.comments_count | numFormat }} </span>
@@ -186,6 +189,30 @@
                                 <b-avatar variant="danger" icon="emoji-frown" v-if="item.sentiment === -1" size="34" />
                             </b-col>
                         </b-row>
+
+                        <!-- comment content -->
+                        <div v-if="isCommentOpen(item)" class="timeline-comments text-left mt-2">
+                            <div v-for="(cmt, ci) in getComments(item)" :key="'cmt-' + ci" class="timeline-comment">
+                                <div class="d-flex">
+                                    <a :href="commentAuthorLink(item, cmt)" target="_blank" rel="noopener" class="mr-2 flex-shrink-0">
+                                        <img v-if="commentPhoto(item, cmt) && !cmt.photoError" :src="commentPhoto(item, cmt)"
+                                            class="img-cmt" referrerpolicy="no-referrer" @error="onCommentImgError(cmt)" />
+                                        <b-avatar v-else size="32px"></b-avatar>
+                                    </a>
+                                    <div class="flex-grow-1" style="min-width: 0;">
+                                        <div>
+                                            <a :href="commentAuthorLink(item, cmt)" target="_blank" rel="noopener"
+                                                class="font-weight-bold text-info">{{ commentAuthor(item, cmt) }}</a>
+                                            <span class="font-weight-light small text-muted ml-2">{{ commentTime(item, cmt) }}</span>
+                                        </div>
+                                        <div class="font-weight-light cmt-text">{{ commentText(item, cmt) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="getComments(item).length === 0" class="small text-muted py-2">
+                                ยังไม่มีข้อมูลคอมเมนต์ของโพสต์นี้ในระบบ
+                            </div>
+                        </div>
                     </template>
                 </b-card>
                 <div :class="index % 2 === 0 ? 'left' : 'right'" class="pt-2 item-image-container d-none d-md-block">
@@ -268,6 +295,7 @@ export default {
             offset: 0,
             valueDate: [],
             sortOrder: "asc", // ค่าเริ่มต้น: เก่า → ใหม่
+            openComments: {}, // key = item._id → true เมื่อเปิดดูคอมเมนต์ของการ์ดนั้น
             minDotSize: 18, // ขนาดต่ำสุด (px)
             maxDotSize: 40, // ขนาดสูงสุด (px)
             // timelineItems:[]
@@ -317,6 +345,64 @@ export default {
                 item.translatedFullText = payload.fullText;
                 item.showTranslated = payload.showTranslated;
             }
+        },
+        // ===== comments =====
+        // news เก็บคอมเมนต์ไว้ใน item.comments.comments ส่วน platform อื่นเป็น array ตรงๆ
+        getComments(item) {
+            if (!item || !item.comments) return [];
+            if (Array.isArray(item.comments)) return item.comments;
+            if (Array.isArray(item.comments.comments)) return item.comments.comments;
+            return [];
+        },
+        hasComments(item) {
+            return this.getComments(item).length > 0 || Number(item.comments_count) > 0;
+        },
+        commentKey(item) {
+            return item._id || item.uid || item.url_post;
+        },
+        isCommentOpen(item) {
+            return !!this.openComments[this.commentKey(item)];
+        },
+        toggleComments(item) {
+            if (!this.hasComments(item)) return;
+            const key = this.commentKey(item);
+            this.$set(this.openComments, key, !this.openComments[key]);
+        },
+        commentAuthor(item, cmt) {
+            if (item.source === 'news') return cmt.displayName || '';
+            return cmt.author || cmt.username || cmt.name || '';
+        },
+        commentPhoto(item, cmt) {
+            if (item.source === 'news') return cmt.pictureUrl;
+            return cmt.photo || cmt.profile_image;
+        },
+        commentText(item, cmt) {
+            if (item.source === 'news') {
+                return (cmt.contents || []).map(c => (c.extData && c.extData.content) || '').join(' ');
+            }
+            return cmt.text || cmt.content || '';
+        },
+        commentTime(item, cmt) {
+            const t = cmt.time;
+            if (!t) return '';
+            if (item.source === 'youtube' && String(t).includes('T')) {
+                const [d, h] = String(t).split('T');
+                return d + ' | ' + h;
+            }
+            return t;
+        },
+        // author_link ของ YouTube บางครั้งเป็น URL เต็มอยู่แล้ว → ห้ามต่อ domain ซ้ำ
+        commentAuthorLink(item, cmt) {
+            const link = item.source === 'youtube' ? cmt.author_link : cmt.url;
+            if (!link) return '#';
+            const value = String(link).trim();
+            if (/^https?:\/\//i.test(value)) return value;
+            if (value.startsWith('//')) return 'https:' + value;
+            if (item.source === 'youtube') return 'https://www.youtube.com/' + value.replace(/^\/+/, '');
+            return value;
+        },
+        onCommentImgError(cmt) {
+            this.$set(cmt, 'photoError', true);
         },
         openGallery(i, data) {
             this.photoIndex = 0;
@@ -403,6 +489,36 @@ export default {
     box-shadow: 0 0 5px #f8aa02, 0 0 10px #fdd171ad, 0 0 15px #fdd1716b;
   /* background: #e9ecef; */
   /* clip-path: path("M50,0 C55,10,65,10,70,0 C80,5,85,15,80,25 C90,30,90,40,80,45 C85,55,80,65,70,60 C65,70,55,70,50,60 C45,70,35,70,30,60 C20,65,15,55,20,45 C10,40,10,30,20,25 C15,15,20,5,30,0 C35,10,45,10,50,0 Z"); */
+}
+.comment-toggle {
+    cursor: pointer;
+}
+.comment-toggle:hover {
+    color: #17a2b8;
+}
+.timeline-comments {
+    max-height: 320px;
+    overflow-y: auto;
+    border-top: 1px solid #e9ecef;
+    padding-top: 8px;
+}
+.timeline-comment {
+    padding: 6px 4px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 14px;
+}
+.timeline-comment:last-child {
+    border-bottom: none;
+}
+.timeline-comments .img-cmt {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.timeline-comments .cmt-text {
+    white-space: pre-line;
+    word-break: break-word;
 }
 .date-bg {
     border-radius: 20px;

@@ -87,6 +87,7 @@
                   <b-icon icon="pencil-square"></b-icon>
                 </button>
                 <button
+                  v-if="isSuperAdmin"
                   type="button"
                   class="row-action-btn delete"
                   :class="{ 'is-suspended': !u.isActive }"
@@ -366,9 +367,18 @@ export default {
         { months: 3, key: "3m", label: "3 เดือน" },
       ],
       expandedLogId: null,
+      role: "",
     };
   },
+  created() {
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับไฟล์อื่นๆ ในระบบสิทธิ์นี้)
+    this.role = localStorage.getItem("reftokenOpt") || "";
+  },
   computed: {
+    // ปุ่มระงับ/เปิดใช้งานบัญชี มีแค่ superadmin เท่านั้นที่ทำได้ — admin มองไม่เห็นปุ่มนี้
+    isSuperAdmin() {
+      return this.role === "superadmin";
+    },
     totalPages() {
       if (!this.pagination) return 1;
       if (this.pagination.totalPages) return this.pagination.totalPages;
@@ -626,6 +636,9 @@ export default {
       this.logDatePreset = "custom";
     },
     async confirmToggleActive(user) {
+      // กันไว้อีกชั้น เผื่อถูกเรียกผ่านทางอื่น (เช่น devtools) — มีแค่ superadmin
+      // เท่านั้นที่ระงับ/เปิดใช้งานบัญชีผู้ใช้ได้
+      if (!this.isSuperAdmin) return;
       const willSuspend = user.isActive;
 
       const result = await Swal.fire({

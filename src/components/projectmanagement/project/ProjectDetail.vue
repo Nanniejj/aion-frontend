@@ -21,7 +21,7 @@
             <span class="switch-thumb"></span>
           </span>
         </label> -->
-        <button type="button" class="edit-btn" @click.stop="onEdit" v-b-tooltip.hover title="แก้ไขโปรเจกต์">
+        <button v-if="isSuperAdmin" type="button" class="edit-btn" @click.stop="onEdit" v-b-tooltip.hover title="แก้ไขโปรเจกต์">
         <b-icon icon="pencil"></b-icon>
         แก้ไขรายละเอียด
       </button>
@@ -229,6 +229,10 @@
         </div>
 
         <div class="log-date-presets">
+          <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '7d' }"
+            @click="setLogDateDays(7, '7d')">
+            7 วัน
+          </button>
           <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '1' }"
             @click="setLogDateMonths(1, '1')">
             1 เดือน
@@ -236,14 +240,6 @@
           <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '3' }"
             @click="setLogDateMonths(3, '3')">
             3 เดือน
-          </button>
-          <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '6' }"
-            @click="setLogDateMonths(6, '6')">
-            6 เดือน
-          </button>
-          <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === '12' }"
-            @click="setLogDateMonths(12, '12')">
-            12 เดือน
           </button>
           <button type="button" class="log-preset-btn" :class="{ active: logDatePreset === 'custom' }"
             @click="useCustomLogDate">
@@ -374,11 +370,14 @@ export default {
       statusUpdating: false,
       expandedLogId: null,
       logCurrentPage: 1,
+      role: "",
     };
   },
   created() {
-    // Default the audit-log date filter to the last 1 month.
-    this.setLogDateRangeOnly(1, "1");
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับไฟล์อื่นๆ ในระบบสิทธิ์นี้)
+    this.role = localStorage.getItem("reftokenOpt") || "";
+    // Default the audit-log date filter to the last 7 days.
+    this.setLogDateRangeDays(7, "7d");
   },
   watch: {
     tab(newTab) {
@@ -417,6 +416,10 @@ export default {
     },
   },
   computed: {
+    // ปุ่ม "แก้ไขรายละเอียด" โปรเจกต์ มีแค่ superadmin เท่านั้นที่เห็น — admin มองไม่เห็นปุ่มนี้
+    isSuperAdmin() {
+      return this.role === "superadmin";
+    },
     detailUsers() {
       // userlist items are the full user objects the API embeds directly.
       // Guarded against a dangling null entry (deleted/orphaned
@@ -522,10 +525,10 @@ export default {
     },
     hasActiveLogFilters() {
       const f = this.logFilters;
-      // The 1-month date range is the default state, not a user-applied
+      // The 7-day date range is the default state, not a user-applied
       // filter — only flag it as "active" once something differs from
       // that default (a different preset, custom dates, or cleared).
-      return !!(f.search || f.method || f.user_id || this.logDatePreset !== "1");
+      return !!(f.search || f.method || f.user_id || this.logDatePreset !== "7d");
     },
     isProjectActive() {
       return this.localStatus === "active";
@@ -546,6 +549,9 @@ export default {
   },
   methods: {
     onEdit() {
+      // กันไว้อีกชั้น เผื่อถูกเรียกผ่านทางอื่น (เช่น devtools) — มีแค่ superadmin
+      // เท่านั้นที่แก้ไขรายละเอียดโปรเจกต์ได้
+      if (!this.isSuperAdmin) return;
       // this.menuOpen = false;
       this.$emit("edit", this.project);
     },
@@ -640,7 +646,7 @@ export default {
       this.logFilters = { search: "", method: "", user_id: "", startDate: "", endDate: "" };
       this.userFilterSearch = "";
       this.userFilterMenuOpen = false;
-      this.setLogDateRangeOnly(1, "1"); // back to the default 1-month range
+      this.setLogDateRangeDays(7, "7d"); // back to the default 7-day range
       this.expandedLogId = null;
       this.fetchLogs(1);
     },
@@ -662,8 +668,20 @@ export default {
       this.logFilters.endDate = this.toISODate(end);
       this.logDatePreset = key;
     },
+    setLogDateRangeDays(days, key) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - days);
+      this.logFilters.startDate = this.toISODate(start);
+      this.logFilters.endDate = this.toISODate(end);
+      this.logDatePreset = key;
+    },
     setLogDateMonths(months, key) {
       this.setLogDateRangeOnly(months, key);
+      this.applyLogFilters();
+    },
+    setLogDateDays(days, key) {
+      this.setLogDateRangeDays(days, key);
       this.applyLogFilters();
     },
     useCustomLogDate() {

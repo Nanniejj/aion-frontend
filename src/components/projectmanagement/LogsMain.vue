@@ -19,7 +19,7 @@
                 </button>
             </div>
 
-            <div class="log-user-combo" tabindex="-1" @focusout="closeUserFilterMenu">
+            <div v-if="!isPlainUser" class="log-user-combo" tabindex="-1" @focusout="closeUserFilterMenu">
                 <div class="log-user-combo-shell" @click="focusUserFilterInput">
                     <span v-if="selectedLogUser" class="log-user-combo-chip">
                         <span class="log-user-combo-chip-avatar">{{ selectedLogUser.initial }}</span>
@@ -65,7 +65,7 @@
                 </div>
             </div>
 
-            <div class="log-filter-combo" :class="{ disabled: loading }" ref="projectFilterRoot">
+            <div v-if="isSuperAdmin" class="log-filter-combo" :class="{ disabled: loading }" ref="projectFilterRoot">
                 <button type="button" class="log-filter-combo-btn" @click="toggleProjectFilter" :disabled="loading"
                     aria-haspopup="listbox" :aria-expanded="projectFilterOpen">
                     <span class="log-filter-combo-label">{{ projectFilterLabel }}</span>
@@ -241,10 +241,29 @@ export default {
             // just filters that list client-side as you type.
             userFilterSearch: "",
             userFilterMenuOpen: false,
+            role: "",
         };
     },
     computed: {
         ...mapGetters(["getProjectPicker"]),
+        // role "user" ธรรมดา ไม่ให้เห็น filter ผู้ใช้ / โปรเจกต์ (เห็นได้เฉพาะ log ภาพรวม)
+        isPlainUser() {
+            return this.role === "user";
+        },
+        // filter โปรเจกต์เห็นได้เฉพาะ superadmin เท่านั้น — admin ก็ไม่ให้เห็นเช่นกัน
+        // (ต่างจาก filter ผู้ใช้ ที่ admin ยังเห็นได้ตามปกติ)
+        isSuperAdmin() {
+            return this.role === "superadmin";
+        },
+        // หา id ของผู้ใช้ที่ล็อกอินอยู่เอง โดย match username ที่เก็บใน localStorage
+        // กับรายชื่อผู้ใช้ทั้งหมดที่โหลดมา (เอนด์พอยต์เดียวกับที่ตัวกรองผู้ใช้ของ
+        // admin/superadmin ใช้อยู่แล้ว) — ใช้บังคับกรอง log เฉพาะของตัวเองสำหรับ role user
+        currentUserId() {
+            const uname = (localStorage.getItem("username") || "").trim();
+            if (!uname) return "";
+            const match = this.systemUsers.find((u) => (u.username || "").trim() === uname);
+            return match ? match.id : "";
+        },
         lastPage() {
             if (this.pagination.totalPages) return this.pagination.totalPages;
             return Math.max(1, Math.ceil((this.pagination.total || 0) / (this.pagination.limit || 10)));
@@ -304,6 +323,11 @@ export default {
             const f = this.f;
             // The default 7-day range isn't a user-applied filter — only flag
             // "active" once something differs from that default state.
+            // สำหรับ role user เอง f.userId จะถูกล็อกเป็นของตัวเองเสมอ (ไม่ใช่ตัวกรอง
+            // ที่ผู้ใช้เลือกเอง) จึงไม่นับรวมในการเช็คว่ามีตัวกรองที่ใช้งานอยู่หรือไม่
+            if (this.isPlainUser) {
+                return !!(f.search || f.method || this.datePreset !== "7d");
+            }
             return !!(f.search || f.userId || f.projectId || f.method || this.datePreset !== "7d");
         },
         // date-picker (range mode) wants/emits a single [start, end] array —
@@ -320,13 +344,20 @@ export default {
             },
         },
     },
-    created() {
+    async created() {
         // Logs load right away; the project picker lazy-loads its first
         // page only once opened (see toggleProjectFilter). The user picker
         // loads its full list once here, same as ProjectDetail.vue does
         // when its logs tab is opened.
+        this.role = localStorage.getItem("reftokenOpt") || "";
+        // ต้องรอโหลดรายชื่อผู้ใช้ให้เสร็จก่อน เพื่อ match หา id ของตัวเอง (currentUserId)
+        // แล้วค่อยยิง fetchLogs ครั้งแรก — กัน role user เห็น log ของคนอื่นแวบแรกก่อนจะถูกกรอง
+        await this.$store.dispatch("fetchUserPickerList");
+        if (this.isPlainUser) {
+            // ตัวกรองผู้ใช้ถูกซ่อนสำหรับ role user แล้ว ค่านี้จึงล็อกไว้ ไม่มีทางถูกเปลี่ยนจาก UI
+            this.f.userId = this.currentUserId;
+        }
         this.setDatePreset(this.datePresets[0]);
-        this.$store.dispatch("fetchUserPickerList");
     },
     mounted() {
         document.addEventListener("click", this.handleFilterOutsideClick);
@@ -558,7 +589,16 @@ export default {
             this.datePreset = "custom";
         },
         clearFilters() {
-            this.f = { userId: "", projectId: "", projectName: "", search: "", method: "", startDate: "", endDate: "" };
+            this.f = {
+                // role user ถูกล็อก userId เป็นของตัวเองเสมอ ล้างตัวกรองแล้วต้องไม่หลุดไปเห็น log คนอื่น
+                userId: this.isPlainUser ? this.currentUserId : "",
+                projectId: "",
+                projectName: "",
+                search: "",
+                method: "",
+                startDate: "",
+                endDate: "",
+            };
             this.userFilterSearch = "";
             this.userFilterMenuOpen = false;
             this.setDatePreset(this.datePresets[0]);
@@ -1233,6 +1273,12 @@ export default {
 /* b-table's stacked="md" prop switches into a label/value card list below
    md — style that mode to match the card look used elsewhere in the app. */
 @media (max-width: 767px) {
+    .log-user-combo{
+        width: 100%;
+    }
+    .log-filter-select {
+        width: 100%;
+    }
     .log-table.table {
         border: none;
         border-radius: 0;

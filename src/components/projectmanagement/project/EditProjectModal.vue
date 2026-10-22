@@ -37,13 +37,17 @@
               v-model.trim="form.projectname"
               class="form-input"
               placeholder="เช่น AFSC2"
+              :disabled="!canManageProjectSettings"
               @keyup.enter="submit"
             />
             <span v-if="error" class="form-error">{{ error }}</span>
+            <span v-if="!canManageProjectSettings" class="field-note d-block mt-1">
+              คุณไม่มีสิทธิ์แก้ไขชื่อโปรเจกต์และสถานะเปิด/ปิด
+            </span>
           </div>
 
-          <label class="switch-row">
-            <input type="checkbox" v-model="isActiveStatus" class="switch-input" />
+          <label class="switch-row" :class="{ 'switch-row-disabled': !canManageProjectSettings }">
+            <input type="checkbox" v-model="isActiveStatus" class="switch-input" :disabled="!canManageProjectSettings" />
             <span class="switch-track"><span class="switch-thumb"></span></span>
             <span class="switch-text">เปิดใช้งาน Project</span>
           </label>
@@ -183,7 +187,7 @@
           </div>
         </div>
 
-        <div class="copy-section">
+        <div v-if="canManageProjectSettings" class="copy-section">
           <div class="copy-section-header">
             <div>
               <label class="picker-col-label">คัดลอก Target / Hashtag จากโปรเจกต์อื่น</label>
@@ -331,9 +335,19 @@ export default {
       hashtagSourceProjectId: null,
       hashtagSourceSearch: "",
       hashtagSourceMenuOpen: false,
+      role: "",
     };
   },
+  created() {
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับไฟล์อื่นๆ ในระบบสิทธิ์นี้)
+    this.role = localStorage.getItem("reftokenOpt") || "";
+  },
   computed: {
+    // admin จัดการได้เฉพาะ "ผู้ใช้ในโปรเจกต์" และ "โดเมน" เท่านั้น ส่วนชื่อโปรเจกต์,
+    // สถานะเปิด/ปิด, และการคัดลอก Target/Hashtag จากโปรเจกต์อื่น แก้ไขได้เฉพาะ superadmin
+    canManageProjectSettings() {
+      return this.role === "superadmin";
+    },
     // Sourced from the store's isolated user picker (not the Users tab's
     // paginated list) — see fetchUserPickerList in project.js for why.
     users() {
@@ -595,6 +609,16 @@ export default {
       if (!this.form.projectname) {
         this.error = "กรุณากรอกชื่อโปรเจกต์";
         return;
+      }
+      // กันไว้อีกชั้น เผื่อค่าถูกเปลี่ยนผ่านทางอื่น (เช่น devtools) — admin แก้ได้แค่
+      // ผู้ใช้ในโปรเจกต์กับโดเมนเท่านั้น จึงบังคับชื่อ/สถานะ/การคัดลอกกลับเป็นค่าเดิมเสมอ
+      if (!this.canManageProjectSettings && this.editingProject) {
+        this.form.projectname = this.editingProject.projectname || "";
+        this.form.status = this.editingProject.status === "active" ? "active" : "inactive";
+        this.copyTargetChecked = false;
+        this.copyHashtagChecked = false;
+        this.targetSourceProjectId = null;
+        this.hashtagSourceProjectId = null;
       }
 
       // Only include a source project id for whichever fields are
@@ -1113,6 +1137,14 @@ export default {
   gap: 10px;
   cursor: pointer;
   user-select: none;
+}
+.switch-row-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.field-note {
+  font-size: 13px;
+  color: #9ca3af;
 }
 .switch-input {
   position: absolute;

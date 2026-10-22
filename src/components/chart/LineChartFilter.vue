@@ -21,12 +21,10 @@ export default {
     label: { type: String },
   },
   watch: {
-    getArrDate(val) {
-      this.apiFilterChart();
+    getArrDate() {
       this.valdate = 0;
-      const startTH = this.formatDateTH(val[0]);
-      const endTH = this.formatDateTH(val[1]);
-      this.range = `${startTH} - ${endTH}`;
+      this.setRangeFromStore();
+      this.apiFilterChart();
     },
     typeChart() { this.apiFilterChart(); },
     label() { this.apiFilterChart(); },
@@ -35,6 +33,7 @@ export default {
   data() {
     return {
       valdate: 0,
+      requestId: 0,
       range: "",
       sentiment: [],
       source: [],
@@ -55,6 +54,13 @@ export default {
     };
   },
   methods: {
+    // ตั้งข้อความช่วงวันที่ (ใช้ใน title) จากวันที่ที่เลือกไว้ใน store
+    setRangeFromStore() {
+      if (this.getSdateDm && this.getEdateDm) {
+        this.range = `${this.formatDateTH(this.getSdateDm)} - ${this.formatDateTH(this.getEdateDm)}`;
+      }
+    },
+
     formatDateTH(dateStr) {
       const m = moment(dateStr).locale('th');
       const buddhistYear = m.year() + 543;
@@ -258,8 +264,10 @@ export default {
       };
     },
 
-    apiFilterChart(start) {
+    apiFilterChart() {
       if (this.series.length !== 0) this.series = [];
+      // ป้องกัน response เก่าที่ตอบกลับช้ามาเขียนทับข้อมูลของช่วงวันที่ล่าสุด
+      const requestId = ++this.requestId;
       var axios = require("axios");
       let sdate, edate, label;
       if (this.getSdateDm || this.getEdateDm) {
@@ -269,7 +277,6 @@ export default {
         sdate = "";
         edate = "";
       }
-      if (start == "start") { sdate = ""; edate = ""; }
       label = this.label ? "&label=" + this.label : "";
 let source_news = this.getSourceNews ? "&source_news=" + this.getSourceNews : "";
       var config = {
@@ -284,6 +291,7 @@ let source_news = this.getSourceNews ? "&source_news=" + this.getSourceNews : ""
       };
       axios(config)
         .then((response) => {
+          if (requestId !== this.requestId) return;
           this.sentiment = response.data[0].sentiment;
 
           const order = ["threads", "youtube", "pantip", "blockdit", "instagram", "tiktok", "facebook", "twitter", "news", "telegram"];
@@ -301,7 +309,10 @@ let source_news = this.getSourceNews ? "&source_news=" + this.getSourceNews : ""
   },
 
   mounted() {
-    this.apiFilterChart("start");
+    // component นี้ถูก mount หลังจากผู้ใช้เลือกช่วงวันที่ไปแล้ว (อยู่ใน v-if ของ DomainGraph)
+    // watcher getArrDate จึงไม่ทำงาน ต้องดึงข้อมูลตามวันที่ใน store ตั้งแต่ตอน mount
+    this.setRangeFromStore();
+    this.apiFilterChart();
   },
 };
 </script>

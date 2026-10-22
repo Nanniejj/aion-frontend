@@ -39,12 +39,15 @@
 
           <div class="form-field">
             <label>Role</label>
-            <select v-model="form.role" class="form-input form-select">
-              <option value="superadmin">superadmin</option>
+            <select v-model="form.role" class="form-input form-select" :disabled="roleFieldLocked">
+              <option v-if="canAssignSuperadmin || form.role === 'superadmin'" value="superadmin">superadmin</option>
               <option value="admin">admin</option>
               <option value="user">user</option>
               <option value="service">service</option>
             </select>
+            <span v-if="roleFieldLocked" class="field-note d-block mt-1">
+              คุณไม่มีสิทธิ์แก้ไข role ผู้ใช้
+            </span>
           </div>
 
           <div class="form-field">
@@ -93,6 +96,7 @@
                 class="form-input project-picker-input"
                 placeholder="พิมพ์เพื่อค้นหาโปรเจกต์..."
                 autocomplete="off"
+                :disabled="projectAndExpiryLocked"
                 @focus="openProjectMenu"
                 @input="onProjectSearchInput"
               />
@@ -124,6 +128,9 @@
                 <div v-if="projectPicker.loading" class="project-picker-loading">กำลังโหลด...</div>
               </div>
             </div>
+            <span v-if="projectAndExpiryLocked" class="field-note d-block mt-1">
+              คุณไม่มีสิทธิ์แก้ไขโปรเจกต์
+            </span>
           </div>
 
           <div v-if="form.role !== 'service'" class="form-field form-field-full">
@@ -141,76 +148,86 @@
 
           <div class="form-field form-field-full">
             <label>วันหมดอายุบัญชี</label>
-            <div class="expiry-presets">
-              <button
-                type="button"
-                class="preset-btn"
-                :class="{ active: expiryPreset === '3' }"
-                @click="setExpiryMonths(3, '3')"
-              >
-                3 เดือน
-              </button>
-              <button
-                type="button"
-                class="preset-btn"
-                :class="{ active: expiryPreset === '6' }"
-                @click="setExpiryMonths(6, '6')"
-              >
-                6 เดือน
-              </button>
-              <button
-                type="button"
-                class="preset-btn"
-                :class="{ active: expiryPreset === '12' }"
-                @click="setExpiryMonths(12, '12')"
-              >
-                12 เดือน
-              </button>
-              <button
-                type="button"
-                class="preset-btn"
-                :class="{ active: expiryPreset === 'custom' }"
-                @click="useCustomExpiry"
-              >
-                กำหนดเอง
-              </button>
-              <button
-                type="button"
-                class="preset-btn"
-                :class="{ active: expiryPreset === 'never' }"
-                @click="setNeverExpire"
-              >
-                ไม่กำหนดวันหมดอายุ
-              </button>
-              <button
-                v-if="form.expiresAt || expiryPreset === 'never'"
-                type="button"
-                class="preset-clear"
-                @click="clearExpiry"
-                title="ล้างการตั้งค่าวันหมดอายุ"
-              >
-                <b-icon icon="x-circle"></b-icon>
-              </button>
-            </div>
-            <date-picker
-              v-if="expiryPreset !== 'never'"
-              ref="expiryInput"
-              v-model="form.expiresAt"
-              type="date"
-              placeholder="เลือกวันหมดอายุ"
-              :disabled-date="isPastDate"
-              :append-to-body="false"
-              value-type="YYYY-MM-DD"
-              format="DD/MM/YYYY"
-              class="expiry-datepicker"
-              @change="onExpiryChange"
-            ></date-picker>
-            <span v-if="expiryPreset === 'never'" class="expiry-hint">
-              บัญชีนี้จะไม่มีวันหมดอายุ
-            </span>
-            <span v-else-if="form.expiresAt" class="expiry-hint">
-              บัญชีจะหมดอายุวันที่ {{ formatExpiry(form.expiresAt) }}
-            </span>
+            <template v-if="projectAndExpiryLocked">
+              <!-- admin ดูได้อย่างเดียว ไม่มีสิทธิ์แก้ไข จึงไม่แสดงปุ่ม/ช่องกรอกใดๆ ให้กด -->
+              <div class="expiry-readonly">
+                <span v-if="expiryPreset === 'never'" class="expiry-none">ไม่มีกำหนด</span>
+                <span v-else-if="form.expiresAt">{{ formatExpiry(form.expiresAt) }}</span>
+                <span v-else class="expiry-none">ไม่มีกำหนด</span>
+              </div>
+            </template>
+            <template v-else>
+              <div class="expiry-presets">
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === '3' }"
+                  @click="setExpiryMonths(3, '3')"
+                >
+                  3 เดือน
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === '6' }"
+                  @click="setExpiryMonths(6, '6')"
+                >
+                  6 เดือน
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === '12' }"
+                  @click="setExpiryMonths(12, '12')"
+                >
+                  12 เดือน
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === 'custom' }"
+                  @click="useCustomExpiry"
+                >
+                  กำหนดเอง
+                </button>
+                <button
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: expiryPreset === 'never' }"
+                  @click="setNeverExpire"
+                >
+                  ไม่กำหนดวันหมดอายุ
+                </button>
+                <button
+                  v-if="form.expiresAt || expiryPreset === 'never'"
+                  type="button"
+                  class="preset-clear"
+                  @click="clearExpiry"
+                  title="ล้างการตั้งค่าวันหมดอายุ"
+                >
+                  <b-icon icon="x-circle"></b-icon>
+                </button>
+              </div>
+              <date-picker
+                v-if="expiryPreset !== 'never'"
+                ref="expiryInput"
+                v-model="form.expiresAt"
+                type="date"
+                placeholder="เลือกวันหมดอายุ"
+                :disabled-date="isPastDate"
+                :append-to-body="false"
+                value-type="YYYY-MM-DD"
+                format="DD/MM/YYYY"
+                class="expiry-datepicker"
+                @change="onExpiryChange"
+              ></date-picker>
+              <span v-if="expiryPreset === 'never'" class="expiry-hint">
+                บัญชีนี้จะไม่มีวันหมดอายุ
+              </span>
+              <span v-else-if="form.expiresAt" class="expiry-hint">
+                บัญชีจะหมดอายุวันที่ {{ formatExpiry(form.expiresAt) }}
+              </span>
+            </template>
           </div>
         </div>
 
@@ -274,6 +291,25 @@ export default {
     projectPicker() {
       return this.$store.getters.getProjectPicker;
     },
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับ HomeNav/ProjectManagement)
+    currentUserRole() {
+      return localStorage.getItem("reftokenOpt") || "";
+    },
+    // มีเฉพาะ superadmin เท่านั้นที่ตั้ง/แก้ไข role เป็น superadmin ได้ — admin ทำไม่ได้
+    canAssignSuperadmin() {
+      return this.currentUserRole === "superadmin";
+    },
+    // ถ้าผู้ที่กำลังแก้ไขอยู่เป็น superadmin อยู่แล้ว และคนที่แก้ไข (admin) ไม่ใช่ superadmin
+    // ให้ล็อกฟิลด์ role ทั้งฟิลด์ ห้ามเปลี่ยนทั้งขึ้น (upgrade) และลง (downgrade)
+    // admin ไม่มีสิทธิ์แก้ไข role ของผู้ใช้คนไหนเลย ไม่ว่า role ปัจจุบันของคนนั้นจะเป็นอะไร
+    // มีแค่ superadmin เท่านั้นที่แก้ไข role ได้
+    roleFieldLocked() {
+      return !this.canAssignSuperadmin;
+    },
+    // admin แก้ไขโปรเจกต์และวันหมดอายุบัญชีไม่ได้เช่นกัน — มีแค่ superadmin เท่านั้นที่แก้ไขได้
+    projectAndExpiryLocked() {
+      return !this.canAssignSuperadmin;
+    },
   },
   methods: {
     // Public API — call from a parent via `this.$refs.editUserModal.open(user)`.
@@ -312,6 +348,7 @@ export default {
       this.$nextTick(() => this.$refs.nameInput && this.$refs.nameInput.focus());
     },
     openProjectMenu() {
+      if (this.projectAndExpiryLocked) return;
       this.projectMenuOpen = true;
     },
     closeProjectMenu() {
@@ -328,11 +365,13 @@ export default {
       // items — leave the box showing whatever name was set on select.
     },
     selectProject(p) {
+      if (this.projectAndExpiryLocked) return;
       this.form.project_id = p ? p._id : "";
       this.projectSearch = p ? p.projectname : "";
       this.projectMenuOpen = false;
     },
     onProjectSearchInput() {
+      if (this.projectAndExpiryLocked) return;
       this.projectMenuOpen = true;
       clearTimeout(this.projectSearchTimer);
       this.projectSearchTimer = setTimeout(() => {
@@ -359,12 +398,14 @@ export default {
       else if (picker.$el && typeof picker.$el.blur === "function") picker.$el.blur();
     },
     onExpiryChange() {
+      if (this.projectAndExpiryLocked) return;
       this.expiryPreset = "custom";
       this.form.expiresInDays = null;
       this.form.neverExpire = false;
       this.closeExpiryPicker();
     },
     setExpiryMonths(months, key) {
+      if (this.projectAndExpiryLocked) return;
       const d = new Date();
       d.setMonth(d.getMonth() + months);
       const today0 = new Date();
@@ -378,6 +419,7 @@ export default {
       this.closeExpiryPicker();
     },
     useCustomExpiry() {
+      if (this.projectAndExpiryLocked) return;
       this.expiryPreset = "custom";
       this.form.expiresInDays = null;
       this.form.neverExpire = false;
@@ -387,6 +429,7 @@ export default {
       });
     },
     setNeverExpire() {
+      if (this.projectAndExpiryLocked) return;
       this.form.expiresAt = "";
       this.form.expiresInDays = null;
       this.form.neverExpire = true;
@@ -394,6 +437,7 @@ export default {
       this.closeExpiryPicker();
     },
     clearExpiry() {
+      if (this.projectAndExpiryLocked) return;
       this.form.expiresAt = "";
       this.form.expiresInDays = null;
       this.form.neverExpire = false;
@@ -415,6 +459,25 @@ export default {
       this.form = emptyForm();
     },
     async submit() {
+      // กันไว้อีกชั้น เผื่อฟิลด์ role ถูกเปลี่ยนผ่านทางอื่น (เช่น devtools)
+      // — admin ไม่มีสิทธิ์แก้ไข role ผู้ใช้เลย มีแค่ superadmin เท่านั้นที่ทำได้
+      if (this.form.role === "superadmin" && !this.canAssignSuperadmin) {
+        this.error = "คุณไม่มีสิทธิ์กำหนด role เป็น superadmin";
+        return;
+      }
+      if (this.roleFieldLocked && this.editingUser && this.form.role !== this.editingUser.role) {
+        this.error = "คุณไม่มีสิทธิ์แก้ไข role ผู้ใช้";
+        return;
+      }
+      // กันไว้อีกชั้น เผื่อค่าโปรเจกต์/วันหมดอายุถูกเปลี่ยนผ่านทางอื่น (เช่น devtools)
+      // — บังคับค่ากลับไปเป็นค่าเดิมของ user คนนี้เสมอถ้า admin ไม่มีสิทธิ์แก้ไข
+      if (this.projectAndExpiryLocked && this.editingUser) {
+        this.form.project_id = this.editingUser.project_id || "";
+        this.form.expiresAt = this.editingUser.accountExpiresAt
+          ? toISODate(new Date(this.editingUser.accountExpiresAt))
+          : "";
+        this.form.neverExpire = !!this.editingUser.accountNeverExpire;
+      }
       const missing = [];
       if (!this.form.name) missing.push("ชื่อ");
       if (!this.form.lastname) missing.push("นามสกุล");
@@ -646,6 +709,20 @@ export default {
   margin-top: 6px;
   font-size: 14px;
   color: #6b7280;
+}
+
+.expiry-readonly {
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 14px;
+  color: #333;
+}
+
+.expiry-none {
+  color: #9ca3af;
+  font-style: italic;
 }
 
 .expiry-datepicker {

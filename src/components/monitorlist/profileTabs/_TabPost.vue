@@ -249,7 +249,7 @@
                                     <span v-else class="md-font">{{ post.comments_count | numFormat }}&nbsp;</span>
                                 </span>
                                 <!-- </b-badge> -->
-                                <span v-if="post.source == 'facebook'" class="px-1 ml-2" id="box-reaction">
+                                <span v-if="post.source == 'facebook' || post.source == 'youtube'" class="px-1 ml-2" id="box-reaction">
                                     <i class="far fa-thumbs-up" />
                                     <span v-if="post.likes_count !== '0' && post.likes_count" v-b-tooltip.hover
                                         title="Like">
@@ -285,12 +285,13 @@
                                         <i class="fa fa-share"></i>
                                         {{ post.shares_count | numFormat }}
                                     </span>
-                                    <span v-if="
-                                        post.views_count !== '0' && post.views_count
-                                    " id="box-reaction" v-b-tooltip.hover title="View">
-                                        <i class="fas fa-eye"></i>
-                                        {{ post.views_count | numFormat }}
-                                    </span>
+                                </span>
+                                <!-- views: แสดงทุก source ตราบใดที่มี key นี้และไม่เป็น 0 -->
+                                <span v-if="
+                                    post.views_count !== '0' && post.views_count
+                                " id="box-reaction" v-b-tooltip.hover title="View">
+                                    <i class="fas fa-eye"></i>
+                                    {{ post.views_count | numFormat }}
                                 </span>
                                 <!-- reaction-->
                                 <span v-if="post.reaction">
@@ -489,15 +490,16 @@
                                         <div v-for="(cmt, i) in post.comments" :key="i">
                                             <b-row>
                                                 <b-col lg="1">
-                                                    <a :href="'https://www.youtube.com/' + cmt.author_link"
+                                                    <a :href="youtubeAuthorLink(cmt.author_link)"
                                                         target="_blank" v-if="post.source == 'youtube'">
-                                                        <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                                                        <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo && !cmt.photoError"
+                                                            referrerpolicy="no-referrer" @error="onCommentImgError(cmt)" />
                                                         <b-avatar v-else loading="lazy" v-else
                                                             style="height: 32px;"></b-avatar>
                                                     </a>
                                                     <a :href="cmt.url" target="_blank" v-else>
-                                                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url"
-                                                            v-if="cmt.photo" />
+                                                        <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo && !cmt.photoError"
+                                                            referrerpolicy="no-referrer" @error="onCommentImgError(cmt)" />
                                                         <b-avatar v-else loading="lazy" v-else
                                                             style="height: 32px;"></b-avatar>
                                                     </a>
@@ -506,7 +508,7 @@
                                                 </b-col>
                                                 <b-col lg="11">
                                                     <div>
-                                                        <a :href="'https://www.youtube.com/' + cmt.author_link"
+                                                        <a :href="youtubeAuthorLink(cmt.author_link)"
                                                             target="_blank" v-if="post.source == 'youtube'">
                                                             <span v-if="post.source == 'youtube'" class="bold">
                                                                 {{ cmt.author }}</span></a>
@@ -701,6 +703,28 @@ export default {
                 post.showTranslated = payload.showTranslated;
             }
         },
+        // author_link ของ YouTube มีทั้งแบบ URL เต็ม ("https://www.youtube.com/@xxx") และแบบ path ("@xxx", "/channel/xxx")
+        // เดิมต่อ 'https://www.youtube.com/' หน้าเสมอ จึงได้ลิงก์ซ้อนเป็น youtube.com/https:/www.youtube.com/@xxx
+        youtubeAuthorLink(link) {
+            if (!link) return '#';
+            const value = String(link).trim();
+            if (/^https?:\/\//i.test(value)) return value;
+            if (value.startsWith('//')) return 'https:' + value;
+            if (/^(www\.)?youtube\.com\//i.test(value)) return 'https://' + value.replace(/^www\./i, 'www.');
+            return 'https://www.youtube.com/' + value.replace(/^\/+/, '');
+        },
+        // รูปโปรไฟล์คอมเมนต์โหลดไม่ได้ → สลับไปแสดง b-avatar แทนไอคอนรูปเสีย
+        onCommentImgError(cmt) {
+            if (this.$set) this.$set(cmt, 'photoError', true);
+            else cmt.photoError = true;
+        },
+        // ใช้กับ @error ใน template ที่เรียกอยู่แล้วแต่ยังไม่เคยประกาศ method ไว้
+        hideOnError(event) {
+            if (event && event.target) event.target.style.display = 'none';
+        },
+        setAltImg(event) {
+            if (event && event.target) event.target.style.display = 'none';
+        },
         handleSentimentChanged({ uid, sentiment }) {
             const index = this.posts.findIndex(p => p.uid === uid)
             if (index !== -1) {
@@ -729,13 +753,16 @@ export default {
             this.apiUserPosts()
         },
         filterDomain(post_domain) {
-            if (!this.topDomain || this.topDomain.length === 0) {
-                return post_domain;
+            // โพสต์จาก hashtag API บางโพสต์ไม่มี field domain (undefined/null)
+            // ถ้าไม่กันไว้ template จะ error ตอนเรียก .length แล้วทั้งรายการโพสต์ไม่ render
+            const domains = Array.isArray(post_domain) ? post_domain : [];
+            if (!Array.isArray(this.topDomain) || this.topDomain.length === 0) {
+                return domains;
             }
             const topDomainNames = this.topDomain.map(d => d.t_domain);
             // console.log("topDomainNames === ", topDomainNames);
 
-            let filter = post_domain.filter(domain => topDomainNames.includes(domain));
+            let filter = domains.filter(domain => topDomainNames.includes(domain));
             // console.log(filter);
 
             return filter;
@@ -820,9 +847,8 @@ export default {
                     // กรองเอาโพสต์ใหม่ที่ยังไม่มีใน this.posts
                     const existingIds = this.posts.map(post => post._id); // สมมุติว่าใช้ _id เป็นตัวระบุ
                     const filteredNewPosts = newData.filter(post => !existingIds.includes(post._id));
-                    if (response.data.has_next) {
-                        this.offset = response.data.next_offset
-                    }
+                    // ไม่เลื่อน this.offset ไปหน้าถัดไปตรงนี้ — การเปลี่ยนหน้าคุมด้วย onPageChange แล้ว
+                    // เดิมทำให้การโหลดครั้งถัดไป (เปลี่ยนวันที่/แพลตฟอร์ม) ข้ามไปหน้า 2 และได้ผลว่าง
                     // เพิ่ม showAll = false แล้วรวมกับ posts เดิม
                     const newPostsWithFlag = newData.map(post => ({
                         ...post,
@@ -864,6 +890,8 @@ export default {
 
                     // ✅ กรณีปกติ เหมือนเดิม
                     if (newVal !== oldVal || oldVal === undefined) {
+                        this.offset = 0
+                        this.currentPage = 1
                         this.apiUserPosts()
                     }
                 }
@@ -882,6 +910,8 @@ export default {
                 // ตรวจสอบว่าค่าใหม่ต่างจากเดิมไหมก่อนเรียก API
                 if (newStart !== oldStart || newEnd !== oldEnd) {
                     this.valueDate = [newStart, newEnd];
+                    this.offset = 0;
+                    this.currentPage = 1;
                     this.apiUserPosts();
                 }
             }

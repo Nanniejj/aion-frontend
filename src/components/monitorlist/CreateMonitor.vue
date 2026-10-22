@@ -362,6 +362,17 @@ export default {
                 result = `${fbProfileMatch[1]}/${fbProfileMatch[3]}`;
             }
 
+            // ✅ ตัดพารามิเตอร์แปลกปลอมที่ติดมากับลิงก์ Facebook เช่น
+            // https://facebook.com/61584454187956&rdid=xxx&share_url=xxx
+            // หรือ https://facebook.com/xxxx?rdid=xxx&share_url=xxx
+            // ให้เหลือแค่ https://facebook.com/61584454187956
+            if (/facebook\.com/i.test(result)) {
+                const fbCleanMatch = result.match(/^(https?:\/\/(www\.)?facebook\.com\/[^\s?&#]+)/i);
+                if (fbCleanMatch) {
+                    result = fbCleanMatch[1];
+                }
+            }
+
             // ✅ ตัด / ท้าย
             result = result.replace(/\/+$/, '');
 
@@ -375,6 +386,18 @@ export default {
                 });
             }
             return result;
+        },
+        // ตรวจว่า URL เป็นลิงก์ Facebook Reel หรือไม่ (เช่น facebook.com/reel/xxxxxxxx)
+        // ลิงก์ประเภทนี้เป็นลิงก์โพสต์/วิดีโอ ไม่ใช่ลิงก์บัญชี/โปรไฟล์เป้าหมาย
+        isFacebookReelUrl(tag) {
+            try {
+                const urlObj = new URL(tag.trim());
+                const hostname = urlObj.hostname.toLowerCase();
+                const pathname = urlObj.pathname.toLowerCase();
+                return hostname.endsWith('facebook.com') && pathname.startsWith('/reel/');
+            } catch (e) {
+                return false;
+            }
         },
         detectPlatformName(tag) {
             if (tag.includes("facebook.com")) return 'facebook';
@@ -467,6 +490,20 @@ export default {
                 } catch (e) {
                     // ถ้าไม่ใช่ URL ที่ถูกต้องก็เก็บไว้ (ไม่ตัดทิ้ง)
                     return true;
+                }
+                return true; // ✅ เก็บไว้
+            });
+
+            // 🚫 ลบลิงก์ Facebook Reel ออกไปเลย (เกราะป้องกันชั้นที่ 2 เผื่อหลุดผ่าน validator() มาได้)
+            normalizedTags = normalizedTags.filter(tag => {
+                if (this.isFacebookReelUrl(tag)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ลิงก์บัญชี Profile เป้าหมายไม่ถูกต้อง',
+                        text: 'ไม่สามารถใช้ลิงก์ Facebook Reel เป็นบัญชีเป้าหมายได้ กรุณาใส่ลิงก์โปรไฟล์/เพจแทน',
+                        showConfirmButton: true
+                    });
+                    return false; // ❌ filter ทิ้ง
                 }
                 return true; // ✅ เก็บไว้
             });
@@ -592,6 +629,17 @@ export default {
                 // text: 'กรุณาใส่ลิงก์ให้ถูกต้อง เช่น https://facebook.com/xxx',
                 // showConfirmButton: true
                 // });
+                return false;
+            }
+
+            // ❌ กันไม่ให้ใส่ลิงก์ Facebook Reel เพราะไม่ใช่ลิงก์บัญชี/โปรไฟล์เป้าหมาย
+            if (this.isFacebookReelUrl(tag)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ลิงก์บัญชี Profile เป้าหมายไม่ถูกต้อง',
+                    text: 'ไม่สามารถใช้ลิงก์ Facebook Reel เป็นบัญชีเป้าหมายได้ กรุณาใส่ลิงก์โปรไฟล์/เพจแทน',
+                    showConfirmButton: true
+                });
                 return false;
             }
 
