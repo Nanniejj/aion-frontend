@@ -8,7 +8,7 @@
       <div class="d-flex">
         <h1 class="title ">Feed</h1>
         <div
-          class="h4 mb-5 float-right d-flex mt-3 box-menu-monitor"
+          class="h4 float-right d-flex mt-2 box-menu-monitor"
           style="position:relative;margin-left: auto; 
 margin-right: 0;"
         >
@@ -46,7 +46,15 @@ margin-right: 0;"
         </div>
       </div>
 
-      <MainFeed />
+      <!-- ✅ ใช้ component ชุดเดียวกับหน้า wordcloud (wordcloudnew) แบบ feedMode:
+           monitor อย่างเดียว + เลือก วันที่ระบบเก็บโพสต์ (dashboard=true) / วันที่โพสต์ (ไม่ส่ง dashboard) -->
+      <WordcloudMain feed-mode />
+      <!-- ✅ ปุ่มเลื่อนกลับขึ้นบน (เหมือนหน้า Domain) -->
+      <back-to-top bottom="50px" right="50px">
+        <button type="button" class="btn btn-to-top">
+          <i class="fa fa-chevron-up"></i>
+        </button>
+      </back-to-top>
       <!-- <div v-else>ไม่สามารถเข้าถึงข้อมูลได้</div> -->
     </div>
   </div>
@@ -54,12 +62,12 @@ margin-right: 0;"
 
 <script>
 import HomeNav from "@/components/HomeNav.vue";
-import MainFeed from "@/components/feed/MainFeed.vue";
+import WordcloudMain from "@/components/wordcloudnew/WordcloudMain.vue";
 import { mapGetters } from "vuex";
 export default {
   components: {
     HomeNav,
-    MainFeed,
+    WordcloudMain,
   },
   data: function() {
     return {};
@@ -144,7 +152,9 @@ export default {
   background: white;
   min-height: 100vh;
   padding: 0;
-  overflow: auto;
+  /* ✅ ไม่ใช้ overflow:auto เพื่อให้ sidebar (position: sticky) ในหน้า Feed ทำงานได้ */
+  overflow: visible;
+  overflow-x: clip;
 }
 #navHome {
   z-index: 1;
@@ -174,6 +184,35 @@ export default {
     cursor: pointer;
     padding: 3px 5px !important;
     border-radius: 10px;
+  }
+}
+
+/* ✅ ปุ่มเลื่อนกลับขึ้นบน (เหมือนหน้า Domain) */
+.btn-to-top {
+  width: 60px;
+  height: 60px;
+  padding: 10px 16px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 22px;
+  background-color: #fed16e;
+  border-color: #fed16e;
+  color: #fff;
+  box-shadow: 2px 1px 4px #888888;
+}
+.btn-to-top:hover {
+  background-color: #f7c24e;
+  border-color: #f7c24e;
+  color: #fff;
+}
+@media only screen and (min-width: 0px) and (max-width: 800px) {
+  .vue-back-to-top {
+    right: 14px !important;
+  }
+  .btn-to-top {
+    width: 50px;
+    height: 50px;
+    padding: 10px 13px;
   }
 }
 </style>

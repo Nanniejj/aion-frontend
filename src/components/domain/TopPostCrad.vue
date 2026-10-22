@@ -221,6 +221,8 @@
                   <vue-gallery-slideshow :images="dataPhoto" :index="index"
                     @close="index = null"></vue-gallery-slideshow>
                 </div>
+                <!-- AI วิเคราะห์วิดีโอ YouTube -->
+                <YoutubeSummary :post="postDomain" />
               </b-col>
             </b-row>
             <div class="text-left ai-box my-2"
@@ -403,6 +405,11 @@
                 " id="box-reaction" v-b-tooltip.hover title="Like">
                   <i class="far fa-thumbs-up" />
                   {{ postDomain.likes_count | numFormat }}
+                </span>
+                <span v-if="postDomain.source === 'facebook' && postDomain.views_count && postDomain.views_count !== '0'"
+                    id="box-reaction" v-b-tooltip.hover title="View">
+                    <i class="fas fa-eye"></i>
+                    {{ postDomain.views_count | numFormat }}
                 </span>
                 <!-- reaction-->
                 <span v-if="postDomain.reaction">
@@ -701,8 +708,9 @@ import subdistricts from "@/components/map/subdistricts.json";
 import PostCard from './PostCard.vue';
 import SummarizeCommentChart from "../chart/SummarizeCommentChart.vue";
 import TranslateText from "@/components/TranslateText.vue";
+import YoutubeSummary from "@/components/YoutubeSummary.vue";
 export default {
-  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart, PostCard, TranslateText },
+  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart, PostCard, TranslateText, YoutubeSummary },
   props: {
     tpyeCard: {
       type: String,

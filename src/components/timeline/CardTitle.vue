@@ -150,6 +150,9 @@
           </b-col>
 
         </b-row>
+
+        <!-- AI วิเคราะห์วิดีโอ YouTube -->
+        <YoutubeSummary :post="post" class="mt-3" />
       </div>
 
 
@@ -243,11 +246,12 @@ import TranslateText from "../TranslateText.vue";
 import moment from "moment";
 import "moment/locale/th";
 import CommentsAllModal from "./CommentsAllModal.vue";
+import YoutubeSummary from "../YoutubeSummary.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import { post } from "jquery";
 export default {
   name: "CardPost",
-  components: { ReadMoreBox, TranslateText, CommentsAllModal,VueGallerySlideshow },
+  components: { ReadMoreBox, TranslateText, CommentsAllModal,VueGallerySlideshow, YoutubeSummary },
   props: {
     post: {
       type: Object,

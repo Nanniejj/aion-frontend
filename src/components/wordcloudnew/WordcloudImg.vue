@@ -1,6 +1,6 @@
 <template>
-  <div class="px-1 px-lg-5">
-    <div class="text-left">
+  <div :class="compact ? 'px-0' : 'px-1 px-lg-5'">
+    <div v-if="!compact" class="text-left">
       <span class="h5 mr-3 d-inline-block">Wordcloud / Hashtagcloud</span>
 
       <div class="d-inline-block">
@@ -29,7 +29,7 @@
       </div>
     </div> -->
 
-    <div class="mt-3 mb-3 pa-1">
+    <div :class="compact ? 'mt-1 mb-1' : 'mt-3 mb-3 pa-1'">
       <!-- ✅ เรียก API v2 ครั้งเดียวใน component นี้ (fetchWordCloud) แล้วส่ง apiData เดียวกัน
            ลงไปให้ WordCloudD3 ผ่าน external-api-data/external-loading (ไม่เปลี่ยนพฤติกรรมนี้)
            active-tab ควบคุมแค่ฝั่งไหนโชว์บนมือถือ ไม่กระทบการ fetch ใดๆ -->
@@ -45,6 +45,7 @@
         :letter-spacing="1.6" 
         :disableRotate="true"
         :active-tab="activeTabMobile"
+        :compact="compact"
         :external-api-data="(externalApiData !== null && externalApiData !== undefined) ? externalApiData : wordCloudData"
         :external-loading="externalFetch ? externalLoading : ((externalApiData !== null && externalApiData !== undefined) ? externalLoading : isLoadingWordCloud)"
         :external-fetch="externalFetch"
@@ -78,6 +79,8 @@ export default {
     // parent will perform fetching and pass data down
     externalFetch: { type: Boolean, default: false },
     letterSpacing: { type: Number, default: 0 },
+    // ✅ หน้า Feed sidebar: ไม่มีหัวข้อ/padding และโชว์ทีละ cloud
+    compact: { type: Boolean, default: false },
   },
 
   data() {

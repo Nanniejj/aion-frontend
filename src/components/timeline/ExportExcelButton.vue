@@ -11,7 +11,7 @@
     >
       <i class="fa fa-download mr-1"></i>
       <span v-if="!exporting">Export</span>
-      <span v-else>กำลังดึงข้อมูล…</span>
+      <span v-else>กำลังดึงข้อมูล…<template v-if="progressText"> {{ progressText }}</template></span>
     </b-button>
   </div>
 </template>
@@ -46,11 +46,21 @@ export default {
     apiPageHardLimit: { type: Number, default: 0 },
 
     /** โหมด daily: ดึงวันละครั้งเดียวด้วย limit=dailyCap */
-    dailyCap: { type: Number, default: 2000 }
+    dailyCap: { type: Number, default: 2000 },
+
+    /**
+     * (optional) ฟังก์ชันดึงข้อมูลเองทั้งหมด: async (onProgress) => posts[]
+     * onProgress({ loaded, total }) ใช้แสดงความคืบหน้าบนปุ่ม
+     * ถ้าส่งมา จะใช้แทน apiBase/posts
+     */
+    fetchAll: { type: Function, default: null },
+
+    /** prefix ชื่อไฟล์ เช่น 'timeline' หรือ 'domain' */
+    filenamePrefix: { type: String, default: 'timeline' }
   },
 
   data() {
-    return { exporting: false };
+    return { exporting: false, progressText: '' };
   },
 
   computed: {
@@ -58,6 +68,7 @@ export default {
       return (this.filters?.view_mode || '') === 'daily';
     },
     canExport() {
+      if (typeof this.fetchAll === 'function' && this.count > 0) return true;
       if (this.fullExport && this.apiBase && this.count > 0) return true;
       if (!Array.isArray(this.posts) || this.posts.length === 0) return false;
       if (!this.isDaily) return this.posts.length > 0;
@@ -297,7 +308,7 @@ export default {
       const inline = this.inlineComments !== 'none' ? `_with-comments-${this.inlineComments}` : '';
       const newsMap = { internal: '_internal', external: '_external' };
       const newsPart = newsMap[this.filters?.source_news] || '';
-      return `timeline_${mode}_${start}_to_${end}${kpart}${newsPart}${inline}.xlsx`;
+      return `${this.filenamePrefix}_${mode}_${start}_to_${end}${kpart}${newsPart}${inline}.xlsx`;
     },
     autosizePostsSheet(ws) {
       const hasInline = this.inlineComments !== 'none';
@@ -333,8 +344,15 @@ export default {
       try {
         this.exporting = true;
 
+        this.progressText = '';
+
         let allData;
-        if (this.fullExport && this.apiBase) {
+        if (typeof this.fetchAll === 'function') {
+          allData = await this.fetchAll(({ loaded = 0, total = 0 } = {}) => {
+            const fmt = n => Number(n || 0).toLocaleString();
+            this.progressText = total ? `${fmt(loaded)}/${fmt(total)}` : fmt(loaded);
+          });
+        } else if (this.fullExport && this.apiBase) {
           if (this.isDaily) {
             allData = await this.fetchAllPostsDaily();
           } else {
@@ -377,6 +395,7 @@ export default {
         this.$emit('export-error', err);
       } finally {
         this.exporting = false;
+        this.progressText = '';
       }
     }
   }

@@ -9,6 +9,7 @@
       <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3 p-3">
         <DomainGraph class="mt-1" id="statgraph" />
         <StaticDomain class="mt-3" id="statcap" />
+        <DomainAiAnalysis class="mt-3" id="domain-ai" />
 
       
 
@@ -46,6 +47,7 @@
 import DomainBackBar from "@/components/domain/DomainBackBar.vue";
 import DomainGraph from "@/components/domain/DomainGraph.vue";
 import StaticDomain from "@/components/domain/StaticDomain.vue";
+import DomainAiAnalysis from "@/components/domain/DomainAiAnalysis.vue";
 // import DomainCloud from "@/components/domain/DomainCloud.vue";
 import TopPostDomain from "@/components/domain/TopPostDomain.vue";
 import AllPostDomain from "@/components/domain/AllPostDomain.vue";
@@ -82,6 +84,7 @@ export default {
     DomainBackBar,
     DomainGraph,
     StaticDomain,
+    DomainAiAnalysis,
     // DomainCloud,
     TopPostDomain,
     AllPostDomain,

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-1 px-lg-5">
+  <div :class="compact ? 'px-0 wc-list-compact' : 'px-1 px-lg-5'">
     <b-toast id="my-toast2" no-close-button auto-hide-delay="1500">
       <div class="text-center">
         <i class="fa fa-arrow-down" /> เลื่อนลงเพื่อดูข้อมูล
@@ -17,7 +17,7 @@
       </b-row>
 
       <!-- ================= MOBILE (single by tab) ================= -->
-      <div class="d-lg-none px-3">
+      <div :class="compact ? 'px-3' : 'd-lg-none px-3'">
         <!-- WORD TAB -->
         <div v-if="activeTab === 'word'">
           <div class="h6 text-left mt-2 d-flex align-items-center">
@@ -125,7 +125,7 @@
       </div>
 
       <!-- ================= DESKTOP (two columns) ================= -->
-      <b-row class="px-3 d-none d-lg-flex">
+      <b-row v-if="!compact" class="px-3 d-none d-lg-flex">
         <b-col cols="12" lg="6">
           <div class="h6 text-left mt-2 d-flex align-items-center">
             <span>Words</span>
@@ -239,6 +239,8 @@ export default {
   components: { SentimentTopChart },
   props: {
     activeTab: { type: String, default: "word" },
+    // ✅ หน้า Feed sidebar: โชว์ทีละแท็บ (word/hash) ทุกขนาดจอ
+    compact: { type: Boolean, default: false },
 
     // ✅ ไม่ยิง API เองแล้ว — รับข้อมูลจาก parent ที่ fetch มาครั้งเดียว แล้วส่งลงมาทั้ง
     // WordcloudImg2 และ WordcloudList พร้อมกัน การันตีว่าทั้งคู่เห็นข้อมูลชุดเดียวกันเป๊ะ

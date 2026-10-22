@@ -157,6 +157,19 @@ const routes = [
       )
   },
   {
+    path: "/target-network/targets",
+    name: "NetworkTargets",
+    component: () => import(/* webpackChunkName: "networktargets" */ "../views/NetworkTargets.vue")
+  },
+  {
+    path: "/target-network",
+    name: "TargetNetwork",
+    component: () =>
+      import(
+        /* webpackChunkName: "targetnetwork" */ "../views/TargetNetwork.vue"
+      )
+  },
+  {
     path: "/wordcloudpost",
     name: "WordCloudPost",
     props: true,

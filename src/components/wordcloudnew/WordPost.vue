@@ -4,7 +4,7 @@
       <!-- <div class="my-4 text-left">
         <h4 class="bold text-lg-left text-md-left">All Posts</h4>
       </div> -->
-      <div class="mt-1  text-left">
+      <div v-if="querySearch" class="mt-1  text-left">
         <span class="h5 bold">
           <i class="fa fa-tag mr-2" aria-hidden="true"></i>{{ querySearch }}
         </span>
@@ -41,7 +41,7 @@
                 </b-col>
 
                 <b-col v-b-tooltip.hover :title="platform.likes_count + ' likes'">
-                  <i class="fa fa-thumbs-o-up mr-1" aria-hidden="true"></i>
+                  <i class="fa fa-thumbs-up mr-1" aria-hidden="true"></i>
                   <div >
                     {{ platform.likes_count | shortNumber }}
                   </div>
@@ -252,7 +252,7 @@
       <b-row class="mb-1 w-100 ">
         <b-col cols="7" md="6" lg="6" class="my-1 m-auto">
           <div class="bold text-lg-left text-md-left h6">
-            All Posts | {{ querySearch }}
+            All Posts<span v-if="querySearch"> | {{ querySearch }}</span>
           </div>
         </b-col>
         <b-col cols="5" md="6" lg="6" class="m-auto my-1 text-right">
@@ -280,23 +280,44 @@
           <b-form-select v-model="sort" :options="optionSort" size="sm" class="mb-2 select-sort"
             @change="selectSort"></b-form-select>
         </b-col>
+        <b-col v-if="feedMode" sm="12" md="auto">
+          <b-form-select v-model="readStatus" size="sm" class="mb-2"
+            aria-label="กรองสถานะการอ่าน" @change="selectReadStatus">
+            <option value="all">สถานะ: ทั้งหมด</option>
+            <option value="read">อ่านแล้ว</option>
+            <option value="unread">ยังไม่ได้อ่าน</option>
+          </b-form-select>
+        </b-col>
       </b-row>
     </div>
 
     <div>
       <vue-element-loading :active="load" size="80" background-color="rgba(255, 255, 255, 0.5)" color="#b6ac9a" />
-      <!-- Highlight -->
-      <b-form-checkbox switch size="lg" class="text-right mb-2" v-model="checked">
-        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
-        <span v-else class="box-hl pl-2 pr-2">Highlight</span>
-      </b-form-checkbox>
+      <div class="d-flex justify-content-end align-items-center flex-wrap mb-2 switch-row">
+        <!-- ✅ หน้า Feed: อ่านออโต้ — เลื่อนเจอโพสต์ (เห็นบนจอสักครู่) = ทำเครื่องหมายว่าอ่านแล้ว -->
+        <b-form-checkbox v-if="feedMode" switch class="mr-3 auto-read-switch" v-model="autoRead"
+          @change="onAutoReadChange"
+          v-b-tooltip.hover.top="{ customClass: 'auto-read-tooltip' }"
+          :title="autoReadTooltip">
+          <span class="box-hl pl-2 pr-2" :class="{ 'auto-read-on': autoRead }">
+            <i class="far fa-eye mr-1" aria-hidden="true"></i>อ่านอัตโนมัติ
+          </span>
+        </b-form-checkbox>
+        <!-- Highlight -->
+        <b-form-checkbox switch size="lg" v-model="checked">
+          <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
+          <span v-else class="box-hl pl-2 pr-2">Highlight</span>
+        </b-form-checkbox>
+      </div>
       <div v-if="this.dataIssue == ''" class="md-font">
         <b-card>
           <div class="mt-3">ไม่พบข้อมูล</div>
         </b-card>
       </div>
       <b-card no-body class="overflow-hidden" header-tag="header" footer-tag="footer"
-        style="max-width: 100%; margin-bottom: 30px" v-for="(datas, k) in dataIssue" :key="k">
+        style="max-width: 100%; margin-bottom: 30px" v-for="(datas, k) in dataIssue" :key="datas._id || k"
+        :class="{ 'post-status-changed': feedMode && leavingPosts[datas._id], 'post-entering': feedMode && datas._entering }"
+        :data-post-id="feedMode ? datas._id : null">
         <template #header>
           <b-row>
             <b-col style="text-align: initial; display: contents">
@@ -616,6 +637,8 @@
         </div>
         <template #footer>
           <div class="comment-img text-left md-font">
+            <div :class="{ 'feed-footer-row': feedMode }">
+            <div :class="{ 'feed-footer-metrics': feedMode }">
             <!------------- engages-------------- -->
             <span v-b-tooltip.hover title="Engagement" v-if="datas.source == 'pantip'">
               <span style="font-size:14px;">Engages </span>
@@ -880,6 +903,19 @@
               </span>
             </span>
 
+            </div>
+              <b-button v-if="feedMode" size="sm" variant="link" class="feed-read-toggle"
+                :class="{ 'is-read': isPostRead(datas) }"
+                :disabled="!datas._id || !!pendingRead[datas._id] || !!leavingPosts[datas._id]"
+                :aria-pressed="isPostRead(datas) ? 'true' : 'false'"
+                :title="isPostRead(datas) ? 'เปลี่ยนเป็นยังไม่ได้อ่าน' : 'เปลี่ยนเป็นอ่านแล้ว'"
+                @click="togglePostRead(datas)">
+                <b-spinner v-if="pendingRead[datas._id]" small />
+                <i v-else :class="isPostRead(datas) ? 'fas fa-check-circle' : 'far fa-circle'" aria-hidden="true"></i>
+                <span>{{ isPostRead(datas) ? 'อ่านแล้ว' : 'ยังไม่ได้อ่าน' }}</span>
+              </b-button>
+            </div>
+
             <!-- comment content -->
             <b-collapse :id="'btn' + offset + k" class="mt-2" v-if="datas.comments && datas.comments.length">
               <b-card id="cmt-card" class="text-left">
@@ -1026,10 +1062,13 @@ Vue.filter("intFormat", function (value) {
 
 export default {
   props: {
+    feedMode: { type: Boolean, default: false },
     checkpost: {
       type: Boolean,
     },
     querySearch: { type: String, default: "" },
+    // ✅ หน้า Feed: ยอมให้ดึงโพสต์ทั้งหมดได้แม้ไม่มี keyword/hashtag (ไม่ส่ง querySearch/hashtags)
+    allowEmpty: { type: Boolean, default: false },
     social: {
       type: String,
       default:
@@ -1044,6 +1083,10 @@ export default {
     },
   },
   watch: {
+    // ✅ อ่านออโต้: โพสต์ชุดใหม่ render แล้ว → ผูก observer ใหม่
+    dataIssue() {
+      if (this.feedMode && this.autoRead) this.$nextTick(() => this.observeAutoReadCards());
+    },
     querySearch: {
       immediate: true,
       handler(val) {
@@ -1053,7 +1096,7 @@ export default {
         this.currentPage = 1;
 
         // ถ้าไม่มีคำ ไม่ต้องยิง
-        if (!this.localQuery) return;
+        if (!this.localQuery && !this.allowEmpty) return;
 
         this.apiSpotNewsPost(0);
       }
@@ -1062,6 +1105,16 @@ export default {
   data() {
     return {
       datacountchart: 0,
+      readStatus: "all",
+      // ✅ feedMode: จำว่าโหลด stat ของคำ (localQuery) ไหนไปแล้ว — กรองโพสต์ (sentiment/platform/sort/อ่านแล้ว/หน้า)
+      //    จะไม่ยิง stat ซ้ำ โหลดใหม่เฉพาะตอนคำค้นเปลี่ยน
+      statLoadedFor: null,
+      pendingRead: {},
+      // ✅ หน้า Feed: โพสต์ที่เปลี่ยนสถานะแล้วไม่ตรงกับตัวกรอง → โชว์สถานะใหม่ก่อน แล้วค่อยเลื่อนหายไป
+      leavingPosts: {},
+      fillingPosts: false,
+      // ✅ หน้า Feed: สวิตช์อ่านออโต้ (จำค่าไว้ในเบราว์เซอร์)
+      autoRead: false,
       localQuery: "",
       showFull: false,
       topics: "",
@@ -1170,6 +1223,11 @@ export default {
 
   },
   computed: {
+    autoReadTooltip() {
+      return this.autoRead
+        ? "อ่านอัตโนมัติ (เปิดอยู่): โพสต์ที่เลื่อนมาแสดงบนจอประมาณ 1 วินาที จะถูกทำเครื่องหมายว่า \"อ่านแล้ว\" ให้เอง — เลื่อนผ่านเร็วๆ จะไม่นับ"
+        : "อ่านอัตโนมัติ (ปิดอยู่): เปิดเพื่อให้ระบบทำเครื่องหมาย \"อ่านแล้ว\" ให้เองเมื่อเลื่อนเจอโพสต์ ถ้าปิดไว้ต้องกดปุ่ม \"อ่านแล้ว\" ที่แต่ละโพสต์เอง";
+    },
     ...mapGetters(["getClickDomain", "getClickDomainId", "getSdateDm", "getEdateDm", "getArrDate"]),
 
     paginate() {
@@ -1185,6 +1243,232 @@ export default {
     },
   },
   methods: {
+    selectReadStatus() {
+      this.offset = 0;
+      this.currentPage = 1;
+      this.apiSpotNewsPost(0);
+    },
+    // ================= อ่านออโต้ (frontend เท่านั้น ใช้ API read เดิม) =================
+    onAutoReadChange(val) {
+      try {
+        localStorage.setItem("feedAutoRead", val ? "1" : "0");
+      } catch (e) { /* storage ใช้ไม่ได้ ไม่เป็นไร */ }
+      if (val) this.$nextTick(() => this.observeAutoReadCards());
+      else this.stopAutoRead(true);
+    },
+    initAutoReadState() {
+      this._arObserver = null;
+      this._arTimers = {};   // post_id -> timeout (ต้องอยู่บนจอสักครู่ก่อนนับว่าอ่าน)
+      this._arQueue = [];    // post_id ที่รอส่ง API แบบ batch
+      this._arFlushTimer = null;
+    },
+    findPostById(id) {
+      return (this.dataIssue || []).find((p) => p && String(p._id) === String(id));
+    },
+    observeAutoReadCards() {
+      if (!this.feedMode || !this.autoRead || typeof window === "undefined") return;
+      if (!("IntersectionObserver" in window)) return;
+      if (!this._arObserver) {
+        this._arObserver = new IntersectionObserver(this.onAutoReadIntersect, {
+          threshold: [0, 0.25, 0.5, 0.75, 1],
+        });
+      } else {
+        this._arObserver.disconnect();
+      }
+      const root = this.$el;
+      if (!root || !root.querySelectorAll) return;
+      root.querySelectorAll("[data-post-id]").forEach((el) => {
+        const post = this.findPostById(el.getAttribute("data-post-id"));
+        if (post && !this.isPostRead(post)) this._arObserver.observe(el);
+      });
+    },
+    onAutoReadIntersect(entries) {
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      entries.forEach((entry) => {
+        const id = entry.target.getAttribute("data-post-id");
+        if (!id) return;
+        const visibleH = entry.intersectionRect ? entry.intersectionRect.height : 0;
+        const targetH = entry.boundingClientRect ? entry.boundingClientRect.height : 0;
+        // เห็นครึ่งโพสต์ หรือโพสต์ยาวมากแต่กินพื้นที่จอเกิน 40%
+        const seen = entry.isIntersecting && visibleH >= Math.min(targetH * 0.5, vh * 0.4);
+        if (seen) {
+          if (this._arTimers[id]) return;
+          this._arTimers[id] = setTimeout(() => {
+            delete this._arTimers[id];
+            this.queueAutoRead(id, entry.target);
+          }, 800);
+        } else if (this._arTimers[id]) {
+          clearTimeout(this._arTimers[id]);
+          delete this._arTimers[id];
+        }
+      });
+    },
+    queueAutoRead(id, el) {
+      const post = this.findPostById(id);
+      if (!post || this.isPostRead(post) || this.pendingRead[id]) return;
+      if (this._arObserver && el) this._arObserver.unobserve(el);
+      if (!this._arQueue.includes(id)) this._arQueue.push(id);
+      if (this._arFlushTimer) clearTimeout(this._arFlushTimer);
+      this._arFlushTimer = setTimeout(() => this.flushAutoRead(), 600);
+    },
+    async flushAutoRead() {
+      this._arFlushTimer = null;
+      const ids = this._arQueue.splice(0).filter((id) => {
+        const p = this.findPostById(id);
+        return p && !this.isPostRead(p) && !this.pendingRead[id];
+      });
+      if (!ids.length) return;
+      ids.forEach((id) => this.$set(this.pendingRead, id, true));
+      try {
+        await this.axios.put(
+          "https://api2.cognizata.com/api/v2/userposts/posts/read",
+          { post_ids: ids },
+          { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
+        );
+        ids.forEach((id) => {
+          const p = this.findPostById(id);
+          if (!p) return;
+          this.$set(p, "is_read", true);
+          this.$set(p, "read_status", "read");
+        });
+        // ⚠️ ไม่ reload รายการแม้กรอง "ยังไม่ได้อ่าน" อยู่ — กันโพสต์หายไปขณะกำลังเลื่อนอ่าน
+      } catch (error) {
+        console.error("auto read error:", error);
+      } finally {
+        ids.forEach((id) => this.$delete(this.pendingRead, id));
+      }
+    },
+    stopAutoRead(flush = false) {
+      if (this._arObserver) this._arObserver.disconnect();
+      Object.keys(this._arTimers || {}).forEach((id) => clearTimeout(this._arTimers[id]));
+      this._arTimers = {};
+      if (this._arFlushTimer) {
+        clearTimeout(this._arFlushTimer);
+        this._arFlushTimer = null;
+      }
+      if (flush && this._arQueue && this._arQueue.length) this.flushAutoRead();
+    },
+    // ===================================================================================
+    // ================= เอาโพสต์ออกจากรายการแบบนุ่มนวล + เติมโพสต์ถัดไป =================
+    removePostSmoothly(post) {
+      const id = post && post._id;
+      if (!id || this.leavingPosts[id]) return;
+      this.$set(this.leavingPosts, id, true);
+
+      // 1) ค้างไว้ให้เห็นสถานะใหม่ก่อน
+      setTimeout(() => {
+        const el = this.$el && this.$el.querySelector
+          ? this.$el.querySelector(`[data-post-id="${id}"]`)
+          : null;
+        let wait = 0;
+        // 2) ยุบการ์ด (ความสูง/ความโปร่งใส) ให้การ์ดด้านล่างเลื่อนขึ้นมาแบบนุ่ม
+        if (el) {
+          el.style.height = el.offsetHeight + "px";
+          el.style.overflow = "hidden";
+          // eslint-disable-next-line no-unused-expressions
+          el.offsetHeight; // force reflow
+          el.style.transition =
+            "height .4s ease, opacity .3s ease, margin .4s ease, padding .4s ease, border-width .4s ease";
+          el.style.opacity = "0";
+          el.style.height = "0px";
+          el.style.marginBottom = "0px";
+          el.style.borderWidth = "0px";
+          wait = 420;
+        }
+        // 3) เอาออกจาก list แล้วเติมโพสต์ถัดไป
+        setTimeout(() => {
+          const idx = this.dataIssue.findIndex((p) => p && String(p._id) === String(id));
+          if (idx > -1) {
+            this.dataIssue.splice(idx, 1);
+            this.datacount = Math.max(0, (Number(this.datacount) || 0) - 1);
+          }
+          this.$delete(this.leavingPosts, id);
+          this.fillReplacementPosts();
+        }, wait);
+      }, 900);
+    },
+    async fillReplacementPosts() {
+      if (this.fillingPosts) return;
+      const pageSize = 10;
+
+      // หน้านี้ว่างแล้ว → ถอยไปหน้าก่อน (ถ้ามี)
+      if (!this.dataIssue.length) {
+        if (this.offset > 0) {
+          this.offset = Math.max(0, this.offset - pageSize);
+          this.currentPage = Math.max(1, this.currentPage - 1);
+          this.apiSpotNewsPost(this.offset);
+        }
+        return;
+      }
+
+      const need = pageSize - this.dataIssue.length;
+      const nextOffset = this.offset + this.dataIssue.length;
+      if (need <= 0 || nextOffset >= this.datacount) return;
+
+      this.fillingPosts = true;
+      try {
+        const res = await this.axios({
+          method: "get",
+          url: "https://api2.cognizata.com/api/v2/wordcloud/getSentimentdetailWordcloud",
+          params: this.buildPostListParams(nextOffset, need),
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        });
+        const list = (res && res.data && res.data.data) || [];
+        if (res && res.data && typeof res.data.count === "number") this.datacount = res.data.count;
+        const have = new Set(this.dataIssue.map((p) => String(p._id)));
+        const added = (Array.isArray(list) ? list : [])
+          .filter((p) => p && !have.has(String(p._id)))
+          .slice(0, need)
+          .map((p) => ({ ...p, read: true, _entering: true }));
+        if (added.length) {
+          this.dataIssue.push(...added);
+          setTimeout(() => {
+            added.forEach((p) => this.$set(p, "_entering", false));
+          }, 700);
+        }
+      } catch (error) {
+        console.error("fillReplacementPosts error:", error);
+      } finally {
+        this.fillingPosts = false;
+        // มีการ์ดถูกเอาออกเพิ่มระหว่างรอ → เติมอีกรอบ
+        if (this.dataIssue.length < pageSize && this.offset + this.dataIssue.length < this.datacount) {
+          this.$nextTick(() => this.fillReplacementPosts());
+        }
+      }
+    },
+    // ====================================================================================
+    isPostRead(post) {
+      return post.read_status === "read" || post.is_read === true;
+    },
+    async togglePostRead(post) {
+      const id = post._id;
+      if (!this.feedMode || !id || this.pendingRead[id]) return;
+      const nextRead = !this.isPostRead(post);
+      this.$set(this.pendingRead, id, true);
+      try {
+        await this.axios.put(
+          `https://api2.cognizata.com/api/v2/userposts/posts/${nextRead ? "read" : "unread"}`,
+          { post_ids: [id] },
+          { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
+        );
+        this.$set(post, "is_read", nextRead);
+        this.$set(post, "read_status", nextRead ? "read" : "unread");
+        // ✅ ไม่ reload ทั้งหน้าแล้ว: ถ้าสถานะใหม่ไม่ตรงกับตัวกรอง ให้เห็นสถานะใหม่ก่อน
+        //    แล้วค่อยเลื่อนการ์ดหายไป และดึงโพสต์ถัดไปมาเติมแทน (smooth)
+        if (this.readStatus !== "all" && (this.readStatus === "read") !== nextRead) {
+          this.removePostSmoothly(post);
+        }
+      } catch (error) {
+        this.$bvToast.toast("เปลี่ยนสถานะการอ่านไม่สำเร็จ กรุณาลองอีกครั้ง", {
+          title: "เกิดข้อผิดพลาด", variant: "danger", solid: true,
+        });
+      } finally {
+        this.$delete(this.pendingRead, id);
+      }
+    },
     setDateRange() {
       if (!this.startd || !this.endd) {
         const today = moment(new Date()).format().slice(0, 10);
@@ -1239,6 +1523,7 @@ export default {
 
       if (domain) params.domain_id = domain;
       if (monitor) params.monitor = monitor;
+      if (this.$route.query.dashboard === "true") params.dashboard = "true"; // ✅ หน้า Feed: วันที่ระบบเก็บโพสต์
       // ✅ เลือกส่ง param ให้ถูก
       if (hashtag) params.hashtags = hashtag;
       else if (keyword) params.querySearch = keyword;
@@ -1585,12 +1870,8 @@ export default {
         }
       );
     },
-    apiSpotNewsPost(offset) {
-      this.datacount = 0
-      this.dataIssue = []
-      this.fetchObjectCount()
-      this.load = true;
-
+    // ✅ สร้าง params ของรายการโพสต์ (ใช้ร่วมกันระหว่างโหลดหน้า กับดึงโพสต์มาเติมแทนที่)
+    buildPostListParams(offset, limit = 10) {
       // ------------------------
       // 1) keyword / hashtag
       // ------------------------
@@ -1625,12 +1906,17 @@ export default {
         sentiment: stm || "",
         source: this.select_social,
         sort_by: this.sort,
-        limit: 10,
+        limit,
         start,
         end,
         offset,
       };
+      if (this.feedMode) {
+        params.dashboard = "true";
+        params.read_status = this.readStatus;
+      }
       if (monitor) params.monitor = monitor;
+      if (this.$route.query.dashboard === "true") params.dashboard = "true"; // ✅ หน้า Feed: วันที่ระบบเก็บโพสต์
       // ✅ เลือกส่ง param ให้ถูก
       if (hashtag) {
         params.hashtags = hashtag;
@@ -1640,6 +1926,18 @@ export default {
       if (this.$route.query.domain_id) {
         params.domain_id = this.$route.query.domain_id
       }
+      return params;
+    },
+    apiSpotNewsPost(offset) {
+      this.datacount = 0
+      this.dataIssue = []
+      if (!this.feedMode || this.statLoadedFor !== this.localQuery) {
+        this.statLoadedFor = this.localQuery;
+        this.fetchObjectCount()
+      }
+      this.load = true;
+
+      const params = this.buildPostListParams(offset, 10);
       // ------------------------
       // 5) request
       // ------------------------
@@ -1712,8 +2010,19 @@ export default {
         });
     }
   },
+  created() {
+    this.initAutoReadState();
+    if (this.feedMode) {
+      try {
+        this.autoRead = localStorage.getItem("feedAutoRead") === "1";
+      } catch (e) {
+        this.autoRead = false;
+      }
+    }
+  },
   async mounted() {
     this.setDateRange();
+    if (this.feedMode && this.autoRead) this.$nextTick(() => this.observeAutoReadCards());
     this.$emitter.on("sendKeyword", (val) => {
       // console.log('val', val);
       this.localQuery = val || "";
@@ -1726,12 +2035,103 @@ export default {
     //await this.check_sentiment_word()
   },
   beforeDestroy() {
+    this.stopAutoRead(true); // ส่งรายการที่ค้างคิวอ่านออโต้ก่อนออก
+    this._arObserver = null;
     this.$emitter.off("sendKeyword"); // กันซ้ำ/กัน memory leak
   }
 };
 </script>
 
 <style scoped>
+/* ✅ หน้า Feed: เปลี่ยนสถานะการอ่านแล้วไม่ตรงตัวกรอง → ไฮไลต์สั้นๆ ก่อนยุบหาย / โพสต์ที่เติมเข้ามาค่อยๆ โผล่ */
+.post-status-changed {
+  box-shadow: 0 0 0 2px #a7f3d0, 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  transition: box-shadow .2s ease;
+}
+.post-entering {
+  animation: postEnter .5s ease both;
+}
+@keyframes postEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* ✅ สวิตช์อ่านอัตโนมัติ (หน้า Feed) — โทนฟ้า แยกจาก Highlight (เหลือง) */
+.auto-read-switch ::v-deep .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+.auto-read-switch ::v-deep .custom-control-input:focus ~ .custom-control-label::before {
+  box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+.auto-read-switch ::v-deep .custom-control-input:focus:not(:checked) ~ .custom-control-label::before {
+  border-color: #8fd3de;
+}
+.auto-read-on {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+/* ✅ ขนาดตัวอักษรสวิตช์ อ่านอัตโนมัติ + Highlight */
+.switch-row .box-hl {
+  font-size: 18px;
+}
+.feed-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.feed-footer-metrics {
+  flex: 1;
+  min-width: 0;
+}
+.feed-read-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 0;
+  min-height: 28px;
+  padding: 4px 9px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none !important;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.feed-read-toggle:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+.feed-read-toggle.is-read {
+  background: #ecfdf5;
+  border-color: #d1fae5;
+  color: #059669;
+}
+.feed-read-toggle.is-read:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+.feed-read-toggle:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+.feed-read-toggle .spinner-border {
+  width: 11px;
+  height: 11px;
+  border-width: 1.5px;
+}
 .slider-item {
   flex: 0 0 auto;
   /* การ์ดแต่ละอันมีขนาดคงที่ */

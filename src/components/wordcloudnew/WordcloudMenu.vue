@@ -2,10 +2,10 @@
   <div>
     
 
-    <div class="footer_magin pr-lg-5 pl-lg-5">
-      <b-row align-h="center">
+    <div :class="feedMode ? 'feed-filter' : 'footer_magin pr-lg-5 pl-lg-5'">
+      <b-row v-if="!feedMode" align-h="center">
       <b-col class="d-contents">
-        <h1 class="title">Wordcloud</h1>
+        <h1 v-if="!feedMode" class="title">Wordcloud</h1>
       </b-col>
       <b-col>
         <div style="text-align: end" class="p-3 my-0">
@@ -13,7 +13,7 @@
             <span>Today</span>
             {{ new Intl.DateTimeFormat("en-AU").format() }}
           </span> -->
-          <span class="pt-3">
+          <span v-if="!feedMode" class="pt-3">
             <i class="fa fa-print align-middle" @click="printWindow()"></i>
           </span>
         </div>
@@ -55,7 +55,25 @@
           </div>
         </b-col>
 
-        <b-col class="text-right" cols="auto" md="auto">
+        <!-- ✅ หน้า Feed: ใช้ monitor อย่างเดียว แต่ให้เลือกประเภทวันที่แทน
+             วันที่ระบบเก็บโพสต์ => ส่ง dashboard=true / วันที่โพสต์ => ไม่ส่ง dashboard -->
+        <b-col v-if="feedMode" class="text-right" cols="auto" md="auto">
+          <b-form-group label="" v-slot="{ ariaDescribedby }">
+            <b-form-radio-group
+              class="sel-box"
+              v-model="selectedDashboardDraft"
+              :options="dateTypeOptions"
+              :aria-describedby="ariaDescribedby"
+              :name="radioName + '-date'"
+              size="sm"
+              buttons
+              pill
+              button-variant="outline-dark"
+            />
+          </b-form-group>
+        </b-col>
+
+        <b-col v-else class="text-right" cols="auto" md="auto">
           <b-form-group label="" v-slot="{ ariaDescribedby }">
             <!-- ✅ radio เปลี่ยนได้ แต่ยังไม่ apply -->
             <b-form-radio-group
@@ -88,7 +106,7 @@
       </b-row>
     </div>
 
-    <div class="text-left mx-lg-5">
+    <div class="text-left" :class="{ 'mx-lg-5': !feedMode }">
       <span class="text-left h6 mb-1" v-if="domain_title">
         <span class="bg-tags domain-ellipsis">{{ domain_title }}</span>
       </span>
@@ -105,9 +123,15 @@
           <i class="fas fa-id-card-alt"></i> บัญชีทั้งหมด
         </span>
       </span>
+
+      <!-- ✅ หน้า Feed: ป้ายประเภทวันที่ (เปลี่ยนเฉพาะตอนกดค้นหา) -->
+      <span v-if="feedMode" class="bg-tags-m mx-1 mt-1">
+        <i class="far fa-calendar-alt"></i>
+        {{ appliedDashboard ? "วันที่ระบบเก็บโพสต์" : "วันที่โพสต์" }}
+      </span>
     </div>
 
-    <hr class="mt-2 mb-3 mx-lg-5" />
+    <hr v-if="!feedMode" class="mt-2 mb-3 mx-lg-5" />
   </div>
 </template>
 
@@ -122,6 +146,8 @@ export default {
   props: {
     // If true, don't dispatch legacy store fetch; only emit filters-changed to parent
     emitOnly: { type: Boolean, default: false },
+    // ✅ หน้า Feed: บังคับ monitor=true (ไม่มีให้เลือก ทั้งหมด/Monitor) + ให้เลือกประเภทวันที่แทน
+    feedMode: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -130,6 +156,13 @@ export default {
         { text: "ทั้งหมด", value: false },
         { text: "Monitor", value: true },
       ],
+      // ✅ (feedMode) true = วันที่ระบบเก็บโพสต์ (ส่ง dashboard=true) / false = วันที่โพสต์ (ไม่ส่ง dashboard)
+      dateTypeOptions: [
+        { text: "วันที่ระบบเก็บโพสต์", value: true },
+        { text: "วันที่โพสต์", value: false },
+      ],
+      selectedDashboardDraft: true,
+      appliedDashboard: true,
 
       date: "",
       domain: "",
@@ -232,10 +265,20 @@ export default {
       // ถ้า query มี monitor ให้ query เป็นตัวตัดสิน (ตรงกับสิ่งที่ parent ใช้ยิง API จริง)
       // ถ้าไม่มีเลยค่อย fallback ไปตาม store เดิม
       const hasMonitorInQuery = q.monitor !== undefined;
-      const init = hasMonitorInQuery ? (q.monitor === "true" || q.monitor === true) : this.getSelectedMonitor === true;
+      const init = this.feedMode
+        ? true
+        : hasMonitorInQuery ? (q.monitor === "true" || q.monitor === true) : this.getSelectedMonitor === true;
       this.selectedMonitorDraft = init;
       this.appliedMonitor = init;
       this.$store.commit("setSelectedMonitor", init);
+
+      // -------- dashboard (feedMode) --------
+      // ไม่มีใน query = ค่าเริ่มต้น วันที่ระบบเก็บโพสต์
+      if (this.feedMode) {
+        const dash = q.dashboard !== "false" && q.dashboard !== false;
+        this.selectedDashboardDraft = dash;
+        this.appliedDashboard = dash;
+      }
 
       // -------- domain --------
       this.restoreDomainFromQuery(q.domain_id);
@@ -271,7 +314,8 @@ export default {
       const todaye = moment(new Date()).format().slice(0, 10) + "T23:59:59";
 
       // ✅ apply monitor เฉพาะตอนกดค้นหา
-      this.appliedMonitor = this.selectedMonitorDraft === true;
+      this.appliedMonitor = this.feedMode ? true : this.selectedMonitorDraft === true;
+      if (this.feedMode) this.appliedDashboard = this.selectedDashboardDraft === true;
 
       // ✅ sync ลง store เฉพาะตอนกดค้นหา (ถ้าคุณยังใช้ store ต่อ)
       this.$store.commit("setSelectedMonitor", this.appliedMonitor);
@@ -320,6 +364,8 @@ export default {
         end: end_date,
         domain_id: domainPayload || "",
         ...(monitorParam ? { monitor: monitorParam } : {}),
+        // ✅ feedMode: ส่งสถานะประเภทวันที่ให้ parent ("true" = ส่ง dashboard, "false" = ไม่ส่ง)
+        ...(this.feedMode ? { dashboard: this.appliedDashboard ? "true" : "false" } : {}),
       });
     },
   },

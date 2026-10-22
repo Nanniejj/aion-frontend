@@ -1,0 +1,2263 @@
+<template>
+  <div>
+    <!-- {{heightword}} -->
+    <vue-element-loading :active="getLoadPostTab" size="80" background-color="rgba(255, 255, 255, 0.3)"
+      color="#b6ac9a" />
+    <div>
+      <!-- {{heightword.data[0].Keywords}} -->
+      <div class="h5 text-left bold" v-if="api !== 'location'">
+        <div v-if="tabs == 'domainTab'">
+          <span v-if="dh == ''">All</span>
+          <span v-else>{{ dh }}</span>
+        </div>
+        <div v-if="tabs == 'hashtagTab'">
+          <span v-if="dh == ''"> All</span>
+          <span v-else>#{{ dh }}</span>
+        </div>
+        <hr />
+      </div>
+      <b-form-group label="" v-slot="{ ariaDescribedby }">
+        <b-row>
+          <b-col sm="12" md="6">
+            <b-form-radio-group v-model="selected" :options="options" :aria-describedby="ariaDescribedby"
+              name="radio-inline" class="mt-1 mb-2 text-left ml-2" @change="selectSentiment"></b-form-radio-group>
+          </b-col>
+          <b-col sm="12" md="6" class="text-right">
+            <div class="d-flex justify-content-end align-items-start">
+              <b-form-select v-model="selectedSort" :options="optionSort" size="sm" class="mb-2 select-sort"
+                @change="selectSort"></b-form-select>
+              <!-- Export Excel (หน้า Domain) : ดึงทีละ 500 จนครบ -->
+              <ExportExcelButton v-if="isDomainExport" class="mb-2" :posts="getPostAllMonitor || []"
+                :filters="domainExportFilters" :fetch-all="fetchAllDomainPostsForExport"
+                :count="getCountAllPost || 0" :disabled="getLoadPostTab || !getCountAllPost"
+                inline-comments="json" :comments-limit="20" filename-prefix="domain" />
+            </div>
+          </b-col>
+        </b-row>
+      </b-form-group>
+    </div>
+    <!-- {{getPostAllMonitor}} -->
+    <div id="profile-page" v-if="getPostAllMonitor && getPostAllMonitor.length != 0">
+      <!-- Highlight -->
+      <b-form-checkbox switch size="lg" class="text-right" v-model="checked" v-if="pageCheck == 'Domain'">
+        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
+        <span v-else class="box-hl pl-2 pr-2">Highlight</span>
+      </b-form-checkbox>
+      <b-form-checkbox switch size="lg" class="text-right" v-model="checked"
+        v-if="api == 'location' && pageMenu !== 'domain'">
+        <span :style="myStyle" v-if="checked" class="box-hl pl-2 pr-2">Highlight</span>
+        <span v-else class="box-hl pl-2 pr-2">Highlight</span>
+      </b-form-checkbox>
+      <!-- {{getPostAllMonitor[1]}} -->
+      <b-card class="mb-4" style="border: none" id="box-content" footer-tag="footer" header-tag="header"
+        v-for="(profilePost, k) in getPostAllMonitor" :key="k">
+        <template #header v-if="profilePost">
+          <b-row>
+            <b-col md="12" v-if="
+              getProfileData && profilePost.account_name && api == 'profile'
+            ">
+              <div v-if="
+                getProfileData.toLowerCase() !==
+                profilePost.account_name.toLowerCase() &&
+                profilePost.source == 'twitter'
+              " class="text-left mb-1 box-retweet">
+                <i class="fa fa-retweet" /> {{ getProfileData }} Retweet
+              </div>
+            </b-col>
+            <b-col class="align-start col-lg-auto w-auto" sm="auto" lg="auto">
+              <span class="left">
+                <span v-if="profilePost.profile_image">
+                  <b-avatar @error="setAltImg" size="47px" :src="profilePost.profile_image" loading="lazy"
+                    class="imgpro" v-if="profilePost.source != 'blockdit'"></b-avatar>
+                  <b-avatar @error="setAltImg" size="47px" :src="profilePost.profile_image" loading="lazy"
+                    v-else></b-avatar>
+                </span>
+                <span v-else>
+                  <b-avatar @error="setAltImg" size="47px" :src="profilePost.photos" loading="lazy" class="imgpro"
+                    v-if="profilePost.source == 'tiktok'"></b-avatar>
+                  <b-avatar size="45px" v-else></b-avatar>
+                </span>
+                <img v-if="profilePost.source == 'twitter'" src="@/assets/Twitter.png" class="social-img" />
+                <img v-else-if="profilePost.source == 'facebook'" src="@/assets/Facebook.png" class="social-img" />
+                <img v-if="profilePost.source == 'news'" src="@/assets/News.png" class="social-img" />
+                <span v-if="profilePost.source == 'pantip'">
+                  <img v-if="profilePost.platform == 'dek-d'" src="@/assets/dekd.png" class="social-img" />
+                  <img v-else-if="profilePost.platform == 'lemon8'" src="@/assets/lemon8.png" class="social-img" />
+                  <img v-else-if="profilePost.platform == 'reddit'" src="@/assets/reddit.png" class="social-img" />
+                  <img v-else src="@/assets/Pantip.png" class="social-img" />
+                </span>
+                <!-- <img
+                  v-if="profilePost.source == 'pantip'"
+                  src="@/assets/Pantip.png"
+                  class="social-img"
+                /> -->
+                <img v-if="profilePost.source == 'instagram'" src="@/assets/Instagram.png" class="social-img" />
+                <img v-if="profilePost.source == 'youtube'" src="@/assets/Youtube.png" class="social-img" />
+                <img v-if="profilePost.source == 'blockdit'" src="@/assets/Blockdit.png" class="social-img" />
+                <img v-if="profilePost.source == 'tiktok'" src="@/assets/Tiktok.png" class="social-img" />
+                <img v-if="profilePost.source == 'threads'" src="@/assets/Threads.png" class="social-img" />
+                <img v-if="profilePost.source == 'telegram'" src="@/assets/Telegram.png" class="social-img" />
+  
+              </span>
+            </b-col>
+            <b-col class="align-start w-auto" sm="8" lg="auto">
+              <span id="txt-name">
+                <span><b> {{ profilePost.account_name }} </b></span>
+
+                <!-- <a v-if="
+                  profilePost.url_post &&
+                  profilePost.url_post.includes('mbasic')
+                " v-bind:href="profilePost.url_post.replace('mbasic.', '')" class="fa fa-external-link"
+                  target="_blank"></a> -->
+                <a v-if="profilePost && (profilePost.url_post || '').includes('mbasic')"
+                  :href="(profilePost.url_post || '').replace('mbasic.', '')" class="fa fa-external-link"
+                  target="_blank">
+                </a>
+                <a v-else v-bind:href="profilePost.url_post" class="fa fa-external-link" target="_blank"></a>
+              </span>
+              <div class="font-weight-light small" v-if="profilePost.date">
+                {{ profilePost.date.split("T")[0] }} |
+                {{ profilePost.date.split("T")[1] }}
+              </div>
+            </b-col>
+            <b-col class="text-md-right" sm="12" lg="" md="">
+              <div class="mt-1">
+                <img class="images1 d-none" :src="profilePost.snapshot" />
+                <i v-if="profilePost.snapshot" class="fas fa-camera mr-2" @click="onClick(0, [profilePost.snapshot])" />
+                <span v-if="profilePost.user_sentiment">
+                  <span v-if="
+                    profilePost.user_sentiment[objId] == 0 ||
+                    profilePost.user_sentiment[objId]
+                  ">
+                    <b-button-group size="sm" id="btn-group" v-if="profilePost.user_sentiment[objId] == 1">
+                      <b-button id="btn-pos" :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="profilePost.user_sentiment[objId] == 0">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                      <b-button id="btn-nue" :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="profilePost.user_sentiment[objId] == -1">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    </b-button-group>
+                  </span>
+                  <span v-else>
+                    <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 1">
+                      <b-button id="btn-pos" :style="btnPosStyle"
+                        @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 0">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                      <b-button id="btn-nue" :style="btnNeuStyle"
+                        @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    </b-button-group>
+                    <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == -1">
+                      <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                      <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                      <b-button id="btn-neg" :style="btnNegStyle"
+                        @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                    </b-button-group>
+                  </span>
+                </span>
+                <span v-else>
+                  <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 1">
+                    <b-button id="btn-pos" :style="btnPosStyle"
+                      @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                    <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                  </b-button-group>
+                  <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == 0">
+                    <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                    <b-button id="btn-nue" :style="btnNeuStyle"
+                      @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                  </b-button-group>
+                  <b-button-group size="sm" id="btn-group" v-if="profilePost.sentiment == -1">
+                    <b-button id="btn-pos" @click="getTheSelected(k, 1, profilePost.uid)">Positive</b-button>
+                    <b-button id="btn-nue" @click="getTheSelected(k, 0, profilePost.uid)">Neutral</b-button>
+                    <b-button id="btn-neg" :style="btnNegStyle"
+                      @click="getTheSelected(k, -1, profilePost.uid)">Negative</b-button>
+                  </b-button-group>
+                </span>
+              </div>
+            </b-col>
+            <b-col cols="auto">
+              <div class="text-right">
+                <i v-b-tooltip.hover title="ลบโพสต์" @click="confirmDeletePost(profilePost._id)"
+                  class='text-danger fas fa-trash'></i>
+              </div>
+            </b-col>
+          </b-row>
+        </template>
+        <b-row>
+          <b-col md="12"> </b-col>
+          <b-col lg="12">
+            <div v-if="profilePost && profilePost.news_info && profilePost.news_info.source_news == 'external'"
+              class="text-right my-1 small ">
+              <div class="info-news">
+                <span v-if="profilePost.news_info.source_news == 'external'">ข่าวต่างประเทศ</span>
+                | <span v-if="profilePost.news_info.nation" class="bold">{{ profilePost.news_info.nation }}</span>
+              </div>
+            </div>
+            <div v-if="profilePost.title" class="title-news text-left my-2">
+              {{ profilePost.showTranslated && profilePost.translatedTitle ? profilePost.translatedTitle : profilePost.title }}
+            </div>
+            <div class="text-left mb-1">
+              <TranslateText combined :post-id="profilePost._id" :title="profilePost.title"
+                :full-text="cleanFullText(profilePost)"
+                @update="(payload) => onTranslateUpdate(profilePost, payload)" />
+            </div>
+            <div v-if="pageCheck == 'Domain'" class="box-contents">
+              <Highlighter v-if="profilePost.full_text" class="my-highlight" :style="{
+                textAlign: 'justify',
+                fontSize: '17px',
+                padding: '10px',
+              }" highlightClassName="highlight2" :searchWords="highlightText(profilePost.full_text)" :autoEscape="true"
+                :textToHighlight="profilePost.read
+                  ? getBaseFullText(profilePost).slice(0, 450)
+                  : getBaseFullText(profilePost)
+                  " />
+              <div v-if="profilePost.full_text && profilePost.full_text.length > 450"
+                @click="profilePost.read = !profilePost.read" id="readmore">
+                <span v-if="profilePost.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
+              </div>
+            </div>
+            <div v-else-if="api == 'location' && pageMenu !== 'domain'" class="box-contents">
+              <Highlighter class="my-highlight" :style="{
+                textAlign: 'left',
+                fontSize: '17px',
+                padding: '10px',
+              }" highlightClassName="highlight2" :searchWords="highlightText2" :autoEscape="true" :textToHighlight="profilePost.read
+                ? getBaseFullText(profilePost).slice(0, 450)
+                : getBaseFullText(profilePost)
+                " />
+              <div v-if="profilePost.full_text.length > 450" @click="profilePost.read = !profilePost.read"
+                id="readmore">
+                <span v-if="profilePost.read == true">... อ่านต่อ</span><span v-else>ย่อบทความ</span>
+              </div>
+            </div>
+            <div v-else>
+              <div id="txt-cmt" class="font-weight-normal" v-if="profilePost.full_text">
+                <read-more more-str="อ่านต่อ"
+                  :text="profilePost.showTranslated && profilePost.translatedFullText ? profilePost.translatedFullText : profilePost.full_text"
+                  link="#" less-str="ย่อบทความ" :max-chars="450"></read-more>
+                <!-- {{ profilePost.full_text }} -->
+              </div>
+            </div>
+          </b-col>
+          <b-col>
+            <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
+              <a v-bind:href="profilePost.url_post" target="_blank">
+                <img :src="profilePost.photos && profilePost.photos[0]" onerror="this.style.display='none'"
+                  style="border-radius: 10px;" class="my-3 tiktok-post-img" />
+                <!-- <lite-tiktok :videoid="profilePost.uid" style=" pointer-events: none; "></lite-tiktok> -->
+              </a>
+
+              <!-- <div style="height: 550px;overflow: hidden;" class="vdo-tt">
+        <iframe  style="height: 900px; border: 0; vertical-align: top; overflow: hidden;" src="https://tiktok.com/embed/7362555837165964545" ></iframe>
+      </div> -->
+
+              <!-- <iframe
+                width="auto"
+                height="750"
+                :src="'https://www.tiktok.com/embed/v2/' + profilePost.uid"
+                allowfullscreen
+              ></iframe> -->
+            </div>
+            <div id="photo-grid" v-if="profilePost.photos && profilePost.source !== 'tiktok'" class="mb-4">
+              <!-- {{typeof(profilePost.photos)}} -->
+              <div v-if="
+                profilePost.photos && typeof profilePost.photos == 'string'
+              ">
+                <img class="images1" :src="profilePost.photos" @click="onClick(0, [profilePost.photos])"
+                  onerror="this.style.display='none'" />
+              </div>
+              <div v-else>
+                <div v-if="profilePost.photos.length == 1" class="p-20">
+                  <img class="d-none images1" v-for="(image, i) in profilePost.photos" :src="profilePost.photos"
+                    @click="onClick(i, profilePost.photos)" :key="i" />
+                  <img class="images1" v-for="(image, i) in profilePost.photos" :src="image"
+                    @click="onClick(i, profilePost.photos)" :key="`A-${i}`" onerror="this.style.display='none'" />
+                </div>
+                <div v-else-if="profilePost.photos.length == 2" class="p-20">
+                  <img class="images2" v-for="(image, i) in profilePost.photos" :src="image"
+                    @click="onClick(i, profilePost.photos)" :key="`ฺB-${i}`" onerror="this.style.display='none'" />
+                </div>
+                <div v-else-if="profilePost.photos.length == 3" class="p-20">
+                  <img class="images3" v-for="(image, i) in profilePost.photos" :src="image"
+                    @click="onClick(i, profilePost.photos)" :key="`C-${i}`" onerror="this.style.display='none'" />
+                </div>
+                <div v-else class="p-20 col2">
+                  <img class="images4" v-for="(image, i) in profilePost.photos.slice(0, 4)" :src="image"
+                    @click="onClick(i, profilePost.photos)" :key="`D-${i}`" onerror="this.style.display='none'" />
+                  <div v-if="profilePost.photos.length > 4" id="picmore" @click="onClick(3, profilePost.photos)"
+                    onerror="this.style.display='none'">
+                    +{{ profilePost.photos.length - 4 }}
+                  </div>
+                </div>
+              </div>
+              <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
+            </div>
+          </b-col>
+        </b-row>
+        <!-- {{ profilePost.photos_text }} -->
+        <div class="text-left ai-box mt-2"
+          v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length"
+          style="font-size: 15px;font-weight: 500;">
+          <div v-for="(text, idx) in profilePost.photos_text">
+
+            <div v-if="text && text.length">
+              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
+              </b-avatar>
+              <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
+              </span>
+              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+              {{ text }}
+            </div>
+            <div v-if="text.face">
+              <span v-for="(face, idx) in text.face">
+                <!-- "face.confidence > 0.68" -->
+                <span v-if="face.confidence" class="mr-2 mt-1">
+                  <span style="background: #e5e5e5;
+                    padding: 0px 6px;
+                    border-radius: 13px;">
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                    {{ face.person_name }}
+                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
+                      parseFloat((face.confidence * 100).toFixed(2))
+                    }}%)</span></span></span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tag-domain text-left" v-if="$route.name == 'Profile' || $route.name == 'Dashboard'">
+          <span style="font-size: small;" v-if="
+            filterDomain(profilePost.domain) &&
+            filterDomain(profilePost.domain).length
+          ">domain tags :
+          </span>
+          <span v-for="(name, i) in filterDomain(profilePost.domain)" :key="i" class="mx-1 py-2">
+            <b-badge pill variant="light" style="color: #2c3e50;
+             background-color: #ddddddad !important;">
+              {{ name }}
+            </b-badge></span>
+        </div>
+
+        <div v-if="
+          profilePost &&
+          profilePost.location &&
+          profilePost.location.length
+
+        " class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
+          <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
+          <div v-for="(geo, k) in filterNumbers(profilePost.location)" :key="k" class="mr-1 my-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;display: inline-flex;text-align: center;
+    border-radius: 33px;
+">
+            <span v-if="geo">
+              <!-- {{ geo.toString() }} -->
+              <span v-if="geo.toString() && geo.toString().length == 2">
+                {{ matchGeocode(geo).name_th }}
+              </span>
+              <span v-if="geo.toString() && geo.toString().length == 4">
+                {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+                {{
+                  geo.toString().substring(0, 2) == "10"
+                    ? " เขต" + matchGeocode(geo).name_th
+                    : " อ." + matchGeocode(geo).name_th
+                }}
+              </span>
+              <span v-if="geo.toString() && geo.toString().length == 6">
+                {{ matchGeocode(geo.toString().substring(0, 2)).name_th }}
+                {{
+                  geo.toString().substring(0, 2) == "10"
+                    ? " เขต" +
+                    matchGeocode(geo.toString().substring(0, 4)).name_th
+                    : " อ." +
+                    matchGeocode(geo.toString().substring(0, 4)).name_th
+                }}
+                {{
+                  geo.toString().substring(0, 2) == "10"
+                    ? "แขวง" + matchGeocode(geo).name_th
+                    : "ต." + matchGeocode(geo).name_th
+                }}
+              </span></span>
+          </div>
+        </div>
+        <div class="text-left ai-box mt-2" v-if="
+          profilePost && profilePost.face_detect && username == 'adminatapy'
+        " style="font-size: 15px;font-weight: 500;">
+          <div v-if="profilePost.face_detect && profilePost.person_name && profilePost.person_name.length">
+            <span v-for="(face, idx) in profilePost.person_name">
+              <span class="mr-2 mt-1" v-if="face">
+                <span style="background: #e5e5e5;
+    padding: 0px 6px;
+    border-radius: 13px;">
+                  <b-icon icon="person-bounding-box" scale="1"></b-icon>
+                  {{ face }}
+                </span></span>
+            </span>
+          </div>
+        </div>
+        <template #footer>
+          <div class="text-left md-font" style="position: relative;">
+            <span v-b-tooltip.hover title="Engagement" v-if="profilePost.source == 'pantip'">
+              <span style="font-size:14px;">Engages </span>
+              {{
+                (profilePost.engagement + profilePost.comments_count)
+                | numFormat
+              }}
+            </span>
+
+            <span v-b-tooltip.hover title="Engagement" v-else>
+              <span style="font-size:14px;">Engages </span>{{ profilePost.engagement | numFormat }}
+            </span>
+
+            <span v-b-toggle="'btn' + page + k" id="box-reaction" v-b-tooltip.hover title="Comments">
+              <i class="fas fa-comment" :aria-expanded="visible ? 'true' : 'false'" style="cursor: pointer">
+              </i>
+              <span class="md-font" v-if="
+                profilePost.comments_count && profilePost.source == 'news'
+              ">
+                {{ profilePost.comments.comments.length | numFormat }}&nbsp;
+              </span>
+              <span v-else class="md-font">
+                {{ profilePost.comments_count | numFormat }}&nbsp;</span>
+              <!-- <span  class="md-font" v-if="profilePost.comments_count==''&&profilePost.source == 'twitter'"> 0 </span> -->
+            </span>
+
+            <!------------- engages-------------- -->
+            <!-- <span
+              id="box-reaction"
+              v-b-tooltip.hover
+              title="Engagement"
+              v-if="profilePost.source == 'pantip'"
+              style="float:right;"
+            >
+              <span style="font-size:14px;"
+                >Engages
+                {{
+                  (profilePost.engagement + profilePost.comments_count)
+                    | numFormat
+                }}</span
+              >
+            </span> -->
+            <!-- <span
+              id="box-reaction"
+              v-b-tooltip.hover
+              title="Engagement"
+              v-else
+              style="float:right;"
+            >
+              <span style="font-size:14px;"
+                >Engages {{ profilePost.engagement | numFormat }}</span
+              >
+            </span> -->
+
+            <span v-if="profilePost.source == 'facebook'">
+              <span v-if="
+                profilePost.likes_count !== '0' && profilePost.likes_count
+              " id="box-reaction" v-b-tooltip.hover title="Like">
+                <i class="far fa-thumbs-up" />
+                {{ profilePost.likes_count | numFormat }}
+              </span>
+            </span>
+            <!-- twitter -->
+            <span v-if="profilePost.source !== 'facebook'">
+              <!-- && profilePost.source !== 'youtube' -->
+              <span v-if="
+                profilePost.retweets_count !== '0' &&
+                profilePost.retweets_count
+              " id="box-reaction" v-b-tooltip.hover title="Retweet">
+                <i class="fal fa-retweet"></i>
+                {{ profilePost.retweets_count | numFormat }}
+              </span>
+              <span v-if="
+                profilePost.likes_count !== '0' && profilePost.likes_count
+              " id="box-reaction" v-b-tooltip.hover title="Like">
+                <i class="fa fa-heart"></i>
+                {{ profilePost.likes_count | numFormat }}
+              </span>
+              <span v-if="
+                profilePost.shares_count !== '0' && profilePost.shares_count
+              " id="box-reaction" v-b-tooltip.hover title="Share">
+                <i class="fa fa-share"></i>
+                {{ profilePost.shares_count | numFormat }}
+              </span>
+              <span v-if="
+                profilePost.views_count !== '0' && profilePost.views_count
+              " id="box-reaction" v-b-tooltip.hover title="View">
+                <i class="fas fa-eye"></i>
+                {{ profilePost.views_count | numFormat }}
+              </span>
+            </span>
+            <!-- share blockdit -->
+            <!-- <span
+              v-if="
+                profilePost.source == 'blockdit' &&
+                  profilePost.engagement !== '0'
+              "
+            >
+              <span id="box-reaction" v-b-tooltip.hover title="Share">
+                <i class="fa fa-share"></i>
+                <span class="md-font">
+                  {{ profilePost.engagement | numFormat }}
+                </span>
+              </span>
+            </span> -->
+            <!-- reaction-->
+            <span v-if="profilePost.reaction">
+              <span v-if="profilePost.reaction != ''">
+                <!-- pt -->
+                <span v-if="profilePost.reaction.Good">
+                  <span v-if="profilePost.reaction.Good !== '0'" id="box-reaction" v-b-tooltip.hover
+                    title="Good Content">
+                    <i class="fa fa-plus"></i>
+                    <span class="md-font">
+                      {{ profilePost.reaction.Good | numFormat }}
+                    </span>
+                  </span>
+                </span>
+                <span v-if="profilePost.reaction.Horror">
+                  <span v-if="profilePost.reaction.Horror !== '0'" id="box-reaction" v-b-tooltip.hover title="Horror">
+                    <img v-if="profilePost.reaction.Horror !== '0'" src="@/assets/horror.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Horror !== '0'">
+                      {{ profilePost.reaction.Horror | numFormat }}
+                    </span>
+                  </span>
+                </span>
+                <!-- pt -->
+                <!-- fb -->
+
+                <span v-if="profilePost.reaction.Likes">
+                  <span v-if="profilePost.reaction.Likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                    <img v-if="profilePost.reaction.Likes !== '0'" src="@/assets/fb_like.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Likes !== '0'">
+                      {{ profilePost.reaction.Likes | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.like">
+                  <span v-if="profilePost.reaction.like !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                    <img v-if="profilePost.reaction.like !== '0'" src="@/assets/fb_like.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.like !== '0'">
+                      {{ profilePost.reaction.like | numFormat }}
+                    </span>
+                  </span></span>
+
+                <span v-if="profilePost.reaction.share">
+                  <span v-if="profilePost.reaction.share !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                    <i class="fa fa-share" v-if="profilePost.reaction.share !== '0'"></i>
+                    <span class="md-font" v-if="profilePost.reaction.share !== '0'">
+                      {{ profilePost.reaction.share | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.shares">
+                  <span v-if="profilePost.reaction.shares !== '0'" id="box-reaction" v-b-tooltip.hover title="Share">
+                    <i class="fa fa-share" v-if="profilePost.reaction.shares !== '0'"></i>
+                    <span class="md-font" v-if="profilePost.reaction.shares !== '0'">
+                      {{ profilePost.reaction.shares | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.Love">
+                  <span v-if="profilePost.reaction.Love !== '0'" id="box-reaction" v-b-tooltip.hover title="Love">
+                    <img v-if="profilePost.reaction.Love !== '0'" src="@/assets/love.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Love !== '0'">
+                      {{ profilePost.reaction.Love | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.Wow">
+                  <span v-if="profilePost.reaction.Wow !== '0'" id="box-reaction" v-b-tooltip.hover title="Wow">
+                    <img v-if="profilePost.reaction.Wow !== '0'" src="@/assets/wow.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Wow !== '0'">
+                      {{ profilePost.reaction.Wow | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.Haha">
+                  <span v-if="profilePost.reaction.Haha !== '0'" id="box-reaction" v-b-tooltip.hover title="Haha">
+                    <img v-if="profilePost.reaction.Haha !== '0'" src="@/assets/haha.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Haha !== '0'">
+                      {{ profilePost.reaction.Haha | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.Sad">
+                  <span v-if="profilePost.reaction.Sad !== '0'" id="box-reaction" v-b-tooltip.hover title="Sad">
+                    <img v-if="profilePost.reaction.Sad !== '0'" src="@/assets/sad.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Sad !== '0'">
+                      {{ profilePost.reaction.Sad | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.Angry">
+                  <span v-if="profilePost.reaction.Angry !== '0'" id="box-reaction" v-b-tooltip.hover title="Angry">
+                    <img v-if="profilePost.reaction.Angry !== '0'" src="@/assets/angry.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Angry !== '0'">
+                      {{ profilePost.reaction.Angry | numFormat }}
+                    </span>
+                  </span>
+                </span>
+                <span v-if="profilePost.reaction.Hug">
+                  <span v-if="profilePost.reaction.Hug !== '0'" id="box-reaction" v-b-tooltip.hover title="Hug">
+                    <img v-if="profilePost.reaction.Hug !== '0'" src="@/assets/hug.png" id="emoji" />
+                    <span class="md-font" v-if="profilePost.reaction.Hug !== '0'">
+                      {{ profilePost.reaction.Hug | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <!-- yt -->
+                <span v-if="profilePost.reaction.view_count" v-b-tooltip.hover title="Views">
+                  <span v-if="profilePost.reaction.view_count !== ''" id="box-reaction"><i class="fas fa-eye"></i>
+                    <span class="md-font" v-if="profilePost.reaction.view_count !== ''">
+                      {{ profilePost.reaction.view_count | numFormat }}
+                    </span>
+                  </span>
+                </span>
+                <span v-if="profilePost.reaction.likes">
+                  <span v-if="profilePost.reaction.likes !== '0'" id="box-reaction" v-b-tooltip.hover title="Like">
+                    <img v-if="profilePost.reaction.likes !== '0'" /><i class="far fa-thumbs-up"></i>
+                    <span class="md-font" v-if="profilePost.reaction.likes !== '0'">
+                      {{ profilePost.reaction.likes | numFormat }}
+                    </span>
+                  </span>
+                </span>
+
+                <span v-if="profilePost.reaction.dislikes">
+                  <span v-if="profilePost.reaction.dislikes !== '0'" id="box-reaction" v-b-tooltip.hover
+                    title="Dislike">
+                    <i class="far fa-thumbs-down"></i>
+                    <span class="md-font">
+                      {{ profilePost.reaction.dislikes | numFormat }}
+                    </span>
+                  </span>
+                </span>
+                <!-- end yt -->
+              </span>
+            </span>
+            <!-- === OCR / Analysis buttons === -->
+            <div class="float-right">
+              <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr"
+                v-if="profilePost && profilePost.photos_text && profilePost.photos_text[0] && profilePost.photos_text[0].text">
+                <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
+                  style="filter: brightness(0) invert(1);" />
+                <span class="md-font">OCR</span>
+              </span>
+              <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover title="comments analysis"
+                v-if="profilePost && profilePost.summarize && profilePost.summarize.length">
+                <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png" alt="sparkling"
+                  style="filter: brightness(0) invert(1);" />
+                <span class="md-font">Analysis</span>
+              </span>
+            </div>
+            <!-- === /OCR / Analysis buttons === -->
+
+          </div>
+          <!-- comment content -->
+          <!-- === OCR Result Panel === -->
+          <b-collapse :id="'ocr-text' + page + k" class="mt-2"
+            v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length">
+            <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+              <div v-for="(text, idx) in profilePost.photos_text" :key="idx">
+                <div class="bold my-2">
+                  <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" />
+                  OCR
+                </div>
+                <div class="mt-1 px-2 pb-3">
+                  <div v-if="typeof text === 'string'" v-html="formatOCR(text)" class="rich" />
+                  <div v-else-if="text && text.text" v-html="formatOCR(text.text)" class="rich" />
+                </div>
+              </div>
+            </b-card>
+          </b-collapse>
+
+          <!-- === Comments Analysis Panel === -->
+          <b-collapse :id="'summarize' + page + k" class="mt-2"
+            v-if="profilePost && profilePost.summarize && profilePost.summarize.length">
+            <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+              <div>
+                <div class="bold my-2">
+                  <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
+                  Comments Analysis
+                </div>
+                <div v-html="formatSummarize(profilePost.summarize)"></div>
+              </div>
+            </b-card>
+          </b-collapse>
+          <!-- === /Panels === -->
+
+
+
+          <b-collapse :id="'btn' + page + k" class="mt-2" v-if="profilePost.comments && profilePost.comments.length">
+            <b-card id="cmt-card" class="text-left">
+              <span v-if="profilePost.source == 'news' && profilePost.comments">
+                <div v-for="(cmtn, inx) in profilePost.comments.comments" :key="inx">
+                  <b-row>
+                    <b-col lg="1">
+                      <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                    </b-col>
+                    <b-col lg="11">
+                      <div>
+                        <span class="bold">{{ cmtn.displayName }}</span>
+                        <span class="font-weight-light" id="cmt-time">{{
+                          cmtn.time
+                        }}</span>
+                      </div>
+
+                      <div v-for="(text, i) in cmtn.contents" :key="i">
+                        {{ text.extData.content }}
+                      </div>
+                    </b-col>
+                  </b-row>
+                  <hr />
+                </div>
+              </span>
+              <span v-else>
+                <div v-for="(cmt, i) in profilePost.comments" :key="i">
+                  <b-row>
+                    <b-col lg="1">
+                      <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                        v-if="profilePost.source == 'youtube'">
+                        <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                        <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                      </a>
+                      <a :href="cmt.url" target="_blank" v-else>
+                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
+                        <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
+                      </a>
+
+                      <!-- <img v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                      <span> </span>
+                    </b-col>
+                    <b-col lg="11">
+                      <div>
+                        <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                          v-if="profilePost.source == 'youtube'">
+                          <span v-if="profilePost.source == 'youtube'" class="bold">
+                            {{ cmt.author }}</span></a>
+                        <a :href="cmt.url" target="_blank" v-else>
+                          <span class="bold"> {{ cmt.username }}</span></a>
+                        <span v-if="profilePost.source == 'youtube' && cmt.time" class="font-weight-light"
+                          id="cmt-time">{{ cmt.time.split("T")[0] }} |
+                          {{ cmt.time.split("T")[1] }}</span>
+                        <span v-else class="font-weight-light" id="cmt-time">{{
+                          cmt.time
+                        }}</span>
+                      </div>
+
+                      <div v-if="profilePost.source == 'youtube'" class="font-weight-light">
+                        {{ cmt.text }}
+                      </div>
+                      <div v-else class="font-weight-light">
+                        {{ cmt.content }}
+                      </div>
+                    </b-col>
+                  </b-row>
+                  <hr />
+                </div>
+              </span>
+            </b-card>
+          </b-collapse>
+        </template>
+      </b-card>
+      <infinite-loading v-if="isInfinite" spinner="spiral" :identifier="infiniteId"
+        @infinite="infiniteScroll"></infinite-loading>
+    </div>
+
+    <div v-else>
+      <b-card class="font-weight-normal">
+        <br />
+        ไม่พบข้อมูล
+      </b-card>
+    </div>
+  </div>
+</template>
+<script>
+import { mapGetters } from "vuex";
+import Highlighter from "vue-highlight-words";
+import VueGallerySlideshow from "vue-gallery-slideshow";
+import moment from "moment";
+import "@justinribeiro/lite-tiktok";
+import locationData from "@/components/monitor/geocode.json"; // Import ไฟล์ JSON
+import provinces from "@/components/map/provinces.json";
+import districts from "@/components/map/districts.json";
+import subdistricts from "@/components/map/subdistricts.json";
+import TranslateText from "@/components/TranslateText.vue";
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+export default {
+  components: {
+    VueGallerySlideshow,
+    Highlighter,
+    TranslateText,
+    ExportExcelButton,
+  },
+  props: {
+    domainKeyword: {
+      type: String,
+    },
+    crawdash: {
+      type: String,
+    },
+    menu: {
+      type: String,
+    },
+    pageMenu: {
+      type: String,
+    },
+    statusLocat: {
+      type: Boolean,
+    },
+    changwats: {
+      type: String,
+    },
+    amphoes: {
+      type: Array,
+    },
+    users: {
+      type: String,
+    },
+    api: {
+      type: String,
+    },
+    tabs: {
+      type: String,
+    },
+    dh: {
+      type: String,
+    },
+    btn: {
+      type: Boolean,
+    },
+    dateLocat: {
+      type: Array,
+    },
+  },
+  watch: {
+    domainKeyword(val) {
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    crawdash(val) {
+      //   console.log("crawdash", val);
+      this.crawdash = val;
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    dh: function (newVal, oldVal) {
+      // watch it
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    statusLocat: function (newVal, oldVal) {
+      // watch it
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    changwats: function (newVal, oldVal) {
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      // this.page = 0;
+      // this.isInfinite = true;
+      // this.infiniteScroll();
+    },
+    btn() {
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    amphoes: function (newVal, oldVal) {
+      //   console.log("Prop changed amphoes: ", newVal, " | was: ", oldVal);
+      // this.page = 0;
+      // this.isInfinite = true;
+      // this.infiniteScroll();
+    },
+    users: function (newVal, oldVal) {
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      // this.page = 0;
+      // this.isInfinite = true;
+      // this.infiniteScroll();
+    },
+    getSocialDomain: function (newVal, oldVal) {
+      // watch it
+      //   console.log("Prop changed: ", newVal, " | was: ", oldVal);
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    getArrDate: function () {
+      this.page = 0;
+      this.selectedSort = "";
+      this.selected = "";
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    getArrDateProfile() {
+      this.page = 0;
+      this.selectedSort = "";
+      this.selected = "";
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    getArrDateHashtag() {
+      this.page = 0;
+      this.selectedSort = "";
+      this.selected = "";
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+  },
+  data() {
+    return {
+      matchedLocations: [],
+      domainArr: [],
+      emHtml:
+        '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@scout2015/video/6718335390845095173" data-video-id="6718335390845095173" data-embed-from="oembed" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@scout2015" href="https://www.tiktok.com/@scout2015?refer=embed">@scout2015</a> <p>Scramble up ur name & I’ll try to guess it😍❤️ <a title="foryoupage" target="_blank" href="https://www.tiktok.com/tag/foryoupage?refer=embed">#foryoupage</a> <a title="petsoftiktok" target="_blank" href="https://www.tiktok.com/tag/petsoftiktok?refer=embed">#petsoftiktok</a> <a title="aesthetic" target="_blank" href="https://www.tiktok.com/tag/aesthetic?refer=embed">#aesthetic</a></p> <a target="_blank" title="♬ original sound - 𝐇𝐚𝐰𝐚𝐢𝐢𓆉" href="https://www.tiktok.com/music/original-sound-6689804660171082501?refer=embed">♬ original sound - 𝐇𝐚𝐰𝐚𝐢𝐢𓆉</a> </section> </blockquote> ',
+      objId: "",
+      andkey: [],
+      arrword: [],
+      myStyle: {
+        backgroundColor: "#f7dca2",
+      },
+      checked: true,
+      pageCheck: "",
+      heightword: [],
+      username: "",
+      btnPosStyle: {
+        backgroundColor: "#54c69d",
+        color: "#ffffff",
+        borderColor: "#54c69d",
+      },
+      btnNeuStyle: {
+        backgroundColor: "#3a86ad",
+        color: "#ffffff",
+        borderColor: "#3a86ad",
+      },
+      btnNegStyle: {
+        backgroundColor: "#f7776a",
+        color: "#ffffff",
+        borderColor: "#f7776a",
+      },
+      dataPost: [],
+      sdate: "",
+      edate: "",
+      default_avatar: "user.svg",
+      visible: false,
+      index: null,
+      dataPhoto: [],
+      text: "",
+      page: 0,
+      infiniteId: +new Date(),
+      isInfinite: true,
+      dm: "",
+      ht: "",
+      selected: "",
+      selectedSort: "",
+      options: [
+        { text: "Positive", value: "1" },
+        { text: "Neutral", value: "0" },
+        { text: "Negative", value: "-1" },
+        { text: "ทั้งหมด", value: "" },
+      ],
+      optionSort: [
+        { value: "", text: " โพสต์ล่าสุด" },
+        { value: "descend", text: "โพสต์เริ่มต้น" },
+        { value: "engagement", text: "Engagement" },
+      ],
+    };
+  },
+  computed: {
+    ...mapGetters([
+      "getProfileMonitor",
+      "getProfileData",
+      "getTabStatus",
+      "getPostAllMonitor",
+      "getTopData",
+      "getTopHash",
+      "getHashtagData",
+      "getLoadStatus",
+      "getClickDomain",
+      "getClickDomainId",
+      //   "getPostAllMonitor",
+      "getSocialDomain",
+      "getSdateDm",
+      "getEdateDm",
+      "getArrDate",
+      "getSocialPlatform",
+      "getDomainArr",
+      "getLoadPostTab",
+      "getArrDateProfile",
+      "getSDateProfile",
+      "getEDateProfile",
+      "getSDateHt",
+      "getEDateHt",
+      "getArrDateHashtag",
+      "getValSource",
+      "getSourceNews",
+      "getCountAllPost",
+
+    ]),
+    // ปุ่ม Export แสดงเฉพาะ All Posts ของหน้า Domain (API getSentimentDetailDomain)
+    isDomainExport() {
+      return this.api === "location" && this.pageMenu === "domain" && this.menu !== "platform";
+    },
+    domainExportFilters() {
+      const today = moment().format("YYYY-MM-DD");
+      return {
+        startLocal: this.getSdateDm || today + "T00:00:00",
+        endLocal: this.getEdateDm || today + "T23:59:59",
+        keywordInput: [this.getClickDomain, this.domainKeyword].filter(Boolean).join(" "),
+      };
+    },
+    domainName() {
+      var d = this.dm;
+      if (d == "") {
+        var data = this.getProfileMonitor.topfive;
+        var dmn;
+
+        for (let i = 0, len = data.length; i < len; i++) {
+          dmn += data[i].name + ",";
+          d = dmn.replace("undefined", "");
+        }
+      } else {
+        d = this.dm;
+      }
+      return d;
+    },
+    highlightText2() {
+      var word = [];
+      let jw = this.changwats.split(",");
+      let am = this.amphoes;
+      //   console.log("this.amphoes", this.amphoes, jw);
+      if (this.checked) {
+        word = jw.concat(am);
+      }
+      //   console.log("wordddd", word);
+      return word;
+    },
+  },
+  methods: {
+
+    formatOCR(text) {
+      if (!text) return "";
+      let s = String(text).trim();
+      s = s.replace(/\\r\\n|\\n|\\r/g, "\n");
+      s = s.replace(/\u200B|\uFEFF|\u00A0/g, " ");
+      s = s.replace(/^\s*[•▪●–—-]\s+/gm, "- ");
+      const rawHtml = marked.parse(s, { gfm: true, breaks: true });
+      return DOMPurify.sanitize(rawHtml, {
+        ALLOWED_TAGS: [
+          "p", "br", "ul", "ol", "li",
+          "strong", "em", "a", "blockquote",
+          "code", "pre", "hr", "table", "thead", "tbody", "tr", "th", "td"
+        ],
+        ALLOWED_ATTR: { a: ["href", "title", "target", "rel"] }
+      });
+    },
+    formatSummarize(text) {
+      if (!text) return "";
+      const paragraphs = String(text)
+        .split(/\n\n+/)
+        .map(p => `<p style="margin:0 0 6px; line-height:1.4;">${p.replace(/\n/g, "<br>")}</p>`);
+      return paragraphs.join("");
+    },
+ filterNumbers(numbers) {
+      // ✅ PRE-PROCESS
+      const filtered = [
+        ...new Set(
+          (numbers || [])
+            .map(n => String(n).trim())
+            // ❌ ตัด 7 หลักทิ้ง
+            .filter(s => /^\d+$/.test(s) && s.length !== 7)
+        )
+      ].sort((a, b) => a.length - b.length);
+
+      // ✅ LOGIC เดิม
+      for (let i = 0; i < filtered.length; i++) {
+        for (let j = i + 1; j < filtered.length; j++) {
+          const num1 = filtered[i];
+          const num2 = filtered[j];
+
+          // If num1 matches the start of num2, remove num1
+          if (num2.startsWith(num1)) {
+            filtered.splice(i, 1);
+            i--;
+            break;
+          }
+        }
+      }
+
+      return filtered;
+    },
+
+    matchGeocode(geocode) {
+      const geocodeStr = geocode.toString(); // แปลง geocode เป็น string
+      let found = null;
+
+      // กรองข้อมูลตามความยาว geocode
+      if (geocodeStr.length === 2) {
+        found = provinces[geocodeStr];
+      } else if (geocodeStr.length === 4) {
+        found = districts[geocodeStr];
+      } else if (geocodeStr.length === 6) {
+        found = subdistricts[geocodeStr];
+      }
+
+      // Return the found location or a fallback message
+      return found || { geocode: geocodeStr, message: "ไม่พบข้อมูล" };
+    },
+    filterDomain(domain) {
+      // let filteredDomain = [];
+      // return (filteredDomain = domain.filter((item) =>
+      //     this.domainArr.includes(item)
+      // ));
+      return (domain || []).filter(item =>
+        (this.domainArr || []).includes(item)
+      );
+    },
+    // ตัด marker ที่ปนมากับเนื้อหา (เหมือนที่ CardTitle.vue ทำ) ก่อนนำไปใช้แสดงผล/ส่งไปแปล
+    cleanFullText(profilePost) {
+      return profilePost && profilePost.full_text
+        ? profilePost.full_text.replace('...___...', '').replace('.#.##.', '')
+        : '';
+    },
+    // ข้อความที่จะใช้แสดงจริง — สลับไปมาระหว่างต้นฉบับกับคำแปลตามสถานะของโพสต์นั้นๆ
+    getBaseFullText(profilePost) {
+      if (profilePost && profilePost.showTranslated && profilePost.translatedFullText) {
+        return profilePost.translatedFullText;
+      }
+      return this.cleanFullText(profilePost);
+    },
+    // เรียกตอน TranslateText (โหมด combined) แปล/สลับเสร็จ — เก็บผลไว้ที่ตัวโพสต์นั้นๆ โดยตรง
+    // ใช้ $set เพื่อให้ Vue 2 ตรวจจับ property ใหม่ได้ (title/full_text แปลแล้วไม่มีอยู่ในโครงสร้างเดิม)
+    onTranslateUpdate(profilePost, payload) {
+      this.$set(profilePost, 'translatedTitle', payload.title);
+      this.$set(profilePost, 'translatedFullText', payload.fullText);
+      this.$set(profilePost, 'showTranslated', payload.showTranslated);
+    },
+    highlightText(full_text) {
+      var word = [];
+      if (this.checked) {
+        word.push(...this.heightword);
+        if (this.domainKeyword) {
+          word.push(this.domainKeyword);
+        }
+        if (this.andkey.length) {
+          this.andkey.forEach(function (key) {
+            // 
+            if (
+              key.length == 2 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1])
+            ) {
+
+
+              word.push(...key);
+            }
+
+            if (
+              key.length == 3 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2])
+            ) {
+              word.push(...key);
+            }
+            if (
+              key.length == 4 &&
+              full_text.includes(key[0]) &&
+              full_text.includes(key[1]) &&
+              full_text.includes(key[2]) &&
+              full_text.includes(key[3])
+            ) {
+              word.push(...key);
+            }
+          });
+
+
+        }
+      }
+      return word;
+    },
+    getTheSelected(k, v, uid) {
+      var err;
+      if (v == 1) {
+        err = "Positive";
+      } else if (v == 0) {
+        err = "Neutral";
+      } else {
+        err = "Negative";
+      }
+      this.$confirm("คุณต้องการเปลี่ยน Sentiment เป็น " + err + " ?")
+        .then(
+          () => {
+            const encoded = encodeURIComponent(uid);
+            var _this = this;
+            var config = {
+              method: "get",
+              url:
+                "https://api2.cognizata.com/api/v2/userposts/change_sentiment_word?uid=" +
+                encoded +
+                "&sentiment=" +
+                v,
+              headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+              },
+            };
+            this.axios(config)
+              .then(function (response) {
+                // console.log(response);
+                if (_this.selected == "") {
+                  if (v == 1) {
+                    _this.getPostAllMonitor[k].sentiment = 1;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = 1;
+                  } else if (v == 0) {
+                    _this.getPostAllMonitor[k].sentiment = 0;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = 0;
+                  } else {
+                    _this.getPostAllMonitor[k].sentiment = -1;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = -1;
+                  }
+                } else {
+                  if (v == _this.selected) {
+                    _this.getPostAllMonitor[k].sentiment = v;
+                    _this.getPostAllMonitor[k].user_sentiment[_this.objId] = v;
+                  } else {
+                    _this.getPostAllMonitor.splice(k, 1);
+                  }
+                }
+              })
+              .catch(function (response) {
+                console.log("errrrrrr", response.message);
+              });
+            // if (v != this.getPostAllMonitor[k].sentiment) {
+            //   this.$store.dispatch("editSentimentPost", {
+            //     sentiment: v,
+            //     uid: encoded,
+            //   });
+            //   if (this.selected == "") {
+            //     if (v == 1) {
+            //       this.getPostAllMonitor[k].sentiment = 1;
+            //     } else if (v == 0) {
+            //       this.getPostAllMonitor[k].sentiment = 0;
+            //     } else {
+            //       this.getPostAllMonitor[k].sentiment = -1;
+            //     }
+            //   } else {
+            //     this.getPostAllMonitor.splice(k, 1);
+            //   }
+            //   this.$fire({
+            //     title: "แก้ไขสำเร็จ",
+            //     type: "success",
+            //     showConfirmButton: false,
+            //     timer: 1000,
+            //   });
+            // } else {
+            //   this.$alert("Sentiment เป็น " + err + " แล้ว!").then(() => {});
+            // }
+          }
+        ).catch(e => {
+          // if (!e) {
+          //     // confirm cancel
+          //     alert("ยกเลิกการเปลี่ยน Sentiment แล้ว");
+          // } else if (e.response) {
+          //     alert("เกิดข้อผิดพลาด: " + e.response.data.message);
+          // } else {
+          //     console.error(e);
+          //     alert("เกิดข้อผิดพลาดในการเปลี่ยน Sentiment");
+          // }
+        });
+    },
+    setAltImg(event) {
+      event.target.src = this.default_avatar;
+    },
+    onClick(i, data) {
+      // console.log(data);
+      this.index = i;
+      this.dataPhoto = data;
+    },
+    // ----- Export (Domain): ดึง getSentimentDetailDomain ทีละ 500 จนครบ count -----
+    buildDomainExportParams() {
+      const today = moment().format("YYYY-MM-DD");
+      const params = {
+        start_date: this.getSdateDm || today + "T00:00:00",
+        end_date: this.getEdateDm || today + "T23:59:59",
+        source: this.getSocialDomain,
+        sort_by: this.selectedSort,
+        domain: this.getClickDomainId,
+        dashboard: "",
+        source_news: this.getSourceNews,
+      };
+      if (this.selected !== "") params.sentiment = this.selected;
+      if (this.domainKeyword) params.querySearch = this.domainKeyword;
+      return params;
+    },
+    async fetchAllDomainPostsForExport(onProgress) {
+      const PAGE_SIZE = 500;
+      const MAX_ROUNDS = 1000; // กันลูปไม่รู้จบ (500 x 1000 = 500,000 โพสต์)
+      const base = this.buildDomainExportParams();
+      const headers = {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+        "Content-Type": "application/json",
+      };
+      const all = [];
+      const seen = new Set();
+      let total = this.getCountAllPost || 0;
+      let offset = 0;
+
+      for (let round = 0; round < MAX_ROUNDS; round++) {
+        const { data } = await this.axios.get(
+          "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain",
+          { params: { ...base, offset, limit: PAGE_SIZE }, headers }
+        );
+        const chunk = data?.data || [];
+        if (typeof data?.count === "number") total = data.count;
+        if (!chunk.length) break;
+
+        chunk.forEach((p) => {
+          const key = p?._id || p?.uid || p?.url_post;
+          if (key) {
+            if (seen.has(key)) return;
+            seen.add(key);
+          }
+          all.push(p);
+        });
+        offset += chunk.length;
+        if (typeof onProgress === "function") onProgress({ loaded: all.length, total });
+
+        // ครบตาม count แล้ว หรือหน้าสุดท้าย (ได้น้อยกว่า limit และไม่รู้ count)
+        if (total ? offset >= total : chunk.length < PAGE_SIZE) break;
+      }
+      return all;
+    },
+    async infiniteScroll(acc, sort, offset, sentiment) {
+      // acc = this.getProfileData;
+      sort = this.selectedSort;
+      offset = this.page;
+      sentiment = this.selected;
+      if (this.getHashtagData) {
+        var hashtag = this.getHashtagData.replace("#", "");
+      }
+      acc = this.getProfileData;
+      // if (this.getValSource == "youtube") {
+      //   acc = this.getProfileData.replace("@", "");
+      // }
+
+      var payload;
+      var rt;
+
+      if (this.getValSource == "twitter") {
+        rt = true;
+      } else {
+        rt = "";
+      }
+      if (this.api == "profile") {
+        // Profile
+        if (this.tabs == "domainTab") {
+          // have not sentiment
+          if (sentiment != "") {
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              domain: this.dh,
+              sentiment: sentiment,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          } else {
+            //  have  sentiment
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              domain: this.dh,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          }
+        } else if (this.tabs == "hashtagTab") {
+          if (sentiment != "") {
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              hashtag: this.dh,
+              sentiment: sentiment,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          } else {
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              hashtag: this.dh,
+              retweet: rt,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          }
+          //All post
+        } else {
+          if (sentiment != "") {
+            //  have  sentiment
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              sentiment: sentiment,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          } else {
+            //  have not sentiment
+            payload = {
+              account: acc,
+              sort_by: sort,
+              offset: offset,
+              start_date: this.getSDateProfile,
+              end_date: this.getEDateProfile,
+              source: this.getValSource,
+            };
+          }
+        }
+      } else if (this.api == "hashtag") {
+        // Hahtag
+        if (this.tabs == "domainTab") {
+          if (sentiment != "") {
+            // console.log("sentiment", sentiment);
+            //  have  sentiment
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              sentiment: sentiment,
+              domain: this.dh,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+          } else {
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              domain: this.dh,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+            // console.log("onsentiment", sentiment);
+          }
+        } else {
+          if (sentiment != "") {
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              sentiment: sentiment,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+          } else {
+            //  have  sentiment
+            payload = {
+              hashtag: hashtag,
+              sort_by: sort,
+              offset: offset,
+              start_date: this.getSDateHt,
+              end_date: this.getEDateHt,
+              source: this.getValSource,
+            };
+          }
+        }
+      } else {
+        //Domian Menu
+        if (this.pageMenu == "domain") {
+          let sc, domains, dash;
+
+          // console.log("keyword1", this.domainKeyword, this.getClickDomain);
+          if (this.menu == "platform") {
+            sc = this.getSocialPlatform;
+            // domains = "All";
+            dash = this.crawdash;
+          } else {
+            sc = this.getSocialDomain;
+            domains = this.getClickDomainId;
+            dash = "";
+          }
+          // console.log("domain");
+          if (this.getSdateDm) {
+            this.sdate = this.getSdateDm;
+            this.edate = this.getEdateDm;
+          } else {
+            this.sdate =
+              moment(new Date())
+                .format()
+                .slice(0, 10) + "T00:00:00";
+            this.edate =
+              moment(new Date())
+                .format()
+                .slice(0, 10) + "T23:59:59";
+          }
+
+          if (sentiment === "") {
+            payload = {
+              start_date: this.sdate,
+              end_date: this.edate,
+              source: sc,
+              sort_by: sort,
+              domain: domains,
+              offset: offset,
+              dashboard: dash,
+              source_news: this.getSourceNews,
+            };
+          } else {
+            //  have  sentiment
+            payload = {
+              start_date: this.sdate,
+              end_date: this.edate,
+              source: sc,
+              sentiment: sentiment,
+              sort_by: sort,
+              domain: domains,
+              offset: offset,
+              dashboard: dash,
+              source_news: this.getSourceNews,
+            };
+          }
+          if (this.domainKeyword) {
+            // console.log("keyword2", this.domainKeyword);
+            payload.querySearch = this.domainKeyword;
+          }
+        } else {
+          if (this.statusLocat == true) {
+            // let sdateLocat =this.dateLocat[0].slice(0, 16);
+            // let edateLocat =this.dateLocat[1].slice(0, 16);
+            this.statusLocat == false;
+            if (sentiment === "") {
+              payload = {
+                account: this.users,
+                sort_by: sort,
+                offset: offset,
+                query: this.changwats + "," + this.amphoes,
+                // start_date:sdateLocat,
+                // end_date:edateLocat
+              };
+              if (this.amphoes.length) {
+                // console.log("this.amphoes", this.amphoes);
+                payload.query = this.amphoes;
+              }
+            } else {
+              //  have  sentiment
+              payload = {
+                account: this.users,
+                sort_by: sort,
+                offset: offset,
+                sentiment: sentiment,
+                query: this.changwats,
+                // start_date:sdateLocat,
+                // end_date:edateLocat
+              };
+              if (this.amphoes.length) {
+                // console.log("this.amphoes", this.amphoes);
+                payload.query = this.amphoes;
+              }
+            }
+          }
+        }
+      }
+
+      //  Global Fetch data
+      var checkApi;
+      if (this.api == "location") {
+        if (this.pageMenu == "domain") {
+          if (this.menu == "platform") {
+            checkApi = "fetchAllPostDomain";
+          } else {
+            checkApi = "fetchAllPostDomainPost";
+          }
+        } else {
+          checkApi = "fetchLocation";
+        }
+      } else {
+        checkApi = "fetchPostAll";
+      }
+      let temp = await this.$store.dispatch(checkApi, payload);
+      if (temp && temp.length === 0) {
+        this.isInfinite = false;
+      }
+      this.page += 10;
+      this.infiniteId += 1;
+      // console.log(this.page);
+    },
+    selectSort() {
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    selectSentiment() {
+      this.page = 0;
+      this.isInfinite = true;
+      this.infiniteScroll();
+    },
+    confirmDeletePost(post_id) {
+      // console.log(data, target_id);
+      let domainName = this.getClickDomain;
+      Swal.fire({
+        title: 'ยืนยันการลบโพสต์',
+        text: `ต้องการลบโพสต์ออกจากหัวเรื่อง "${domainName}" หรือไม่?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'ลบ',
+        cancelButtonText: 'ยกเลิก',
+        didOpen: () => {
+          const iconContent = document.querySelector('.swal2-icon-content');
+          if (iconContent) iconContent.style.display = 'none';
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.removePost(post_id);
+          // this.apiDeleteTarget(data.item.group_id, target_id);
+          // this.toggleDetails(data);
+        }
+      });
+    },
+    async removePost(post_id) {
+      let domain_id = this.getClickDomainId;
+      const config = {
+        method: "put",
+        url: `https://api2.cognizata.com/api/v2/userposts/removeDomain?id=${post_id}&domain_id=${domain_id}`,
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      };
+      this.axios(config)
+        .then((response) => {
+          this.load = false;
+          // this.$emit('updated');
+          this.page = 0;
+          this.isInfinite = true;
+          this.infiniteScroll();
+          Swal.fire({
+            title: 'สำเร็จ',
+            text: 'ลบกลุ่มเรียบร้อยแล้ว',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 2000
+          });
+          // this.apiMonitorGroupList();
+        })
+        .catch((error) => {
+          this.load = false;
+          console.error(error);
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบโพสต์ได้', 'error');
+        });
+      // console.log("post id ==== ", config);
+    },
+
+  },
+  mounted() {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.tiktok.com/embed.js";
+    document.body.appendChild(script);
+
+
+    this.$emitter.on("domainKeyword2", async (val) => {
+      if (this.getClickDomain) {
+        this.page = 0;
+        this.isInfinite = true;
+
+        if (val) {
+          this.domainKeyword = val;
+          await this.infiniteScroll();
+          //   console.log("emitter", val);
+        } else {
+          this.domainKeyword = val;
+          await this.infiniteScroll();
+        }
+      }
+    });
+  },
+  async created() {
+    this.username = localStorage.getItem("username");
+
+    this.objId = localStorage.getItem("objId");
+    this.domainArr = localStorage.getItem("domainArr");
+
+    if (this.$route.name === "Domain") {
+      this.pageCheck = this.$route.name;
+      await this.axios
+        .get(
+          "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain_id=" +
+          this.getClickDomainId
+        )
+        .then((response) => (this.arrword = response.data[0]));
+
+      var k = this.arrword.Keywords;
+      var ka = this.arrword.and_keywords;
+      let result = ka.map((key) => {
+        return key.split("+");
+      });
+      this.andkey = result;
+      this.heightword = k;
+    }
+
+    // if (this.$route.name === "Platform") {
+    //   this.pageCheck = this.$route.name;
+    //   const arrdomain = localStorage.getItem('domainArr');
+    //   this.axios
+    //     .get(
+    //       "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
+    //        arrdomain
+    //     )
+    //     .then((response) => (this.heightword = response.data[0].Keywords));
+    // }
+
+    // this.$store.commit("setSdateDm", null);
+    // this.$store.commit("setEdateDm", null);
+    await this.infiniteScroll();
+  },
+  destroyed() {
+    this.$store.commit("setPostAllMonitor", []);
+    this.$store.commit("addPostAllMonitor", []);
+    this.$store.commit("setAllPostDomain", []);
+    this.$store.commit("addAllPost", []);
+    this.$store.commit("setPostLocation", []);
+    this.$store.commit("addPostLocation", []);
+    this.$store.commit("setSdateDm", null);
+     this.$store.commit("setEdateDm", null);
+  },
+};
+</script>
+<style>
+.info-news {
+  background-color: #bfebf1;
+  width: fit-content;
+  padding: 3px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  float: right;
+}
+
+.title-news {
+  font-size: large;
+  font-weight: 600;
+}
+
+iframe body {
+  overflow: hidden;
+}
+
+iframe html {
+  overflow: hidden !important;
+}
+
+@media only screen and (min-width: 0px) and (max-width: 600px) {
+  .title-news {
+    font-size: medium;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .info-news {
+    background-color: #bfebf1;
+    width: fit-content;
+    padding: 3px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    float: right;
+    display: block;
+    text-align: right !important;
+  }
+}
+</style>
+<style scoped>
+.tiktok-post-img {
+  height: 450px;
+}
+
+#box-summarize {
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  /* background-image: linear-gradient(to right, #7cccb8 0%, #1185c9  51%, #4b9ed4  100%); */
+  background-image: linear-gradient(to right, #56a7b6 0%, #6d5fa0 51%, #4b9ed4 100%);
+  border-radius: 12px;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: 4px;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;
+  position: relative;
+  top: -3px;
+}
+
+#box-summarize:hover {
+  background-image: linear-gradient(to right, #d8cb16 0%, #8474be 70%, #2b5876 100%);
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.box-hl {
+  border-radius: 10px;
+}
+
+.highlight2 {
+  background-color: #f7dca2;
+  padding: 0 2px;
+}
+
+#btn-neg,
+#btn-nue,
+#btn-pos {
+  color: #636465;
+  background-color: #ddd;
+  border-color: #ddd;
+}
+
+.box-retweet {
+  color: rgb(91, 112, 131);
+  margin-left: 5px;
+}
+
+.fa-camera {
+  margin-left: 5px;
+  text-decoration: none;
+  padding: 6px 7px;
+  border-radius: 20px;
+  background: #ccc;
+  color: #696d71;
+  font-size: 22px;
+  vertical-align: bottom;
+}
+
+.fa-camera:hover {
+  background: #696d71;
+  color: #ccc;
+  cursor: pointer;
+}
+
+#emoji {
+  width: 20px;
+}
+
+#txt-cmt {
+  padding: 8px 2px !important;
+}
+
+#profile-page {
+  padding: 0px !important;
+}
+
+#picmore {
+  background: #000000c7;
+  color: white;
+  padding: 5px 20px;
+  font-size: 20px;
+  margin: -44px;
+  z-index: 1;
+  position: relative;
+  /* width: 68px; */
+  float: right;
+  cursor: pointer;
+}
+
+.col2 {
+  column-count: 2;
+  width: 504px;
+  margin: auto;
+}
+
+.img-grid {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+}
+
+.images1 {
+  width: 504px;
+  height: 283.5px;
+  object-fit: cover;
+  background-size: contain;
+  cursor: pointer;
+  margin: 2px;
+  border-radius: 16px;
+  border: 1px solid #eaeff3;
+}
+
+.images2 {
+  width: 253.5px;
+  height: 283.5px;
+  object-fit: cover;
+  background-size: contain;
+  cursor: pointer;
+  margin: 2px;
+  border-radius: 16px;
+  border: 1px solid #eaeff3;
+}
+
+.images3 {
+  width: 253.5px;
+  height: 283.5px;
+  object-fit: cover;
+  background-size: contain;
+  cursor: pointer;
+  margin: 2px;
+  border-radius: 16px;
+  border: 1px solid #eaeff3;
+}
+
+.images3:nth-child(2) {
+  height: 141.5px;
+  position: absolute;
+}
+
+.images3:nth-child(3) {
+  height: 141.5px;
+  bottom: 23px;
+  position: relative;
+  bottom: -72px;
+}
+
+.images4 {
+  width: 253.5px;
+  height: 142px;
+  object-fit: cover;
+  background-size: contain;
+  cursor: pointer;
+  margin: 2px;
+  border-radius: 16px;
+  border: 1px solid #eaeff3;
+}
+
+#box-reaction {
+  background: #ddddddad;
+  color: #2c3e50;
+  border-radius: 7px;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: 4px;
+}
+
+.imgp {
+  z-index: 2;
+  position: relative;
+  width: 45px;
+  height: 45px;
+}
+
+.user-img {
+  border-radius: 50%;
+  position: relative;
+  top: 0px;
+  width: 45px;
+  height: 45px;
+}
+
+.img-size {
+  width: 30px;
+}
+
+#profile-page {
+  padding: 10px;
+}
+
+#statuspost {
+  text-align: end;
+}
+
+.select-sort {
+  width: 80%;
+}
+
+.tab-content>.active {
+  display: block;
+  height: 80vh !important;
+  overflow: auto !important;
+}
+
+a {
+  color: #2c3e50;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+.card-body {
+  min-height: 7rem;
+}
+
+#tab-cards {
+  border: none !important;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: white;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  padding-right: 2px;
+  background: #f1f1f1;
+}
+
+#content>div>div>div.col-lg-9 {
+  overflow: auto;
+}
+
+#box-content {
+  width: -webkit-fill-available;
+  background-color: #ede7dd00;
+  /* border-radius: 20px; */
+  /* padding-top: 10px; */
+  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%);
+  /* border: 1px solid #ede7dd !important; */
+  /* border-bottom: 3px solid #4c412b; */
+}
+
+#inf {
+  text-align: left;
+  display: block;
+  margin: auto;
+  width: fit-content;
+  margin-bottom: 30px;
+}
+
+#title-inf {
+  color: #4e432d;
+  /* background: #ede7dd; */
+  padding: 15px;
+  width: 80%;
+  margin: auto;
+  border-radius: 15px;
+  margin-bottom: 0px;
+}
+
+#txt-inf {
+  width: 26px;
+  display: inline-block;
+  background: #4e432d;
+  text-align: center;
+  margin-bottom: 5px;
+  margin-right: 12px;
+  border-radius: 50%;
+  color: white;
+}
+
+#txt-act {
+  background: #ede7dd;
+  color: #6c757d;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.fa-link {
+  color: #4c412b;
+}
+
+.fa-link:hover {
+  color: #fed16e;
+  text-decoration: none;
+}
+
+#txt-cmt {
+  text-align: justify;
+  padding: 10px 20px;
+}
+
+#id-k {
+  margin: auto;
+  display: block;
+  text-align: end;
+  color: #c5baba;
+}
+
+#txt-name {
+  vertical-align: super;
+}
+
+#img-inf {
+  border-radius: 50%;
+  position: relative;
+  top: 3px;
+  height: 46px;
+}
+
+.social-img {
+  width: 35px;
+  /* margin-top: -5px; */
+  margin-left: -5px;
+}
+
+#space {
+  margin-left: 10px;
+}
+
+@media only screen and (min-width: 0px) and (max-width: 760px) {
+  .btn-ocr {
+    right: 100px !important;
+    top: -52px !important;
+  }
+
+  #box-summarize {
+    /* display: grid;
+   width: 50px;
+   height: 50px; */
+    float: none !important;
+    text-align: right !important;
+    width: fit-content;
+    position: absolute;
+    right: -8px;
+    top: -50px;
+    /* border-radius: 50%; */
+    /* border: 2px solid #fff; */
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset;
+  }
+
+  .box-hl {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  #picmore {
+    margin: -42px;
+    margin-right: -1px;
+  }
+
+  .col2 {
+    column-count: 2;
+    width: 92%;
+    margin: auto;
+    column-gap: 4px;
+  }
+
+  .images4 {
+    width: 100%;
+  }
+
+  .images3 {
+    width: 46%;
+  }
+
+  .images2 {
+    width: 46%;
+  }
+
+  .images1 {
+    width: 92%;
+    height: 283.5px;
+  }
+}
+
+@media only screen and (min-width: 0px) and (max-width: 600px) {
+  .select-sort {
+    width: 100% !important;
+  }
+
+  .col {
+    padding: 0px !important;
+  }
+
+  .b-avatar {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .social-img {
+    width: 31px;
+    /* margin-top: -5px; */
+    margin-left: -8px;
+  }
+
+  .user-img {
+    width: 38px;
+    height: 38px;
+  }
+
+  #cmt-time {
+    float: none;
+    display: block;
+    color: #7b7d7f;
+    font-size: small;
+  }
+
+  .card-text {
+    font-size: 4vw;
+  }
+
+  .card-body {
+    min-height: 8rem;
+  }
+
+  .card-text {
+    padding: 0px 0px;
+  }
+
+  #img-inf {
+    font-size: 38px;
+    border-radius: 50%;
+    position: relative;
+    top: 3px;
+    height: 38px;
+  }
+
+  .tiktok-post-img {
+    height: 230px;
+  }
+}
+</style>

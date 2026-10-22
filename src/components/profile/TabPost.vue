@@ -23,8 +23,15 @@
               name="radio-inline" class="mt-1 mb-2 text-left ml-2" @change="selectSentiment"></b-form-radio-group>
           </b-col>
           <b-col sm="12" md="6" class="text-right">
-            <b-form-select v-model="selectedSort" :options="optionSort" size="sm" class="mb-2 select-sort"
-              @change="selectSort"></b-form-select>
+            <div class="d-flex justify-content-end align-items-start">
+              <b-form-select v-model="selectedSort" :options="optionSort" size="sm" class="mb-2 select-sort"
+                @change="selectSort"></b-form-select>
+              <!-- Export Excel (หน้า Domain) : ดึงทีละ 500 จนครบ -->
+              <ExportExcelButton v-if="isDomainExport" class="mb-2" :posts="getPostAllMonitor || []"
+                :filters="domainExportFilters" :fetch-all="fetchAllDomainPostsForExport"
+                :count="getCountAllPost || 0" :disabled="getLoadPostTab || !getCountAllPost"
+                inline-comments="json" :comments-limit="20" filename-prefix="domain" />
+            </div>
           </b-col>
         </b-row>
       </b-form-group>
@@ -301,6 +308,8 @@
               </div>
               <vue-gallery-slideshow :images="dataPhoto" :index="index" @close="index = null"></vue-gallery-slideshow>
             </div>
+            <!-- AI วิเคราะห์วิดีโอ YouTube -->
+            <YoutubeSummary :post="profilePost" />
           </b-col>
         </b-row>
         <!-- {{ profilePost.photos_text }} -->
@@ -458,6 +467,11 @@
             </span> -->
 
             <span v-if="profilePost.source == 'facebook'">
+              <span v-if="profilePost.views_count && profilePost.views_count !== '0'"
+                id="box-reaction" v-b-tooltip.hover title="View">
+                <i class="fas fa-eye"></i>
+                {{ profilePost.views_count | numFormat }}
+              </span>
               <span v-if="
                 profilePost.likes_count !== '0' && profilePost.likes_count
               " id="box-reaction" v-b-tooltip.hover title="Like">
@@ -797,6 +811,8 @@ import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
 import TranslateText from "@/components/TranslateText.vue";
+import YoutubeSummary from "@/components/YoutubeSummary.vue";
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
 
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -805,9 +821,11 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 export default {
   components: {
+    YoutubeSummary,
     VueGallerySlideshow,
     Highlighter,
     TranslateText,
+    ExportExcelButton,
   },
   props: {
     domainKeyword: {
@@ -1016,8 +1034,21 @@ export default {
       "getArrDateHashtag",
       "getValSource",
       "getSourceNews",
+      "getCountAllPost",
 
     ]),
+    // ปุ่ม Export แสดงเฉพาะ All Posts ของหน้า Domain (API getSentimentDetailDomain)
+    isDomainExport() {
+      return this.api === "location" && this.pageMenu === "domain" && this.menu !== "platform";
+    },
+    domainExportFilters() {
+      const today = moment().format("YYYY-MM-DD");
+      return {
+        startLocal: this.getSdateDm || today + "T00:00:00",
+        endLocal: this.getEdateDm || today + "T23:59:59",
+        keywordInput: [this.getClickDomain, this.domainKeyword].filter(Boolean).join(" "),
+      };
+    },
     domainName() {
       var d = this.dm;
       if (d == "") {
@@ -1285,6 +1316,60 @@ export default {
       // console.log(data);
       this.index = i;
       this.dataPhoto = data;
+    },
+    // ----- Export (Domain): ดึง getSentimentDetailDomain ทีละ 500 จนครบ count -----
+    buildDomainExportParams() {
+      const today = moment().format("YYYY-MM-DD");
+      const params = {
+        start_date: this.getSdateDm || today + "T00:00:00",
+        end_date: this.getEdateDm || today + "T23:59:59",
+        source: this.getSocialDomain,
+        sort_by: this.selectedSort,
+        domain: this.getClickDomainId,
+        dashboard: "",
+        source_news: this.getSourceNews,
+      };
+      if (this.selected !== "") params.sentiment = this.selected;
+      if (this.domainKeyword) params.querySearch = this.domainKeyword;
+      return params;
+    },
+    async fetchAllDomainPostsForExport(onProgress) {
+      const PAGE_SIZE = 500;
+      const MAX_ROUNDS = 1000; // กันลูปไม่รู้จบ (500 x 1000 = 500,000 โพสต์)
+      const base = this.buildDomainExportParams();
+      const headers = {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+        "Content-Type": "application/json",
+      };
+      const all = [];
+      const seen = new Set();
+      let total = this.getCountAllPost || 0;
+      let offset = 0;
+
+      for (let round = 0; round < MAX_ROUNDS; round++) {
+        const { data } = await this.axios.get(
+          "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain",
+          { params: { ...base, offset, limit: PAGE_SIZE }, headers }
+        );
+        const chunk = data?.data || [];
+        if (typeof data?.count === "number") total = data.count;
+        if (!chunk.length) break;
+
+        chunk.forEach((p) => {
+          const key = p?._id || p?.uid || p?.url_post;
+          if (key) {
+            if (seen.has(key)) return;
+            seen.add(key);
+          }
+          all.push(p);
+        });
+        offset += chunk.length;
+        if (typeof onProgress === "function") onProgress({ loaded: all.length, total });
+
+        // ครบตาม count แล้ว หรือหน้าสุดท้าย (ได้น้อยกว่า limit และไม่รู้ count)
+        if (total ? offset >= total : chunk.length < PAGE_SIZE) break;
+      }
+      return all;
     },
     async infiniteScroll(acc, sort, offset, sentiment) {
       // acc = this.getProfileData;

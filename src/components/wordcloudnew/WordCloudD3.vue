@@ -18,7 +18,7 @@
         <!-- WORD CLOUD -->
         <!-- ✅ mobile: โชว์ทีละอันตาม activeTab (word/hash) ด้วย d-none + d-lg-block
              desktop (lg ขึ้นไป): โชว์คู่กันเสมอ ไม่สนใจ activeTab -->
-        <b-col lg="6" :class="{ 'd-none': activeTab !== 'word', 'd-lg-block': true }">
+        <b-col :lg="compact ? 12 : 6" :class="{ 'd-none': activeTab !== 'word', 'd-lg-block': !compact }">
           <div class="h-100 w-100 px-2">
             <div class="wc-wrap  box-domain position-relative ">
               <!-- ⚡ chartWords คือ "host div" — เราจะสร้าง <canvas> ยัดเข้าไปข้างในตอน render
@@ -39,7 +39,7 @@
         </b-col>
 
         <!-- HASHTAG CLOUD -->
-        <b-col lg="6" :class="{ 'd-none': activeTab !== 'hash', 'd-lg-block': true }">
+        <b-col :lg="compact ? 12 : 6" :class="{ 'd-none': activeTab !== 'hash', 'd-lg-block': !compact }">
           <div class="h-100 w-100 px-2">
             <div class="wc-wrap  box-domain position-relative">
               <div ref="chartWrapTags" class="wc-chart" :style="chartAspectStyle">
@@ -127,12 +127,12 @@
 <div>
   <b-row>
     <!-- ✅ badge "เอากลับมา" ก็โชว์ตามแท็บที่ active บนมือถือเช่นกัน -->
-    <b-col :class="{ 'd-none': activeTab !== 'word', 'd-lg-block': true }">
+    <b-col :class="{ 'd-none': activeTab !== 'word', 'd-lg-block': !compact }">
        <button v-if="excludedWordsCount > 0" type="button" class="wc-reset-badge" @click="resetExcluded('words')">
             ซ่อนไว้ {{ excludedWordsCount }} คำ · เอากลับมา
           </button>
     </b-col>
-    <b-col :class="{ 'd-none': activeTab !== 'hash', 'd-lg-block': true }">
+    <b-col :class="{ 'd-none': activeTab !== 'hash', 'd-lg-block': !compact }">
        <button v-if="excludedTagsCount > 0" type="button" class="wc-reset-badge" @click="resetExcluded('tags')">
             ซ่อนไว้ {{ excludedTagsCount }} แท็ก · เอากลับมา
           </button>
@@ -225,6 +225,8 @@ export default {
     // ✅ คุมว่าบนมือถือ (< lg) ให้โชว์ฝั่งไหน: "word" | "hash"
     //    ไม่มีผลกับ desktop (lg ขึ้นไปโชว์คู่กันเสมอ ผ่าน d-lg-block)
     activeTab: { type: String, default: "word" },
+    // ✅ compact (หน้า Feed sidebar): โชว์ทีละอันตาม activeTab ทุกขนาดจอ (ไม่โชว์คู่บน desktop)
+    compact: { type: Boolean, default: false },
   },
 
   data() {
