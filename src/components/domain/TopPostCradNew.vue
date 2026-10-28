@@ -282,7 +282,8 @@
                                 style="height:450px;border-radius: 10px;" class="my-3" />
                             </a>
                         </div>
-                        <div id="photo-grid" v-if="postDomain.photos && postDomain.source !== 'tiktok'" class="mb-4">
+                        <!-- บล็อกรูป tiktok ด้านบนถูกคอมเมนต์ไว้ จึงให้ tiktok ใช้ photo-grid เดียวกับ platform อื่น -->
+                        <div id="photo-grid" v-if="postDomain.photos && postDomain.photos.length" class="mb-4">
                             
                             <div v-if="typeof postDomain.photos == 'string'">
                             <img class="images1" :src="postDomain.photos" @click="onClick(0, [postDomain.photos])"

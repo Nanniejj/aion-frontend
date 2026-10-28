@@ -56,7 +56,7 @@
               ref="nameInput"
               v-model.trim="form.name"
               class="form-input"
-              placeholder="เช่น yelly"
+              placeholder="เช่น ระบุชื่อ"
               autocomplete="off"
               name="edit-user-firstname"
               @keyup.enter="submit"
