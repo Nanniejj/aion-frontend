@@ -256,11 +256,19 @@
             </div>
           </b-col>
           <b-col>
-            <div v-if="profilePost.source == 'tiktok' && profilePost.uid">
-              <a v-bind:href="profilePost.url_post" target="_blank">
-                <img :src="profilePost.photos && profilePost.photos[0]" onerror="this.style.display='none'"
+            <div v-if="profilePost.source == 'tiktok' && (profilePost.uid || profilePost.url_post)">
+              <!-- 1) มีรูปและโหลดได้ → แสดงรูป  2) ไม่มีรูป/โหลดไม่ได้ → ใช้ TikTok embed แทน -->
+              <a v-if="tiktokPhoto(profilePost) && !profilePost.tiktokImgError" v-bind:href="profilePost.url_post" target="_blank">
+                <img :src="tiktokPhoto(profilePost)" referrerpolicy="no-referrer" @error="onTiktokImgError(profilePost)"
                   style="border-radius: 10px;" class="my-3 tiktok-post-img" />
                 <!-- <lite-tiktok :videoid="profilePost.uid" style=" pointer-events: none; "></lite-tiktok> -->
+              </a>
+              <div v-else-if="tiktokId(profilePost)" class="my-3 tiktok-embed-wrap">
+                <iframe :src="'https://www.tiktok.com/embed/v2/' + tiktokId(profilePost)" loading="lazy" frameborder="0"
+                  allow="encrypted-media; fullscreen" allowfullscreen class="tiktok-embed-frame"></iframe>
+              </div>
+              <a v-else v-bind:href="profilePost.url_post" target="_blank" class="d-inline-block my-3 text-info">
+                <i class="fab fa-tiktok mr-1"></i>ดูโพสต์บน TikTok
               </a>
 
               <!-- <div style="height: 550px;overflow: hidden;" class="vdo-tt">
@@ -1077,6 +1085,28 @@ export default {
     },
   },
   methods: {
+    // ===== TikTok media =====
+    // รูปแรกของโพสต์ (photos อาจเป็น array หรือ string)
+    tiktokPhoto(post) {
+      if (!post || !post.photos) return '';
+      if (typeof post.photos === 'string') return post.photos;
+      return (post.photos.find(p => !!p) || '');
+    },
+    // ดึง id ของโพสต์จาก url_post / uid เช่น https://www.tiktok.com/@xxx/video/123 หรือ /photo/123
+    tiktokId(post) {
+      if (!post) return '';
+      const sources = [post.url_post, post.uid];
+      for (const v of sources) {
+        if (!v) continue;
+        const m = String(v).match(/\/(?:video|photo)\/(\d+)/);
+        if (m) return m[1];
+        if (/^\d{10,}$/.test(String(v))) return String(v);
+      }
+      return '';
+    },
+    onTiktokImgError(post) {
+      this.$set(post, 'tiktokImgError', true);
+    },
 
     formatOCR(text) {
       if (!text) return "";
@@ -1828,6 +1858,15 @@ iframe html {
 }
 </style>
 <style scoped>
+.tiktok-embed-wrap {
+  max-width: 340px;
+}
+.tiktok-embed-frame {
+  width: 100%;
+  height: 600px;
+  border-radius: 10px;
+  border: 0;
+}
 .tiktok-post-img {
   height: 450px;
 }

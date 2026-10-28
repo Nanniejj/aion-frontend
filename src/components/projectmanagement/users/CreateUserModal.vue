@@ -8,7 +8,7 @@
       :visible="open"
       @hide="closeModal"
       :animation-panel="'modal-slide-top'"
-      :resize-width="{ 3000: '680px', 1200: '520px', 768: '92vw', 480: '92vw' }"
+      :resize-width="modalWidth"
       class="create-modal"
     >
       <div class="modal-shell">
@@ -23,7 +23,19 @@
         </div>
 
         <div class="modal-body">
-          <div class="form-grid">
+          <!-- โหมดการสร้าง: ทีละบัญชี / หลายบัญชีพร้อมกัน -->
+          <div class="mode-tabs">
+            <button type="button" class="mode-tab" :class="{ active: mode === 'single' }" :disabled="submitting"
+              @click="setMode('single')">
+              <b-icon icon="person"></b-icon> ทีละบัญชี
+            </button>
+            <button type="button" class="mode-tab" :class="{ active: mode === 'bulk' }" :disabled="submitting"
+              @click="setMode('bulk')">
+              <b-icon icon="people"></b-icon> หลายบัญชีพร้อมกัน
+            </button>
+          </div>
+
+          <div v-if="mode === 'single'" class="form-grid">
             <div class="form-field">
               <label>Username <span class="req">*</span></label>
               <input
@@ -31,7 +43,7 @@
                 v-model.trim="form.username"
                 class="form-input"
                 :class="{ 'is-invalid': usernameInvalid }"
-                placeholder="เช่น yellydev"
+                placeholder="ระบุชื่อผู้ใช้งาน"
                 autocomplete="off"
                 name="new-user-username"
                 :readonly="usernameLocked"
@@ -66,7 +78,7 @@
               <input
                 v-model.trim="form.name"
                 class="form-input"
-                placeholder="เช่น yelly"
+                placeholder="ระบุชื่อ"
                 autocomplete="off"
                 name="new-user-firstname"
                 @keyup.enter="submit"
@@ -78,7 +90,7 @@
               <input
                 v-model.trim="form.lastname"
                 class="form-input"
-                placeholder="เช่น User"
+                placeholder="ระบุนามสกุล"
                 autocomplete="off"
                 name="new-user-lastname"
                 @keyup.enter="submit"
@@ -90,7 +102,7 @@
               <input
                 v-model.trim="form.company"
                 class="form-input"
-                placeholder="เช่น Atapy"
+                placeholder="ระบุชื่อบริษัท (เว้นว่างได้)"
                 autocomplete="off"
                 name="new-user-company"
                 @keyup.enter="submit"
@@ -182,9 +194,134 @@
                 </button>
               </div>
             </div>
+          </div>
 
+          <!-- ===== โหมดหลายบัญชี ===== -->
+          <template v-if="mode === 'bulk'">
+            <div class="bulk-settings form-grid">
+              <div class="form-field">
+                <label>Role (ทุกบัญชี) <span class="req">*</span></label>
+                <select v-if="canAssignSuperadmin" v-model="bulk.role" class="form-input form-select" :disabled="submitting">
+                  <option value="superadmin">superadmin</option>
+                  <option value="admin">admin</option>
+                  <option value="user">user</option>
+                </select>
+                <div v-else class="project-readonly">user</div>
+                <span class="field-note d-block mt-1">role service ต้องสร้างทีละบัญชี (เพราะต้องคัดลอก Token)</span>
+              </div>
+
+              <div class="form-field">
+                <label>บริษัท (ทุกบัญชี)</label>
+                <input v-model.trim="bulk.company" class="form-input" placeholder="เว้นว่างได้ / กำหนดรายบัญชีด้านล่าง"
+                  autocomplete="off" :disabled="submitting" />
+              </div>
+
+              <div v-if="canPickProject" class="form-field form-field-full">
+                <label>โปรเจกต์</label>
+                <div class="expiry-presets mb-0">
+                  <button type="button" class="preset-btn" :class="{ active: bulk.projectMode === 'same' }"
+                    :disabled="submitting" @click="bulk.projectMode = 'same'">
+                    โปรเจกต์เดียวกันทั้งหมด
+                  </button>
+                  <button type="button" class="preset-btn" :class="{ active: bulk.projectMode === 'each' }"
+                    :disabled="submitting" @click="bulk.projectMode = 'each'">
+                    กำหนดเองรายบัญชี
+                  </button>
+                </div>
+                <ProjectPickerInput v-if="bulk.projectMode === 'same'" class="mt-2" :value="bulk.project_id"
+                  :label="bulk.projectname" @select="(p) => { bulk.project_id = p._id; bulk.projectname = p.projectname; }" />
+                <span v-else class="field-note d-block mt-1">เลือกโปรเจกต์ในแต่ละบัญชีด้านล่าง</span>
+              </div>
+              <div v-else class="form-field form-field-full">
+                <label>โปรเจกต์</label>
+                <div class="project-readonly">{{ currentUserProjectName || "ไม่ระบุ" }}</div>
+                <span class="field-note d-block mt-1">ผู้ใช้ใหม่ทุกบัญชีจะอยู่ในโปรเจกต์เดียวกับคุณโดยอัตโนมัติ</span>
+              </div>
+            </div>
+
+            <div class="bulk-list">
+              <div v-for="(row, i) in bulk.rows" :key="row.key" class="bulk-row"
+                :class="{ 'is-error': row.status === 'error', 'is-done': row.status === 'done' }">
+                <div class="bulk-row-head">
+                  <span class="bulk-row-title">
+                    บัญชีที่ {{ i + 1 }}
+                    <span v-if="row.status === 'saving'" class="bulk-badge saving">กำลังสร้าง...</span>
+                    <span v-else-if="row.status === 'done'" class="bulk-badge done">สร้างแล้ว</span>
+                    <span v-else-if="row.status === 'error'" class="bulk-badge error">ไม่สำเร็จ</span>
+                  </span>
+                  <button v-if="bulk.rows.length > 1" type="button" class="bulk-remove" :disabled="submitting"
+                    title="ลบแถวนี้" @click="removeRow(i)">
+                    <b-icon icon="trash"></b-icon>
+                  </button>
+                </div>
+                <div class="form-grid bulk-grid">
+                  <div class="form-field">
+                    <label>Username <span class="req">*</span></label>
+                    <input v-model.trim="row.username" class="form-input" placeholder="ระบุชื่อผู้ใช้งาน" autocomplete="off"
+                      :class="{ 'is-invalid': row.touched && !!rowFieldError(row, 'username') }" :disabled="submitting"
+                      @blur="row.touched = true" />
+                  </div>
+                  <div class="form-field">
+                    <label>อีเมล <span class="req">*</span></label>
+                    <input v-model.trim="row.email" type="email" class="form-input" placeholder="name@example.com"
+                      autocomplete="off" :class="{ 'is-invalid': row.touched && !!rowFieldError(row, 'email') }"
+                      :disabled="submitting" @blur="row.touched = true" />
+                  </div>
+                  <div class="form-field">
+                    <label>ชื่อ <span class="req">*</span></label>
+                    <input v-model.trim="row.name" class="form-input" placeholder="ระบุชื่อ" autocomplete="off"
+                      :class="{ 'is-invalid': row.touched && !row.name }" :disabled="submitting" @blur="row.touched = true" />
+                  </div>
+                  <div class="form-field">
+                    <label>นามสกุล <span class="req">*</span></label>
+                    <input v-model.trim="row.lastname" class="form-input" placeholder="ระบุนามสกุล" autocomplete="off"
+                      :class="{ 'is-invalid': row.touched && !row.lastname }" :disabled="submitting" @blur="row.touched = true" />
+                  </div>
+                  <div class="form-field">
+                    <label>รหัสผ่าน <span class="req">*</span></label>
+                    <div class="password-row">
+                      <input v-model="row.password" :type="row.showPassword ? 'text' : 'password'" class="form-input"
+                        placeholder="อย่างน้อย 8 ตัวอักษร" autocomplete="new-password"
+                        :class="{ 'is-invalid': row.touched && !!rowFieldError(row, 'password') }" :disabled="submitting"
+                        @blur="row.touched = true" />
+                      <button type="button" class="password-toggle" @click="row.showPassword = !row.showPassword"
+                        :aria-label="row.showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'">
+                        <b-icon :icon="row.showPassword ? 'eye-slash' : 'eye'"></b-icon>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-field">
+                    <label>บริษัท</label>
+                    <input v-model.trim="row.company" class="form-input" :placeholder="bulk.company || 'ระบุชื่อบริษัท (เว้นว่างได้)'"
+                      autocomplete="off" :disabled="submitting" />
+                  </div>
+                  <div v-if="canPickProject && bulk.projectMode === 'each'" class="form-field form-field-full">
+                    <label>โปรเจกต์</label>
+                    <ProjectPickerInput :value="row.project_id" :label="row.projectname"
+                      @select="(p) => { row.project_id = p._id; row.projectname = p.projectname; }" />
+                  </div>
+                </div>
+                <span v-if="row.status === 'error' && row.message" class="form-error d-block mt-2">{{ row.message }}</span>
+                <span v-else-if="row.touched && rowError(row, i)" class="form-error d-block mt-2">{{ rowError(row, i) }}</span>
+              </div>
+
+              <div class="bulk-add">
+                <button type="button" class="preset-btn" :disabled="submitting || bulk.rows.length >= maxBulkRows"
+                  @click="addRows(1)">
+                  <b-icon icon="plus"></b-icon> เพิ่มบัญชี
+                </button>
+                <button type="button" class="preset-btn" :disabled="submitting || bulk.rows.length >= maxBulkRows"
+                  @click="addRows(5)">
+                  <b-icon icon="plus"></b-icon> เพิ่ม 5 บัญชี
+                </button>
+                <span class="field-note">ทั้งหมด {{ bulk.rows.length }} บัญชี (สูงสุด {{ maxBulkRows }})</span>
+              </div>
+            </div>
+          </template>
+
+          <div class="form-grid">
             <div class="form-field form-field-full">
-              <label>วันหมดอายุบัญชี</label>
+              <label>วันหมดอายุบัญชี<span v-if="mode === 'bulk'" class="field-note">(ใช้กับทุกบัญชี)</span></label>
               <div class="expiry-presets">
                 <button
                   type="button"
@@ -262,8 +399,11 @@
         </div>
 
         <b-row class=" justify-content-end mx-3">
-          <button class="btn-submit mx-3" :disabled="submitting || usernameInvalid || isFormIncomplete" @click="submit">
+          <button v-if="mode === 'single'" class="btn-submit mx-3" :disabled="submitting || usernameInvalid || isFormIncomplete" @click="submit">
             {{ submitting ? "กำลังบันทึก..." : "สร้างผู้ใช้" }}
+          </button>
+          <button v-else class="btn-submit mx-3" :disabled="submitting || bulkIncomplete" @click="submitBulk">
+            {{ submitting ? `กำลังสร้าง ${bulkProgress.done}/${bulkProgress.total}...` : `สร้างผู้ใช้ ${pendingRows.length} บัญชี` }}
           </button>
           <button class="btn-cancel " @click="closeModal">ยกเลิก</button>
         </b-row>
@@ -347,6 +487,40 @@
 
 <script>
 import Swal from "sweetalert2";
+import ProjectPickerInput from "./ProjectPickerInput.vue";
+
+let rowSeq = 0;
+function emptyRow() {
+  rowSeq += 1;
+  return {
+    key: `row-${Date.now()}-${rowSeq}`,
+    username: "",
+    name: "",
+    lastname: "",
+    company: "",
+    email: "",
+    password: "",
+    project_id: "",
+    projectname: "",
+    showPassword: false,
+    touched: false,
+    status: "", // "" | saving | done | error
+    message: "",
+  };
+}
+
+function emptyBulk() {
+  return {
+    role: "user",
+    company: "",
+    projectMode: "same", // same = โปรเจกต์เดียวกันทั้งหมด, each = กำหนดเองรายบัญชี
+    project_id: "",
+    projectname: "",
+    rows: [emptyRow(), emptyRow()],
+  };
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function toISODate(d) {
   const y = d.getFullYear();
@@ -373,6 +547,7 @@ function emptyForm() {
 
 export default {
   name: "CreateUserModal",
+  components: { ProjectPickerInput },
   created() {
     // โหลดรายชื่อผู้ใช้ทั้งระบบไว้ล่วงหน้า ใช้ match username ของตัวเอง (admin)
     // เพื่อหา project_id ของตัวเอง — เอาไปกำหนดให้ user ที่สร้างใหม่อัตโนมัติ
@@ -390,6 +565,10 @@ export default {
       projectSearch: "",
       projectSearchTimer: null,
       form: emptyForm(),
+      mode: "single", // single | bulk
+      bulk: emptyBulk(),
+      bulkProgress: { done: 0, total: 0 },
+      maxBulkRows: 50,
       // Service-account token popup — shown once right after a role=service
       // user is created (see submit()).
       tokenModalOpen: false,
@@ -403,11 +582,24 @@ export default {
     };
   },
   computed: {
+    modalWidth() {
+      return this.mode === "bulk"
+        ? { 3000: "860px", 1200: "760px", 768: "94vw", 480: "94vw" }
+        : { 3000: "680px", 1200: "520px", 768: "92vw", 480: "92vw" };
+    },
+    // แถวที่ยังต้องสร้าง (แถวที่สร้างสำเร็จแล้วจะไม่ส่งซ้ำ)
+    pendingRows() {
+      return this.bulk.rows.filter((r) => r.status !== "done");
+    },
+    bulkIncomplete() {
+      if (!this.pendingRows.length) return true;
+      return this.bulk.rows.some((r, i) => r.status !== "done" && !!this.rowError(r, i));
+    },
     // Paginated project list backing the autocomplete dropdown.
     projectPicker() {
       return this.$store.getters.getProjectPicker;
     },
-    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login เช่นเดียวกับ HomeNav/ProjectManagement)
+    // role ของผู้ใช้ที่ล็อกอินอยู่ (ตั้งค่าตอน login ดียวกับ HomeNav/ProjectManagement)
     currentUserRole() {
       return localStorage.getItem("reftokenOpt") || "";
     },
@@ -468,6 +660,149 @@ export default {
     },
   },
   methods: {
+    setMode(mode) {
+      if (this.submitting) return;
+      this.mode = mode;
+      this.error = "";
+      if (mode === "single") {
+        this.$nextTick(() => this.$refs.usernameInput && this.$refs.usernameInput.focus());
+      }
+    },
+    addRows(n) {
+      const room = this.maxBulkRows - this.bulk.rows.length;
+      for (let k = 0; k < Math.min(n, room); k += 1) this.bulk.rows.push(emptyRow());
+    },
+    removeRow(i) {
+      this.bulk.rows.splice(i, 1);
+    },
+    // error ของช่องเดียว (ใช้ทำกรอบแดง)
+    rowFieldError(row, field) {
+      if (field === "username") {
+        if (!row.username) return "กรุณากรอก Username";
+        if (!/^[a-zA-Z0-9]+$/.test(row.username)) return "Username ใช้ได้เฉพาะ a-z, A-Z และ 0-9";
+      }
+      if (field === "email") {
+        if (!row.email) return "กรุณากรอกอีเมล";
+        if (!EMAIL_RE.test(row.email)) return "รูปแบบอีเมลไม่ถูกต้อง";
+      }
+      if (field === "password") {
+        if (!row.password) return "กรุณากรอกรหัสผ่าน";
+        if (row.password.length < 8) return "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
+      }
+      return "";
+    },
+    // error รวมของแถว (รวมเช็ค username/อีเมลซ้ำกันภายในชุดที่กำลังสร้าง)
+    rowError(row, index) {
+      const msg =
+        this.rowFieldError(row, "username") ||
+        (!row.name || !row.lastname ? "กรุณากรอกชื่อและนามสกุล" : "") ||
+        this.rowFieldError(row, "email") ||
+        this.rowFieldError(row, "password");
+      if (msg) return msg;
+      const uname = row.username.toLowerCase();
+      const email = row.email.toLowerCase();
+      const others = this.bulk.rows.filter((r, j) => j !== index && r.status !== "done");
+      if (others.some((r) => r.username && r.username.toLowerCase() === uname)) return "Username ซ้ำกับบัญชีอื่นในรายการ";
+      if (others.some((r) => r.email && r.email.toLowerCase() === email)) return "อีเมลซ้ำกับบัญชีอื่นในรายการ";
+      return "";
+    },
+    // payload ส่วนวันหมดอายุ — ใช้ร่วมกันทั้งโหมดเดี่ยวและหลายบัญชี
+    expiryPayload() {
+      if (this.form.neverExpire) return { neverExpire: true };
+      if (this.expiryPreset === "custom" && this.form.expiresAt) {
+        return { expiresAt: new Date(`${this.form.expiresAt}T23:59:59.000Z`).toISOString() };
+      }
+      if (this.form.expiresInDays != null) return { expiresInDays: this.form.expiresInDays };
+      return {};
+    },
+    resolveRowProject(row) {
+      if (!this.canPickProject) return this.currentUserProjectId || null;
+      if (this.bulk.projectMode === "same") return this.bulk.project_id || null;
+      return row.project_id || null;
+    },
+    async submitBulk() {
+      if (this.submitting) return;
+      const role = this.canAssignSuperadmin ? this.bulk.role : "user";
+      if (role === "service") {
+        this.error = "role service ต้องสร้างทีละบัญชี";
+        return;
+      }
+      // แสดง error ของทุกแถวก่อนส่ง
+      this.bulk.rows.forEach((r) => { r.touched = true; });
+      if (this.bulkIncomplete) {
+        this.error = "กรุณากรอกข้อมูลให้ครบและถูกต้องทุกบัญชี";
+        return;
+      }
+
+      const rows = this.pendingRows;
+      const expiry = this.expiryPayload();
+      this.error = "";
+      this.submitting = true;
+      this.bulkProgress = { done: 0, total: rows.length };
+      let ok = 0;
+      const failed = [];
+
+      // ไม่มี API แบบ bulk → ยิง createUser ทีละบัญชีตามลำดับ
+      // (ไม่ยิงพร้อมกันเพื่อลดโหลด server และให้ผลลัพธ์รายแถวชัดเจน)
+      for (const row of rows) {
+        row.status = "saving";
+        row.message = "";
+        const payload = {
+          username: row.username,
+          role,
+          project_id: this.resolveRowProject(row),
+          name: row.name,
+          lastname: row.lastname,
+          company: row.company || this.bulk.company,
+          email: row.email,
+          password: row.password,
+          ...expiry,
+        };
+        try {
+          await this.$store.dispatch("createUser", payload);
+          row.status = "done";
+          ok += 1;
+        } catch (err) {
+          console.log(err);
+          row.status = "error";
+          row.message = (err.response && err.response.data && err.response.data.message) || "สร้างบัญชีไม่สำเร็จ";
+          failed.push(row);
+        }
+        this.bulkProgress.done += 1;
+      }
+      this.submitting = false;
+
+      if (ok > 0) this.$emit("created");
+
+      if (!failed.length) {
+        this.closeModal();
+        Swal.fire({
+          title: "บันทึกแล้ว!",
+          text: `สร้างผู้ใช้ ${ok} บัญชีเรียบร้อย`,
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          buttonsStyling: false,
+        });
+        return;
+      }
+
+      // สำเร็จบางส่วน → ตัดแถวที่สร้างแล้วออก เหลือเฉพาะแถวที่ไม่สำเร็จให้แก้แล้วกดสร้างอีกครั้ง
+      this.bulk.rows = this.bulk.rows.filter((r) => r.status !== "done");
+      this.error = `สร้างไม่สำเร็จ ${failed.length} บัญชี — แก้ไขแล้วกดสร้างอีกครั้ง`;
+      Swal.fire({
+        icon: ok ? "warning" : "error",
+        title: ok ? `สร้างสำเร็จ ${ok} จาก ${ok + failed.length} บัญชี` : "สร้างผู้ใช้ไม่สำเร็จ",
+        html: failed
+          .map((r) => `<div style="text-align:left">• <b>${this.escapeHtml(r.username)}</b>: ${this.escapeHtml(r.message)}</div>`)
+          .join(""),
+      });
+    },
+    escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    },
     openProjectMenu() {
       this.projectMenuOpen = true;
     },
@@ -563,6 +898,8 @@ export default {
       return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
     },
     closeModal() {
+      // กำลังสร้างหลายบัญชีอยู่ — ห้ามปิดกลางคัน ไม่งั้นจะไม่รู้ว่าบัญชีไหนสร้างแล้ว
+      if (this.submitting && this.mode === "bulk") return;
       this.open = false;
       this.error = "";
       this.showPassword = false;
@@ -571,10 +908,13 @@ export default {
       this.submitting = false;
       this.projectMenuOpen = false;
       this.form = emptyForm();
+      this.mode = "single";
+      this.bulk = emptyBulk();
+      this.bulkProgress = { done: 0, total: 0 };
     },
     async submit() {
       const isService = this.form.role === "service";
-      // กันไว้อีกชั้น เผื่อ option ถูกบังคับเลือกผ่านทางอื่น (เช่น devtools)
+      // กันไว้อีกชั้น เผื่อ option ถูกบังคับเลือกผ่านทางอื่น (devtools)
       // — admin สร้างผู้ใช้ได้เฉพาะ role user เท่านั้น ส่วน role อื่น (superadmin/admin/service)
       // สร้างได้เฉพาะ superadmin
       if (this.form.role !== "user" && !this.canAssignSuperadmin) {
@@ -1152,8 +1492,129 @@ export default {
   border-color: #6fbf73;
 }
 
+.mode-tabs {
+  display: flex;
+  gap: 6px;
+  background: #f6f5f0;
+  border-radius: 10px;
+  padding: 4px;
+}
+.mode-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.mode-tab.active {
+  background: #ffffff;
+  color: #128189;
+  box-shadow: 0 1px 3px rgba(28, 30, 36, 0.12);
+}
+.mode-tab:disabled {
+  cursor: not-allowed;
+}
+
+.bulk-settings {
+  padding-bottom: 14px;
+  border-bottom: 1px dashed #e4e1d8;
+}
+.bulk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bulk-row {
+  border: 1px solid #e4e1d8;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fcfbf8;
+}
+.bulk-row.is-error {
+  border-color: #e6a39b;
+  background: #fff7f6;
+}
+.bulk-row.is-done {
+  border-color: #9fd3a2;
+  background: #f4fbf4;
+}
+.bulk-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.bulk-row-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1c1e24;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.bulk-grid {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.bulk-grid .form-field label {
+  font-size: 14px;
+}
+.bulk-badge {
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.bulk-badge.saving {
+  background: #e6f4f5;
+  color: #128189;
+}
+.bulk-badge.done {
+  background: #e3f5e4;
+  color: #2e7d32;
+}
+.bulk-badge.error {
+  background: #fdecea;
+  color: #c0392b;
+}
+.bulk-remove {
+  background: transparent;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.bulk-remove:hover {
+  background: #fdecea;
+}
+.bulk-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.preset-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .bulk-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 480px) {
-  .form-grid {
+  .form-grid,
+  .bulk-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -165,7 +165,8 @@
                             </p>
 
                             <!-- image  -->
-                            <div v-if="post.photos && post.source !== 'tiktok'" class="mb-4">
+                            <!-- tiktok ก็มีรูป (photos) ส่งมาด้วย จึงไม่กรอง source ออกแล้ว แสดงเมื่อมีรูปจริงเท่านั้น -->
+                            <div v-if="post.photos && post.photos.length" class="mb-4">
                                 <div>
                                     <div v-if="post.photos.length == 1" class="p-20">
                                         <img class="images1" v-for="(image, i) in post.photos" :src="image"
@@ -177,7 +178,7 @@
                                             @click="openGallery(i, post.photos)" :key="`ฺB-${i}`"
                                             onerror="this.style.display='none'" />
                                     </div>
-                                    <div v-else-if="post.photos.length == 3" class="p-20">
+                                    <div v-else-if="post.photos.length == 3" class="p-20 grid-3">
                                         <img class="images3" v-for="(image, i) in post.photos" :src="image"
                                             @click="openGallery(i, post.photos)" :key="`C-${i}`"
                                             onerror="this.style.display='none'" />
@@ -212,7 +213,7 @@
                         </b-card-text>
 
                         <!-- domain tags  -->
-                        <div class="text-left">
+                        <!-- <div class="text-left">
                             <span style="font-size: small;" v-if="filterDomain(post.domain).length !== 0">
                                 domain tags :
                             </span>
@@ -222,7 +223,7 @@
                                     {{ name }}
                                 </b-badge>
                             </span>
-                        </div>
+                        </div> -->
                         <!-- card footer  -->
                         <template #footer>
                             <div class="text-left md-font">
@@ -1053,16 +1054,28 @@ export default {
     border: 1px solid #eaeff3;
 }
 
-.images3:nth-child(2) {
-    height: 141.5px;
-    position: absolute;
+/* 3 รูป: ใช้ CSS grid — รูปแรกเต็มความสูงด้านซ้าย, รูป 2-3 ซ้อนกันด้านขวา กว้างเท่ากันทุกขนาดจอ
+   (เดิมใช้ position absolute/relative ทำให้คอลัมน์ขวากว้างไม่เท่ากันบนมือถือ) */
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+    width: 100%;
+    max-width: 504px;
+    height: 283.5px;
+    margin: auto;
 }
 
-.images3:nth-child(3) {
-    height: 141.5px;
-    bottom: 23px;
-    position: relative;
-    bottom: -72px;
+.grid-3 .images3 {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0;
+    margin: 0;
+}
+
+.grid-3 .images3:nth-child(1) {
+    grid-row: 1 / 3;
 }
 
 .images4 {
