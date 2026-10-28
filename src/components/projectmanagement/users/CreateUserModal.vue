@@ -239,6 +239,115 @@
               </div>
             </div>
 
+            <!-- ===== Generate อัตโนมัติจากตัวย่อหน่วยงาน ===== -->
+            <div class="gen-box">
+              <div class="gen-title">
+                <b-icon icon="magic"></b-icon> สร้างรายชื่ออัตโนมัติ
+                <span class="field-note">เช่น abc จำนวน 10 → abc01, abc02, ... (ชื่อ abc นามสกุล 01)</span>
+              </div>
+              <div class="form-grid gen-grid">
+                <div class="form-field">
+                  <label>ตัวย่อหน่วยงาน <span class="req">*</span></label>
+                  <input v-model.trim="gen.prefix" class="form-input" placeholder="เช่น abc" autocomplete="off"
+                    :class="{ 'is-invalid': !!gen.prefix && !genPrefixValid }" :disabled="submitting" />
+                </div>
+                <div class="form-field">
+                  <label>จำนวนบัญชี <span class="req">*</span></label>
+                  <input v-model.number="gen.count" type="number" min="1" :max="maxBulkRows" class="form-input"
+                    :disabled="submitting" />
+                </div>
+                <div class="form-field">
+                  <label>เริ่มที่เลข</label>
+                  <input v-model.number="gen.start" type="number" min="1" class="form-input" :disabled="submitting" />
+                </div>
+                <div class="form-field">
+                  <label>โดเมนอีเมล <span class="req">*</span></label>
+                  <div class="email-domain-row">
+                    <span class="email-at">@</span>
+                    <input v-model.trim="gen.emailDomain" class="form-input" placeholder="เช่น example.com"
+                      autocomplete="off" :class="{ 'is-invalid': !!gen.emailDomain && !genDomainValid }"
+                      :disabled="submitting" />
+                  </div>
+                </div>
+                <div class="form-field form-field-full">
+                  <label>รหัสผ่าน</label>
+                  <div class="expiry-presets mb-0">
+                    <button type="button" class="preset-btn" :class="{ active: gen.passwordMode === 'random' }"
+                      :disabled="submitting" @click="gen.passwordMode = 'random'">
+                      สุ่มแยกแต่ละบัญชี
+                    </button>
+                    <button type="button" class="preset-btn" :class="{ active: gen.passwordMode === 'same' }"
+                      :disabled="submitting" @click="gen.passwordMode = 'same'">
+                      ใช้รหัสผ่านเดียวกันทุกบัญชี
+                    </button>
+                  </div>
+                  <div v-if="gen.passwordMode === 'same'" class="password-row mt-2">
+                    <input v-model="gen.password" :type="gen.showPassword ? 'text' : 'password'" class="form-input"
+                      placeholder="อย่างน้อย 8 ตัวอักษร" autocomplete="new-password"
+                      :class="{ 'is-invalid': !!gen.password && gen.password.length < 8 }" :disabled="submitting" />
+                    <button type="button" class="password-toggle" @click="gen.showPassword = !gen.showPassword">
+                      <b-icon :icon="gen.showPassword ? 'eye-slash' : 'eye'"></b-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="gen-actions">
+                <span v-if="genSample" class="field-note">ตัวอย่างบัญชีแรก: {{ genSample }}</span>
+                <button type="button" class="btn-submit" :disabled="submitting" @click="generatePreview">
+                  <b-icon icon="lightning-charge"></b-icon> Generate
+                </button>
+              </div>
+              <span v-if="genError" class="form-error d-block mt-2">{{ genError }}</span>
+
+              <!-- ตัวอย่างให้ตรวจสอบก่อนนำไปใช้ -->
+              <div v-if="gen.preview.length" class="gen-preview">
+                <div class="gen-preview-head">
+                  <span class="bulk-row-title">ตัวอย่าง {{ gen.preview.length }} บัญชี — กรุณาตรวจสอบ</span>
+                  <div class="gen-preview-btns">
+                    <button type="button" class="preset-btn" @click="copyPreview">
+                      <b-icon :icon="gen.copied ? 'check2' : 'clipboard'"></b-icon>
+                      {{ gen.copied ? "คัดลอกแล้ว" : "คัดลอกทั้งหมด" }}
+                    </button>
+                    <button type="button" class="preset-btn" @click="cancelPreview">ยกเลิก</button>
+                    <button type="button" class="btn-submit" @click="applyPreview">
+                      <b-icon icon="check2"></b-icon> ใช้รายการนี้
+                    </button>
+                  </div>
+                </div>
+                <div v-if="genExistingCount" class="gen-warn">
+                  <b-icon icon="exclamation-triangle-fill"></b-icon>
+                  มี {{ genExistingCount }} Username ที่มีในระบบแล้ว (แถวสีแดง) — ลองเปลี่ยน "เริ่มที่เลข" หรือตัวย่อ
+                </div>
+                <div v-if="gen.passwordMode === 'random'" class="field-note d-block mb-2">
+                  รหัสผ่านถูกสุ่มแยกแต่ละบัญชี — กด "คัดลอกทั้งหมด" เก็บไว้ก่อนสร้าง ระบบจะไม่แสดงรหัสผ่านนี้อีกหลังปิดหน้าต่าง
+                </div>
+                <div class="gen-table-wrap">
+                  <table class="gen-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Username</th>
+                        <th>ชื่อ</th>
+                        <th>นามสกุล</th>
+                        <th>อีเมล</th>
+                        <th>รหัสผ่าน</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(r, i) in gen.preview" :key="r.username" :class="{ 'is-exists': r.exists }">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ r.username }}</td>
+                        <td>{{ r.name }}</td>
+                        <td>{{ r.lastname }}</td>
+                        <td>{{ r.email }}</td>
+                        <td class="mono">{{ r.password }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
             <div class="bulk-list">
               <div v-for="(row, i) in bulk.rows" :key="row.key" class="bulk-row"
                 :class="{ 'is-error': row.status === 'error', 'is-done': row.status === 'done' }">
@@ -249,7 +358,7 @@
                     <span v-else-if="row.status === 'done'" class="bulk-badge done">สร้างแล้ว</span>
                     <span v-else-if="row.status === 'error'" class="bulk-badge error">ไม่สำเร็จ</span>
                   </span>
-                  <button v-if="bulk.rows.length > 1" type="button" class="bulk-remove" :disabled="submitting"
+                  <button type="button" class="bulk-remove" :disabled="submitting"
                     title="ลบแถวนี้" @click="removeRow(i)">
                     <b-icon icon="trash"></b-icon>
                   </button>
@@ -303,6 +412,11 @@
                 </div>
                 <span v-if="row.status === 'error' && row.message" class="form-error d-block mt-2">{{ row.message }}</span>
                 <span v-else-if="row.touched && rowError(row, i)" class="form-error d-block mt-2">{{ rowError(row, i) }}</span>
+              </div>
+
+              <div v-if="!bulk.rows.length" class="bulk-empty">
+                <b-icon icon="people"></b-icon>
+                ยังไม่มีบัญชีในรายการ — กด <b>Generate</b> ด้านบน หรือ <b>เพิ่มบัญชี</b> เพื่อกรอกเอง
               </div>
 
               <div class="bulk-add">
@@ -509,6 +623,43 @@ function emptyRow() {
   };
 }
 
+function emptyGen() {
+  return {
+    prefix: "",
+    count: 10,
+    start: 1,
+    emailDomain: "",
+    passwordMode: "random", // random | same
+    password: "",
+    showPassword: false,
+    preview: [],
+    copied: false,
+  };
+}
+
+// รหัสผ่านสุ่ม 10 ตัว (ตัด O/0/l/1/I ที่อ่านสับสนออก) มีทั้งตัวพิมพ์เล็ก ใหญ่ และตัวเลขอย่างน้อยอย่างละ 1
+function randomPassword(len = 10) {
+  const lower = "abcdefghijkmnpqrstuvwxyz";
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const digit = "23456789";
+  const all = lower + upper + digit;
+  const rand = (n) => {
+    if (window.crypto && window.crypto.getRandomValues) {
+      const a = new Uint32Array(1);
+      window.crypto.getRandomValues(a);
+      return a[0] % n;
+    }
+    return Math.floor(Math.random() * n);
+  };
+  const chars = [lower[rand(lower.length)], upper[rand(upper.length)], digit[rand(digit.length)]];
+  while (chars.length < len) chars.push(all[rand(all.length)]);
+  for (let i = chars.length - 1; i > 0; i -= 1) {
+    const j = rand(i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  return chars.join("");
+}
+
 function emptyBulk() {
   return {
     role: "user",
@@ -516,7 +667,7 @@ function emptyBulk() {
     projectMode: "same", // same = โปรเจกต์เดียวกันทั้งหมด, each = กำหนดเองรายบัญชี
     project_id: "",
     projectname: "",
-    rows: [emptyRow(), emptyRow()],
+    rows: [], // เริ่มว่าง — ให้ผู้ใช้กด Generate หรือ "เพิ่มบัญชี" เอง
   };
 }
 
@@ -567,6 +718,8 @@ export default {
       form: emptyForm(),
       mode: "single", // single | bulk
       bulk: emptyBulk(),
+      gen: emptyGen(),
+      genError: "",
       bulkProgress: { done: 0, total: 0 },
       maxBulkRows: 50,
       // Service-account token popup — shown once right after a role=service
@@ -590,6 +743,28 @@ export default {
     // แถวที่ยังต้องสร้าง (แถวที่สร้างสำเร็จแล้วจะไม่ส่งซ้ำ)
     pendingRows() {
       return this.bulk.rows.filter((r) => r.status !== "done");
+    },
+    genPrefixValid() {
+      return /^[a-zA-Z0-9]+$/.test(this.gen.prefix || "");
+    },
+    genDomain() {
+      return (this.gen.emailDomain || "").replace(/^@+/, "").trim();
+    },
+    genDomainValid() {
+      return /^[^\s@]+\.[^\s@]+$/.test(this.genDomain);
+    },
+    genDigits() {
+      const last = (Number(this.gen.start) || 1) + (Number(this.gen.count) || 1) - 1;
+      return Math.max(2, String(last).length);
+    },
+    genSample() {
+      if (!this.gen.prefix || !this.genPrefixValid) return "";
+      const num = String(Number(this.gen.start) || 1).padStart(this.genDigits, "0");
+      const email = this.genDomainValid ? ` · ${this.gen.prefix}${num}@${this.genDomain}` : "";
+      return `${this.gen.prefix}${num} · ชื่อ ${this.gen.prefix} · นามสกุล ${num}${email}`;
+    },
+    genExistingCount() {
+      return this.gen.preview.filter((r) => r.exists).length;
     },
     bulkIncomplete() {
       if (!this.pendingRows.length) return true;
@@ -672,6 +847,96 @@ export default {
       const room = this.maxBulkRows - this.bulk.rows.length;
       for (let k = 0; k < Math.min(n, room); k += 1) this.bulk.rows.push(emptyRow());
     },
+    // ===== Generate =====
+    usernameExistsInSystem(uname) {
+      const u = (uname || "").toLowerCase();
+      return !!u && this.systemUsers.some((x) => (x.username || "").toLowerCase() === u);
+    },
+    generatePreview() {
+      this.genError = "";
+      this.gen.copied = false;
+      const count = Number(this.gen.count);
+      const start = Number(this.gen.start) || 1;
+      if (!this.gen.prefix) return (this.genError = "กรุณากรอกตัวย่อหน่วยงาน");
+      if (!this.genPrefixValid) return (this.genError = "ตัวย่อหน่วยงานใช้ได้เฉพาะ a-z, A-Z และ 0-9");
+      if (!Number.isInteger(count) || count < 1) return (this.genError = "กรุณากรอกจำนวนบัญชีอย่างน้อย 1");
+      if (count > this.maxBulkRows) return (this.genError = `สร้างได้สูงสุดครั้งละ ${this.maxBulkRows} บัญชี`);
+      if (!Number.isInteger(start) || start < 1) return (this.genError = "เลขเริ่มต้นต้องเป็นจำนวนเต็มตั้งแต่ 1");
+      if (!this.genDomainValid) return (this.genError = "กรุณากรอกโดเมนอีเมลให้ถูกต้อง เช่น example.com");
+      if (this.gen.passwordMode === "same" && (!this.gen.password || this.gen.password.length < 8)) {
+        return (this.genError = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+      }
+      const digits = this.genDigits;
+      const list = [];
+      for (let k = 0; k < count; k += 1) {
+        const num = String(start + k).padStart(digits, "0");
+        const username = `${this.gen.prefix}${num}`;
+        list.push({
+          username,
+          name: this.gen.prefix,
+          lastname: num,
+          email: `${username}@${this.genDomain}`.toLowerCase(),
+          password: this.gen.passwordMode === "same" ? this.gen.password : randomPassword(),
+          exists: this.usernameExistsInSystem(username),
+        });
+      }
+      this.gen.preview = list;
+    },
+    cancelPreview() {
+      this.gen.preview = [];
+      this.gen.copied = false;
+    },
+    async applyPreview() {
+      const hasData = this.bulk.rows.some(
+        (r) => r.status !== "done" && (r.username || r.name || r.lastname || r.email || r.password)
+      );
+      if (hasData) {
+        const res = await Swal.fire({
+          icon: "question",
+          title: "แทนที่รายการเดิม?",
+          text: "รายการบัญชีที่กรอกไว้ด้านล่างจะถูกแทนที่ด้วยรายการที่ Generate",
+          showCancelButton: true,
+          confirmButtonText: "แทนที่",
+          cancelButtonText: "ยกเลิก",
+        });
+        if (!res || !res.isConfirmed) return;
+      }
+      this.bulk.rows = this.gen.preview.map((g) => ({
+        ...emptyRow(),
+        username: g.username,
+        name: g.name,
+        lastname: g.lastname,
+        email: g.email,
+        password: g.password,
+        touched: true,
+      }));
+      this.gen.preview = [];
+      this.gen.copied = false;
+    },
+    async copyPreview() {
+      const lines = [["Username", "ชื่อ", "นามสกุล", "อีเมล", "รหัสผ่าน"].join("\t")].concat(
+        this.gen.preview.map((r) => [r.username, r.name, r.lastname, r.email, r.password].join("\t"))
+      );
+      const text = lines.join("\n");
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+        this.gen.copied = true;
+      } catch (err) {
+        console.log(err);
+        Swal.fire({ icon: "error", title: "คัดลอกไม่สำเร็จ", text: "กรุณาคัดลอกจากตารางด้วยตนเอง" });
+      }
+    },
     removeRow(i) {
       this.bulk.rows.splice(i, 1);
     },
@@ -699,6 +964,7 @@ export default {
         this.rowFieldError(row, "email") ||
         this.rowFieldError(row, "password");
       if (msg) return msg;
+      if (row.status !== "error" && this.usernameExistsInSystem(row.username)) return "Username นี้มีในระบบแล้ว";
       const uname = row.username.toLowerCase();
       const email = row.email.toLowerCase();
       const others = this.bulk.rows.filter((r, j) => j !== index && r.status !== "done");
@@ -910,6 +1176,8 @@ export default {
       this.form = emptyForm();
       this.mode = "single";
       this.bulk = emptyBulk();
+      this.gen = emptyGen();
+      this.genError = "";
       this.bulkProgress = { done: 0, total: 0 };
     },
     async submit() {
@@ -1595,6 +1863,126 @@ export default {
 .bulk-remove:hover {
   background: #fdecea;
 }
+.gen-box {
+  border: 1px solid #cfe6e8;
+  background: #f3fafa;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.gen-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #128189;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.gen-grid {
+  grid-template-columns: 1.2fr 0.8fr 0.8fr 1.4fr;
+}
+.gen-grid .form-field label {
+  font-size: 14px;
+}
+.email-domain-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.email-at {
+  color: #6b7280;
+  font-weight: 600;
+}
+.gen-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.gen-actions .field-note {
+  margin-right: auto;
+}
+.gen-preview {
+  margin-top: 12px;
+  border-top: 1px dashed #cfe6e8;
+  padding-top: 12px;
+}
+.gen-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.gen-preview-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gen-warn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff4e5;
+  border: 1px solid #f0c780;
+  color: #7a4a00;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.gen-table-wrap {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid #e4e1d8;
+  border-radius: 8px;
+  background: #ffffff;
+}
+.gen-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.gen-table th,
+.gen-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f1efe9;
+  text-align: left;
+  white-space: nowrap;
+}
+.gen-table th {
+  position: sticky;
+  top: 0;
+  background: #f6f5f0;
+  font-weight: 600;
+  z-index: 1;
+}
+.gen-table tr.is-exists td {
+  background: #fdecea;
+  color: #c0392b;
+}
+.gen-table .mono {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.bulk-empty {
+  border: 1px dashed #e4e1d8;
+  border-radius: 12px;
+  padding: 18px 14px;
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .bulk-add {
   display: flex;
   flex-wrap: wrap;
@@ -1607,14 +1995,16 @@ export default {
 }
 
 @media (max-width: 900px) {
-  .bulk-grid {
+  .bulk-grid,
+  .gen-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 480px) {
   .form-grid,
-  .bulk-grid {
+  .bulk-grid,
+  .gen-grid {
     grid-template-columns: 1fr;
   }
 }
