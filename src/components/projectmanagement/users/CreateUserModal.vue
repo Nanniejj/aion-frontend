@@ -110,12 +110,13 @@
             </div>
 
             <div v-if="canPickProject" class="form-field">
-              <label>โปรเจกต์</label>
+              <label>โปรเจกต์ <span class="req">*</span></label>
               <div class="project-picker" tabindex="-1" @focusout="closeProjectMenu">
                 <input
                   v-model="projectSearch"
                   type="text"
                   class="form-input project-picker-input"
+                  :class="{ 'is-invalid': projectTouched && !form.project_id }"
                   placeholder="พิมพ์เพื่อค้นหาโปรเจกต์..."
                   autocomplete="off"
                   @focus="openProjectMenu"
@@ -123,13 +124,7 @@
                 />
                 <b-icon icon="chevron-down" class="project-picker-caret"></b-icon>
                 <div v-if="projectMenuOpen" class="project-picker-menu" @scroll="onProjectMenuScroll" @mousedown.prevent>
-                  <div
-                    class="project-picker-item"
-                    :class="{ active: !form.project_id }"
-                    @click="selectProject(null)"
-                  >
-                    — ไม่ระบุ —
-                  </div>
+                  <!-- บังคับเลือกโปรเจกต์ — ไม่มีตัวเลือก "ไม่ระบุ" แล้ว -->
                   <div
                     v-for="p in projectPicker.items"
                     :key="p._id"
@@ -154,7 +149,10 @@
             <div v-else class="form-field">
               <label>โปรเจกต์</label>
               <div class="project-readonly">{{ currentUserProjectName || "ไม่ระบุ" }}</div>
-              <span class="field-note d-block mt-1">
+              <span v-if="!currentUserProjectId" class="form-error d-block mt-1" style="font-size: 12px">
+                บัญชีของคุณยังไม่อยู่ในโปรเจกต์ใด จึงสร้างผู้ใช้ไม่ได้ — ติดต่อ superadmin
+              </span>
+              <span v-else class="field-note d-block mt-1">
                 ผู้ใช้ใหม่จะถูกกำหนดให้อยู่ในโปรเจกต์เดียวกับคุณโดยอัตโนมัติ
               </span>
             </div>
@@ -217,7 +215,7 @@
               </div>
 
               <div v-if="canPickProject" class="form-field form-field-full">
-                <label>โปรเจกต์</label>
+                <label>โปรเจกต์ <span class="req">*</span></label>
                 <div class="expiry-presets mb-0">
                   <button type="button" class="preset-btn" :class="{ active: bulk.projectMode === 'same' }"
                     :disabled="submitting" @click="bulk.projectMode = 'same'">
@@ -229,13 +227,17 @@
                   </button>
                 </div>
                 <ProjectPickerInput v-if="bulk.projectMode === 'same'" class="mt-2" :value="bulk.project_id"
+                  :allow-empty="false" :invalid="projectTouched && !bulk.project_id"
                   :label="bulk.projectname" @select="(p) => { bulk.project_id = p._id; bulk.projectname = p.projectname; }" />
                 <span v-else class="field-note d-block mt-1">เลือกโปรเจกต์ในแต่ละบัญชีด้านล่าง</span>
               </div>
               <div v-else class="form-field form-field-full">
                 <label>โปรเจกต์</label>
                 <div class="project-readonly">{{ currentUserProjectName || "ไม่ระบุ" }}</div>
-                <span class="field-note d-block mt-1">ผู้ใช้ใหม่ทุกบัญชีจะอยู่ในโปรเจกต์เดียวกับคุณโดยอัตโนมัติ</span>
+                <span v-if="!currentUserProjectId" class="form-error d-block mt-1" style="font-size: 12px">
+                  บัญชีของคุณยังไม่อยู่ในโปรเจกต์ใด จึงสร้างผู้ใช้ไม่ได้ — ติดต่อ superadmin
+                </span>
+                <span v-else class="field-note d-block mt-1">ผู้ใช้ใหม่ทุกบัญชีจะอยู่ในโปรเจกต์เดียวกับคุณโดยอัตโนมัติ</span>
               </div>
             </div>
 
@@ -405,8 +407,9 @@
                       autocomplete="off" :disabled="submitting" />
                   </div>
                   <div v-if="canPickProject && bulk.projectMode === 'each'" class="form-field form-field-full">
-                    <label>โปรเจกต์</label>
-                    <ProjectPickerInput :value="row.project_id" :label="row.projectname"
+                    <label>โปรเจกต์ <span class="req">*</span></label>
+                    <ProjectPickerInput :value="row.project_id" :label="row.projectname" :allow-empty="false"
+                      :invalid="row.touched && !row.project_id"
                       @select="(p) => { row.project_id = p._id; row.projectname = p.projectname; }" />
                   </div>
                 </div>
@@ -718,6 +721,7 @@ export default {
       form: emptyForm(),
       mode: "single", // single | bulk
       bulk: emptyBulk(),
+      projectTouched: false, // true หลังกดสร้าง/ปิดเมนูโปรเจกต์ → แสดงกรอบแดงถ้ายังไม่เลือก
       gen: emptyGen(),
       genError: "",
       bulkProgress: { done: 0, total: 0 },
@@ -768,6 +772,7 @@ export default {
     },
     bulkIncomplete() {
       if (!this.pendingRows.length) return true;
+      if (this.bulkProjectMissing) return true;
       return this.bulk.rows.some((r, i) => r.status !== "done" && !!this.rowError(r, i));
     },
     // Paginated project list backing the autocomplete dropdown.
@@ -812,8 +817,18 @@ export default {
       return !!this.form.username && !/^[a-zA-Z0-9]+$/.test(this.form.username);
     },
     // true เมื่อยังกรอกข้อมูลที่จำเป็น (required) ไม่ครบตาม role ที่เลือกอยู่
+    // ต้องมีโปรเจกต์เสมอ: superadmin เลือกเอง / admin ใช้โปรเจกต์ของตัวเอง
+    singleProjectMissing() {
+      return this.canPickProject ? !this.form.project_id : !this.currentUserProjectId;
+    },
+    bulkProjectMissing() {
+      if (!this.canPickProject) return !this.currentUserProjectId;
+      if (this.bulk.projectMode === "same") return !this.bulk.project_id;
+      return false; // โหมดรายบัญชีเช็คใน rowError
+    },
     isFormIncomplete() {
       if (!this.form.username) return true;
+      if (this.singleProjectMissing) return true;
       if (this.form.role !== "service") {
         if (!this.form.name || !this.form.lastname || !this.form.email || !this.form.password) return true;
         if (this.form.password.length < 8) return true;
@@ -962,7 +977,8 @@ export default {
         this.rowFieldError(row, "username") ||
         (!row.name || !row.lastname ? "กรุณากรอกชื่อและนามสกุล" : "") ||
         this.rowFieldError(row, "email") ||
-        this.rowFieldError(row, "password");
+        this.rowFieldError(row, "password") ||
+        (this.canPickProject && this.bulk.projectMode === "each" && !row.project_id ? "กรุณาเลือกโปรเจกต์" : "");
       if (msg) return msg;
       if (row.status !== "error" && this.usernameExistsInSystem(row.username)) return "Username นี้มีในระบบแล้ว";
       const uname = row.username.toLowerCase();
@@ -995,6 +1011,11 @@ export default {
       }
       // แสดง error ของทุกแถวก่อนส่ง
       this.bulk.rows.forEach((r) => { r.touched = true; });
+      this.projectTouched = true;
+      if (this.bulkProjectMissing) {
+        this.error = this.canPickProject ? "กรุณาเลือกโปรเจกต์" : "บัญชีของคุณยังไม่อยู่ในโปรเจกต์ใด จึงสร้างผู้ใช้ไม่ได้";
+        return;
+      }
       if (this.bulkIncomplete) {
         this.error = "กรุณากรอกข้อมูลให้ครบและถูกต้องทุกบัญชี";
         return;
@@ -1074,6 +1095,7 @@ export default {
     },
     closeProjectMenu() {
       this.projectMenuOpen = false;
+      this.projectTouched = true;
       // If the admin typed something but never picked an option, revert
       // the box back to whatever project is actually selected.
       if (!this.form.project_id) {
@@ -1178,6 +1200,7 @@ export default {
       this.bulk = emptyBulk();
       this.gen = emptyGen();
       this.genError = "";
+      this.projectTouched = false;
       this.bulkProgress = { done: 0, total: 0 };
     },
     async submit() {
@@ -1209,6 +1232,11 @@ export default {
       // (ครอบคลุมทั้งกรณีปกติที่ไม่มี UI ให้เลือก และกันไว้เผื่อค่าถูกเปลี่ยนผ่านทางอื่น)
       if (!this.canPickProject) {
         this.form.project_id = this.currentUserProjectId;
+      }
+      this.projectTouched = true;
+      if (!this.form.project_id) {
+        this.error = this.canPickProject ? "กรุณาเลือกโปรเจกต์" : "บัญชีของคุณยังไม่อยู่ในโปรเจกต์ใด จึงสร้างผู้ใช้ไม่ได้";
+        return;
       }
 
       const payload = {
