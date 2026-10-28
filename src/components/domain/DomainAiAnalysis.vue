@@ -1,6 +1,37 @@
 <template>
   <section class="gai" :class="{ running: isRunning }">
     <div class="gai-inner">
+      <!-- ตัวอย่างโพสต์เล็ก ๆ เมื่อชี้ที่ชิป P1, P2 … -->
+      <div v-if="peek" class="gai-peek" :style="peek.style" @mouseenter="keepPeek" @mouseleave="hidePeek">
+        <a :href="peek.p.url_post || null" target="_blank" rel="noopener" class="gai-peek-card">
+          <div v-if="peekImg" class="gai-peek-media">
+            <img :src="peekImg" alt="" referrerpolicy="no-referrer" @error="$set(imgFail, peekImg, true)" />
+            <span class="gai-img-cap">
+              <i v-if="platformIcon(peek.p.platform)" :class="platformIcon(peek.p.platform)"></i>
+              <span class="text-truncate">{{ peek.p.account_name }}</span>
+            </span>
+          </div>
+          <div v-else class="gai-peek-head">
+            <span class="gai-peek-av">
+              <img v-if="peek.p.profile_image && !imgFail[peek.p.profile_image]" :src="peek.p.profile_image" alt="" referrerpolicy="no-referrer" @error="$set(imgFail, peek.p.profile_image, true)" />
+              <span v-else>{{ (peek.p.account_name || "?").slice(0, 1) }}</span>
+            </span>
+            <span class="gai-peek-name text-truncate">
+              <i v-if="platformIcon(peek.p.platform)" :class="platformIcon(peek.p.platform)"></i> {{ peek.p.account_name || peek.p.platform }}
+            </span>
+          </div>
+          <div class="gai-peek-body">
+            <div class="gai-peek-text">{{ peek.p.title || peek.p.text || "(ไม่มีข้อความ)" }}</div>
+            <div class="gai-peek-meta">
+              <span>{{ postTime(peek.p.date) }}</span>
+              <span><i class="fas fa-chart-line"></i> {{ compact(peek.p.engagement) }}</span>
+              <span class="gai-chip" :class="'stm-' + peek.p.sentiment">{{ sentimentText[peek.p.sentiment] }}</span>
+              <span v-if="peek.p.url_post" class="gai-peek-open">เปิดโพสต์ <i class="fas fa-external-link-alt"></i></span>
+            </div>
+          </div>
+        </a>
+      </div>
+
       <!-- ================= Header ================= -->
       <header class="gai-head">
         <div class="gai-brand">
@@ -28,6 +59,15 @@
         </div>
 
         <div class="gai-actions">
+          <div v-if="showExportButtons && result" class="gai-export" role="group" aria-label="ส่งออกรายงาน AI Insight" :aria-busy="exporting">
+            <span class="gai-export-label"><i class="fas fa-download"></i> รายงาน</span>
+            <button class="gai-export-btn pdf" :disabled="isRunning || exporting" @click="exportReport('pdf')" title="เปิดหน้าพิมพ์เพื่อบันทึกเป็น PDF">
+              <i class="far fa-file-pdf"></i> PDF
+            </button>
+            <button class="gai-export-btn word" :disabled="isRunning || exporting" @click="exportReport('word')" title="ดาวน์โหลดรายงาน Word (.docx)">
+              <span v-if="exporting" class="gai-btn-spin"></span><i v-else class="far fa-file-word"></i> Word
+            </button>
+          </div>
           <button v-if="analysis" class="gai-icon-btn" @click="copySummary" v-b-tooltip.hover title="คัดลอกสรุป">
             <i :class="copied ? 'fas fa-check' : 'far fa-copy'"></i>
           </button>
@@ -122,7 +162,6 @@
               <span class="gai-img-cap">
                 <i v-if="platformIcon(img.platform)" :class="platformIcon(img.platform)"></i>
                 <span class="text-truncate">{{ img.account_name }}</span>
-                <b>{{ img.ref }}</b>
               </span>
               <span v-if="k === 2 && heroImgs.length > 3" class="gai-img-more">+{{ heroImgs.length - 3 }}</span>
             </a>
@@ -144,15 +183,51 @@
               <div class="gai-tile-ico blue"><i class="far fa-file-alt"></i></div>
               <div><div class="gai-tile-val">{{ fmt(ov.total_posts) }}</div><div class="gai-tile-lbl">โพสต์ทั้งหมด</div></div>
             </div>
-            <div class="gai-tile">
-              <div class="gai-tile-ico purple"><i class="fas fa-balance-scale"></i></div>
-              <div>
-                <div class="gai-tile-val" :class="scoreClass(ov.net_sentiment_score)">{{ signed(ov.net_sentiment_score) }}</div>
-                <div class="gai-tile-lbl">Net Sentiment (-100 ถึง +100)</div>
+            <div
+              class="gai-tile gai-tile-senti"
+              :class="'v-' + verdict(ov.net_sentiment_score).tone"
+              tabindex="0"
+            >
+              <i class="fas fa-info-circle gai-tile-info"></i>
+              <!-- คำอธิบาย Net Sentiment (แสดงเมื่อ hover / focus) -->
+              <div class="gai-explain" role="tooltip">
+                <div class="gai-explain-title"><i class="fas fa-info-circle"></i> Net Sentiment คืออะไร</div>
+                <p>ตัวเลขที่บอกว่าความเห็นโดยรวม<b>เอนไปทางบวกหรือลบ</b> และมากแค่ไหน มีค่าตั้งแต่ <b>−100</b> (ลบทั้งหมด) ถึง <b>+100</b> (บวกทั้งหมด)</p>
+                <div class="gai-explain-formula">
+                  <span>(บวก − ลบ) ÷ ทั้งหมด × 100</span>
+                  <small>
+                    ({{ fmt(ov.sentiment.positive) }} − {{ fmt(ov.sentiment.negative) }}) ÷
+                    {{ fmt(ov.sentiment.positive + ov.sentiment.neutral + ov.sentiment.negative) }} × 100 =
+                    <b :class="scoreClass(ov.net_sentiment_score)">{{ signed(ov.net_sentiment_score) }}</b>
+                  </small>
+                </div>
+                <div class="gai-explain-scale">
+                  <div :class="{ on: verdict(ov.net_sentiment_score).tone === 'pos' }"><i class="dot pos"></i><b>+15 ขึ้นไป</b> เชิงบวก</div>
+                  <div :class="{ on: verdict(ov.net_sentiment_score).tone === 'neu' }"><i class="dot neu"></i><b>−15 ถึง +15</b> เป็นกลาง</div>
+                  <div :class="{ on: verdict(ov.net_sentiment_score).tone === 'neg' }"><i class="dot neg"></i><b>−15 ลงไป</b> เชิงลบ</div>
+                </div>
+                <small class="gai-explain-note">ความเห็นกลางนับรวมในตัวหาร ถ้ากลางมาก ค่าจะเข้าใกล้ 0 · คิดจาก sentiment ของโพสต์ทั้งหมดใน Domain</small>
+              </div>
+              <div class="gai-tile-ico gai-verdict-ico"><i :class="verdict(ov.net_sentiment_score).icon"></i></div>
+              <div class="gai-tile-main">
+                <div class="gai-tile-top">
+                  <span class="gai-tile-val" :class="scoreClass(ov.net_sentiment_score)">{{ signed(ov.net_sentiment_score) }}</span>
+                  <span class="gai-tile-verdict">{{ verdict(ov.net_sentiment_score).label }}</span>
+                </div>
+                <div class="gai-sbar xs">
+                  <div class="pos" :style="{ width: ov.sentiment_percent.positive + '%' }"></div>
+                  <div class="neu" :style="{ width: ov.sentiment_percent.neutral + '%' }"></div>
+                  <div class="neg" :style="{ width: ov.sentiment_percent.negative + '%' }"></div>
+                </div>
+                <div class="gai-tile-pcts">
+                  <span class="c-pos">บวก {{ ov.sentiment_percent.positive }}%</span>
+                  <span class="c-neu">กลาง {{ ov.sentiment_percent.neutral }}%</span>
+                  <span class="c-neg">ลบ {{ ov.sentiment_percent.negative }}%</span>
+                </div>
               </div>
             </div>
             <div class="gai-tile">
-              <div class="gai-tile-ico pink"><i class="fas fa-bolt"></i></div>
+              <div class="gai-tile-ico pink"><i class="fas fa-chart-line"></i></div>
               <div>
                 <div class="gai-tile-val">{{ compact(ov.engagement.total) }}</div>
                 <div class="gai-tile-lbl">Engagement รวม<span v-if="ov.engagement.views"> · {{ compact(ov.engagement.views) }} views</span></div>
@@ -167,24 +242,16 @@
             </div>
           </div>
 
-          <div class="gai-panel">
-            <div class="gai-panel-title">สัดส่วน Sentiment ภาพรวม</div>
-            <div class="gai-sbar">
-              <div class="pos" :style="{ width: ov.sentiment_percent.positive + '%' }"></div>
-              <div class="neu" :style="{ width: ov.sentiment_percent.neutral + '%' }"></div>
-              <div class="neg" :style="{ width: ov.sentiment_percent.negative + '%' }"></div>
-            </div>
-            <div class="gai-legend">
-              <span><i class="dot pos"></i>บวก {{ fmt(ov.sentiment.positive) }} ({{ ov.sentiment_percent.positive }}%)</span>
-              <span><i class="dot neu"></i>กลาง {{ fmt(ov.sentiment.neutral) }} ({{ ov.sentiment_percent.neutral }}%)</span>
-              <span><i class="dot neg"></i>ลบ {{ fmt(ov.sentiment.negative) }} ({{ ov.sentiment_percent.negative }}%)</span>
-            </div>
-            <div class="gai-src-note">
-              <i class="fas fa-database"></i>
-              <template v-if="result.overview">สถิติภาพรวมทั้งหมดของ Domain<span v-if="sourceLabel"> (รวมทุกแพลตฟอร์ม)</span></template>
-              <template v-else>ดึงสถิติภาพรวมไม่สำเร็จ — แสดงจากโพสต์ที่วิเคราะห์แทน</template>
-              · AI อ่านเนื้อหาจาก {{ (result.posts || []).length }} โพสต์ที่ engagement สูงสุด
-            </div>
+          <div class="gai-src-note">
+            <i class="fas fa-database"></i>
+            <template v-if="result.overview">สถิติภาพรวมทั้งหมดของ Domain<span v-if="sourceLabel"> (รวมทุกแพลตฟอร์ม)</span></template>
+            <template v-else>ดึงสถิติภาพรวมไม่สำเร็จ — แสดงจากโพสต์ที่วิเคราะห์แทน</template>
+            · AI อ่านเนื้อหาจาก {{ (result.posts || []).length }} โพสต์ที่ engagement สูงสุด
+          </div>
+
+          <div class="gai-panel gai-kw-panel" v-if="analysis && analysis.keywords.length">
+            <span class="gai-kw-lbl"><i class="fas fa-hashtag"></i> คำสำคัญ</span>
+            <span v-for="k in analysis.keywords" :key="'k' + k" class="gai-kw">{{ k }}</span>
           </div>
 
           <!-- Trend chart (multi-day) -->
@@ -226,27 +293,179 @@
             <p v-if="analysis && analysis.trend_overview" class="gai-trend-text"><i class="fas fa-magic"></i>{{ analysis.trend_overview }}</p>
           </div>
 
-          <div class="gai-panel" v-if="analysis && analysis.recommendations.length">
-            <div class="gai-panel-title">ข้อเสนอแนะ</div>
-            <div v-for="(r, i) in sortedRecos" :key="'rc' + i" class="gai-reco">
-              <span class="gai-num">{{ i + 1 }}</span>
-              <div class="flex-grow-1">
-                <div><span class="gai-tag" :class="'lv-' + r.priority">{{ levelText[r.priority] }}</span><b>{{ r.action }}</b></div>
-                <small class="gai-muted">{{ r.rationale }}</small>
-              </div>
+          <!-- ประเด็นหลัก (อยู่หน้าแรก) -->
+          <section v-if="analysis" class="gai-section">
+            <div class="gai-section-head">
+              <h4><i class="fas fa-layer-group"></i> ประเด็นหลัก <span class="gai-tab-count">{{ analysis.key_themes.length }}</span></h4>
+              <small class="gai-muted">ความเห็นบวก/ลบ และมุมมองสองฝั่งของแต่ละประเด็น</small>
             </div>
-          </div>
+            <div v-if="!analysis.key_themes.length" class="gai-empty">ไม่พบประเด็นที่ชัดเจน</div>
+            <div class="gai-issues">
+              <article v-for="(t, i) in analysis.key_themes" :key="'t' + i" class="gai-issue">
+                <header class="gai-issue-head">
+                  <span class="gai-issue-no">{{ i + 1 }}</span>
+                  <div class="min-w-0 flex-grow-1">
+                    <h4 class="gai-issue-title">
+                      {{ t.title }}
+                      <span class="gai-trend" :class="'tr-' + t.trend"><i :class="trendIcon[t.trend]"></i> {{ trendText[t.trend] }}</span>
+                    </h4>
+                    <p class="gai-issue-desc">{{ t.description }}</p>
+                  </div>
+                  <div class="gai-issue-share" v-b-tooltip.hover title="สัดส่วนจากโพสต์ที่วิเคราะห์">{{ t.share_percent }}%</div>
+                </header>
 
-          <div class="gai-panel" v-if="analysis && analysis.keywords.length">
-            <div class="gai-panel-title">คำสำคัญ</div>
-            <span v-for="k in analysis.keywords" :key="'k' + k" class="gai-kw">{{ k }}</span>
-          </div>
+                <!-- ความเห็นบวก/ลบ: แถบบาง + ตัวเลขในบรรทัดเดียว -->
+                <!-- ความเห็นบวก/ลบ: แถวโพสต์ + แถวคอมเมนต์ทั้งหมด -->
+                <div class="gai-stm-rows" v-if="(t.stats && t.stats.posts) || hasCmt(t)">
+                  <div class="gai-verdict" :class="'v-' + themeVerdict(t).tone">
+                    <span class="gai-verdict-ico"><i :class="themeVerdict(t).icon"></i></span>
+                    <div class="gai-verdict-txt">
+                      <b>{{ themeVerdict(t).label }}</b>
+                      <small>{{ themeVerdict(t).src }}</small>
+                    </div>
+                    <div class="gai-meter sm">
+                      <div class="gai-meter-track"></div>
+                      <span class="gai-meter-mark" :style="{ left: meterPos(themeVerdict(t).net) }"></span>
+                    </div>
+                  </div>
+                  <div v-if="themeSplit(t)" class="gai-split">
+                    <i class="fas fa-exchange-alt"></i> โพสต์{{ themeSplit(t).post }} แต่คอมเมนต์{{ themeSplit(t).cmt }}
+                  </div>
+                  <div v-if="t.stats && t.stats.posts" class="gai-stm-row">
+                    <span class="gai-stm-lbl"><i class="far fa-file-alt"></i> โพสต์ <b>{{ fmt(t.stats.posts) }}</b></span>
+                    <div class="gai-sbar xs">
+                      <div class="pos" :style="{ width: t.stats.sentiment_percent.positive + '%' }"></div>
+                      <div class="neu" :style="{ width: t.stats.sentiment_percent.neutral + '%' }"></div>
+                      <div class="neg" :style="{ width: t.stats.sentiment_percent.negative + '%' }"></div>
+                    </div>
+                    <span class="gai-stm-pct">
+                      <b class="c-pos">{{ Math.round(t.stats.sentiment_percent.positive) }}%</b>
+                      <b class="c-neu">{{ Math.round(t.stats.sentiment_percent.neutral) }}%</b>
+                      <b class="c-neg">{{ Math.round(t.stats.sentiment_percent.negative) }}%</b>
+                    </span>
+                  </div>
+                  <div v-if="hasCmt(t)" class="gai-stm-row">
+                    <span class="gai-stm-lbl"><i class="far fa-comments"></i> คอมเมนต์ <b>{{ fmt(cmtRelevant(t)) }}</b></span>
+                    <div class="gai-sbar xs">
+                      <div class="pos" :style="{ width: t.comment_analysis.percent.positive + '%' }"></div>
+                      <div class="neu" :style="{ width: t.comment_analysis.percent.neutral + '%' }"></div>
+                      <div class="neg" :style="{ width: t.comment_analysis.percent.negative + '%' }"></div>
+                    </div>
+                    <span class="gai-stm-pct">
+                      <b class="c-pos">{{ Math.round(t.comment_analysis.percent.positive) }}%</b>
+                      <b class="c-neu">{{ Math.round(t.comment_analysis.percent.neutral) }}%</b>
+                      <b class="c-neg">{{ Math.round(t.comment_analysis.percent.negative) }}%</b>
+                    </span>
+                  </div>
+                  <div class="gai-stm-meta">
+                    <span><i class="dot pos"></i>บวก <i class="dot neu"></i>กลาง <i class="dot neg"></i>ลบ</span>
+                    <span v-if="t.stats && t.stats.posts"><i class="fas fa-chart-line"></i> {{ compact(t.stats.engagement) }}</span>
+                    <span v-if="hasCmt(t)" v-b-tooltip.hover :title="cmtNote(t)">
+                      <i class="fas fa-info-circle"></i> อ่าน {{ fmt(t.comment_analysis.labeled) }} คอมเมนต์<template v-if="t.comment_analysis.counts.off_topic"> (ไม่เกี่ยว {{ fmt(t.comment_analysis.counts.off_topic) }})</template>
+                    </span>
+                    <span v-if="hasCmt(t)" class="ml-auto">net คอมเมนต์ <b :class="scoreClass(t.comment_analysis.net_score)">{{ signed(t.comment_analysis.net_score) }}</b></span>
+                  </div>
+                </div>
+
+                <p v-if="t.debate_summary" class="gai-debate"><i class="fas fa-comments"></i>{{ t.debate_summary }}</p>
+
+                <!-- มุมมองสองฝั่งจากรอบแรก: ซ่อนเมื่อมีข้อโต้แย้งจากคอมเมนต์ทั้งหมดแล้ว (กันข้อมูลขัดกัน) -->
+                <ul v-if="(t.supporting.length || t.opposing.length) && !(hasCmt(t) && t.comment_analysis.arguments.length)" class="gai-views">
+                  <li v-for="(n, k) in t.supporting" :key="'s' + k" class="pos">
+                    <i class="fas fa-plus-circle"></i><span>{{ n.point }} <RefChips :refs="n.post_refs" :map="postMap" inline /></span>
+                  </li>
+                  <li v-for="(n, k) in t.opposing" :key="'o' + k" class="neg">
+                    <i class="fas fa-minus-circle"></i><span>{{ n.point }} <RefChips :refs="n.post_refs" :map="postMap" inline /></span>
+                  </li>
+                </ul>
+
+                <!-- เสียงจากคอมเมนต์ทั้งหมด: ข้อโต้แย้งหลัก + จำนวน + คอมเมนต์ตัวอย่างจริง -->
+                <div v-if="hasCmt(t) && t.comment_analysis.arguments.length" class="gai-cmts">
+                  <div class="gai-cmts-title">
+                    <i class="far fa-comment-dots"></i> เสียงจากคอมเมนต์ <span class="gai-muted">(AI อ่าน {{ fmt(t.comment_analysis.labeled) }} คอมเมนต์)</span>
+                    <span v-if="dominantSide(t) !== 'neutral'" class="gai-dom" :class="'st-' + dominantSide(t)">
+                      <i :class="dominantSide(t) === 'negative' ? 'fas fa-minus-circle' : 'fas fa-plus-circle'"></i>
+                      {{ dominantSide(t) === "negative" ? "ฝั่งลบมากกว่า" : "ฝั่งบวกมากกว่า" }} 
+                    </span>
+                  </div>
+                  <div v-for="(g, gi) in (openCmts[i] ? sortedArgs(t) : sortedArgs(t).slice(0, 2))" :key="'g' + gi" class="gai-arg" :class="'st-' + g.side">
+                    <div class="gai-arg-head">
+                      <i :class="g.side === 'positive' ? 'fas fa-plus-circle' : 'fas fa-minus-circle'"></i>
+                      <span class="gai-arg-point">{{ g.point }}</span>
+                      <span class="gai-arg-count" v-b-tooltip.hover title="จำนวนคอมเมนต์ที่พูดเรื่องนี้ (ประมาณการโดย AI)">{{ fmt(g.count) }} คอมเมนต์</span>
+                    </div>
+                    <div v-for="c in g.examples" :key="c.id" class="gai-cmt mini">
+                      <a :href="c.profile_url || null" target="_blank" rel="noopener" class="gai-cmt-av" :title="c.author">
+                        <img v-if="c.photo && !imgFail[c.photo]" :src="c.photo" :alt="c.author" referrerpolicy="no-referrer" loading="lazy" @error="$set(imgFail, c.photo, true)" />
+                        <span v-else>{{ (c.author || "?").replace(/^@/, "").slice(0, 1) }}</span>
+                      </a>
+                      <div class="gai-cmt-body">
+                        <div class="gai-cmt-head">
+                          <a v-if="c.profile_url" :href="c.profile_url" target="_blank" rel="noopener" class="gai-cmt-name">{{ c.author || "ผู้ใช้" }}</a>
+                          <b v-else class="gai-cmt-name">{{ c.author || "ผู้ใช้" }}</b>
+                          <a :href="c.post.url_post || null" target="_blank" rel="noopener" class="gai-cmt-from">
+                            · <i class="far fa-file-alt"></i> <i v-if="platformIcon(c.post.platform)" :class="platformIcon(c.post.platform)"></i> {{ c.post.account_name }}
+                          </a>
+                        </div>
+                        <div class="gai-cmt-text">“{{ c.text }}”</div>
+                      </div>
+                    </div>
+                  </div>
+                  <button v-if="t.comment_analysis.arguments.length > 2" class="gai-more" @click="$set(openCmts, i, !openCmts[i])">
+                    {{ openCmts[i] ? "ย่อ" : "ดูข้อโต้แย้งเพิ่ม (" + (t.comment_analysis.arguments.length - 2) + ")" }}
+                    <i :class="openCmts[i] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                  </button>
+                </div>
+
+                <!-- ความเห็นตัวอย่าง (กรณีไม่มีผลวิเคราะห์คอมเมนต์ทั้งหมด) -->
+                <div v-else-if="t.sample_comments && t.sample_comments.length" class="gai-cmts">
+                  <div class="gai-cmts-title"><i class="far fa-comment-dots"></i> ความเห็นตัวอย่างที่ AI ใช้วิเคราะห์</div>
+                  <div v-for="c in (openCmts[i] ? sortedSamples(t) : sortedSamples(t).slice(0, 2))" :key="c.id" class="gai-cmt" :class="'st-' + c.stance">
+                    <a :href="c.profile_url || null" target="_blank" rel="noopener" class="gai-cmt-av" :title="c.author">
+                      <img v-if="c.photo && !imgFail[c.photo]" :src="c.photo" :alt="c.author" referrerpolicy="no-referrer" loading="lazy" @error="$set(imgFail, c.photo, true)" />
+                      <span v-else>{{ (c.author || "?").replace(/^@/, "").slice(0, 1) }}</span>
+                    </a>
+                    <div class="gai-cmt-body">
+                      <div class="gai-cmt-head">
+                        <a v-if="c.profile_url" :href="c.profile_url" target="_blank" rel="noopener" class="gai-cmt-name">{{ c.author || "ผู้ใช้" }}</a>
+                        <b v-else class="gai-cmt-name">{{ c.author || "ผู้ใช้" }}</b>
+                        <span class="gai-chip" :class="'stm-' + c.stance">{{ sentimentText[c.stance] }}</span>
+                      </div>
+                      <div class="gai-cmt-text">“{{ c.text }}”</div>
+                      <div v-if="c.why" class="gai-cmt-why"><i class="fas fa-magic"></i>{{ c.why }}</div>
+                      <div class="gai-cmt-src">
+                        จากโพสต์
+                        <a :href="c.post.url_post || null" target="_blank" rel="noopener" :title="c.post.title">
+                          <i v-if="platformIcon(c.post.platform)" :class="platformIcon(c.post.platform)"></i> {{ c.post.account_name || c.post.platform }}
+                          <i v-if="c.post.url_post" class="fas fa-external-link-alt"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <button v-if="t.sample_comments.length > 2" class="gai-more" @click="$set(openCmts, i, !openCmts[i])">
+                    {{ openCmts[i] ? "ย่อ" : "ดูความเห็นเพิ่ม (" + (t.sample_comments.length - 2) + ")" }}
+                    <i :class="openCmts[i] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                  </button>
+                </div>
+
+                <!-- โพสต์ตัวอย่าง: แสดงเป็นกรอบเล็ก ๆ ทันที (ไม่ต้องชี้) -->
+                <footer class="gai-issue-foot" v-if="t.post_refs.length">
+                  <span class="gai-issue-foot-lbl">โพสต์ตัวอย่าง</span>
+                  <PostMinis :refs="t.post_refs" :map="postMap" />
+                </footer>
+              </article>
+            </div>
+            <div v-if="analysis.audience_reaction" class="gai-callout">
+              <i class="far fa-comments"></i>
+              <div><b>ปฏิกิริยาผู้ชมโดยรวม</b><span>{{ analysis.audience_reaction }}</span></div>
+            </div>
+          </section>
         </div>
 
         <!-- ===== TAB: Evolution (daily + storylines) ===== -->
         <div v-if="analysis" v-show="tab === 'evolution'">
           <div class="gai-panel" v-if="analysis.storylines.length">
-            <div class="gai-panel-title">เรื่องที่สืบเนื่องกัน <small class="gai-muted ml-1">พัฒนาการของข่าวเดียวกันตามเวลา</small></div>
+            <div class="gai-panel-title">เรื่องที่สืบเนื่องกัน <small class="gai-muted ml-1">การเคลื่อนไหวของข่าวเดียวกันตามเวลา</small></div>
             <div v-for="(s, i) in analysis.storylines" :key="'st' + i" class="gai-story">
               <div class="gai-story-head">
                 <span class="gai-status" :class="'st-' + s.status"><i :class="storyIcon[s.status]"></i> {{ storyText[s.status] }}</span>
@@ -258,7 +477,8 @@
               <ol class="gai-tl" v-if="s.timeline.length">
                 <li v-for="(t, j) in s.timeline" :key="'tl' + j">
                   <span class="gai-tl-when">{{ t.when }}</span>
-                  <div class="gai-tl-body">{{ t.development }} <RefChips :refs="t.post_refs" :map="postMap" inline /></div>
+                  <div class="gai-tl-body">{{ t.development }}</div>
+                  <PostMinis :refs="t.post_refs" :map="postMap" />
                 </li>
               </ol>
             </div>
@@ -295,70 +515,13 @@
                   <div v-if="d.ai.new_topics.length" class="mt-1">
                     <span v-for="t in d.ai.new_topics" :key="t" class="gai-kw new"><i class="fas fa-plus"></i> {{ t }}</span>
                   </div>
-                  <RefChips :refs="d.ai.post_refs" :map="postMap" />
+                  <PostMinis :refs="d.ai.post_refs" :map="postMap" />
                 </template>
                 <div v-else class="gai-muted small">{{ d.total_posts ? "ไม่มีความเปลี่ยนแปลงสำคัญ" : "ไม่มีโพสต์ในวันนี้" }}</div>
               </div>
             </div>
           </div>
           <div v-if="!analysis.storylines.length && !multiDay" class="gai-empty">ไม่พบเรื่องที่สืบเนื่องกันในข้อมูลชุดนี้ — ลองเลือกช่วงหลายวันเพื่อดูการเปลี่ยนแปลง</div>
-        </div>
-
-        <!-- ===== TAB: Themes (กระชับ: แต่ละประเด็นมีความเห็นบวก/ลบ + มุมมองสองฝั่งของตัวเอง) ===== -->
-        <div v-if="analysis" v-show="tab === 'themes'">
-          <div v-if="!analysis.key_themes.length" class="gai-empty">ไม่พบประเด็นที่ชัดเจน</div>
-          <div class="gai-issues">
-            <article v-for="(t, i) in analysis.key_themes" :key="'t' + i" class="gai-issue">
-              <header class="gai-issue-head">
-                <span class="gai-issue-no">{{ i + 1 }}</span>
-                <div class="min-w-0 flex-grow-1">
-                  <h4 class="gai-issue-title">
-                    {{ t.title }}
-                    <span class="gai-trend" :class="'tr-' + t.trend"><i :class="trendIcon[t.trend]"></i> {{ trendText[t.trend] }}</span>
-                  </h4>
-                  <p class="gai-issue-desc">{{ t.description }}</p>
-                </div>
-                <div class="gai-issue-share" v-b-tooltip.hover title="สัดส่วนจากโพสต์ที่วิเคราะห์">{{ t.share_percent }}%</div>
-              </header>
-
-              <!-- ความเห็นบวก/ลบ: แถบบาง + ตัวเลขในบรรทัดเดียว -->
-              <div class="gai-issue-stm" v-if="t.stats && t.stats.posts">
-                <div class="gai-sbar xs" v-b-tooltip.hover :title="`บวก ${t.stats.sentiment_percent.positive}% · กลาง ${t.stats.sentiment_percent.neutral}% · ลบ ${t.stats.sentiment_percent.negative}%`">
-                  <div class="pos" :style="{ width: t.stats.sentiment_percent.positive + '%' }"></div>
-                  <div class="neu" :style="{ width: t.stats.sentiment_percent.neutral + '%' }"></div>
-                  <div class="neg" :style="{ width: t.stats.sentiment_percent.negative + '%' }"></div>
-                </div>
-                <div class="gai-issue-nums">
-                  <span class="c-pos">บวก {{ Math.round(t.stats.sentiment_percent.positive) }}%</span>
-                  <span class="c-neu">กลาง {{ Math.round(t.stats.sentiment_percent.neutral) }}%</span>
-                  <span class="c-neg">ลบ {{ Math.round(t.stats.sentiment_percent.negative) }}%</span>
-                  <span class="gai-muted ml-auto">{{ t.stats.posts }} โพสต์ · <i class="fas fa-bolt"></i> {{ compact(t.stats.engagement) }} · net <b :class="scoreClass(t.stats.net_sentiment_score)">{{ signed(t.stats.net_sentiment_score) }}</b></span>
-                </div>
-              </div>
-
-              <p v-if="t.debate_summary" class="gai-debate"><i class="fas fa-comments"></i>{{ t.debate_summary }}</p>
-
-              <!-- มุมมองสองฝั่ง: แสดงเฉพาะฝั่งที่มี -->
-              <ul v-if="t.supporting.length || t.opposing.length" class="gai-views">
-                <li v-for="(n, k) in t.supporting" :key="'s' + k" class="pos">
-                  <i class="fas fa-plus-circle"></i><span>{{ n.point }} <RefChips :refs="n.post_refs" :map="postMap" inline /></span>
-                </li>
-                <li v-for="(n, k) in t.opposing" :key="'o' + k" class="neg">
-                  <i class="fas fa-minus-circle"></i><span>{{ n.point }} <RefChips :refs="n.post_refs" :map="postMap" inline /></span>
-                </li>
-              </ul>
-
-              <footer class="gai-issue-foot" v-if="t.post_refs.length">
-                <span>โพสต์ตัวอย่าง</span>
-                <RefChips :refs="t.post_refs" :map="postMap" inline />
-              </footer>
-            </article>
-          </div>
-
-          <div class="gai-panel" v-if="analysis.audience_reaction">
-            <div class="gai-panel-title"><i class="far fa-comments"></i> ปฏิกิริยาผู้ชมโดยรวม</div>
-            <div class="small">{{ analysis.audience_reaction }}</div>
-          </div>
         </div>
 
         <!-- ===== TAB: Risks ===== -->
@@ -369,27 +532,49 @@
             <div v-for="(r, i) in sortedRisks" :key="'r' + i" class="gai-risk" :class="'lv-' + r.level">
               <div><span class="gai-tag" :class="'lv-' + r.level">{{ levelText[r.level] }}</span><b>{{ r.title }}</b></div>
               <div class="small mt-1">{{ r.description }}</div>
-              <RefChips :refs="r.post_refs" :map="postMap" />
+              <PostMinis :refs="r.post_refs" :map="postMap" />
             </div>
           </div>
-          <div class="gai-grid2">
-            <div class="gai-panel m-0">
-              <div class="gai-panel-title"><i class="fas fa-search"></i> ข้อมูลที่ควรตรวจสอบ</div>
-              <div v-if="!analysis.misinformation_signals.length" class="gai-muted small">ไม่พบสัญญาณที่น่าสงสัย</div>
-              <div v-for="(m, i) in analysis.misinformation_signals" :key="'m' + i" class="gai-li">
-                <b>“{{ m.claim }}”</b><div class="small gai-muted">{{ m.reason }}</div>
-                <RefChips :refs="m.post_refs" :map="postMap" />
-              </div>
-            </div>
-            <div class="gai-panel m-0">
-              <div class="gai-panel-title"><i class="far fa-lightbulb"></i> โอกาสในการสื่อสาร</div>
-              <div v-if="!analysis.opportunities.length" class="gai-muted small">-</div>
-              <div v-for="(o, i) in analysis.opportunities" :key="'op' + i" class="gai-li">
-                <b>{{ o.title }}</b><div class="small">{{ o.description }}</div>
-                <RefChips :refs="o.post_refs" :map="postMap" />
-              </div>
+          <div class="gai-panel">
+            <div class="gai-panel-title"><i class="fas fa-search"></i> ข้อมูลที่ควรตรวจสอบ</div>
+            <div v-if="!analysis.misinformation_signals.length" class="gai-muted small">ไม่พบสัญญาณที่น่าสงสัย</div>
+            <div v-for="(m, i) in analysis.misinformation_signals" :key="'m' + i" class="gai-li">
+              <b>“{{ m.claim }}”</b><div class="small gai-muted">{{ m.reason }}</div>
+              <PostMinis :refs="m.post_refs" :map="postMap" />
             </div>
           </div>
+        </div>
+
+        <!-- ===== TAB: Actions (ข้อเสนอแนะ + โอกาส) ===== -->
+        <div v-if="analysis" v-show="tab === 'actions'">
+          <div class="gai-section-head mt-3">
+            <h4><i class="fas fa-tasks"></i> ข้อเสนอแนะ</h4>
+            <span v-for="lv in ['high', 'medium', 'low']" :key="lv" v-show="recoCount[lv]" class="gai-tag" :class="'lv-' + lv">{{ priorityText[lv] }} {{ recoCount[lv] }}</span>
+          </div>
+          <div v-if="!analysis.recommendations.length" class="gai-empty">ไม่มีข้อเสนอแนะ</div>
+          <div class="gai-recos">
+            <article v-for="(r, i) in sortedRecos" :key="'rc' + i" class="gai-reco-card" :class="'lv-' + r.priority">
+              <div class="gai-reco-top">
+                <span class="gai-reco-no">{{ i + 1 }}</span>
+                <span class="gai-tag" :class="'lv-' + r.priority">{{ priorityText[r.priority] }}</span>
+              </div>
+              <div class="gai-reco-action">{{ r.action }}</div>
+              <div class="gai-reco-why" v-if="r.rationale"><i class="fas fa-info-circle"></i>{{ r.rationale }}</div>
+            </article>
+          </div>
+
+          <template v-if="analysis.opportunities.length">
+            <div class="gai-section-head mt-4">
+              <h4><i class="far fa-lightbulb"></i> โอกาสในการสื่อสาร</h4>
+            </div>
+            <div class="gai-recos">
+              <article v-for="(o, i) in analysis.opportunities" :key="'op' + i" class="gai-reco-card opp">
+                <div class="gai-reco-action">{{ o.title }}</div>
+                <div class="gai-reco-why">{{ o.description }}</div>
+                <PostMinis :refs="o.post_refs" :map="postMap" />
+              </article>
+            </div>
+          </template>
         </div>
 
         <!-- ===== TAB: Influencers ===== -->
@@ -418,7 +603,7 @@
                 </div>
                 <small class="gai-muted">{{ x.platform }} · {{ x.role }}</small>
                 <div class="small mt-1">{{ x.note }}</div>
-                <RefChips :refs="x.post_refs" :map="postMap" />
+                <PostMinis :refs="x.post_refs" :map="postMap" />
               </div>
             </div>
           </div>
@@ -441,6 +626,7 @@
 import moment from "moment";
 import { mapGetters } from "vuex";
 import DomainAiService, { errorMessage } from "@/common/domainAi.service";
+import { buildInsightReport, downloadInsightWord, printInsightPdf } from "@/common/domainAiReport";
 
 // ชิปอ้างอิงโพสต์ (P1, P2 …) — hover ดูข้อความ, คลิกเปิดโพสต์ต้นฉบับในแท็บใหม่
 const RefChips = {
@@ -453,20 +639,86 @@ const RefChips = {
       { class: this.inline ? "gai-refs inline" : "gai-refs" },
       this.refs.map((r) => {
         const p = this.map[r] || {};
-        const tip = [p.account_name, p.platform, p.title || p.text].filter(Boolean).join(" · ");
+        const host = this.$parent;
         return h(
           "a",
           {
             key: r,
             class: ["gai-ref", "stm-" + (p.sentiment || "neutral")],
-            attrs: { title: tip, href: p.url_post || null, target: "_blank", rel: "noopener" },
+            attrs: { "aria-label": [p.account_name, p.platform].filter(Boolean).join(" · "), href: p.url_post || null, target: "_blank", rel: "noopener" },
             on: {
               click: (e) => {
                 if (!p.url_post) e.preventDefault();
               },
+              // ชี้ที่ชิป -> แสดงตัวอย่างโพสต์เล็ก ๆ
+              mouseenter: (e) => host && host.showPeek && p.ref && host.showPeek(p, e.currentTarget),
+              mouseleave: () => host && host.hidePeek && host.hidePeek(),
             },
           },
-          r
+          // แสดงชื่อบัญชีแทนรหัส P
+          [h("i", { class: "fas fa-link" }), " " + ((p.account_name || p.platform || "โพสต์").length > 18 ? (p.account_name || p.platform).slice(0, 17) + "…" : p.account_name || p.platform || "โพสต์")]
+        );
+      })
+    );
+  },
+};
+
+// กรอบตัวอย่างโพสต์เล็ก ๆ (ใช้ทุกแท็บ) — รูปปก/โปรไฟล์ + ชื่อบัญชี + รหัส P + ข้อความ 2 บรรทัด
+const PostMinis = {
+  name: "PostMinis",
+  props: { refs: { type: Array, default: () => [] }, map: { type: Object, default: () => ({}) }, max: { type: Number, default: 3 } },
+  render(h) {
+    const host = this.$parent;
+    const refs = (this.refs || []).filter((r) => this.map[r]).slice(0, this.max);
+    if (!refs.length || !host) return h("span");
+    const fail = host.imgFail || {};
+    const markFail = (u) => host.$set(host.imgFail, u, true);
+    return h(
+      "div",
+      { class: "gai-minis" },
+      refs.map((r) => {
+        const p = this.map[r];
+        const icon = host.platformIcon(p.platform);
+        const img = (p.images || []).find((u) => u && !fail[u]) || "";
+        const kids = [];
+        if (img) {
+          kids.push(
+            h("div", { class: "gai-mini-media" }, [
+              h("img", { attrs: { src: img, alt: "", referrerpolicy: "no-referrer", loading: "lazy" }, on: { error: () => markFail(img) } }),
+              h("span", { class: "gai-img-cap" }, [
+                icon ? h("i", { class: icon }) : null,
+                h("span", { class: "text-truncate" }, p.account_name),
+              ]),
+            ])
+          );
+        } else {
+          const avImg = p.profile_image && !fail[p.profile_image] ? p.profile_image : "";
+          kids.push(
+            h("div", { class: "gai-mini-head" }, [
+              h("span", { class: "gai-peek-av sm" }, [
+                avImg
+                  ? h("img", { attrs: { src: avImg, alt: "", referrerpolicy: "no-referrer" }, on: { error: () => markFail(avImg) } })
+                  : h("span", (p.account_name || "?").slice(0, 1)),
+              ]),
+              h("span", { class: "text-truncate gai-mini-name" }, [icon ? h("i", { class: icon }) : null, " " + (p.account_name || p.platform || "")]),
+            ])
+          );
+        }
+        kids.push(h("div", { class: "gai-mini-text" }, p.title || p.text));
+        kids.push(
+          h("div", { class: "gai-mini-meta" }, [
+            h("span", (host.postTime(p.date) || "").slice(0, 10)),
+            h("span", [h("i", { class: "fas fa-chart-line" }), " " + host.compact(p.engagement)]),
+          ])
+        );
+        return h(
+          "a",
+          {
+            key: r,
+            class: ["gai-mini", "stm-" + (p.sentiment || "neutral")],
+            attrs: { href: p.url_post || null, target: "_blank", rel: "noopener", title: p.title || p.text },
+          },
+          kids
         );
       })
     );
@@ -510,10 +762,12 @@ function storeId(domainId) {
 
 export default {
   name: "DomainAiAnalysis",
-  components: { RefChips },
+  components: { RefChips, PostMinis },
   data() {
     return {
       isRunning: false,
+      exporting: false,
+      showExportButtons: false,
       stage: "",
       stageText: "",
       startedAt: 0,
@@ -525,22 +779,27 @@ export default {
       errorText: "",
       collapsed: false,
       imgFail: {},
+      openCmts: {},
+      peek: null,
+      peekTimer: null,
       savedAt: 0,
       copied: false,
       tab: "overview",
       steps: [
         { key: "fetching", label: "ดึงโพสต์" },
         { key: "analyzing", label: "AI วิเคราะห์" },
+        { key: "comments", label: "อ่านคอมเมนต์" },
         { key: "finalizing", label: "สรุปผล" },
       ],
       features: [
         { i: "fas fa-align-left", t: "สรุปสถานการณ์", d: "พาดหัว + สรุปผู้บริหาร + ระดับสถานการณ์" },
         { i: "fas fa-chart-line", t: "การเปลี่ยนแปลงรายวัน", d: "เลือกหลายวัน เห็นแนวโน้มและสิ่งที่เปลี่ยน" },
-        { i: "fas fa-stream", t: "ข่าวที่สืบเนื่องกัน", d: "ติดตามพัฒนาการของเรื่องเดียวกันตามเวลา" },
+        { i: "fas fa-stream", t: "ข่าวที่สืบเนื่องกัน", d: "ติดตามการเคลื่อนไหวของเรื่องเดียวกันตามเวลา" },
         { i: "fas fa-shield-alt", t: "ความเสี่ยง & ข่าวลือ", d: "พร้อมข้อเสนอแนะและโพสต์อ้างอิง" },
       ],
       sentimentText: { positive: "เชิงบวก", neutral: "เป็นกลาง", negative: "เชิงลบ", mixed: "ผสม" },
       levelText: { high: "สูง", medium: "กลาง", low: "ต่ำ" },
+      priorityText: { high: "เร่งด่วน", medium: "ควรทำ", low: "พิจารณา" },
       situationText: { normal: "ปกติ", watch: "เฝ้าระวัง", alert: "แจ้งเตือน", critical: "วิกฤต" },
       storyText: { new: "เรื่องใหม่", developing: "กำลังพัฒนา", escalating: "ร้อนแรงขึ้น", "de-escalating": "เริ่มคลี่คลาย", resolved: "จบแล้ว", recurring: "วนกลับมา" },
       storyIcon: { new: "fas fa-star", developing: "fas fa-spinner", escalating: "fas fa-arrow-up", "de-escalating": "fas fa-arrow-down", resolved: "fas fa-check", recurring: "fas fa-redo" },
@@ -632,11 +891,11 @@ export default {
     },
     chart() {
       const n = this.daily.length;
-      const w = Math.max(900, n * 70);
-      const h = 300;
-      const pl = 20, pr = 20, pb = 26;
-      const lineTop = 38, lineH = 64; // แถบ net sentiment ด้านบน
-      const barTop = lineTop + lineH + 46; // แถบแท่งจำนวนโพสต์ด้านล่าง
+      const w = Math.max(1200, n * 80);
+      const h = 250;
+      const pl = 20, pr = 20, pb = 24;
+      const lineTop = 34, lineH = 50; // แถบ net sentiment ด้านบน
+      const barTop = lineTop + lineH + 40; // แถบแท่งจำนวนโพสต์ด้านล่าง
       const barH = h - barTop - pb;
       const slot = (w - pl - pr) / Math.max(n, 1);
       const bw = Math.min(44, slot * 0.55);
@@ -664,11 +923,16 @@ export default {
     tabs() {
       const a = this.analysis || {};
       const t = [{ key: "overview", label: "ภาพรวม", icon: "fas fa-th-large" }];
-      t.push({ key: "evolution", label: this.multiDay ? "พัฒนาการ & รายวัน" : "พัฒนาการข่าว", icon: "fas fa-stream", count: (a.storylines || []).length });
-      t.push({ key: "themes", label: "ประเด็น", icon: "fas fa-layer-group", count: (a.key_themes || []).length });
+      t.push({ key: "evolution", label: this.multiDay ? "การเคลื่อนไหว & รายวัน" : "การเคลื่อนไหว", icon: "fas fa-stream", count: (a.storylines || []).length });
       t.push({ key: "risks", label: "ความเสี่ยง", icon: "fas fa-shield-alt", count: (a.risks || []).length });
+      t.push({ key: "actions", label: "ข้อเสนอแนะ", icon: "fas fa-tasks", count: (a.recommendations || []).length });
       t.push({ key: "people", label: "ผู้มีอิทธิพล", icon: "fas fa-user-friends" });
       return t;
+    },
+    // ใช้ใน template ของโพสต์ตัวอย่าง
+    peekImg() {
+      const imgs = (this.peek && this.peek.p.images) || [];
+      return imgs.find((u) => u && !this.imgFail[u]) || "";
     },
     heroImgs() {
       const list = (this.analysis && this.analysis.hero_images) || [];
@@ -682,6 +946,11 @@ export default {
     sortedRisks() {
       const o = { high: 0, medium: 1, low: 2 };
       return [...this.analysis.risks].sort((a, b) => o[a.level] - o[b.level]);
+    },
+    recoCount() {
+      const c = { high: 0, medium: 0, low: 0 };
+      ((this.analysis && this.analysis.recommendations) || []).forEach((r) => (c[r.priority] = (c[r.priority] || 0) + 1));
+      return c;
     },
     sortedRecos() {
       const o = { high: 0, medium: 1, low: 2 };
@@ -703,6 +972,21 @@ export default {
     this.loadSaved();
   },
   methods: {
+    async exportReport(format) {
+      if (!this.result || this.isRunning || this.exporting) return;
+      this.exporting = true;
+      try {
+        const blocks = buildInsightReport({ result: this.result, resultKey: this.resultKey, domainName: this.domainName, savedAt: this.savedAt, overview: this.ov });
+        const name = String(this.domainName || 'Domain').replace(/[<>:"/\\|?*]/g, '_').slice(0, 80);
+        const filename = `AI-Insight_${name}_${moment().format('YYYYMMDD-HHmmss')}`;
+        if (format === 'pdf') printInsightPdf(blocks, filename);
+        else await downloadInsightWord(blocks, filename);
+      } catch (e) {
+        this.errorText = e.message || 'ไม่สามารถส่งออกรายงานได้ กรุณาลองใหม่';
+      } finally {
+        this.exporting = false;
+      }
+    },
     fmt(n) {
       return Number(n || 0).toLocaleString("th-TH");
     },
@@ -723,7 +1007,7 @@ export default {
       return d ? moment(d).format("DD/MM/YYYY HH:mm") : "-";
     },
     stepState(key) {
-      const order = ["queued", "fetching", "analyzing", "finalizing", "done"];
+      const order = ["queued", "fetching", "analyzing", "comments", "finalizing", "done"];
       const cur = order.indexOf(this.stage);
       const me = order.indexOf(key);
       if (cur > me) return "done";
@@ -757,6 +1041,7 @@ export default {
       if (job.status === "done") {
         this.result = { ...job.result, cachedAt: job.cached ? job.updated_at : null };
         this.imgFail = {};
+        this.openCmts = {};
         this.saveResult(key);
         this.resultKey = key;
         this.tab = "overview";
@@ -764,7 +1049,7 @@ export default {
       } else if (job.status === "error") {
         this.fail((job.error && job.error.message) || "AI วิเคราะห์ไม่สำเร็จ");
       } else {
-        if (Date.now() - this.startedAt > 6 * 60 * 1000) return this.fail("ใช้เวลานานเกินไป กรุณาลองใหม่");
+        if (Date.now() - this.startedAt > 12 * 60 * 1000) return this.fail("ใช้เวลานานเกินไป กรุณาลองใหม่");
         this.pollTimer = setTimeout(async () => {
           try {
             const j = await DomainAiService.getJob(job.job_id);
@@ -801,6 +1086,7 @@ export default {
       this.resultKey = entry.key || "";
       this.savedAt = entry.savedAt || 0;
       this.imgFail = {};
+      this.openCmts = {};
     },
     saveResult(key) {
       if (!this.result || !this.result.analysis || !this.getClickDomainId) return;
@@ -815,6 +1101,102 @@ export default {
       if (diff < 3600) return Math.floor(diff / 60) + " นาทีที่แล้ว";
       if (diff < 86400) return Math.floor(diff / 3600) + " ชม. ที่แล้ว";
       return moment(ts).format("DD/MM/YYYY HH:mm");
+    },
+    showPeek(p, el) {
+      clearTimeout(this.peekTimer);
+      if (!el || !el.getBoundingClientRect) return;
+      const r = el.getBoundingClientRect();
+      const W = 260;
+      const vw = window.innerWidth || document.documentElement.clientWidth;
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const left = Math.max(8, Math.min(r.left + r.width / 2 - W / 2, vw - W - 8));
+      const above = r.top > 300;
+      const style = { left: left + "px", width: W + "px" };
+      if (above) style.bottom = vh - r.top + 8 + "px";
+      else style.top = r.bottom + 8 + "px";
+      this.peek = { p, style };
+    },
+    keepPeek() {
+      clearTimeout(this.peekTimer);
+    },
+    hidePeek() {
+      clearTimeout(this.peekTimer);
+      this.peekTimer = setTimeout(() => (this.peek = null), 180);
+    },
+    postTime(d) {
+      // date ของ AION เก็บเป็นเวลาไทยแล้ว -> แสดงตามค่าที่เก็บ
+      const m = d ? moment.utc(d) : null;
+      return m && m.isValid() ? m.format("DD/MM/YYYY HH:mm") : "";
+    },
+    // ป้ายสรุปทิศทางความเห็นแบบดูแล้วรู้ (net = บวก − ลบ, ช่วง -100..100)
+    verdict(net) {
+      // 3 ระดับ: บวก (≥ +15) / กลาง (−15 ถึง +15) / ลบ (≤ −15)
+      const n = Number(net) || 0;
+      if (n >= 15) return { tone: "pos", label: "เชิงบวก", icon: "fas fa-face-smile" };
+      if (n <= -15) return { tone: "neg", label: "เชิงลบ", icon: "fas fa-face-frown" };
+      return { tone: "neu", label: "เป็นกลาง", icon: "fas fa-face-meh" };
+    },
+    meterPos(net) {
+      const n = Math.max(-100, Math.min(100, Number(net) || 0));
+      return 50 + n / 2 + "%";
+    },
+    themeVerdict(t) {
+      if (this.hasCmt(t)) {
+        const c = t.comment_analysis;
+        return { ...this.verdict(c.net_score, c.percent), net: c.net_score, src: "จาก " + this.fmt(this.cmtRelevant(t)) + " คอมเมนต์" };
+      }
+      const st = t.stats || {};
+      return { ...this.verdict(st.net_sentiment_score, st.sentiment_percent), net: st.net_sentiment_score || 0, src: "จาก " + this.fmt(st.posts || 0) + " โพสต์" };
+    },
+    // โพสต์กับคอมเมนต์ไปคนละทิศชัดเจน -> แจ้งเตือน
+    themeSplit(t) {
+      if (!this.hasCmt(t) || !t.stats || !t.stats.posts) return null;
+      const pn = t.stats.net_sentiment_score || 0;
+      const cn = t.comment_analysis.net_score || 0;
+      const dir = (n) => (n >= 15 ? "pos" : n <= -15 ? "neg" : "neu");
+      if (dir(pn) === dir(cn) || dir(pn) === "neu" || dir(cn) === "neu") return null;
+      const word = { pos: "เป็นเชิงบวก", neg: "เป็นเชิงลบ" };
+      return { post: word[dir(pn)], cmt: word[dir(cn)] };
+    },
+    // ฝั่งที่มีความเห็นมากกว่าในประเด็น: ใช้สัดส่วนจากคอมเมนต์ทั้งหมดก่อน ถ้าไม่มีใช้สัดส่วนโพสต์
+    dominantSide(t) {
+      const p = (this.hasCmt(t) && t.comment_analysis.percent) || (t.stats && t.stats.posts && t.stats.sentiment_percent) || null;
+      if (!p) return "neutral";
+      if (p.negative > p.positive) return "negative";
+      if (p.positive > p.negative) return "positive";
+      return "neutral";
+    },
+    // ข้อโต้แย้ง: ฝั่งที่มากกว่าขึ้นก่อน แล้วเรียงตามจำนวนคอมเมนต์
+    sortedArgs(t) {
+      const dom = this.dominantSide(t);
+      return [...((t.comment_analysis && t.comment_analysis.arguments) || [])].sort((a, b) => {
+        const ra = a.side === dom ? 0 : 1;
+        const rb = b.side === dom ? 0 : 1;
+        return ra - rb || (b.count || 0) - (a.count || 0);
+      });
+    },
+    // คอมเมนต์ตัวอย่าง (กรณีไม่มีผลคอมเมนต์ทั้งหมด): ฝั่งที่มากกว่าขึ้นก่อน -> เป็นกลาง -> ฝั่งตรงข้าม
+    sortedSamples(t) {
+      const dom = this.dominantSide(t);
+      const rank = (st) => (st === dom ? 0 : st === "neutral" ? 1 : 2);
+      return [...(t.sample_comments || [])].sort((a, b) => rank(a.stance) - rank(b.stance));
+    },
+    hasCmt(t) {
+      const c = t && t.comment_analysis;
+      return !!(c && c.labeled && c.counts);
+    },
+    cmtRelevant(t) {
+      const c = t.comment_analysis.counts;
+      return c.positive + c.neutral + c.negative;
+    },
+    cmtNote(t) {
+      const c = t.comment_analysis;
+      const parts = [`AI อ่านและติดป้าย ${this.fmt(c.labeled)} คอมเมนต์`];
+      if (c.capped) parts.push(`(จากที่ระบบเก็บไว้ ${this.fmt(c.total_available)} รายการ — เกินเพดานจึงเลือกกระจายทุกโพสต์)`);
+      if (c.reported_count) parts.push(`แพลตฟอร์มแจ้งยอดคอมเมนต์ ${this.fmt(c.reported_count)}`);
+      if (c.counts.off_topic) parts.push(`ไม่เกี่ยวกับประเด็น/สแปม ${this.fmt(c.counts.off_topic)} (ไม่นับในสัดส่วน)`);
+      if (c.partial) parts.push("บางชุดวิเคราะห์ไม่สำเร็จ");
+      return parts.join(" · ");
     },
     platformIcon(pf) {
       const k = String(pf || "").toLowerCase();
@@ -850,6 +1232,12 @@ export default {
         lines.push(`${i + 1}. ${t.title} (${t.share_percent}%)${st} - ${t.description}`);
         t.supporting.forEach((n) => lines.push(`   + ${n.point}`));
         t.opposing.forEach((n) => lines.push(`   - ${n.point}`));
+        if (t.comment_analysis && t.comment_analysis.labeled) {
+          const c = t.comment_analysis;
+          lines.push(`   คอมเมนต์ ${c.labeled}: บวก ${c.percent.positive}% / กลาง ${c.percent.neutral}% / ลบ ${c.percent.negative}%`);
+          (c.arguments || []).forEach((g) => lines.push(`   ${g.side === "positive" ? "+" : "-"} ${g.point} (${g.count} คอมเมนต์)`));
+        }
+        (t.sample_comments || []).slice(0, 2).forEach((c) => lines.push(`   💬 ${c.author || "ผู้ใช้"}: "${c.text}" (จากโพสต์ของ ${c.post.account_name})`));
       });
       lines.push("", "ความเสี่ยง:", ...a.risks.map((r) => `- [${this.levelText[r.level]}] ${r.title}: ${r.description}`));
       lines.push("", "ข้อเสนอแนะ:", ...this.sortedRecos.map((r, i) => `${i + 1}. ${r.action}`));
@@ -868,7 +1256,13 @@ export default {
       setTimeout(() => (this.copied = false), 1500);
     },
   },
+  mounted() {
+    this._onScrollPeek = () => (this.peek = null);
+    window.addEventListener("scroll", this._onScrollPeek, true);
+  },
   beforeDestroy() {
+    window.removeEventListener("scroll", this._onScrollPeek, true);
+    clearTimeout(this.peekTimer);
     this.stopPolling();
   },
 };
@@ -913,9 +1307,9 @@ export default {
 .running .gai-spark svg { animation: gai-twinkle 1.6s ease-in-out infinite; }
 @keyframes gai-twinkle { 50% { transform: scale(0.85) rotate(20deg); } }
 .gai-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.2px; background: var(--g-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.gai-sub { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; color: var(--ink-2); }
+.gai-sub { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; color: var(--ink-2); }
 .gai-sub-item i { margin-right: 4px; opacity: 0.7; }
-.gai-actions { display: flex; align-items: center; gap: 8px; }
+.gai-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .gai-btn {
   border: 0; border-radius: 999px; padding: 10px 22px; font-weight: 600; color: #fff; cursor: pointer;
   background: linear-gradient(90deg, #4285f4, #7b6fd6 60%, #9b72cb); box-shadow: 0 4px 14px rgba(66, 133, 244, 0.3);
@@ -927,6 +1321,17 @@ export default {
 @keyframes gai-rot { to { transform: rotate(360deg); } }
 .gai-icon-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink-2); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s; flex: none; }
 .gai-icon-btn:hover { background: var(--surface); color: var(--g-blue); }
+.gai-export { display: inline-flex; align-items: center; gap: 4px; padding: 4px; background: #f7f8fc; border: 1px solid #e4e7ef; border-radius: 14px; }
+.gai-export-label { padding: 0 8px; color: #778196; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+.gai-export-label i { margin-right: 5px; }
+.gai-export-btn { display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; height: 34px; min-width: 76px; padding: 0 12px; gap: 7px; border-radius: 10px; background: white; font-size: 0.84rem; font-weight: 600; cursor: pointer; box-shadow: 0 1px 3px #2029390c; transition: background .15s, border-color .15s; }
+.gai-export-btn.pdf { color: #b64151; }
+.gai-export-btn.word { color: #305fa5; }
+.gai-export-btn.pdf:hover:not(:disabled) { background: #fff1f3; border-color: #f3cbd2; }
+.gai-export-btn.word:hover:not(:disabled) { background: #edf4ff; border-color: #c8dafa; }
+.gai-export-btn:focus-visible { outline: 2px solid #7b6fd6; outline-offset: 2px; }
+.gai-export-btn .gai-btn-spin { border-color: #c8dafa; border-top-color: #305fa5; }
+.gai-export-btn:disabled { opacity: 0.5; cursor: wait; }
 .gai-icon-btn.sm { width: 30px; height: 30px; font-size: 0.75rem; }
 .gai-link { border: 0; background: none; color: inherit; text-decoration: underline; cursor: pointer; }
 
@@ -961,7 +1366,7 @@ export default {
 .gai-result { margin-top: 16px; }
 .gai-hero { background: var(--g-soft); border-radius: 18px; padding: 18px 20px; }
 .gai-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.gai-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 600; padding: 4px 11px; border-radius: 999px; background: #fff; color: var(--ink-2); }
+.gai-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; padding: 4px 11px; border-radius: 999px; background: #fff; color: var(--ink-2); }
 .gai-chip.soft { background: rgba(255, 255, 255, 0.7); font-weight: 500; }
 .gai-chip.lvl .pulse { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .gai-chip.lvl-normal { color: var(--pos); }
@@ -971,12 +1376,12 @@ export default {
 .gai-chip.lvl-alert .pulse, .gai-chip.lvl-critical .pulse { animation: gai-blink 1s infinite; }
 @keyframes gai-blink { 50% { opacity: 0.2; } }
 .gai-chip.stm-positive { color: var(--pos); background: #e6f4ea; }
-.gai-chip.stm-neutral { color: #5f6368; background: #f1f3f4; }
+.gai-chip.stm-neutral { color: #b06000; background: #fef7e0; }
 .gai-chip.stm-negative { color: var(--neg); background: #fce8e6; }
 .gai-chip.stm-mixed { color: #b06000; background: #fef7e0; }
 .gai-headline { font-size: 1.3rem; font-weight: 700; line-height: 1.45; margin: 0 0 8px; color: var(--ink); }
 .gai-summary { font-size: 0.97rem; line-height: 1.75; margin-bottom: 10px; color: #3c4043; }
-.gai-reasons { display: grid; gap: 4px; font-size: 0.82rem; color: var(--ink-2); }
+.gai-reasons { display: grid; gap: 4px; font-size: 0.9rem; color: var(--ink-2); }
 .gai-reasons span { font-weight: 600; color: var(--ink); margin-right: 8px; }
 
 /* Hero media */
@@ -1007,6 +1412,10 @@ export default {
 .gai-person .d-flex { gap: 8px; min-width: 0; }
 .gai-person .d-flex > .text-truncate { min-width: 0; flex: 1 1 auto; }
 
+/* ข้อความในผลวิเคราะห์ที่ใช้ .small / <small> ของ Bootstrap (80%) ให้ใหญ่ขึ้น */
+.gai-result .small, .gai-result small { font-size: 0.92rem; }
+.gai-result .gai-muted.small, .gai-result small.gai-muted { font-size: 0.86rem; }
+
 /* Tabs */
 .gai-tabs { display: flex; gap: 4px; overflow-x: auto; margin: 16px 0 4px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
 .gai-tabs::-webkit-scrollbar { display: none; }
@@ -1027,21 +1436,21 @@ export default {
 .gai-tile-ico.pink { background: #fce8ec; color: var(--g-pink); }
 .gai-tile-ico.teal { background: #e4f7fb; color: #129eaf; }
 .gai-tile-val { font-size: 1.45rem; font-weight: 700; line-height: 1.2; }
-.gai-tile-lbl { font-size: 0.75rem; color: var(--ink-2); }
-.c-pos { color: var(--pos); } .c-neg { color: var(--neg); } .c-neu { color: var(--ink-2); }
+.gai-tile-lbl { font-size: 0.84rem; color: var(--ink-2); }
+.c-pos { color: var(--pos); } .c-neg { color: var(--neg); } .c-neu { color: #e37400; }
 
 .gai-panel { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-top: 12px; }
-.gai-panel-title { font-weight: 600; font-size: 0.92rem; margin-bottom: 10px; }
+.gai-panel-title { font-weight: 600; font-size: 1rem; margin-bottom: 10px; }
 .gai-panel-title i { margin-right: 6px; color: var(--g-purple); }
 .gai-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 12px; }
 
 .gai-sbar, .gai-mini-sbar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: #f1f3f4; gap: 2px; }
 .gai-mini-sbar { height: 6px; width: 120px; }
 .gai-sbar .pos, .gai-mini-sbar .pos, .dot.pos, .bg-positive { background: #34a853; }
-.gai-sbar .neu, .gai-mini-sbar .neu, .dot.neu, .bg-neutral { background: #bdc1c6; }
+.gai-sbar .neu, .gai-mini-sbar .neu, .dot.neu, .bg-neutral { background: #fbbc04; }
 .gai-sbar .neg, .gai-mini-sbar .neg, .dot.neg, .bg-negative { background: #ea4335; }
 .bg-mixed { background: #fbbc04; }
-.gai-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.8rem; color: var(--ink-2); margin-top: 8px; font-weight: 400; }
+.gai-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.88rem; color: var(--ink-2); margin-top: 8px; font-weight: 400; }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
 .dot.grad { background: #9fadf8; border-radius: 3px; }
 .gai-legend .line { display: inline-block; width: 16px; height: 3px; border-radius: 2px; background: var(--g-grad); margin-right: 6px; vertical-align: middle; }
@@ -1049,83 +1458,81 @@ export default {
 /* Chart */
 .gai-chart-wrap { overflow-x: auto; }
 .gai-chart { width: 100%; height: auto; display: block; }
-.gai-chart .band { font-size: 11px; fill: #9aa0a6; }
-.gai-chart .net { font-size: 11px; font-weight: 600; text-anchor: middle; fill: var(--ink-2); }
+.gai-chart .band { font-size: 12px; fill: #9aa0a6; }
+.gai-chart .net { font-size: 13px; font-weight: 600; text-anchor: middle; fill: var(--ink-2); }
 .gai-chart .net.c-pos { fill: #1e8e3e; }
 .gai-chart .net.c-neg { fill: #d93025; }
 .gai-chart .zero { stroke: #dadce0; stroke-dasharray: 4 4; }
-.gai-chart .val { font-size: 11px; font-weight: 600; fill: var(--ink-2); text-anchor: middle; }
-.gai-chart .axis { font-size: 11px; fill: var(--ink-2); text-anchor: middle; }
+.gai-chart .val { font-size: 13px; font-weight: 600; fill: var(--ink-2); text-anchor: middle; }
+.gai-chart .axis { font-size: 12.5px; fill: var(--ink-2); text-anchor: middle; }
 .gai-chart .pt { stroke: #fff; stroke-width: 2; fill: var(--g-purple); }
 .gai-chart .pt.c-pos { fill: #34a853; }
 .gai-chart .pt.c-neg { fill: #ea4335; }
-.gai-trend-text { margin: 10px 0 0; padding: 10px 14px; background: var(--g-soft); border-radius: 12px; font-size: 0.9rem; line-height: 1.65; }
+.gai-trend-text { margin: 10px 0 0; padding: 10px 14px; background: var(--g-soft); border-radius: 12px; font-size: 0.98rem; line-height: 1.65; }
 .gai-trend-text i { margin-right: 6px; color: var(--g-purple); }
 
 /* Reco & keywords */
-.gai-reco { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
-.gai-reco:last-child { border-bottom: 0; }
 .gai-num { width: 24px; height: 24px; flex: none; border-radius: 50%; background: var(--g-soft); color: var(--g-purple); font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-.gai-tag { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 1px 8px; border-radius: 6px; margin-right: 8px; vertical-align: 1px; }
+.gai-tag { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 1px 8px; border-radius: 6px; margin-right: 8px; vertical-align: 1px; }
 .gai-tag.lv-high { background: #fce8e6; color: var(--neg); }
 .gai-tag.lv-medium { background: #fef7e0; color: #b06000; }
 .gai-tag.lv-low { background: #f1f3f4; color: var(--ink-2); }
-.gai-kw { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; padding: 4px 12px; border-radius: 999px; margin: 0 6px 6px 0; background: #f1f3f4; }
+.gai-kw { display: inline-flex; align-items: center; gap: 4px; font-size: 0.9rem; padding: 4px 12px; border-radius: 999px; margin: 0 6px 6px 0; background: #f1f3f4; }
 .gai-kw.hash { background: #e8f0fe; color: #174ea6; }
-.gai-kw.new { background: #f3e8fd; color: #7b3fbf; font-size: 0.74rem; padding: 2px 10px; }
+.gai-kw.new { background: #f3e8fd; color: #7b3fbf; font-size: 0.82rem; padding: 2px 10px; }
 .gai-kw b { font-weight: 600; opacity: 0.7; }
 
 /* Storylines */
 .gai-story { border-radius: 14px; background: var(--surface); padding: 14px 16px; margin-bottom: 10px; }
 .gai-story:last-child { margin-bottom: 0; }
 .gai-story-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; }
-.gai-story-title { font-size: 0.98rem; }
-.gai-status { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.gai-story-title { font-size: 1.06rem; }
+.gai-status { font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
 .gai-status.st-new { background: #e8f0fe; color: #174ea6; }
 .gai-status.st-developing { background: #f3e8fd; color: #7b3fbf; }
 .gai-status.st-escalating { background: #fce8e6; color: var(--neg); }
 .gai-status.st-de-escalating { background: #e6f4ea; color: var(--pos); }
 .gai-status.st-resolved { background: #f1f3f4; color: var(--ink-2); }
 .gai-status.st-recurring { background: #fef7e0; color: #b06000; }
-.gai-change { display: flex; gap: 10px; background: #fff; border-radius: 10px; padding: 8px 12px; font-size: 0.86rem; margin-bottom: 10px; }
+.gai-change { display: flex; gap: 10px; background: #fff; border-radius: 10px; padding: 8px 12px; font-size: 0.95rem; margin-bottom: 10px; }
 .gai-change i { color: var(--g-purple); margin-top: 3px; }
 .gai-change b { margin-right: 6px; }
 .gai-tl { list-style: none; margin: 0; padding: 0 0 0 4px; position: relative; }
 .gai-tl::before { content: ""; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(#4285f4, #9b72cb, #d96570); border-radius: 2px; }
 .gai-tl li { position: relative; padding: 0 0 10px 28px; }
 .gai-tl li::before { content: ""; position: absolute; left: 1px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2.5px solid var(--g-purple); }
-.gai-tl-when { font-size: 0.74rem; font-weight: 600; color: var(--g-blue); }
-.gai-tl-body { font-size: 0.88rem; }
+.gai-tl-when { font-size: 0.84rem; font-weight: 600; color: var(--g-blue); }
+.gai-tl-body { font-size: 0.96rem; }
 
 /* Daily */
 .gai-day { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f1f3f4; }
 .gai-day:last-child { border-bottom: 0; }
 .gai-day-date { width: 78px; flex: none; text-align: center; background: var(--surface); border-radius: 12px; padding: 8px 4px; align-self: flex-start; }
-.gai-day-date b { display: block; font-size: 0.9rem; }
+.gai-day-date b { display: block; font-size: 1rem; }
 .gai-day-date small { color: var(--ink-2); display: block; }
 .gai-mom { display: inline-flex; width: 24px; height: 24px; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.7rem; margin-top: 4px; background: #f1f3f4; color: var(--ink-2); }
 .gai-mom.m-rising { background: #fce8e6; color: var(--neg); }
 .gai-mom.m-peak { background: var(--g-grad); color: #fff; }
 .gai-mom.m-falling { background: #e6f4ea; color: var(--pos); }
 .gai-day-body { flex: 1; min-width: 0; }
-.gai-day-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 0.8rem; color: var(--ink-2); margin-bottom: 6px; }
+.gai-day-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 0.88rem; color: var(--ink-2); margin-bottom: 6px; }
 .gai-metric i { margin-right: 4px; }
-.gai-metric em { font-style: normal; font-weight: 600; margin-left: 4px; font-size: 0.75rem; }
+.gai-metric em { font-style: normal; font-weight: 600; margin-left: 4px; font-size: 0.82rem; }
 .gai-metric em.up { color: #e8710a; }
 .gai-metric em.down { color: #1a73e8; }
 .gai-metric em.better { color: var(--pos); }
 .gai-metric em.worse { color: var(--neg); }
 .gai-metric.sh-better { color: var(--pos); font-weight: 600; }
 .gai-metric.sh-worse { color: var(--neg); font-weight: 600; }
-.gai-day-head { font-weight: 600; font-size: 0.93rem; }
-.gai-day-sum { font-size: 0.87rem; color: #3c4043; line-height: 1.6; }
+.gai-day-head { font-weight: 600; font-size: 1.02rem; }
+.gai-day-sum { font-size: 0.95rem; color: #3c4043; line-height: 1.6; }
 
 /* Themes */
-.gai-trend { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: #f1f3f4; color: var(--ink-2); }
+.gai-trend { font-size: 0.78rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: #f1f3f4; color: var(--ink-2); }
 .gai-trend.tr-up { background: #fce8e6; color: var(--neg); }
 .gai-trend.tr-down { background: #e6f4ea; color: var(--pos); }
 .gai-trend.tr-new { background: #f3e8fd; color: #7b3fbf; }
-.gai-li { padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 0.9rem; }
+.gai-li { padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 0.96rem; }
 .gai-li:last-child { border-bottom: 0; }
 
 /* Issues (themes) — compact */
@@ -1134,25 +1541,203 @@ export default {
 .gai-issue { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
 .gai-issue-head { display: flex; gap: 10px; align-items: flex-start; }
 .gai-issue-no { width: 26px; height: 26px; flex: none; border-radius: 8px; background: var(--g-grad); color: #fff; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
-.gai-issue-title { font-size: 0.98rem; font-weight: 700; margin: 0; line-height: 1.45; }
-.gai-issue-title .gai-trend { font-size: 0.68rem; vertical-align: 2px; margin-left: 4px; }
-.gai-issue-desc { margin: 2px 0 0; font-size: 0.82rem; color: var(--ink-2); line-height: 1.5; }
+.gai-issue-title { font-size: 1.06rem; font-weight: 700; margin: 0; line-height: 1.45; }
+.gai-issue-title .gai-trend { font-size: 0.76rem; vertical-align: 2px; margin-left: 4px; }
+.gai-issue-desc { margin: 2px 0 0; font-size: 0.92rem; color: var(--ink-2); line-height: 1.5; }
 .gai-issue-share { flex: none; font-size: 1.15rem; font-weight: 700; background: var(--g-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .gai-issue-stm { display: grid; gap: 4px; }
 .gai-sbar.xs { height: 6px; }
-.gai-issue-nums { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; font-size: 0.74rem; font-weight: 600; }
+.gai-issue-nums { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; font-size: 0.84rem; font-weight: 600; }
 .gai-issue-nums .gai-muted { font-weight: 400; }
-.gai-debate { margin: 0; font-size: 0.82rem; color: #3c4043; line-height: 1.55; }
+.gai-debate { margin: 0; font-size: 0.92rem; color: #3c4043; line-height: 1.55; }
 .gai-debate i { color: var(--g-purple); margin-right: 6px; }
 .gai-views { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.gai-views li { display: flex; gap: 8px; font-size: 0.84rem; line-height: 1.5; padding: 5px 8px; border-radius: 8px; }
-.gai-views li i { margin-top: 4px; font-size: 0.8rem; flex: none; }
+.gai-views li { display: flex; gap: 8px; font-size: 0.94rem; line-height: 1.5; padding: 5px 8px; border-radius: 8px; }
+.gai-views li i { margin-top: 4px; font-size: 0.86rem; flex: none; }
 .gai-views li.pos { background: #f3faf5; }
 .gai-views li.pos i { color: #34a853; }
 .gai-views li.neg { background: #fef6f5; }
 .gai-views li.neg i { color: #ea4335; }
-.gai-issue-foot { display: flex; align-items: center; gap: 6px; margin-top: auto; font-size: 0.74rem; color: var(--ink-2); }
+.gai-issue-foot { display: grid; gap: 6px; margin-top: auto; padding-top: 4px; }
+.gai-issue-foot-lbl { font-size: 0.8rem; color: var(--ink-2); font-weight: 600; }
 @media (max-width: 576px) { .gai-issues { grid-template-columns: 1fr; } }
+
+/* Net Sentiment tile (รวมสัดส่วน Sentiment ไว้ในการ์ดเดียว) */
+.gai-tile-senti { align-items: center; }
+.gai-tile-senti .gai-tile-ico { color: #fff; font-size: 1.25rem; border-radius: 50%; }
+.gai-tile-main { flex: 1; min-width: 0; display: grid; gap: 5px; }
+.gai-tile-top { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.gai-tile-verdict { font-size: 0.86rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gai-tile-pcts { display: flex; flex-wrap: wrap; gap: 0 8px; font-size: 0.74rem; font-weight: 600; }
+.gai-tile-senti.v-neg2 .gai-tile-verdict { color: #c5221f; }
+.gai-tile-senti.v-neg .gai-tile-verdict { color: #d93025; }
+.gai-tile-senti.v-pos2 .gai-tile-verdict { color: #137333; }
+.gai-tile-senti.v-pos .gai-tile-verdict { color: #1e8e3e; }
+.gai-tile-senti.v-neu .gai-tile-verdict { color: #b06000; }
+.gai-tile-senti { position: relative; cursor: help; outline: none; }
+.gai-tile-info { position: absolute; top: 8px; right: 10px; font-size: 0.78rem; color: #bdc1c6; transition: color 0.15s; }
+.gai-tile-senti:hover .gai-tile-info, .gai-tile-senti:focus .gai-tile-info { color: var(--g-purple); }
+.gai-explain {
+  position: absolute; z-index: 30; top: calc(100% + 8px); left: 50%; width: 320px; margin-left: -160px;
+  background: #fff; border-radius: 14px; padding: 12px 14px; text-align: left; cursor: default;
+  box-shadow: 0 10px 30px rgba(60, 64, 67, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+}
+.gai-explain::before { content: ""; position: absolute; top: -6px; left: 50%; margin-left: -6px; width: 12px; height: 12px; background: #fff; transform: rotate(45deg); box-shadow: -1px -1px 0 rgba(0, 0, 0, 0.05); }
+.gai-tile-senti:hover .gai-explain, .gai-tile-senti:focus .gai-explain, .gai-tile-senti:focus-within .gai-explain { opacity: 1; visibility: visible; transform: none; }
+.gai-explain-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 6px; }
+.gai-explain-title i { color: var(--g-purple); margin-right: 4px; }
+.gai-explain p { font-size: 0.84rem; line-height: 1.55; margin: 0 0 8px; color: #3c4043; }
+.gai-explain-formula { display: grid; gap: 2px; background: var(--g-soft); border-radius: 10px; padding: 7px 10px; margin-bottom: 8px; }
+.gai-explain-formula span { font-weight: 700; font-size: 0.86rem; }
+.gai-explain-formula small { font-size: 0.78rem; color: var(--ink-2); }
+.gai-explain-scale { display: grid; gap: 3px; margin-bottom: 6px; }
+.gai-explain-scale > div { font-size: 0.8rem; padding: 3px 8px; border-radius: 8px; color: var(--ink-2); }
+.gai-explain-scale > div b { color: var(--ink); margin-right: 4px; }
+.gai-explain-scale > div.on { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); font-weight: 600; }
+.gai-explain-note { display: block; font-size: 0.72rem; color: #80868b; line-height: 1.5; }
+.gai-kw-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; padding: 10px 14px; }
+.gai-kw-panel .gai-kw { margin-bottom: 0; }
+.gai-kw-lbl { font-weight: 700; font-size: 0.88rem; margin-right: 10px; white-space: nowrap; }
+.gai-kw-lbl i { color: var(--g-purple); margin-right: 4px; }
+
+/* Overview layout */
+.gai-ov-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+.gai-ov-row.single { grid-template-columns: 1fr; }
+.gai-ov-row .gai-panel-title i { color: var(--g-purple); }
+.gai-section { margin-top: 22px; }
+.gai-section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 2px; }
+.gai-section-head h4 { margin: 0; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.gai-section-head h4 > i { width: 30px; height: 30px; border-radius: 10px; background: var(--g-soft); color: var(--g-purple); font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; }
+.gai-section-head .gai-tag { align-self: center; }
+.gai-callout { display: flex; gap: 12px; margin-top: 12px; padding: 12px 16px; border-radius: 14px; background: var(--g-soft); font-size: 0.95rem; line-height: 1.6; }
+.gai-callout > i { color: var(--g-purple); margin-top: 4px; }
+.gai-callout b { display: block; font-size: 0.88rem; margin-bottom: 2px; }
+
+/* Recommendations */
+.gai-recos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 12px; }
+.gai-recos > * { min-width: 0; }
+.gai-reco-card { position: relative; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 14px 20px; background: #fff; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.gai-reco-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: #bdc1c6; }
+.gai-reco-card.lv-high::before { background: #ea4335; }
+.gai-reco-card.lv-medium::before { background: #fbbc04; }
+.gai-reco-card.opp::before { background: var(--g-grad); }
+.gai-reco-card.lv-high { background: linear-gradient(180deg, #fff8f7, #fff 60%); }
+.gai-reco-top { display: flex; align-items: center; gap: 8px; }
+.gai-reco-no { width: 26px; height: 26px; border-radius: 50%; background: var(--g-soft); color: var(--g-purple); font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; justify-content: center; }
+.gai-reco-action { font-weight: 700; font-size: 1rem; line-height: 1.5; }
+.gai-reco-why { font-size: 0.9rem; color: var(--ink-2); line-height: 1.6; }
+.gai-reco-why i { margin-right: 6px; color: #9aa0a6; }
+@media (max-width: 768px) { .gai-ov-row { grid-template-columns: 1fr; } }
+
+/* Sample comments in issue card */
+.gai-cmts { border-top: 1px dashed var(--line); padding-top: 10px; display: grid; gap: 8px; }
+.gai-cmts-title { font-size: 0.84rem; font-weight: 700; color: var(--ink-2); }
+.gai-cmts-title i { color: var(--g-purple); margin-right: 6px; }
+.gai-cmt { display: flex; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface); border-left: 3px solid #bdc1c6; min-width: 0; }
+.gai-cmt.st-positive { border-left-color: #34a853; }
+.gai-cmt.st-negative { border-left-color: #ea4335; }
+.gai-cmt.st-neutral { border-left-color: #fbbc04; }
+.gai-cmt-av { flex: none; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; background: var(--g-grad); color: #fff; font-weight: 700; text-decoration: none !important; box-shadow: 0 0 0 2px #fff; }
+.gai-cmt-av img { width: 100%; height: 100%; object-fit: cover; background: #e8eaed; }
+.gai-cmt-body { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.gai-cmt-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.gai-cmt-name { font-weight: 700; font-size: 0.9rem; color: var(--ink) !important; text-decoration: none !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+a.gai-cmt-name:hover { color: var(--g-blue) !important; }
+.gai-cmt-head .gai-chip { padding: 2px 9px; font-size: 0.74rem; }
+.gai-cmt-text { font-size: 0.92rem; line-height: 1.55; color: #202124; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+.gai-cmt-why { font-size: 0.8rem; color: var(--ink-2); }
+.gai-cmt-why i { color: var(--g-purple); margin-right: 5px; font-size: 0.72rem; }
+.gai-cmt-src { font-size: 0.78rem; color: var(--ink-2); }
+.gai-cmt-src a { color: var(--g-blue) !important; text-decoration: none !important; }
+.gai-cmt-src a:hover { text-decoration: underline !important; }
+.gai-cmt-src .fa-external-link-alt { font-size: 0.66rem; margin-left: 2px; }
+.gai-more { justify-self: start; border: 0; background: none; color: var(--g-blue); font-size: 0.82rem; font-weight: 600; padding: 2px 4px; cursor: pointer; }
+.gai-more:hover { text-decoration: underline; }
+
+/* Verdict: ทิศทางความเห็นแบบดูแล้วรู้ */
+.gai-verdict { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+.gai-verdict-ico { width: 34px; height: 34px; flex: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #fff; }
+.gai-verdict-txt { display: grid; line-height: 1.25; min-width: 0; }
+.gai-verdict-txt b { font-size: 0.98rem; }
+.gai-verdict-txt small { font-size: 0.74rem; color: var(--ink-2); }
+.gai-verdict.lg { margin: 2px 0 12px; padding: 10px 14px; }
+.gai-verdict.lg .gai-verdict-ico { width: 44px; height: 44px; font-size: 1.5rem; }
+.gai-verdict.lg .gai-verdict-txt b { font-size: 1.15rem; }
+.v-neg2 .gai-verdict-ico { background: #d93025; } .v-neg2 .gai-verdict-txt b { color: #c5221f; } .gai-verdict.v-neg2 { background: #fef6f5; border-color: #f6c7c2; }
+.v-neg .gai-verdict-ico { background: #ea4335; } .v-neg .gai-verdict-txt b { color: #d93025; } 
+.gai-verdict.v-neg { background:  #ffffff; border-color: #ffffff; }
+.v-pos2 .gai-verdict-ico { background: #1e8e3e; } .v-pos2 .gai-verdict-txt b { color: #137333; } .gai-verdict.v-pos2 { background: #f3faf5; border-color: #b7dfc2; }
+.v-pos .gai-verdict-ico { background: #34a853; } .v-pos .gai-verdict-txt b { color: #1e8e3e; } .gai-verdict.v-pos { background:  #ffffff; border-color: #ffffff; }
+.v-neu .gai-verdict-ico { background: #fbbc04; } .v-neu .gai-verdict-txt b { color: #b06000; } .gai-verdict.v-neu{ background:  #ffffff; border-color: #ffffff; }
+/* meter: แดง (ลบ) ← กลาง → เขียว (บวก) พร้อมเข็มชี้ */
+.gai-meter { position: relative; flex: 1; min-width: 120px; max-width: 360px; height: 30px; margin-left: auto; }
+.gai-meter-track { position: absolute; left: 0; right: 0; top: 9px; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #ea4335 0%, #f6aea9 28%, #fdd663 50%, #a8dab5 72%, #34a853 100%); }
+.gai-meter-mark { position: absolute; top: 3px; width: 6px; height: 20px; margin-left: -3px; border-radius: 3px; background: #202124; box-shadow: 0 0 0 2px #fff; transition: left 0.4s ease; }
+.gai-meter-mark em { position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+.gai-meter-lbl { position: absolute; bottom: -4px; font-size: 0.66rem; color: var(--ink-2); }
+.gai-meter-lbl.l { left: 0; } .gai-meter-lbl.c { left: 50%; transform: translateX(-50%); } .gai-meter-lbl.r { right: 0; }
+.gai-verdict.lg .gai-meter { height: 38px; }
+.gai-verdict.lg .gai-meter-track { top: 13px; }
+.gai-verdict.lg .gai-meter-mark { top: 7px; }
+.gai-meter.sm { min-width: 90px; max-width: 160px; height: 20px; }
+.gai-meter.sm .gai-meter-track { top: 6px; height: 7px; }
+.gai-meter.sm .gai-meter-mark { top: 1px; height: 17px; width: 5px; }
+.gai-split { font-size: 0.8rem; font-weight: 600; color: #b06000; background: #fef7e0; border-radius: 8px; padding: 4px 10px; }
+.gai-split i { margin-right: 6px; }
+@media (max-width: 576px) { .gai-verdict .gai-meter { display: none; } }
+
+/* Issue: sentiment rows (posts / comments) */
+.gai-stm-rows { display: grid; gap: 6px; background: var(--surface); border-radius: 12px; padding: 10px 12px; }
+.gai-stm-row { display: grid; grid-template-columns: 118px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.gai-stm-lbl { font-size: 0.82rem; color: var(--ink-2); white-space: nowrap; }
+.gai-stm-lbl i { margin-right: 4px; color: var(--g-purple); }
+.gai-stm-lbl b { color: var(--ink); }
+.gai-stm-pct { display: flex; gap: 8px; font-size: 0.82rem; white-space: nowrap; }
+.gai-stm-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; font-size: 0.78rem; color: var(--ink-2); margin-top: 2px; }
+.gai-stm-meta .dot { width: 7px; height: 7px; margin: 0 3px 0 6px; }
+.gai-stm-meta .dot:first-child { margin-left: 0; }
+.gai-stm-meta .fa-info-circle { color: #9aa0a6; }
+
+.gai-dom { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; font-size: 0.72rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; vertical-align: 1px; }
+.gai-dom.st-negative { background: #fce8e6; color: #c5221f; }
+.gai-dom.st-positive { background: #e6f4ea; color: #137333; }
+.gai-dom i { color: inherit !important; margin: 0 !important; font-size: 0.7rem; }
+/* Issue: arguments from all comments */
+.gai-arg { border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; }
+.gai-arg.st-positive { background: #f3faf5; }
+.gai-arg.st-negative { background: #fef6f5; }
+.gai-arg-head { display: flex; align-items: flex-start; gap: 8px; }
+.gai-arg-head > i { margin-top: 4px; font-size: 0.85rem; }
+.gai-arg.st-positive .gai-arg-head > i { color: #34a853; }
+.gai-arg.st-negative .gai-arg-head > i { color: #ea4335; }
+.gai-arg-point { flex: 1; font-weight: 600; font-size: 0.93rem; line-height: 1.5; }
+.gai-arg-count { flex: none; font-size: 0.76rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: #fff; color: var(--ink-2); white-space: nowrap; }
+.gai-cmt.mini { background: #fff; border-left: 0; padding: 8px 10px; }
+.gai-cmt.mini .gai-cmt-av { width: 30px; height: 30px; font-size: 0.8rem; }
+.gai-cmt.mini .gai-cmt-text { font-size: 0.88rem; -webkit-line-clamp: 3; }
+.gai-cmt-from { font-size: 0.76rem; color: var(--ink-2) !important; text-decoration: none !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.gai-cmt-from:hover { color: var(--g-blue) !important; }
+@media (max-width: 576px) { .gai-stm-row { grid-template-columns: 1fr; gap: 4px; } }
+
+/* Post peek (hover on P-chip) */
+.gai-peek { position: fixed; z-index: 2000; animation: gai-peek-in 0.12s ease-out; }
+@keyframes gai-peek-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.gai-peek-card { display: block; background: #fff; border-radius: 14px; overflow: hidden; text-decoration: none !important; color: var(--ink) !important; box-shadow: 0 10px 30px rgba(60, 64, 67, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04); }
+.gai-peek-media { position: relative; aspect-ratio: 16 / 9; background: #e8eaed; overflow: hidden; }
+.gai-peek-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gai-peek-media .gai-img-cap { padding-top: 22px; }
+.gai-peek-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px 0; }
+.gai-peek-av { width: 30px; height: 30px; flex: none; border-radius: 50%; overflow: hidden; background: var(--g-grad); color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.gai-peek-av img { width: 100%; height: 100%; object-fit: cover; }
+.gai-peek-name { flex: 1; min-width: 0; font-weight: 700; font-size: 0.86rem; }
+.gai-peek-ref { font-size: 0.72rem; padding: 0 7px; border-radius: 999px; background: #e8f0fe; color: #1a73e8; }
+.gai-peek-body { padding: 9px 12px 11px; display: grid; gap: 6px; }
+.gai-peek-text { font-size: 0.86rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+.gai-peek-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 0.74rem; color: var(--ink-2); }
+.gai-peek-meta .gai-chip { padding: 1px 8px; font-size: 0.7rem; }
+.gai-peek-open { margin-left: auto; color: var(--g-blue); font-weight: 600; }
+.gai-peek-open i { font-size: 0.62rem; }
 
 /* Risks */
 .gai-risk { border-left: 3px solid #dadce0; padding: 8px 12px; margin-bottom: 8px; border-radius: 0 10px 10px 0; background: var(--surface); }
@@ -1168,13 +1753,13 @@ export default {
 .pf-fb { color: #1877f2; } .pf-tt { color: #000; } .pf-yt { color: #ff0000; } .pf-x { color: #000; } .pf-ig { color: #e1306c; } .pf-news { color: #5f6368; }
 .gai-acc { font-weight: 700; color: var(--ink) !important; text-decoration: none !important; }
 .gai-acc:hover { color: var(--g-blue) !important; }
-.gai-src-note { margin-top: 10px; font-size: 0.75rem; color: #80868b; }
+.gai-src-note { margin-top: 10px; font-size: 0.84rem; color: #80868b; }
 .gai-src-note i { margin-right: 5px; color: var(--g-purple); }
 
 /* Posts */
 .gai-raw { white-space: pre-wrap; font-size: 0.85rem; margin: 0; }
-.gai-empty { text-align: center; color: var(--ink-2); padding: 30px 10px; font-size: 0.9rem; }
-.gai-foot { display: grid; gap: 4px; margin-top: 14px; font-size: 0.74rem; color: #80868b; }
+.gai-empty { text-align: center; color: var(--ink-2); padding: 30px 10px; font-size: 0.96rem; }
+.gai-foot { display: grid; gap: 4px; margin-top: 14px; font-size: 0.8rem; color: #80868b; }
 
 @media (max-width: 576px) {
   .gai-inner { padding: 16px; }
@@ -1185,16 +1770,42 @@ export default {
 </style>
 
 <style>
+/* PostMinis (render function -> non-scoped) — กรอบตัวอย่างโพสต์เล็ก ๆ */
+.gai-minis { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 150px)); gap: 8px; margin-top: 8px; }
+.gai-mini { display: flex; flex-direction: column; min-width: 0; border-radius: 12px; overflow: hidden; background: #fff; border: 1px solid var(--line); text-decoration: none !important; color: var(--ink) !important; transition: box-shadow 0.15s, transform 0.15s; }
+.gai-mini:hover { box-shadow: 0 6px 18px rgba(60, 64, 67, 0.18); transform: translateY(-1px); }
+.gai-mini.stm-positive { border-bottom: 3px solid #34a853; }
+.gai-mini.stm-negative { border-bottom: 3px solid #ea4335; }
+.gai-mini-media { position: relative; aspect-ratio: 16 / 9; background: #e8eaed; overflow: hidden; }
+.gai-mini-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gai-mini-media .gai-img-cap { padding: 14px 7px 5px; font-size: 0.68rem; gap: 4px; }
+.gai-mini-head { display: flex; align-items: center; gap: 6px; padding: 7px 8px 0; min-width: 0; }
+.gai-mini-name { flex: 1; min-width: 0; font-size: 0.76rem; font-weight: 700; }
+.gai-peek-av.sm { width: 22px; height: 22px; font-size: 0.7rem; }
+.gai-mini-text { padding: 6px 8px 0; font-size: 0.76rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+.gai-mini-meta { display: flex; gap: 8px; padding: 4px 8px 7px; margin-top: auto; font-size: 0.68rem; color: var(--ink-2); }
+.gai-img-cap {
+  position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 6px;
+  padding: 18px 10px 7px; font-size: 0.72rem; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+}
+.gai-img-cap b { margin-left: auto; font-size: 0.66rem; padding: 0 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); }
+.gai-img-cap i { color: #fff !important; }
+.gai-peek-av { width: 30px; height: 30px; flex: none; border-radius: 50%; overflow: hidden; background: var(--g-grad); color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.gai-peek-av img { width: 100%; height: 100%; object-fit: cover; }
+.gai-peek-ref { font-size: 0.72rem; padding: 0 7px; border-radius: 999px; background: #e8f0fe; color: #1a73e8; }
+
 /* RefChips (render function -> non-scoped) */
 .gai-refs { margin-top: 6px; }
 .gai-refs.inline { display: inline; margin: 0 0 0 4px; }
 .gai-ref {
-  display: inline-block; min-width: 30px; text-align: center; font-size: 0.7rem; font-weight: 600; line-height: 1.6;
+  display: inline-block; min-width: 30px; text-align: center; font-size: 0.78rem; font-weight: 600; line-height: 1.6;
   padding: 0 7px; border-radius: 999px; margin: 0 4px 3px 0; text-decoration: none !important; cursor: pointer;
   background: #e8f0fe; color: #1a73e8 !important; transition: background 0.15s;
 }
 .gai-ref:hover { background: #d2e3fc; }
+.gai-ref .fa-link { font-size: 0.62rem; opacity: 0.7; }
 .gai-ref.stm-positive { background: #e6f4ea; color: #137333 !important; }
 .gai-ref.stm-negative { background: #fce8e6; color: #c5221f !important; }
 .gai-ref.big { font-size: 0.75rem; padding: 2px 9px; flex: none; }
 </style>
+
