@@ -211,7 +211,7 @@
               <div class="gai-tile-ico gai-verdict-ico"><i :class="verdict(ov.net_sentiment_score).icon"></i></div>
               <div class="gai-tile-main">
                 <div class="gai-tile-top">
-                  <span class="gai-tile-val" :class="scoreClass(ov.net_sentiment_score)">{{ signed(ov.net_sentiment_score) }}</span>
+                  <!-- <span class="gai-tile-val" :class="scoreClass(ov.net_sentiment_score)">{{ signed(ov.net_sentiment_score) }}</span> -->
                   <span class="gai-tile-verdict">{{ verdict(ov.net_sentiment_score).label }}</span>
                 </div>
                 <div class="gai-sbar xs">
@@ -360,10 +360,10 @@
                   <div class="gai-stm-meta">
                     <span><i class="dot pos"></i>บวก <i class="dot neu"></i>กลาง <i class="dot neg"></i>ลบ</span>
                     <span v-if="t.stats && t.stats.posts"><i class="fas fa-chart-line"></i> {{ compact(t.stats.engagement) }}</span>
-                    <span v-if="hasCmt(t)" v-b-tooltip.hover :title="cmtNote(t)">
+                    <!-- <span v-if="hasCmt(t)" v-b-tooltip.hover :title="cmtNote(t)">
                       <i class="fas fa-info-circle"></i> อ่าน {{ fmt(t.comment_analysis.labeled) }} คอมเมนต์<template v-if="t.comment_analysis.counts.off_topic"> (ไม่เกี่ยว {{ fmt(t.comment_analysis.counts.off_topic) }})</template>
-                    </span>
-                    <span v-if="hasCmt(t)" class="ml-auto">net คอมเมนต์ <b :class="scoreClass(t.comment_analysis.net_score)">{{ signed(t.comment_analysis.net_score) }}</b></span>
+                    </span> -->
+                    <!-- <span v-if="hasCmt(t)" class="ml-auto">net คอมเมนต์ <b :class="scoreClass(t.comment_analysis.net_score)">{{ signed(t.comment_analysis.net_score) }}</b></span> -->
                   </div>
                 </div>
 
@@ -1540,7 +1540,7 @@ export default {
 .gai-issues > * { min-width: 0; }
 .gai-issue { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
 .gai-issue-head { display: flex; gap: 10px; align-items: flex-start; }
-.gai-issue-no { width: 26px; height: 26px; flex: none; border-radius: 8px; background: var(--g-grad); color: #fff; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.gai-issue-no { width: 26px; height: 26px; flex: none; border-radius: 8px; background:#4285f4; color: #fff; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
 .gai-issue-title { font-size: 1.06rem; font-weight: 700; margin: 0; line-height: 1.45; }
 .gai-issue-title .gai-trend { font-size: 0.76rem; vertical-align: 2px; margin-left: 4px; }
 .gai-issue-desc { margin: 2px 0 0; font-size: 0.92rem; color: var(--ink-2); line-height: 1.5; }
