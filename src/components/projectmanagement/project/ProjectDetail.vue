@@ -215,7 +215,7 @@
                 >
                   <span class="log-user-pick-avatar">{{ u.initial }}</span>
                   <span class="log-user-pick-text">
-                    <span class="log-user-pick-name">{{ u.name || u.username }}</span>
+                    <span class="log-user-pick-name">{{ u.username }}</span>
                     <span class="log-user-pick-role">{{ u.role }}</span>
                   </span>
                 </div>
@@ -364,6 +364,8 @@ export default {
         endDate: "",
       },
       userFilterSearch: "",
+      logUsers: [],
+      loadingLogUsers: false,
       userFilterMenuOpen: false,
       logDatePreset: "",
       localStatus: this.project.status,
@@ -388,13 +390,16 @@ export default {
       // logs tab, and reload fresh each time it's opened.
       if (newTab === "logs") {
         this.fetchLogs(1);
-        // Same isolated user-picker endpoint CreateProjectModal uses —
-        // gives the filter the full system user list, not just the
-        // users already attached to this project.
-        this.$store.dispatch("fetchUserPickerList");
+        // dropdown filter ผู้ใช้: แสดงเฉพาะผู้ใช้ที่อยู่ในโปรเจกต์นี้
+        // (getUsers?project_id=...) แทนรายชื่อผู้ใช้ทั้งระบบ
+        this.fetchLogUsers();
       }
     },
     "project._id"() {
+      if (this.tab === "logs") {
+        this.logFilters.user_id = "";
+        this.fetchLogUsers();
+      }
       // Component instance is reused across different projects — resync
       // the local optimistic-toggle state when that happens.
       this.localStatus = this.project.status;
@@ -468,14 +473,15 @@ export default {
     // Sourced from the store's isolated user picker (not detailUsers,
     // which is limited to users already attached to this project) — same
     // endpoint CreateProjectModal uses via fetchUserPickerList.
+    // ผู้ใช้ในโปรเจกต์นี้เท่านั้น (โหลดจาก getUsers?project_id=... ใน fetchLogUsers)
     systemUsers() {
-      return (this.$store.getters.getUserPicker.items || []).map((u) => ({
+      return (this.logUsers || []).map((u) => ({
         ...u,
         id: u.id || u._id,
       }));
     },
     loadingSystemUsers() {
-      return this.$store.getters.getUserPicker.loading;
+      return this.loadingLogUsers;
     },
     filteredLogUsers() {
       const q = this.userFilterSearch.trim().toLowerCase();
@@ -624,6 +630,25 @@ export default {
     },
     // Clicking anywhere in the combobox shell focuses the inner text
     // input, same as clicking a native <select>/Vuetify combobox opens it.
+    async fetchLogUsers() {
+      const projectId = this.project && this.project._id;
+      this.logUsers = [];
+      if (!projectId) return;
+      this.loadingLogUsers = true;
+      try {
+        const list = await this.$store.dispatch("fetchProjectUserList", projectId);
+        // กันกรณีสลับโปรเจกต์ระหว่างรอ API — ใช้ผลเฉพาะของโปรเจกต์ปัจจุบัน
+        if (this.project && this.project._id === projectId) {
+          // กันไว้อีกชั้นเผื่อ API ไม่ได้กรอง project_id ให้
+          this.logUsers = list.filter((u) => !u.project_id || u.project_id === projectId);
+        }
+      } catch (err) {
+        console.log(err);
+        this.logUsers = [];
+      } finally {
+        this.loadingLogUsers = false;
+      }
+    },
     focusUserFilterInput() {
       this.userFilterMenuOpen = true;
       this.$nextTick(() => this.$refs.userFilterInput && this.$refs.userFilterInput.focus());

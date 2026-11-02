@@ -561,6 +561,15 @@ export default {
       }
     },
 
+    // รายชื่อผู้ใช้เฉพาะโปรเจกต์เดียว (getUsers?project_id=...) — ใช้กับ dropdown filter
+    // ในแท็บประวัติการใช้งานของ ProjectDetail. ไม่ commit ลง store เพราะ userPicker
+    // ถูกใช้ร่วมกับ CreateUserModal (ต้องเป็นรายชื่อทั้งระบบ) — คืนค่า list ให้ component เก็บเอง
+    async fetchProjectUserList(_ctx, projectId) {
+      if (!projectId) return [];
+      const { list } = await apiGetUsers({ project_id: projectId, page: 1, limit: 200 });
+      return list;
+    },
+
     async fetchUserPickerList({ commit }) {
       commit("setUserPicker", { items: [], loading: true });
       try {

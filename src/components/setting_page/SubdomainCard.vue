@@ -91,7 +91,7 @@
 
       <!-- edit subdomain -->
       <b-modal v-b-modal.modal-center id="edit-subdomain-modal" ref="editSubdomainModal" @hidden="resetEditModal"
-        :ok-only="true" class="custom-modal" centered>
+        hide-footer class="custom-modal" centered>
         <b-form ref="editForm" @submit.prevent="handleEditSubdomain" class="custom-form">
           <h5><b>แก้ไขหมวดหมู่</b></h5>
           <hr />
@@ -101,13 +101,13 @@
           </b-form-group>
           <small class="text-muted">{{ editSubdomainName.length || 0 }} / 50 ตัวอักษร</small>
           <div v-if="hasForbiddenChars(editSubdomainName)" class="text-danger small mt-1">
-            <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ เช่น @ _ # $ % ^ & * ,
+            <i class="fa fa-exclamation-triangle"></i> ห้ามใส่อักขระพิเศษ &
           </div>
 
           <div class="d-flex justify-content-end mt-3">
             <b-button class="btn-submit" @click="handleEditSubdomain"
-              :disabled="editSubdomainName.length == 0 || hasForbiddenChars(editSubdomainName)">
-              บันทึก
+              :disabled="savingSubdomain || editSubdomainName.trim().length == 0 || hasForbiddenChars(editSubdomainName)">
+              {{ savingSubdomain ? "กำลังบันทึก..." : "บันทึก" }}
             </b-button>
           </div>
         </b-form>
@@ -118,8 +118,10 @@
         <b-form @submit.prevent="handleDeleteSubdomain" centered>
           <p>คุณต้องการลบ <strong>{{ deleteSubdomainName }}</strong> หรือไม่?</p>
           <div class="d-flex justify-content-end mt-3">
-            <b-button class="mr-2" variant="secondary" @click="closeDeleteModal">ยกเลิก</b-button>
-            <b-button variant="danger" type="submit">ลบ</b-button>
+            <b-button class="mr-2" variant="secondary" :disabled="deletingSubdomain" @click="closeDeleteModal">ยกเลิก</b-button>
+            <b-button variant="danger" type="submit" :disabled="deletingSubdomain">
+              {{ deletingSubdomain ? "กำลังลบ..." : "ลบ" }}
+            </b-button>
           </div>
         </b-form>
       </b-modal>
@@ -179,6 +181,8 @@ export default {
       editSubdomainName: "",
       newSubdomainId: null,
       deleteSubdomainName: "",
+      savingSubdomain: false,
+      deletingSubdomain: false,
 
       // ✅ NEW: จำกัดจำนวน subdomain ที่ render
       defaultSubLimit: 10,
@@ -207,6 +211,8 @@ export default {
   beforeDestroy() {
     window.removeEventListener("scroll", this.handleScroll);
     this.$emitter.off("fullscreenModalToggled", this.onFullscreenModalToggled);
+    // เดิมไม่เคย off → เข้าหน้านี้กี่ครั้ง listener ก็ซ้อนกันเท่านั้น และไปเรียก apiList ของ component ที่ถูกทำลายแล้ว
+    this.$emitter.off("callApiListSubdomain", this.onListChanged);
     if (this.searchDebounceTimer) {
       clearTimeout(this.searchDebounceTimer);
     }
@@ -218,9 +224,30 @@ export default {
     // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่ (กฎเดียวกับ ImportObject.vue / AddSubDomain.vue)
     // อนุญาตตัวอักษรไทย/อังกฤษ ตัวเลข เว้นวรรค และเครื่องหมาย . - ( )
     // บล็อกสัญลักษณ์พิเศษอื่นๆ เช่น @ _ # $ % ^ & * , ฯลฯ
+    // ใช้กฎเดียวกับตอนเพิ่มหมวดหมู่ (AddSubDomain) / CreateObject / EditObjectKeyword คือห้ามเฉพาะ &
+    // (เดิมตอนแก้ไขห้ามหลายตัว เช่น @ _ # ทำให้หมวดหมู่ที่สร้างได้ เช่น "ABC_01" แก้ไขไม่ได้)
     hasForbiddenChars(value) {
-      const forbiddenPattern = /[@_#$%^&*!~`<>{}[\]|\\/:;"',]/;
-      return forbiddenPattern.test(String(value || ""));
+      return /&/.test(String(value || ""));
+    },
+    // เรียกเมื่อมีการเพิ่ม/แก้ไข/ลบ หมวดหมู่หรือประเด็นจาก component ลูก
+    async onListChanged() {
+      await this.apiList();
+    },
+    // กรองตาม searchQuery ปัจจุบัน — keepPage = true คงหน้าที่อยู่ไว้ (ถ้ายังมีหน้านั้นอยู่)
+    applyFilter(keepPage) {
+      const page = this.currentPage;
+      const q = (this.searchQuery || "").trim();
+      if (q) {
+        this.filterSubdomains();
+      } else {
+        this.keyword = "";
+        this.filteredSubdomains = this.subdomains;
+        this.currentPage = 1;
+      }
+      if (keepPage) {
+        const maxPage = Math.max(1, Math.ceil(this.filteredSubdomains.length / this.perPage));
+        this.currentPage = Math.min(page, maxPage);
+      }
     },
     // เรียกเมื่อ ImportObject (หรือ modal เต็มจออื่นๆ) เปิด/ปิด
     // เพื่อซ่อนปุ่ม FAB ของหน้านี้ไม่ให้ลอยทับ modal อยู่ดี
@@ -395,9 +422,9 @@ export default {
             };
           });
 
-          this.filteredSubdomains = this.subdomains;
-          this.currentPage = 1;
-
+          // เดิม reset เป็นรายการทั้งหมด + หน้า 1 เสมอ → หลังแก้ไข/ลบ ตัวกรองค้นหาหาย
+          // ทั้งที่ช่องค้นหายังแสดงคำเดิม — ตอนนี้กรองตามคำค้นเดิมและคงหน้าเดิมไว้
+          this.applyFilter(true);
         }
       } catch (error) {
         console.error("Error fetching API:", error);
@@ -441,15 +468,18 @@ export default {
     },
 
     async handleEditSubdomain() {
+      if (this.savingSubdomain) return;
       if (this.editSubdomainIndex === null || !this.editSubdomainName.trim()) return;
       if (this.hasForbiddenChars(this.editSubdomainName)) return;
 
       const subdomain = this.subdomains[this.editSubdomainIndex];
+      if (!subdomain) return;
       const updatedSubdomainData = {
         domain_id: this.$route.query.id,
         name: this.editSubdomainName.trim(),
       };
 
+      this.savingSubdomain = true;
       try {
         await this.axios.put(
           `https://api2.cognizata.com/api/v2/setting/putSubdomain/${subdomain.subdomain_id}`,
@@ -469,10 +499,17 @@ export default {
           timer: 1000,
         });
 
-        await this.apiList();
         this.closeEditModal();
+        await this.apiList();
       } catch (error) {
         console.error("Error updating subdomain:", error);
+        this.$fire({
+          title: "แก้ไขหมวดหมู่ไม่สำเร็จ",
+          text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+          type: "error",
+        });
+      } finally {
+        this.savingSubdomain = false;
       }
     },
 
@@ -483,18 +520,21 @@ export default {
     },
 
     async handleDeleteSubdomain() {
+      if (this.deletingSubdomain || !this.newSubdomainId) return;
       const subdomainId = this.newSubdomainId;
       const domainId = this.$route.query.id;
 
+      this.deletingSubdomain = true;
       try {
         await this.axios.delete(`https://api2.cognizata.com/api/v2/setting/deleteSubdomain/${subdomainId}`, {
           params: { domain_id: domainId },
           headers: { Authorization: "Bearer " + localStorage.getItem("token") },
         });
 
+        this.deletingSubdomain = false;
         this.closeDeleteModal();
         this.$fire({
-          title: "บันทึกข้อมูลสำเร็จ",
+          title: "ลบหมวดหมู่สำเร็จ",
           type: "success",
           showConfirmButton: false,
           timer: 1000,
@@ -503,6 +543,13 @@ export default {
         await this.apiList();
       } catch (error) {
         console.error("Error deleting subdomain:", error.response?.data || error);
+        this.$fire({
+          title: "ลบหมวดหมู่ไม่สำเร็จ",
+          text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+          type: "error",
+        });
+      } finally {
+        this.deletingSubdomain = false;
       }
     },
 
@@ -527,16 +574,12 @@ export default {
   async mounted() {
     window.addEventListener("scroll", this.handleScroll);
     this.$emitter.on("fullscreenModalToggled", this.onFullscreenModalToggled);
+    // ผูก listener ก่อน await (เดิมผูกหลังโหลดเสร็จ ถ้าออกจากหน้าก่อน API ตอบจะผูกค้างไว้)
+    // และใช้ method ที่ตั้งชื่อไว้ เพื่อให้ off ได้ใน beforeDestroy
+    this.$emitter.on("callApiListSubdomain", this.onListChanged);
 
     await this.apiList();
     await this.apiGetSuggestionKeywrords();
-
-    await this.$emitter.on("callApiListSubdomain", async () => {
-      await this.apiList();
-      this.$nextTick(() => {
-        this.filterSubdomains();
-      });
-    });
   },
 };
 </script>

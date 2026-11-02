@@ -128,11 +128,16 @@
                                     style=""></b-avatar>
                             </span>
                             <!-- <i class='fas fa-star' style="position: absolute; z-index: 2;left: 6.5%;color: rgb(254, 209, 110);"></i> -->
-                            <b-avatar :src="data.item.profile_image"
+                            <!-- รูปจาก yt3.googleusercontent.com / ggpht (YouTube) จะตอบ 403 ถ้าเบราว์เซอร์ส่ง Referer
+                                 ของเว็บเราไป และ b-avatar ส่ง referrerpolicy ให้ <img> ไม่ได้ จึงใส่ <img> เองใน slot
+                                 พร้อม referrerpolicy="no-referrer" — ถ้ายังโหลดไม่ได้จะกลับไปใช้ไอคอนคนแทน -->
+                            <b-avatar
                                 :class="{'avatar-gradient-border':data.item.influencer_condition}"
-                                v-if="data && data.item && data.item.profile_image">
+                                v-if="data && data.item && data.item.profile_image && !data.item.imgError">
+                                <img :src="data.item.profile_image" referrerpolicy="no-referrer" alt=""
+                                    class="avatar-slot-img" @error="onAvatarError(data.item)" />
                             </b-avatar>
-                            <b-avatar :class="{'avatar-gradient-border':data.item.influencer_condition}" :src="data.item.profile_image" v-else> </b-avatar>
+                            <b-avatar :class="{'avatar-gradient-border':data.item.influencer_condition}" v-else> </b-avatar>
                         </span>
                         <span class="text-truncate d-sm-none d-lg-block w-auto">
                             {{ data.item.name || data.item.uid }}
@@ -409,6 +414,9 @@ export default {
         }
     },
     methods: {
+        onAvatarError(item) {
+            this.$set(item, 'imgError', true);
+        },
         openEditProfile(item) {
             this.selectedProfile = item
             this.openEdit = true
@@ -763,6 +771,12 @@ export default {
   background-clip: content-box, border-box;
 }
 
+.avatar-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
 .avatar-gradient-border .b-avatar-img {
   border-radius: 50%;
 }

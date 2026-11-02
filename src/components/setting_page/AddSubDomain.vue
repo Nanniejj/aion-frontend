@@ -34,7 +34,7 @@
             <br>
             <b-button class="btn btn-close" size="sm" @click=" hideModal()">ปิดหน้าต่าง</b-button> <b-button
               class="btn btn-save" size="sm" @click="addRowSubDomain"
-              :disabled="addSubDomain.trim().length === 0 || hasForbiddenChars(addSubDomain)">บันทึก</b-button>
+              :disabled="saving || addSubDomain.trim().length === 0 || hasForbiddenChars(addSubDomain)">{{ saving ? "กำลังบันทึก..." : "บันทึก" }}</b-button>
           </b-col>
         </b-row>
       </b-container>
@@ -55,6 +55,7 @@ export default {
       open: false,
       addSubDomain: '',
       totalRows: 1,
+      saving: false,
     }
   },
   methods: {
@@ -64,12 +65,14 @@ export default {
       const forbiddenPattern = /&/
       return forbiddenPattern.test(String(value || ""));
     },
- async apiAddSubdomain() {
+    // ปิด modal / ล้างช่อง เฉพาะเมื่อบันทึกสำเร็จ (เดิมปิดและล้างก่อน API ตอบ → ถ้าล้มเหลวชื่อที่พิมพ์หาย)
+    async apiAddSubdomain() {
       const newSubdomainData = {
         name: this.addSubDomain.trim(),
         domain_id: this.$route.query.id,
       };
 
+      this.saving = true;
       try {
         const response = await this.axios.post(
           "https://api2.cognizata.com/api/v2/setting/postSubdomain",
@@ -82,32 +85,39 @@ export default {
           }
         );
 
-        if (response.data) {
-          // console.log("Subdomain created successfully:", response.data);
-          this.$emitter.emit("callApiListSubdomain", response.data);
-          this.$fire({
-            title: "บันทึกข้อมูลสำเร็จ",
-            type: "success",
-            showConfirmButton: false,
-            timer: 1000,
-          });
-        }
+        this.open = false;
+        this.addSubDomain = '';
+        this.$emitter.emit("callApiListSubdomain", response.data);
+        this.$fire({
+          title: "บันทึกข้อมูลสำเร็จ",
+          type: "success",
+          showConfirmButton: false,
+          timer: 1000,
+        });
       } catch (error) {
         console.error("Error creating subdomain:", error);
-        alert("เกิดข้อผิดพลาดในการเพิ่ม Subdomain");
+        this.$fire({
+          title: "เพิ่มหมวดหมู่ไม่สำเร็จ",
+          text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+          type: "error",
+        });
+      } finally {
+        this.saving = false;
       }
     },
     addRowSubDomain() {
-      //  this.getItemsSubDomain.push({name:this.addSubDomain,domain:{name:this.getDomainName},id:this.getItemsSubDomain.length});
+      if (this.saving) return;
       if (this.addSubDomain.trim().length === 0 || this.hasForbiddenChars(this.addSubDomain)) {
         return;
       }
-      this.apiAddSubdomain()
-      this.open = false;
-      this.addSubDomain = ''
+      this.apiAddSubdomain();
     },
+    // ปิดหน้าต่าง (ปุ่ม "ปิดหน้าต่าง", ปุ่ม X หรือคลิกนอกกล่อง) → ล้างชื่อที่พิมพ์ค้างไว้ด้วย
+    // ไม่งั้นเปิดใหม่จะยังเห็นชื่อเดิม (ระหว่างกำลังบันทึกไม่ให้ปิด)
     hideModal() {
+      if (this.saving) return;
       this.open = false;
+      this.addSubDomain = '';
     },
   },
   computed: {

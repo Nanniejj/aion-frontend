@@ -48,6 +48,13 @@ export const WordcloudService = {
     ApiService.setHeader();
     return ApiService.get(`/v2/domain/getDomainlist`);
   },
+  // รายการ domain พร้อมตัวกรองจาก API (ใช้ในหน้า Setting)
+  // params: { name, visible: "all" | undefined, sort: "asc" | "desc" }
+  getDomainList(params) {
+    Vue.axios.defaults.baseURL = "https://api2.cognizata.com/api/";
+    ApiService.setHeader();
+    return ApiService.get(`/v2/domain/getDomainlist`, { params });
+  },
   getWordCloud(payload) {
     Vue.axios.defaults.baseURL = API_URL;
     ApiService.setHeader();

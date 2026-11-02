@@ -3,7 +3,7 @@
     <b-button size="md" class="w-md-auto btn-addobj w-100" pill style="background-color: #fdd071;color: #2c3e50;" @click="open = true;">
       <i class="fa fa-plus" style="font-size: 18px; line-height: 1;"></i> เพิ่มประเด็น
     </b-button>
-    <vue-modaltor :visible="open" @hide="open = false;" :animation-panel="'modal-slide-top'"
+    <vue-modaltor :visible="open" @hide="closeModal" :animation-panel="'modal-slide-top'"
       :resize-width='{ 3000: "55%", 1200: "70%", 768: "90%" }'>
 
       <div class="px-3">
@@ -76,7 +76,7 @@
           <div class="d-flex justify-content-end mt-3">
             <b-button style="background-color: #646462; border:  #646462;" @click="closeModal">ปิดหน้าต่าง</b-button>
             <b-button style="background-color: #50c1d0; color: black; border:#50c1d0;" class="ml-2"
-              :disabled="objectName.trim().length === 0 || hasForbiddenChars(objectName)" @click="saveObject">บันทึก</b-button>
+              :disabled="saving || objectName.trim().length === 0 || hasForbiddenChars(objectName)" @click="saveObject">{{ saving ? "กำลังบันทึก..." : "บันทึก" }}</b-button>
           </div>
 
         </b-container>
@@ -107,6 +107,7 @@ export default {
       notKeywords: [],
       statusMessage: "", // ข้อความแสดงสถานะ
       statusClass: "", // สไตล์ข้อความสถานะ
+      saving: false, // กันกดบันทึกซ้ำระหว่างรอ API (เดิมกดเร็วๆ จะสร้างประเด็นซ้ำ)
     };
   },
   methods: {
@@ -127,11 +128,14 @@ export default {
       this.andKeywords = [];
       this.notKeywords = [];
     },
+    // ปิดหน้าต่าง (ปุ่ม "ปิดหน้าต่าง", ปุ่ม X หรือคลิกนอกกล่อง) → ล้างชื่อประเด็น/keywords ที่กรอกค้างไว้
     closeModal() {
+      if (this.saving) return;
       this.open = false;
-      // this.$bvModal.hide("add-object-modal");
+      this.clearForm();
     },
     async saveObject() {
+      if (this.saving) return;
       if (!this.objectName.trim()) {
         alert("กรุณากรอกชื่อ Object");
         return;
@@ -162,6 +166,7 @@ export default {
       //   JSON.stringify(newObjectData, null, 2)
       // );
 
+      this.saving = true;
       try {
         const response = await axios.post(
           "https://api2.cognizata.com/api/v2/setting/postObject",
@@ -177,7 +182,7 @@ export default {
         this.clearForm()
         this.$store.dispatch("resetDomainLastUpdate", this.$route.query.id);
         this.$emitter.emit("callApiListSubdomain", response.data);
-        this.closeModal();
+        this.open = false;
         this.$fire({
           title: "บันทึกข้อมูลสำเร็จ",
           type: "success",
@@ -188,6 +193,8 @@ export default {
       } catch (error) {
         console.error("Error creating object:", error.response?.data || error);
         alert(error.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      } finally {
+        this.saving = false;
       }
     },
     logAndKeywords() {

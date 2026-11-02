@@ -929,8 +929,8 @@ export default {
       this.gen.copied = false;
     },
     async copyPreview() {
-      const lines = [["Username", "ชื่อ", "นามสกุล", "อีเมล", "รหัสผ่าน"].join("\t")].concat(
-        this.gen.preview.map((r) => [r.username, r.name, r.lastname, r.email, r.password].join("\t"))
+      const lines = [["Username", "รหัสผ่าน"].join("\t")].concat(
+        this.gen.preview.map((r) => [r.username, r.password].join("\t"))
       );
       const text = lines.join("\n");
       try {

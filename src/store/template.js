@@ -128,6 +128,9 @@ export default {
     addSubDomain: (state, payload) => {
       state.itemsSubDomain = [...state.itemsSubDomain, payload];
     },
+    removeDomainById: (state, id) => {
+      state.itemsDomain = state.itemsDomain.filter((dm) => dm.id !== id);
+    },
     addDomain: (state, payload) => {
       state.itemsDomain = [...state.itemsDomain, payload];
     },
@@ -196,15 +199,21 @@ export default {
         });
     },
 
-    async fetchTemplateDomain({ commit }) {
+    // payload.visibility: "shown" (ค่าเริ่มต้น = เฉพาะที่แสดงอยู่) | "all" (รวมที่ซ่อน) | "hidden" (เฉพาะที่ซ่อน)
+    // payload.sort: "desc" (ใหม่ล่าสุดก่อน, ค่าเริ่มต้น) | "asc" (เก่าสุดก่อน)
+    // ลำดับใช้ตามที่ API ส่งมา ไม่เรียงใหม่ฝั่ง frontend
+    async fetchTemplateDomain({ commit }, payload = {}) {
+      const visibility = payload.visibility || "shown";
+      const params = { name: "", sort: payload.sort === "asc" ? "asc" : "desc" };
+      // API: visible=all → รวม domain ที่ซ่อน (visible: false) / ไม่ส่ง → เฉพาะที่แสดงอยู่
+      // (ทดสอบแล้ว visible=false ไม่ได้กรองเฉพาะที่ซ่อน จึงขอแบบ all แล้วกรองเองฝั่งนี้)
+      if (visibility === "all" || visibility === "hidden") params.visible = "all";
+
       commit("setLoadStatus", true);
       try {
-        const res = await WordcloudService.getDomain({ limit: 100000 });
-        res.data.data.sort(function(a, b) {
-          return parseFloat(a.id) - parseFloat(b.id);
-        });
-      let domainlist =  res.data.data.filter((x)=> x.display==true)
-        // console.log(' res.data.results', domainlist);
+        const res = await WordcloudService.getDomainList(params);
+        let domainlist = (res.data.data || []).filter((x) => x.display == true);
+        if (visibility === "hidden") domainlist = domainlist.filter((x) => x.visible === false);
         commit("setDomainItem", domainlist);
         commit("setLoadStatus", false);
       } catch (error) {
@@ -250,16 +259,20 @@ export default {
         console.log(error.response);
       }
     },
+    // หมายเหตุ: updateDomain / updateAddDomain / deleteDomain โยน error ต่อ (throw)
+    // ให้หน้าที่เรียกแจ้งผู้ใช้ได้ — เดิมจับ error ไว้เองแล้วแค่ console.log
+    // ทำให้ UI ปิด modal / ถือว่าสำเร็จทั้งที่ API ล้มเหลว
     async updateDomain({ commit }, payload) {
       commit("setLoadStatus", true);
       try {
         const res = await TemplateService.EditDomain(payload);
-        console.log('res',res);
         commit("updateDomain", res.data);
-        commit('setLoadStatus',false)
+        return res.data;
       } catch (error) {
-        commit('setLoadStatus',false)
         console.log(error.response);
+        throw error;
+      } finally {
+        commit("setLoadStatus", false);
       }
     },
     async updateAddDomain({ commit }, payload) {
@@ -267,10 +280,12 @@ export default {
       try {
         const res = await TemplateService.AddDomain(payload);
         commit("addDomain", res.data);
-        commit('setLoadStatus',false)
+        return res.data;
       } catch (error) {
-        commit('setLoadStatus',false)
         console.log(error.response);
+        throw error;
+      } finally {
+        commit("setLoadStatus", false);
       }
     },
     async updateAddWord({ commit, dispatch }, payload) {
@@ -301,15 +316,13 @@ export default {
     async deleteDomain({ commit, state }, payload) {
       try {
         const res = await TemplateService.DeleteDomain(payload);
-        // console.log("payload", payload);
-        const index = state.itemsDomain.findIndex((dm) => dm.id === payload.id);
-        console.log(index,state.itemsDomain);
-        state.itemsDomain.splice(index, 1);
-        console.log("res", res.data);
-        commit("updateDomain", res.data);
-        return state.itemsDomain;
+        // ลบผ่าน mutation ด้วย id (เดิม splice ตรงๆ ใน action และถ้า findIndex ได้ -1
+        // จะลบแถวสุดท้ายของตารางทิ้งแทน)
+        commit("removeDomainById", payload.id);
+        return res.data;
       } catch (error) {
         console.log(error.response);
+        throw error;
       }
     },
     async deleteWord({ commit, state, dispatch}, payload) {

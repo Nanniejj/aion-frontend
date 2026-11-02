@@ -467,8 +467,8 @@
                                 <b-card id="cmt-card" class="text-left">
                                     <span v-if="post.source == 'news' && post.comments">
                                         <div v-for="(cmtn, inx) in post.comments.comments" :key="inx">
-                                            <b-row>
-                                                <b-col lg="1">
+                                            <b-row class="mx-0">
+                                                <b-col lg="1" class="px-0">
                                                     <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                                                 </b-col>
                                                 <b-col lg="11">
@@ -489,8 +489,8 @@
                                     </span>
                                     <span v-else>
                                         <div v-for="(cmt, i) in post.comments" :key="i">
-                                            <b-row>
-                                                <b-col lg="1">
+                                            <b-row class="mx-0">
+                                                <b-col sm="auto" lg="1" class="px-0 d-flex align-items-center w-100" style="max-width: 50px;">
                                                     <a :href="youtubeAuthorLink(cmt.author_link)"
                                                         target="_blank" v-if="post.source == 'youtube'">
                                                         <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo && !cmt.photoError"
@@ -507,7 +507,7 @@
 
                                                     <span> </span>
                                                 </b-col>
-                                                <b-col lg="11">
+                                                <b-col sm="" lg="11" class="px-0">
                                                     <div>
                                                         <a :href="youtubeAuthorLink(cmt.author_link)"
                                                             target="_blank" v-if="post.source == 'youtube'">
