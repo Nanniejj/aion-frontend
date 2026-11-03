@@ -137,17 +137,17 @@ export default {
     async saveObject() {
       if (this.saving) return;
       if (!this.objectName.trim()) {
-        alert("กรุณากรอกชื่อ Object");
+        this.$fire({ title: "กรุณากรอกชื่อประเด็น", type: "warning", confirmButtonText: "ตกลง" });
         return;
       }
 
       if (this.hasForbiddenChars(this.objectName)) {
-        alert("ชื่อ Object ห้ามมีอักขระพิเศษ");
+        this.$fire({ title: "ชื่อประเด็นห้ามมีอักขระพิเศษ &", type: "warning", confirmButtonText: "ตกลง" });
         return;
       }
 
       if (!this.objectData.subdomain_id) {
-        alert("ไม่พบ Subdomain ID");
+        this.$fire({ title: "ไม่พบหมวดหมู่ (Subdomain ID)", text: "กรุณารีเฟรชหน้าแล้วลองใหม่", type: "error", confirmButtonText: "ตกลง" });
         return;
       }
 
@@ -192,7 +192,8 @@ export default {
 
       } catch (error) {
         console.error("Error creating object:", error.response?.data || error);
-        alert(error.response?.data?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+        // ใช้ SweetAlert แบบเดียวกับตอนบันทึกหมวดหมู่ (เดิมใช้ popup alert ของเบราว์เซอร์)
+        this.$fire({ title: "เพิ่มประเด็นไม่สำเร็จ", text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง", type: "error", confirmButtonText: "ตกลง" });
       } finally {
         this.saving = false;
       }

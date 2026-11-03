@@ -140,12 +140,12 @@ export default {
       if (this.saving) return;
 
       if (!this.objectName.trim()) {
-        alert("กรุณากรอกชื่อ Object");
+        this.$fire({ title: "กรุณากรอกชื่อประเด็น", type: "warning", confirmButtonText: "ตกลง" });
         return;
       }
 
       if (this.hasForbiddenChars(this.objectName)) {
-        alert("ชื่อ Object ห้ามมีอักขระพิเศษ");
+        this.$fire({ title: "ชื่อประเด็นห้ามมีอักขระพิเศษ &", type: "warning", confirmButtonText: "ตกลง" });
         return;
       }
 
@@ -153,11 +153,11 @@ export default {
       // และถ้าไม่มี subdomain_id จะส่ง body ว่าง {} ไป PUT ซึ่งเสี่ยงล้าง keyword ทิ้ง
       const data = this.objectData || {};
       if (!data.object_id) {
-        alert("ไม่พบ Object ID — กรุณารีเฟรชหน้าแล้วลองใหม่");
+        this.$fire({ title: "ไม่พบประเด็น (Object ID)", text: "กรุณารีเฟรชหน้าแล้วลองใหม่", type: "error", confirmButtonText: "ตกลง" });
         return;
       }
       if (!data.subdomain_id) {
-        alert("ไม่พบ Subdomain ID — กรุณารีเฟรชหน้าแล้วลองใหม่");
+        this.$fire({ title: "ไม่พบหมวดหมู่ (Subdomain ID)", text: "กรุณารีเฟรชหน้าแล้วลองใหม่", type: "error", confirmButtonText: "ตกลง" });
         return;
       }
 
@@ -193,7 +193,8 @@ export default {
         });
       } catch (error) {
         console.error("Error updating object:", error.response?.data || error);
-        alert(error.response?.data?.message || "เกิดข้อผิดพลาดในการอัปเดต Keywords");
+        // ใช้ SweetAlert แบบเดียวกับตอนบันทึกหมวดหมู่ (เดิมใช้ popup alert ของเบราว์เซอร์)
+        this.$fire({ title: "แก้ไขประเด็นไม่สำเร็จ", text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง", type: "error", confirmButtonText: "ตกลง" });
       } finally {
         this.saving = false;
       }
