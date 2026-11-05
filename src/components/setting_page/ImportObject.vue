@@ -435,7 +435,7 @@
           <b-button class="import-btn-cancel" @click="closeModal">ปิดหน้าต่าง</b-button>
           <b-button
             class="import-btn-submit px-1"
-            :disabled="!selectedFile || previewRows.length === 0 || importing"
+            :disabled="!selectedFile || validRowCount === 0 || importing"
             @click="importObjects"
           >
             <b-spinner small v-if="importing" class="mr-1"></b-spinner>
@@ -742,9 +742,13 @@ export default {
     // จำเป็นต้องทำแบบนี้เพราะตอนนำเข้าจริง เราส่ง "ไฟล์" ทั้งไฟล์ไปให้ backend parse เอง
     // (ไม่ได้ส่งทีละแถวแบบ JSON) ถ้าส่ง this.selectedFile ตรงๆ จะเป็นไฟล์ต้นฉบับที่ยังไม่ถูกแก้ไข/ลบแถวเลย
     buildExcelFileFromPreviewRows() {
-      const rows = this.previewRows.map((row) => ({
-        domain_name: row.domain_name || "",
-        subdomain_name: row.subdomain_name || "",
+      // ส่งเฉพาะแถวที่ valid (ตรงกับข้อความ "แถวข้อมูลไม่สมบูรณ์ (จะถูกข้าม)" บนหน้าจอ)
+      // เดิมส่งทุกแถวรวมแถวที่ไม่มีชื่อประเด็น/มีอักขระต้องห้ามไปด้วย
+      // domain_name / subdomain_name เว้นว่างเสมอ — ปลายทางกำหนดด้วย subdomain_id ที่ส่งไปใน formData
+      // (กันกรณี Import ไฟล์ที่ Export มาจากหมวดอื่น แล้วชื่อหมวดเดิมติดไปด้วย)
+      const rows = this.previewRows.filter((row) => row.valid).map((row) => ({
+        domain_name: "",
+        subdomain_name: "",
         object_name: row.object_name || "",
         keywords: (row.keywords || []).join(", "),
         and_keywords: (row.and_keywords || []).join(", "),
@@ -912,8 +916,12 @@ export default {
         };
       }
 
+      // คอลัมน์ที่ยอมให้มีเพิ่มได้: domain_name / subdomain_name ซึ่งมาจากไฟล์ที่ Export จากหน้านี้
+      // (Export ออกมา 6 คอลัมน์) — เดิมถูกปฏิเสธ ทำให้ Export แล้ว Import กลับไม่ได้
+      // ค่าในคอลัมน์ทั้งสองจะไม่ถูกใช้ ประเด็นจะเข้าหมวดที่เปิด Import อยู่เสมอ
+      const optionalColumns = ["domain_name", "subdomain_name"];
       const missingColumns = templateColumns.filter((col) => !headers.includes(col));
-      const extraColumns = headers.filter((h) => !templateColumns.includes(h));
+      const extraColumns = headers.filter((h) => !templateColumns.includes(h) && !optionalColumns.includes(h));
 
       if (missingColumns.length > 0 || extraColumns.length > 0) {
         const parts = [];
@@ -948,6 +956,16 @@ export default {
         this.$fire({
           title: "ไม่มีข้อมูลที่จะนำเข้า",
           text: "อาจถูกลบออกจากตัวอย่างข้อมูลหมดแล้ว",
+          type: "warning",
+          confirmButtonText: "ตกลง",
+        });
+        return;
+      }
+
+      if (this.validRowCount === 0) {
+        this.$fire({
+          title: "ไม่มีแถวที่พร้อมนำเข้า",
+          text: "กรุณาแก้ไขแถวที่ข้อมูลไม่สมบูรณ์ก่อน",
           type: "warning",
           confirmButtonText: "ตกลง",
         });

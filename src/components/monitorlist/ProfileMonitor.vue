@@ -119,7 +119,8 @@
                                             </b-col>
                                             <b-col cols="12">
                                                 <div class="text-icon text-center">
-                                                    <b style="font-size: 20px;">{{ profile.followers | numFormat }}</b>
+                                                    <b v-if="profile.followers != null" style="font-size: 20px;">{{ profile.followers | numFormat }}</b>
+                                                    <span v-else class="text-muted small" v-b-tooltip.hover :title="followNoDataText">ไม่พบข้อมูล</span>
                                                 </div>
                                             </b-col>
                                             Followers
@@ -132,7 +133,8 @@
                                             </b-col>
                                             <b-col cols="12">
                                                 <div class="text-icon text-center">
-                                                    <b style="font-size: 20px;">{{ profile.following | numFormat }}</b>
+                                                    <b v-if="profile.following != null" style="font-size: 20px;">{{ profile.following | numFormat }}</b>
+                                                    <span v-else class="text-muted small" v-b-tooltip.hover :title="followNoDataText">ไม่พบข้อมูล</span>
                                                 </div>
                                             </b-col>
                                             Following
@@ -485,14 +487,24 @@
                     </b-col>
 
                     <b-col cols="12" class="mt-1">
-                        <b-row class="justify-content-center justify-content-sm-start">
+                        <!-- ไม่มีข้อมูลผู้ติดตามทั้งคู่ → แสดงข้อความแทน 0 -->
+                        <div v-if="!hasFollowStats" class="d-flex justify-content-center justify-content-sm-start">
+                            <div class="follow-nodata">
+                                <span class="follow-nodata-icon"><i class="fas fa-user-friends"></i></span>
+                                <div class="follow-nodata-text">
+                                    <div class="follow-nodata-title">ไม่พบข้อมูลผู้ติดตาม</div>
+                                    <div class="follow-nodata-sub">บัญชีนี้ไม่ได้อยู่ในรายการบัญชีเป้าหมาย</div>
+                                </div>
+                            </div>
+                        </div>
+                        <b-row v-else class="justify-content-center justify-content-sm-start">
                             <b-col cols="auto">
-                                <span class="text-info bold" style="font-size: 18px;">{{ formatNumber(profile.followers)
+                                <span class="text-info bold" style="font-size: 18px;">{{ profile.followers != null ? formatNumber(profile.followers) : '-'
                                 }}</span> Followers
                             </b-col>
                             <b-col cols="auto">
                                 <span class="text-info bold" style="font-size: 18px;">{{
-                                    formatNumber(profile.followings) }}</span> Following
+                                    profile.followings != null ? formatNumber(profile.followings) : '-' }}</span> Following
                             </b-col>
                         </b-row>
                     </b-col>
@@ -1300,13 +1312,20 @@ export default {
                     // this.data.profile_image = await this.checkImage(response.data.profile_image);
                     // console.log("image === ",this.data.profile_image);
 
-                    this.profile = response.data?.profile
-                    if (!('followers' in this.profile)) {
-                        this.profile.followers = null; // หรือใส่ 0 ก็ได้
-                    }
-                    if (!('following' in this.profile)) {
-                        this.profile.following = null; // หรือใส่ 0 ก็ได้
-                    }
+                    this.profile = response.data?.profile || {}
+                    // API ส่ง followers / followings มาที่ระดับบนของ response (ไม่ได้อยู่ใน profile)
+                    // และใช้ชื่อ field "followings" (มี s) — เดิมอ่านจาก profile.followers / profile.following
+                    // จึงได้ null แล้วแสดงเป็น 0 เสมอ → รวมค่ามาไว้ใน profile ทั้งสองชื่อ
+                    const d = response.data || {};
+                    const pick = (...vals) => {
+                        const v = vals.find((x) => x !== undefined && x !== null && x !== '');
+                        return v === undefined ? null : v;
+                    };
+                    const followers = pick(d.followers, this.profile.followers);
+                    const following = pick(d.followings, d.following, this.profile.followings, this.profile.following);
+                    this.$set(this.profile, 'followers', followers);
+                    this.$set(this.profile, 'following', following);
+                    this.$set(this.profile, 'followings', following);
                     this.topDomain = response.data?.topDomain
                     this.topHashtags = response.data?.topHashtag
                     // console.log('this.profile ', this.profile);
@@ -1629,6 +1648,14 @@ export default {
           this.$store.commit('setNamePlatform', '');
     },
     computed: {
+        // มีข้อมูล followers หรือ following อย่างน้อย 1 ค่า (null = ระบบไม่มีข้อมูล ไม่ใช่ 0)
+        hasFollowStats() {
+            const p = this.profile || {};
+            return p.followers != null || p.following != null;
+        },
+        followNoDataText() {
+            return 'ไม่พบข้อมูลผู้ติดตาม เนื่องจากบัญชีนี้ไม่ได้อยู่ในรายการบัญชีเป้าหมาย';
+        },
         ...mapGetters([
             'getDataWordcloud','getLoadDataWordcloud'
         ]),
@@ -1697,6 +1724,45 @@ export default {
 </script>
 
 <style scoped>
+.follow-nodata {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 100%;
+    padding: 10px 16px 10px 10px;
+    background: linear-gradient(90deg, #fff8e6 0%, #ffffff 100%);
+    border: 1px solid #f6e3b4;
+    border-left: 4px solid #fed06e;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(76, 65, 45, 0.06);
+    text-align: left;
+}
+.follow-nodata-icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #fed06e33;
+    color: #c8962a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+.follow-nodata-text {
+    min-width: 0;
+    line-height: 1.35;
+}
+.follow-nodata-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #4c412d;
+}
+.follow-nodata-sub {
+    font-size: 13px;
+    color: #8a8170;
+}
+
 .badge-male {
     color: #17a2b8;
     /* สี info */

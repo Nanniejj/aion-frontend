@@ -6,8 +6,8 @@
         <!-- {{ getItemsDomain }} -->
       <!-- https://bootstrap-vue.org/docs/components/table#custom-data-rendering   \ Complete example -->
       <!-- Page header -->
-      <b-row id="input-btn" class="m-0 align-items-center justify-content-lg-between flex-lg-nowrap page-header-row">
-        <b-col lg="auto" class="pl-0 mb-3 ">
+      <b-row id="input-btn" class="m-0 align-items-end justify-content-lg-between flex-lg-nowrap page-header-row mb-3">
+        <b-col lg="auto" class="px-0 pl-sm-0 ">
           <div class="page-header">
             <div class="page-header-icon">
               <i class="fa fa-folder-open"></i>
@@ -20,17 +20,30 @@
               </div>
             </div>
           </div>
+          <!-- ตัวกรองการแสดงผล (ส่งเป็น query ให้ API getDomainlist) -->
+          <div class="domain-filters">
+            <label class="domain-filter">
+              <span class="domain-filter-label"><i class="fa fa-eye"></i> แสดง</span>
+              <b-form-select v-model="domainFilter.visibility" :options="visibilityOptions" size="sm"
+                class="domain-filter-select" :disabled="getLoadStatus" @change="onDomainFilterChange" />
+            </label>
+            <label class="domain-filter">
+              <span class="domain-filter-label"><i class="fa fa-sort-amount-down"></i> เรียง</span>
+              <b-form-select v-model="domainFilter.sort" :options="sortOrderOptions" size="sm"
+                class="domain-filter-select" :disabled="getLoadStatus" @change="onDomainFilterChange" />
+            </label>
+          </div>
         </b-col>
-        <b-col cols="12" md="" lg="auto" class="px-0 ml-0 ml-lg-auto mb-3 mb-lg-0">
+        <b-col cols="12" md="" lg="auto" class="px-0 ml-0 ml-lg-auto mb-3 mb-lg-0 domain-search-col">
             <b-input-group size="md">
                 <b-form-input id="filter-input" v-model="filter" type="search" placeholder="ค้นหาหัวเรื่อง..."></b-form-input>
             </b-input-group>
         </b-col>
-        <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0">
+        <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0 domain-action-col">
           <TemplateAddDomain @domain-added="fetchDomainList()"/>
           <!-- <button class="btn btn-add" ><i class="fa fa-plus"/><span  style="font-size:16px;"> เพิ่ม Domain </span></button> -->
         </b-col>
-        <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0">
+        <b-col cols="auto" lg="auto" class="pr-0 mb-3 mb-lg-0 domain-action-col">
           <ImportDomain/>
         </b-col>
       </b-row>
@@ -40,7 +53,7 @@
       <b-table hover :items="getItemsDomain" :fields="fields" :current-page="currentPage" :per-page="perPage"
         :filter="filter" :filter-included-fields="['name']" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
         :sort-direction="sortDirection" :empty-filtered-text="empData" stacked="md" show-empty small
-        @filtered="onFiltered"  thead-class="">
+        @filtered="onFiltered" @row-clicked="onRowClicked" tbody-tr-class="domain-row-clickable" thead-class="">
         <!-- @row-clicked="linkToSubDomain"   -->
         <template #cell(id)="row">
           {{ row.index + 1 + (currentPage - 1) * 10 }}
@@ -58,7 +71,9 @@
             right
           >
             <template #button-content>
-              <i class="fa fa-ellipsis-h"></i>
+              <i class="fas fa-sliders-h"></i>
+              <span class="action-label">ตั้งค่า</span>
+              <i class="fa fa-chevron-down action-caret"></i>
             </template>
             <b-dropdown-item-button @click="linkToSubDomain(row.item)">
               <i class="fas fa-list-ul mr-2"></i> ดู SubDomain
@@ -79,7 +94,7 @@
         <template #cell(display)="row">
           <span v-if="row.value == 'แสดงผล'" class="status-pill status-pill-on"><i class="fa fa-circle" />
             {{ row.value }}</span>
-          <span v-else class="status-pill status-pill-off"><i class="fa fa-circle" />
+          <span v-else class="status-pill status-pill-off" :class="{ 'status-pill-hidden': row.value === 'ซ่อนอยู่' }"><i class="fa fa-circle" />
             {{ row.value }}</span>
         </template>
       </b-table>
@@ -122,7 +137,8 @@
             <div class="modal-actions">
                 <b-button class="btn btn-close" size="sm" @click="hideModal()">ปิดหน้าต่าง</b-button>
                 <b-button class="btn btn-save" size="sm" @click="editDomain()"
-                  :disabled="textDomain.trim().length === 0 || hasForbiddenChars(textDomain)">บันทึก</b-button>
+                  :disabled="savingDomain || textDomain.trim().length === 0 || hasForbiddenChars(textDomain)">
+                  {{ savingDomain ? "กำลังบันทึก..." : "บันทึก" }}</b-button>
             </div>
             <!-- <div class="mt-2">Value: {{ textDomain }}</div> -->
           </div>
@@ -198,7 +214,9 @@ export default {
         {
           key: "display",
           label: "สถานะ",
-          formatter: (value) => {
+          // visible: false = domain ที่ถูกซ่อน (จะเห็นเมื่อเลือกตัวกรอง "รวมที่ซ่อน" / "เฉพาะที่ซ่อน")
+          formatter: (value, key, item) => {
+            if (item && item.visible === false) return "ซ่อนอยู่";
             return value ? "แสดงผล" : "ไม่แสดงผล";
           },
           sortable: true,
@@ -213,10 +231,21 @@ export default {
         { text: "ไม่แสดงผล", value: false },
       ],
       textDomain: "",
+      savingDomain: false,
       open: false,
       openClone: false,
       totalRows: 1,
       currentPage: 1,
+      domainFilter: { visibility: "shown", sort: "desc" },
+      visibilityOptions: [
+        { value: "shown", text: "เฉพาะที่แสดงอยู่" },
+        { value: "all", text: "ทั้งหมด (รวมที่ซ่อน)" },
+        { value: "hidden", text: "เฉพาะที่ซ่อน" },
+      ],
+      sortOrderOptions: [
+        { value: "desc", text: "ใหม่ล่าสุดก่อน" },
+        { value: "asc", text: "เก่าสุดก่อน" },
+      ],
       perPage: 10,
       pageOptions: [5, 10, 15, { value: 100, text: "Show a lot" }],
       sortBy: "",
@@ -262,30 +291,54 @@ export default {
       return forbiddenPattern.test(String(value || ""));
     },
     removeRow: function (index, item) {
-      // console.log("delete");
-      this.$confirm("คุณต้องการลบข้อมูล?").then(() => {
-        this.$store.dispatch("deleteDomain", {
-          id: item.id,
-          index: index,
-        });
-        this.totalRows = this.getItemsDomain.length;
-      });
+      this.$confirm(`คุณต้องการลบหัวเรื่อง "${item.name}"?`).then(async () => {
+        try {
+          await this.$store.dispatch("deleteDomain", { id: item.id });
+          this.$fire({
+            title: "ลบหัวเรื่องสำเร็จ",
+            type: "success",
+            showConfirmButton: false,
+            timer: 1000,
+          });
+          this.fetchDomainList();
+        } catch (error) {
+          this.$fire({
+            title: "ลบหัวเรื่องไม่สำเร็จ",
+            text: error?.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+            type: "error",
+          });
+        }
+      }).catch(() => {});
     },
     async editDomain() {
+      if (this.savingDomain) return;
       let tdomain = this.textDomain.trim();
       if (tdomain.length === 0 || this.hasForbiddenChars(tdomain)) return;
+      this.savingDomain = true;
       try {
         await this.$store.dispatch("updateDomain", {
           name: tdomain,
           id: this.idDomain,
-          // display: this.selected,
         });
-      } catch (error) {
-        console.log("errrrrrr", error);
-      } finally {
+        this.savingDomain = false;
+        this.open = false;
+        this.$fire({
+          title: "บันทึกข้อมูลสำเร็จ",
+          type: "success",
+          showConfirmButton: false,
+          timer: 1000,
+        });
         this.fetchDomainList();
+      } catch (error) {
+        // ไม่ปิด modal — ผู้ใช้จะได้ไม่เสียชื่อที่แก้ไว้
+        this.$fire({
+          title: "บันทึกไม่สำเร็จ",
+          text: error?.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+          type: "error",
+        });
+      } finally {
+        this.savingDomain = false;
       }
-      this.open = false;
     },
     createClone() {
       let newName = this.domainClone.new_domain_name.trim();
@@ -314,15 +367,19 @@ export default {
               showConfirmButton: false,
               timer: 1000,
             });
-            this.$store.dispatch("fetchTemplateDomain").then(() => {
-              this.totalRows = this.getItemsDomain.length;
-            });
+            this.fetchDomainList();
             this.hideCloneModal();
           })
           .catch(() => {
             this.$alert("ไม่สามารถดำเนินการได้").then(() => {});
           });
       });
+    },
+    // คลิกที่แถว → ไปหน้าดู SubDomain (ยกเว้นคลิกในปุ่ม/เมนู "ตั้งค่า" ของแถวนั้น)
+    onRowClicked(item, index, event) {
+      const target = event && event.target;
+      if (target && target.closest && target.closest(".dropdown, .dropdown-menu, button, a")) return;
+      this.linkToSubDomain(item);
     },
     linkToSubDomain(item) {
       // this.$store.dispatch("fetchListSubDomain",{name:item.name})
@@ -332,6 +389,7 @@ export default {
       this.$router.push({ name: "SettingSubDomain"  ,params: { domain: item.name},query: { id:item.id}});
     },
     hideModal() {
+      if (this.savingDomain) return;
       this.open = false;
     },
     hideCloneModal() {
@@ -374,8 +432,12 @@ export default {
       this.currentPage = 1;
     },
     // ✅ เรียก fetch รายการ domain ใหม่ ใช้ทั้งตอนโหลดหน้าครั้งแรกและตอนนำเข้าไฟล์สำเร็จ
+    onDomainFilterChange() {
+      this.currentPage = 1;
+      this.fetchDomainList();
+    },
     fetchDomainList() {
-      this.$store.dispatch("fetchTemplateDomain").then(() => {
+      this.$store.dispatch("fetchTemplateDomain", { ...this.domainFilter }).then(() => {
         this.totalRows = this.getItemsDomain.length;
       });
     },
@@ -425,6 +487,44 @@ table>thead>tr>th:nth-child(3) {
   font-weight: 700;
   color: #2c241a;
   font-size: 18px;
+}
+
+.domain-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.domain-filter {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  background: #f6f2ea;
+  border: 1px solid #ece6da;
+  border-radius: 999px;
+  padding: 2px 4px 2px 12px;
+}
+.domain-filter-label {
+  font-size: 13px;
+  color: #8a7d68;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.domain-filter-select {
+  width: auto;
+  border: none;
+  background-color: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4c412b;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+.status-pill-hidden {
+  background: #eceff1 !important;
+  color: #6b7280 !important;
 }
 
 .page-count-pill {
@@ -619,17 +719,48 @@ table>thead>tr>th:nth-child(3) {
   border-radius: 50%;
 }
 
-.action-dropdown-toggle {
+/* ปุ่ม "จัดการ" — เดิมเป็นแค่ไอคอน … สีลิงก์ตัวเล็ก สังเกตยาก
+   (และ style เดิมไม่ติดเพราะเป็น scoped แต่ปุ่มอยู่ใน b-dropdown → ต้องใช้ ::v-deep) */
+.domain-table-card ::v-deep .action-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
   color: #4c412b;
-  font-size: 16px;
-  padding: 6px 10px;
-  border-radius: 50%;
+  background: #fff8e6;
+  border: 1px solid #f3d58a;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(76, 65, 43, 0.08);
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.domain-table-card ::v-deep .action-dropdown-toggle:hover,
+.domain-table-card ::v-deep .action-dropdown-toggle:focus,
+.domain-table-card ::v-deep .show > .action-dropdown-toggle {
+  color: #4c412b;
+  background: #fed16e;
+  border-color: #fed16e;
+  box-shadow: 0 3px 8px rgba(254, 209, 110, 0.45);
+  outline: none;
+}
+.domain-table-card ::v-deep .action-dropdown-toggle .action-caret {
+  font-size: 10px;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+.domain-table-card ::v-deep .show > .action-dropdown-toggle .action-caret {
+  transform: rotate(180deg);
 }
 
-.action-dropdown-toggle:hover,
-.action-dropdown-toggle:focus {
-  background: #ede7dd;
-  color: #4c412b;
+/* แถวกดได้ → ไปหน้า SubDomain */
+.domain-table-card ::v-deep tr.domain-row-clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.domain-table-card ::v-deep tr.domain-row-clickable:hover > td {
+  background-color: #fbf6ea;
 }
 
 /* ===== Action dropdown menu (คอลัมน์ "การจัดการ") ===== */
@@ -652,6 +783,13 @@ table>thead>tr>th:nth-child(3) {
 .domain-table-card ::v-deep .dropdown-item:focus {
   background-color: #f5f1e8;
   color: #4c412b;
+}
+.domain-table-card ::v-deep .text-danger .dropdown-item {
+  color: #c0392b;
+}
+.domain-table-card ::v-deep .text-danger .dropdown-item:hover {
+  background-color: #fdecea;
+  color: #c0392b;
 }
 
 /* กันแถวสุดท้ายในตารางถูกเมนูบัง ให้ dropdown มีที่ล้นลงมาด้านล่างได้ */
@@ -691,6 +829,170 @@ table>thead>tr>th:nth-child(3) {
   .table {
     /* width: 85%; */
     margin: auto;
+  }
+}
+
+/* ===================== Tablet / จอกลาง (768px – 1199px) ===================== */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  /* 992–1199px เดิมบังคับทุกอย่างอยู่บรรทัดเดียว (flex-lg-nowrap) ปุ่ม Import ล้นขอบขวา
+     → ให้ตัดบรรทัด: หัวข้อ+ตัวกรองบรรทัดแรก, ช่องค้นหา+ปุ่มบรรทัดถัดไป */
+  .page-header-row {
+    flex-wrap: wrap !important;
+  }
+  .page-header-row > .col-lg-auto:first-child {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .domain-search-col {
+    flex: 1 1 0% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+  }
+  .domain-table-card ::v-deep .status-pill,
+  .domain-table-card ::v-deep th {
+    white-space: nowrap;
+  }
+  /* เดิมแถวตัวกรองชิดติดกับช่องค้นหา → เว้นระยะ และจัดปุ่มให้อยู่แนวเดียวกับช่องค้นหา */
+  .domain-search-col,
+  .domain-action-col {
+    margin-top: 12px;
+    align-self: center;
+  }
+  .domain-action-col {
+    padding-left: 10px !important;
+  }
+  .domain-action-col ::v-deep .btn {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0 !important;
+    white-space: nowrap;
+  }
+}
+
+/* ===================== Mobile (< 768px) ===================== */
+@media (max-width: 767.98px) {
+  /* ตัวกรอง: 2 ช่องเต็มความกว้าง เท่ากัน */
+  .domain-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+  .domain-filter {
+    justify-content: space-between;
+  }
+  .domain-filter {
+    min-width: 0;
+    padding-left: 10px;
+  }
+  .domain-filter-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-left: 4px;
+    text-overflow: ellipsis;
+  }
+
+  /* ช่องค้นหาเว้นระยะจากตัวกรอง */
+  .domain-search-col {
+    margin-top: 12px;
+  }
+
+  /* ปุ่ม เพิ่มหัวเรื่อง / Import: ครึ่งจอเท่ากัน */
+  .domain-action-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding: 0 4px !important;
+  }
+  .domain-action-col:first-of-type,
+  .domain-search-col + .domain-action-col {
+    padding-left: 0 !important;
+  }
+  .domain-action-col:last-child {
+    padding-right: 0 !important;
+  }
+  .domain-action-col ::v-deep .btn {
+    width: 100% !important;
+    min-height: 42px;
+    margin: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  /* ตาราง: แต่ละแถวเป็นการ์ดแบบกระชับ (เลข | ชื่อ+สถานะ | ปุ่มตั้งค่า)
+     แทนรูปแบบ stacked เดิมที่ 1 เรื่องกินพื้นที่ 4 บรรทัด */
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "num name action"
+      "num status action";
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
+    padding: 12px 14px;
+    border-top: none;
+    border-bottom: 1px solid #f1ece2;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr:last-child {
+    border-bottom: none;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td {
+    display: block;
+    border: none !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td::before {
+    display: none !important;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td > div {
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td:nth-child(1) {
+    grid-area: num;
+    min-width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f6f2ea;
+    color: #8a7d68;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td:nth-child(2) {
+    grid-area: name;
+    font-size: 15px;
+    line-height: 1.35;
+    min-width: 0;
+  }
+  /* ชื่อยาวให้ขึ้นบรรทัดใหม่ได้สูงสุด 2 บรรทัด แล้วตัดด้วย … */
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td:nth-child(2) b {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td:nth-child(3) {
+    grid-area: status;
+  }
+  .domain-table-card ::v-deep .b-table-stacked-md > tbody > tr > td:nth-child(4) {
+    grid-area: action;
+  }
+}
+
+@media (max-width: 420px) {
+  .domain-filters {
+    grid-template-columns: 1fr;
   }
 }
 </style>

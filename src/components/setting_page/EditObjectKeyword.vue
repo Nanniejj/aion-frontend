@@ -10,7 +10,7 @@
       @click="open = true;">
       <i class="fa fa-pencil"></i>
     </b-button>
-    <vue-modaltor :visible="open" @hide="open = false;" :animation-panel="'modal-slide-top'"
+    <vue-modaltor :visible="open" @hide="closeModal" :animation-panel="'modal-slide-top'"
       :resize-width='{ 3000: "55%", 1200: "70%", 768: "90%" }'>
       <div>
         <!-- {{ domainId }}
@@ -73,8 +73,8 @@
           <div class="d-flex justify-content-end mt-3">
             <b-button style="background-color: #646462; border:  #646462;" @click="closeModal">ปิดหน้าต่าง</b-button>
             <b-button class="ml-2" style="background-color: #50c1d0; color: black; border:#50c1d0;"
-              :disabled="objectName.trim().length === 0 || hasForbiddenChars(objectName)"
-              @click="updateObject">บันทึก</b-button>
+              :disabled="saving || objectName.trim().length === 0 || hasForbiddenChars(objectName)"
+              @click="updateObject">{{ saving ? "กำลังบันทึก..." : "บันทึก" }}</b-button>
           </div>
         </b-container>
       </div>
@@ -106,21 +106,18 @@ export default {
       editKeywords: [],
       editAndKeywords: [],
       editNotKeywords: [],
-      // domainId: 1, // ค่า domain_id
+      saving: false,
     };
   },
 
   watch: {
-    objectData:{
-      handler(newVal) {
-        if (!newVal) {
-          console.warn("objectId ไม่มีค่า");
-        } 
-        this.loadData()
-      },
-      deep: true,
+    // โหลดข้อมูลจาก objectData "ตอนเปิด modal" เท่านั้น
+    // (เดิมใช้ deep watcher กับ objectData ซึ่ง parent สร้างเป็น object ใหม่ทุกครั้งที่ re-render
+    //  → loadData() ถูกเรียกซ้ำเรื่อยๆ และทับค่าที่ผู้ใช้กำลังแก้อยู่ระหว่างเปิด modal
+    //  และกด "ปิดหน้าต่าง" แล้วเปิดใหม่ ค่าที่ยังไม่บันทึกก็ค้างอยู่)
+    open(isOpen) {
+      if (isOpen) this.loadData();
     },
-   
   },
   methods: {
     // ตรวจว่ามีอักขระพิเศษต้องห้ามอยู่ใน string หรือไม่
@@ -135,50 +132,48 @@ export default {
       return !this.hasForbiddenChars(tag);
     },
     closeModal() {
+      if (this.saving) return;
       this.open = false;
-      // this.$bvModal.hide("edit-object-keyword-modal");
     },
 
     async updateObject() {
-      console.log("ค่า objectId:", this.objectId);
-      console.log("ค่า subdomainId:", this.subdomainId);
-      console.log(' this.objectData', this.objectData);
+      if (this.saving) return;
 
       if (!this.objectName.trim()) {
-        alert("กรุณากรอกชื่อ Object");
+        this.$fire({ title: "กรุณากรอกชื่อประเด็น", type: "warning", confirmButtonText: "ตกลง" });
         return;
       }
 
       if (this.hasForbiddenChars(this.objectName)) {
-        alert("ชื่อ Object ห้ามมีอักขระพิเศษ");
+        this.$fire({ title: "ชื่อประเด็นห้ามมีอักขระพิเศษ &", type: "warning", confirmButtonText: "ตกลง" });
         return;
       }
 
-      if (!this.objectData && this.objectData.object_id) {
-        alert("ไม่พบ Object ID! ตรวจสอบค่าใน Console");
+      // เดิมเขียนเงื่อนไขกลับด้าน (!objectData && objectData.object_id) → ไม่เคยตรวจจริง
+      // และถ้าไม่มี subdomain_id จะส่ง body ว่าง {} ไป PUT ซึ่งเสี่ยงล้าง keyword ทิ้ง
+      const data = this.objectData || {};
+      if (!data.object_id) {
+        this.$fire({ title: "ไม่พบประเด็น (Object ID)", text: "กรุณารีเฟรชหน้าแล้วลองใหม่", type: "error", confirmButtonText: "ตกลง" });
+        return;
+      }
+      if (!data.subdomain_id) {
+        this.$fire({ title: "ไม่พบหมวดหมู่ (Subdomain ID)", text: "กรุณารีเฟรชหน้าแล้วลองใหม่", type: "error", confirmButtonText: "ตกลง" });
         return;
       }
 
-      if (!this.objectData && this.objectData.subdomain_id) {
-        alert("ไม่พบ Subdomain ID! ตรวจสอบค่าใน Console");
-        return;
-      }
-      let updatedObjectData = {}
-      if (this.objectData && this.objectData.subdomain_id) {
-        updatedObjectData = {
-          domain_id: this.$route.query.id,
-          name: this.objectName,
-          subdomain_id: this.objectData.subdomain_id,
-          keywords: this.editKeywords,
-          and_keywords: this.editAndKeywords,
-          not_keywords: this.editNotKeywords,
-        };
-        console.log('updatedObjectData', updatedObjectData);
+      const updatedObjectData = {
+        domain_id: this.$route.query.id,
+        name: this.objectName.trim(),
+        subdomain_id: data.subdomain_id,
+        keywords: this.editKeywords,
+        and_keywords: this.editAndKeywords,
+        not_keywords: this.editNotKeywords,
+      };
 
-      }
+      this.saving = true;
       try {
         const response = await axios.put(
-          `https://api2.cognizata.com/api/v2/setting/updateKeywords/${this.objectData.object_id}`,
+          `https://api2.cognizata.com/api/v2/setting/updateKeywords/${data.object_id}`,
           updatedObjectData,
           {
             headers: {
@@ -188,10 +183,8 @@ export default {
           }
         );
         this.$store.dispatch("resetDomainLastUpdate", this.$route.query.id);
-        console.log("Object keywords updated successfully:", response.data);
-        // this.$emit("objectUpdated", response.data);
         this.$emitter.emit("callApiListSubdomain", response.data);
-        this.closeModal();
+        this.open = false;
         this.$fire({
           title: "บันทึกข้อมูลสำเร็จ",
           type: "success",
@@ -200,7 +193,10 @@ export default {
         });
       } catch (error) {
         console.error("Error updating object:", error.response?.data || error);
-        alert("เกิดข้อผิดพลาดในการอัปเดต Keywords");
+        // ใช้ SweetAlert แบบเดียวกับตอนบันทึกหมวดหมู่ (เดิมใช้ popup alert ของเบราว์เซอร์)
+        this.$fire({ title: "แก้ไขประเด็นไม่สำเร็จ", text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง", type: "error", confirmButtonText: "ตกลง" });
+      } finally {
+        this.saving = false;
       }
     },
 
@@ -217,12 +213,6 @@ export default {
 
   mounted() {
     this.loadData();
-    // console.log("****EditObjectKeyword");
-    // console.log("ได้รับค่า objectId:", this.objectId);
-    // console.log("ได้รับค่า subdomainId:", this.subdomainId);
-    // console.log("ได้รับค่า dataKeyword:", this.dataKeyword);
-
-
   },
 
 };

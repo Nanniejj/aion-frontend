@@ -23,7 +23,7 @@
                 <div class="log-user-combo-shell" @click="focusUserFilterInput">
                     <span v-if="selectedLogUser" class="log-user-combo-chip">
                         <span class="log-user-combo-chip-avatar">{{ selectedLogUser.initial }}</span>
-                        {{ selectedLogUser.name || selectedLogUser.username }}
+                        {{ selectedLogUser.username }}
                         <button type="button" class="log-user-combo-chip-remove" @click.stop="clearLogUserFilter" aria-label="ล้างตัวกรองผู้ใช้">×</button>
                     </span>
                     <input
@@ -54,7 +54,7 @@
                         >
                             <span class="log-user-pick-avatar">{{ u.initial }}</span>
                             <span class="log-user-pick-text">
-                                <span class="log-user-pick-name">{{ u.name || u.username }}</span>
+                                <span class="log-user-pick-name">{{ u.username }}</span>
                                 <span class="log-user-pick-role">{{ u.role }}</span>
                             </span>
                         </div>

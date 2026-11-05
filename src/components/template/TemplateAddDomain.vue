@@ -65,18 +65,33 @@ methods: {
      this.isSubmitting = true;
      try {
        await this.$store.dispatch("updateAddDomain",{name: tdomain ,display:true});
+       this.isSubmitting = false;
+       this.hideModal();          // ปิด + ล้างชื่อเฉพาะเมื่อสำเร็จ
+       this.$emit("domain-added");
+       this.$fire({
+         title: "บันทึกข้อมูลสำเร็จ",
+         type: "success",
+         showConfirmButton: false,
+         timer: 1000,
+       });
      } catch (error) {
+       // เดิม error ถูกกลืนใน store แล้ว modal ปิด + ชื่อหายโดยไม่แจ้งอะไร
+       // ตอนนี้คง modal และชื่อที่พิมพ์ไว้ แล้วแจ้งผู้ใช้
        console.log("[TemplateAddDomain] dispatch updateAddDomain rejected:", error);
+       this.$fire({
+         title: "เพิ่มหัวเรื่องไม่สำเร็จ",
+         text: error?.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+         type: "error",
+       });
      } finally {
        this.isSubmitting = false;
-       this.$emit("domain-added");
      }
-
-     this.hideModal()
-     this.addDomain=""
     },
+    // ปิดหน้าต่างแล้วล้างชื่อที่พิมพ์ค้างไว้ (ระหว่างกำลังบันทึกไม่ให้ปิด)
     hideModal() {
+      if (this.isSubmitting) return;
       this.open = false;
+      this.addDomain = "";
     },
     },
     computed: {

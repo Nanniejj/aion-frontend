@@ -77,8 +77,10 @@
                             </span>
 
                             <div class="d-flex justify-content-end">
+                                <!-- ใช้ข้อมูลของ object ในแถวนี้ (เดิมใช้ dataKeyword = ตัวที่เลือกอยู่
+                                     ถูกต้องได้เพราะ click bubble ไปเรียก setActive ก่อนเท่านั้น) -->
                                 <EditObjectKeyword
-                                    :objectData="{ subdomain_id: subdomain.subdomain_id, ...dataKeyword }"
+                                    :objectData="{ subdomain_id: subdomain.subdomain_id, ...object }"
                                     :btn="'edit'" />
 
                                 <b-button size="sm" class="rounded-circle"
@@ -198,10 +200,8 @@ export default {
             isLoadingAll: false,
             filteredObject: [],
             selectedObject: null,
+            deletingObjectId: null,
 
-            // ✅ NEW: ทำ index คำค้นหาแบบเบาๆ ต่อ object เพื่อให้ค้นหาเร็วขึ้น
-            // key: object_id, value: "รวม keyword เป็น string lower"
-            _searchCache: new Map(),
         };
     },
     computed: {
@@ -234,8 +234,9 @@ export default {
             // set list พื้นฐาน
             this.filteredObject = Array.isArray(this.subdomain.objects) ? this.subdomain.objects : [];
 
-            // set selectedObject ให้ตัวแรก (เดิมคุณทำแบบนี้)
-            this.selectedObject = this.filteredObject[0] || null;
+            // คงตัวที่เลือกอยู่ไว้ถ้ายังมีในรายการใหม่ (เช่นหลังบันทึก/ลบแล้วโหลดใหม่)
+            // ไม่งั้นค่อยเลือกตัวแรก — เดิมเด้งกลับไปตัวแรกทุกครั้ง
+            this.selectedObject = this.pickSelected(this.filteredObject);
 
             // ถ้ามี searchQuery ให้ filter ตอน “เปิด” เท่านั้น (ไม่ filter ทุกครั้งที่พิมพ์)
             const q = (this.searchQuery || "").trim().toLowerCase();
@@ -275,7 +276,7 @@ export default {
 
             if (!q) {
                 this.filteredObject = objects;
-                this.selectedObject = this.filteredObject[0] || null;
+                this.selectedObject = this.pickSelected(this.filteredObject);
                 return;
             }
 
@@ -284,7 +285,7 @@ export default {
                 const oid = obj.object_id ?? obj.object_name;
 
                 // สร้าง cache
-                let blob = this._searchCache.get(oid);
+                let blob = this.searchCacheMap.get(oid);
                 if (!blob) {
                     const parts = [];
                     if (obj.object_name) parts.push(String(obj.object_name));
@@ -292,14 +293,14 @@ export default {
                     if (Array.isArray(obj.and_keywords)) parts.push(obj.and_keywords.join(" "));
                     if (Array.isArray(obj.not_keywords)) parts.push(obj.not_keywords.join(" "));
                     blob = parts.join(" ").toLowerCase();
-                    this._searchCache.set(oid, blob);
+                    this.searchCacheMap.set(oid, blob);
                 }
 
                 if (blob.includes(q)) out.push(obj);
             }
 
             this.filteredObject = out;
-            this.selectedObject = this.filteredObject[0] || null;
+            this.selectedObject = this.pickSelected(this.filteredObject);
 
             // รีเซ็ต limit ให้เริ่มแสดงต้นๆ ใหม่
             this.limit = this.defaultLimit;
@@ -315,10 +316,27 @@ export default {
             this.selectedObject = object;
         },
 
+        // เลือกตัวที่เคยเลือกไว้ถ้ายังอยู่ในรายการ ไม่งั้นใช้ตัวแรก
+        pickSelected(list) {
+            const cur = this.selectedObject;
+            if (cur && cur.object_id != null) {
+                const same = list.find((o) => o.object_id === cur.object_id);
+                if (same) return same;
+            }
+            return list[0] || null;
+        },
+
+        escapeHtml(str) {
+            return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => (
+                { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+            ));
+        },
+
         openDeleteObjectModal(object) {
             Swal.fire({
                 title: "ยืนยันการลบ Object",
-                html: `คุณต้องการลบ Object <b>${object.object_name}</b> หรือไม่?`,
+                // escape ชื่อก่อนใส่ลง html (ชื่อ object อาจมาจากการ Import)
+                html: `คุณต้องการลบ Object <b>${this.escapeHtml(object.object_name)}</b> หรือไม่?`,
                 icon: "question",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
@@ -334,36 +352,43 @@ export default {
             });
         },
 
-        deleteObject(objectId) {
+        // เดิม try/catch ครอบ promise ที่ไม่ได้ await → จับ error ไม่ได้ ลบไม่สำเร็จก็ไม่แจ้งผู้ใช้
+        async deleteObject(objectId) {
+            if (this.deletingObjectId) return;
+            this.deletingObjectId = objectId;
             try {
-                this.axios
-                    .delete(`https://api2.cognizata.com/api/v2/setting/deleteObject/${objectId}`, {
-                        headers: { Authorization: "Bearer " + localStorage.getItem("token") },
-                    })
-                    .then(() => {
-                        Swal.fire({
-                            title: "บันทึกแล้ว!",
-                            text: "ข้อมูลของคุณถูกบันทึกเรียบร้อย",
-                            icon: "success",
-                            showConfirmButton: false,
-                            timer: 3000,
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            buttonsStyling: false,
-                        });
-                        this.$emit("reset");
-                    });
+                await this.axios.delete(`https://api2.cognizata.com/api/v2/setting/deleteObject/${objectId}`, {
+                    headers: { Authorization: "Bearer " + localStorage.getItem("token") },
+                });
+                Swal.fire({
+                    title: "ลบแล้ว!",
+                    text: "ลบประเด็นเรียบร้อย",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 2000,
+                });
+                this.$emit("reset");
             } catch (error) {
                 console.error("Error deleting object:", error);
-                alert("เกิดข้อผิดพลาดในการลบ Object");
+                Swal.fire({
+                    icon: "error",
+                    title: "ลบประเด็นไม่สำเร็จ",
+                    text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+                });
+            } finally {
+                this.deletingObjectId = null;
             }
         },
 
         rebuildCache() {
-            this._searchCache = new Map();
+            this.searchCacheMap = new Map();
         },
     },
 
+    created() {
+        // cache คำค้นหาต่อ object — เก็บนอก reactive data (ชื่อขึ้นต้น _ ใน data Vue 2 จะไม่ proxy ให้)
+        this.searchCacheMap = new Map();
+    },
     mounted() {
         // ✅ เดิมคุณ set filteredObject ทันที (หนัก) — เปลี่ยนเป็นยังไม่ทำจนกว่าจะเปิด
         // this.filteredObject = this.subdomain.objects
