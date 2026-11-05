@@ -207,8 +207,6 @@
                                         </div>
                                     </div> -->
                                 </div>
-                                <VueGallerySlideshow v-if="dataPhoto.length !== 0" :images="dataPhoto" :index="index"
-                                    @close="closeGallery()" />
                             </div>
                         </b-card-text>
 
@@ -547,6 +545,7 @@
             </div>
         </div>
 
+        <VueGallerySlideshow :images="dataPhoto" :index="index" @close="closeGallery()" />
         <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" align="center" class="my-2"
             @input="onPageChange" />
     </div>
@@ -769,10 +768,9 @@ export default {
             return filter;
         },
         openGallery(i, data) {
-            // console.log("openGallery ==== ",data);
-            // console.log("index ==== ",i);
-            this.index = i;
+            if (!Array.isArray(data) || !data.length) return;
             this.dataPhoto = data;
+            this.index = i;
         },
         closeGallery() {
             this.index = null;

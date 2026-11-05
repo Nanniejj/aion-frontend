@@ -56,7 +56,8 @@ export default {
     fetchAll: { type: Function, default: null },
 
     /** prefix ชื่อไฟล์ เช่น 'timeline' หรือ 'domain' */
-    filenamePrefix: { type: String, default: 'timeline' }
+    filenamePrefix: { type: String, default: 'timeline' },
+    splitByDay: { type: Boolean, default: false }
   },
 
   data() {
@@ -260,7 +261,8 @@ export default {
           hashtags:       this.clampExcelCell(Array.isArray(p?.hashtags) ? p.hashtags.join(' ') : ''),
           photos:         this.clampExcelCell(Array.isArray(p?.photos) ? p.photos.join(' | ') : ''),
           profile_image:  this.clampExcelCell(p?.profile_image || ''),
-          uid:            this.clampExcelCell(p?.uid || '')
+          uid:            this.clampExcelCell(p?.uid || ''),
+          ...(this.splitByDay ? { summarize_youtube: this.clampExcelCell(p?.summarize_youtube ?? '') } : {})
         };
         if (this.inlineComments === 'json') base.comments = this.buildInlineCommentsJSON(p, this.commentsLimit);
         else if (this.inlineComments === 'text') base.comments = this.buildInlineCommentsText(p, this.commentsLimit);
@@ -329,6 +331,7 @@ export default {
         { wch: 30 }, // photos
         { wch: 45 }, // profile_image
         { wch: 45 }, // uid
+        ...(this.splitByDay ? [{ wch: 80 }] : []), // summarize_youtube
         ...(hasInline ? [{ wch: this.inlineComments === 'json' ? 60 : 90 }] : [])
       ];
     },
@@ -337,6 +340,53 @@ export default {
         { wch: 24 }, { wch: 80 }, { wch: 50 }, { wch: 20 }, { wch: 12 },
         { wch: 28 }, { wch: 80 }, { wch: 22 }, { wch: 50 }
       ];
+    },
+
+    exportDay(value) {
+      // Keep the calendar date supplied by the API, independent of browser timezone.
+      const date = String(value || '').slice(0, 10);
+      return moment(date, 'YYYY-MM-DD', true).isValid() ? date : 'Unknown-date';
+    },
+    buildWorkbook(postsRows, commentsRows) {
+      const wb = XLSX.utils.book_new();
+      const append = (rows, name, isComments, header) => {
+        const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false, header });
+        if (isComments) this.autosizeCommentsSheet(ws);
+        else this.autosizePostsSheet(ws);
+        XLSX.utils.book_append_sheet(wb, ws, name);
+      };
+      const days = new Set([
+        ...postsRows.map(row => this.exportDay(row.date)),
+        ...commentsRows.map(row => this.exportDay(row.post_date))
+      ]);
+      const start = this.filters?.startLocal || this.filters?.valueDate?.[0];
+      const end = this.filters?.endLocal || this.filters?.valueDate?.[1];
+      const selectedDays = start && end
+        ? this.getDaysInclusive(String(start).slice(0, 10), String(end).slice(0, 10))
+        : [];
+      if (this.splitByDay && (selectedDays.length > 1 || days.size > 1)) {
+        selectedDays.forEach(day => days.add(day));
+        const postsByDay = new Map();
+        const commentsByDay = new Map();
+        const group = (rows, field, groups) => rows.forEach(row => {
+          const day = this.exportDay(row[field]);
+          if (!groups.has(day)) groups.set(day, []);
+          groups.get(day).push(row);
+        });
+        group(postsRows, 'date', postsByDay);
+        group(commentsRows, 'post_date', commentsByDay);
+        const postHeader = Object.keys(postsRows[0] || {});
+        const commentHeader = Object.keys(commentsRows[0] || {});
+        [...days].sort().forEach(day => {
+          append(postsByDay.get(day) || [], 'Posts_' + day, false, postHeader);
+          const comments = commentsByDay.get(day) || [];
+          if (comments.length) append(comments, 'Comments_' + day, true, commentHeader);
+        });
+      } else {
+        if (postsRows.length) append(postsRows, 'Posts', false);
+        if (commentsRows.length) append(commentsRows, 'Comments', true);
+      }
+      return wb;
     },
 
     // ----- main export -----
@@ -369,17 +419,7 @@ export default {
           return;
         }
 
-        const wb = XLSX.utils.book_new();
-        if (postsRows && postsRows.length) {
-          const wsPosts = XLSX.utils.json_to_sheet(postsRows, { skipHeader: false });
-          this.autosizePostsSheet(wsPosts);
-          XLSX.utils.book_append_sheet(wb, wsPosts, 'Posts');
-        }
-        if (commentsRows && commentsRows.length) {
-          const wsComments = XLSX.utils.json_to_sheet(commentsRows, { skipHeader: false });
-          this.autosizeCommentsSheet(wsComments);
-          XLSX.utils.book_append_sheet(wb, wsComments, 'Comments');
-        }
+        const wb = this.buildWorkbook(postsRows, commentsRows);
 
         const filename = this.buildFilename();
         XLSX.writeFile(wb, filename);

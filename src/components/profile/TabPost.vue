@@ -26,11 +26,11 @@
             <div class="d-flex justify-content-end align-items-start">
               <b-form-select v-model="selectedSort" :options="optionSort" size="sm" class="mb-2 select-sort"
                 @change="selectSort"></b-form-select>
-              <!-- Export Excel (หน้า Domain) : ดึงทีละ 500 จนครบ -->
+              <!-- Export Excel (หน้า Domain) : ดึงทีละ 700 จนครบ -->
               <ExportExcelButton v-if="isDomainExport" class="mb-2" :posts="getPostAllMonitor || []"
                 :filters="domainExportFilters" :fetch-all="fetchAllDomainPostsForExport"
                 :count="getCountAllPost || 0" :disabled="getLoadPostTab || !getCountAllPost"
-                inline-comments="json" :comments-limit="20" filename-prefix="domain" />
+                inline-comments="json" :comments-limit="20" filename-prefix="domain" :split-by-day="true" />
             </div>
           </b-col>
         </b-row>
@@ -1347,7 +1347,7 @@ export default {
       this.index = i;
       this.dataPhoto = data;
     },
-    // ----- Export (Domain): ดึง getSentimentDetailDomain ทีละ 500 จนครบ count -----
+    // ----- Export (Domain): ดึง getSentimentDetailDomain ทีละ 700 จนครบ count -----
     buildDomainExportParams() {
       const today = moment().format("YYYY-MM-DD");
       const params = {
@@ -1364,8 +1364,8 @@ export default {
       return params;
     },
     async fetchAllDomainPostsForExport(onProgress) {
-      const PAGE_SIZE = 500;
-      const MAX_ROUNDS = 1000; // กันลูปไม่รู้จบ (500 x 1000 = 500,000 โพสต์)
+      const PAGE_SIZE = 700;
+      const RESULT_WINDOW = 10000;
       const base = this.buildDomainExportParams();
       const headers = {
         Authorization: "Bearer " + localStorage.getItem("token"),
@@ -1373,19 +1373,14 @@ export default {
       };
       const all = [];
       const seen = new Set();
-      let total = this.getCountAllPost || 0;
-      let offset = 0;
-
-      for (let round = 0; round < MAX_ROUNDS; round++) {
-        const { data } = await this.axios.get(
-          "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain",
-          { params: { ...base, offset, limit: PAGE_SIZE }, headers }
-        );
-        const chunk = data?.data || [];
-        if (typeof data?.count === "number") total = data.count;
-        if (!chunk.length) break;
-
-        chunk.forEach((p) => {
+      const total = this.getCountAllPost || 0;
+      const start = moment(base.start_date);
+      const end = moment(base.end_date);
+      if (!start.isValid() || !end.isValid() || start.isAfter(end)) {
+        throw new Error("ช่วงวันที่สำหรับส่งออกไม่ถูกต้อง");
+      }
+      const collect = rows => {
+        rows.forEach(p => {
           const key = p?._id || p?.uid || p?.url_post;
           if (key) {
             if (seen.has(key)) return;
@@ -1393,12 +1388,53 @@ export default {
           }
           all.push(p);
         });
-        offset += chunk.length;
         if (typeof onProgress === "function") onProgress({ loaded: all.length, total });
-
-        // ครบตาม count แล้ว หรือหน้าสุดท้าย (ได้น้อยกว่า limit และไม่รู้ count)
-        if (total ? offset >= total : chunk.length < PAGE_SIZE) break;
-      }
+      };
+      // Split inclusive ranges at whole seconds so every request stays inside
+      // Elasticsearch's result window without dropping boundary posts.
+      const fetchRange = async (rangeStart, rangeEnd) => {
+        const splitRange = async () => {
+          const seconds = rangeEnd.diff(rangeStart, "seconds");
+          if (seconds < 1) {
+            throw new Error("มีโพสต์เกิน 10,000 รายการในวินาทีเดียว ต้องให้ API รองรับ search_after หรือ scroll เพื่อส่งออกให้ครบ");
+          }
+          const middle = rangeStart.clone().add(Math.floor(seconds / 2), "seconds");
+          await fetchRange(rangeStart, middle);
+          await fetchRange(middle.clone().add(1, "second"), rangeEnd);
+        };
+        let offset = 0;
+        const rows = [];
+        while (offset < RESULT_WINDOW) {
+          const limit = Math.min(PAGE_SIZE, RESULT_WINDOW - offset);
+          const { data } = await this.axios.get(
+            "https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain",
+            { params: {
+              ...base,
+              start_date: rangeStart.format("YYYY-MM-DDTHH:mm:ss"),
+              end_date: rangeEnd.format("YYYY-MM-DDTHH:mm:ss"),
+              offset, limit,
+            }, headers }
+          );
+          if (!Array.isArray(data?.data)) throw new Error("API ส่งข้อมูลโพสต์สำหรับ Export ไม่ถูกต้อง");
+          const chunk = data.data;
+          const count = data.count == null ? NaN : Number(data.count);
+          const hasCount = Number.isFinite(count) && count >= 0;
+          if (hasCount && count > RESULT_WINDOW) {
+            await splitRange();
+            return;
+          }
+          rows.push(...chunk);
+          offset += chunk.length;
+          if ((hasCount && offset >= count) || (!hasCount && chunk.length < limit)) {
+            collect(rows);
+            return;
+          }
+          if (!chunk.length) throw new Error("API ส่งข้อมูลไม่ครบตามจำนวนโพสต์");
+        }
+        // A full window without a total may still have more records.
+        await splitRange();
+      };
+      await fetchRange(start, end);
       return all;
     },
     async infiniteScroll(acc, sort, offset, sentiment) {

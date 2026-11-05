@@ -160,7 +160,7 @@
                 :class="{ dropdownStyle: $route.path === '/report' }" id="nav-router">
                 <center><strong>Report</strong></center>
               </router-link>
-              <router-link to="/avatar" class="dropdown-item" :class="{ dropdownStyle: $route.path === '/avatar' }"
+              <router-link to="/avatar" class="dropdown-item d-none" :class="{ dropdownStyle: $route.path === '/avatar' }"
                 id="nav-router">
                 <center><strong>Avatar</strong></center>
               </router-link>
@@ -408,7 +408,7 @@
                   :class="{ dropdownStyle: $route.path === '/report' }" id="dp-txt">Report</router-link>
               </b-dropdown-item>
 
-              <b-dropdown-item to="/avatar">
+              <b-dropdown-item to="/avatar" class="d-none">
                 <router-link to="/avatar" tag="a" :style="dropdownStyle"
                   :class="{ dropdownStyle: $route.path === '/avatar' }" id="dp-txt">Avatar</router-link>
               </b-dropdown-item>

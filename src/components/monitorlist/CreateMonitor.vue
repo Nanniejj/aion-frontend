@@ -4,7 +4,7 @@
     <button class="btn btn-add mt-0 w-100" @click="open = true">
       <i class="fa fa-plus" />
       <span style="font-size: 16px" v-if="tabsMonitor == 'targetlist'">
-        เพิ่มบัญชี
+        {{ mode === 'priority' ? 'เพิ่มเป้าหมายพิเศษ' : 'เพิ่มบัญชี' }}
       </span>
       <span style="font-size: 16px" v-else-if="tabsMonitor == 'hashtaglist'">
         เพิ่มแฮชแท็ก
@@ -24,7 +24,7 @@
     >
       <!-- :resize-width="{ 3000: '80%', 1350: '80%', 768: '90%' }" -->
         <div v-if="tabsMonitor == 'targetlist'">
-            <h5><b>เพิ่มบัญชีเป้าหมาย</b></h5>
+            <h5><b>{{ mode === 'priority' ? 'เพิ่มเป้าหมายพิเศษ' : 'เพิ่มบัญชีเป้าหมาย' }}</b></h5>
             <hr />
         </div>
         <div v-else-if="tabsMonitor == 'hashtaglist'">
@@ -52,7 +52,7 @@
                 >
                 <span v-else>
                     คำแนะนำ : กรุณาเลือกแหล่งข้อมูลออนไลน์และใส่บัญชีที่ต้องการ
-                    <span class="text-danger bold" style="font-size: 18px;">สูงสุด 100 บัญชี</span>
+                    <span class="text-danger bold" style="font-size: 18px;">สูงสุด {{ maxTargets }} บัญชี</span>
                 </span>
             </b-col> -->
             <b-col v-if="tabsMonitor == 'hashtaglist'" sm="12" class="px-0">
@@ -177,7 +177,7 @@
                 @click="confirmSave(targetLists)"
                 v-if="tabsMonitor == 'targetlist'"
                 :disabled="addTarget.length == 0"
-                >บันทึก Target</b-button
+                >{{ mode === 'priority' ? 'บันทึกเป้าหมายพิเศษ' : 'บันทึก Target' }}</b-button
             >
             <b-button
                 class="btn btn-save"
@@ -221,6 +221,15 @@ export default {
     props: {
         tabsMonitor: {
             type: String,
+        },
+        // 'priority' = โหมดเป้าหมายพิเศษ (ยิงไป addTargetMonitor, จำกัดตาม maxTargets)
+        mode: {
+            type: String,
+            default: 'normal',
+        },
+        maxTargets: {
+            type: Number,
+            default: 100,
         },
     },
     computed: {
@@ -432,7 +441,7 @@ export default {
                 e.preventDefault();
 
                 urls.forEach(rawUrl => {
-                    if (this.addTarget.length >= 100) return;
+                    if (this.addTarget.length >= this.maxTargets) return;
                     const normalized = this.normalizeUrl(rawUrl);
                     if (
                         normalized &&
@@ -455,10 +464,10 @@ export default {
             let normalizedTags = tags.map(tag => this.normalizeUrl(tag));
 
             // 🚫 จำกัดไม่เกิน 100
-            if (normalizedTags.length > 100) {
+            if (normalizedTags.length > this.maxTargets) {
                 Swal.fire({
                 icon: 'warning',
-                title: "เพิ่มได้สูงสุด 100 เป้าหมาย",
+                title: `เพิ่มได้สูงสุด ${this.maxTargets} เป้าหมาย`,
                 showConfirmButton: false,
                 didOpen: () => {
                     const iconContent = document.querySelector('.swal2-icon-content');
@@ -466,7 +475,7 @@ export default {
                 },
                 timer: 2000
                 });
-                normalizedTags = normalizedTags.slice(0, 100);
+                normalizedTags = normalizedTags.slice(0, this.maxTargets);
             }
             // 🚫 ห้ามลิงก์ Facebook group (ตรวจทุก subdomain เช่น www, web, m, business ฯลฯ)
             
@@ -605,10 +614,10 @@ export default {
                 return true;
             }
             // ❌ จำกัดไม่เกิน 100 รายการ
-            if (this.addTarget.length >= 100) {
+            if (this.addTarget.length >= this.maxTargets) {
                 Swal.fire({
                 icon: 'warning',
-                title: "เพิ่มได้สูงสุด 100 เป้าหมาย",
+                title: `เพิ่มได้สูงสุด ${this.maxTargets} เป้าหมาย`,
                 showConfirmButton: false,
                 timer: 2000
                 });
@@ -941,12 +950,16 @@ export default {
         },
         async apiAddTargets(list) {
             // this.collectAllTargets();
-            let rawData = {
-                "data": this.collectAllTargets(list)
-            }
+            const isPriority = this.mode === 'priority';
+            // โหมดพิเศษ: ส่งเฉพาะ { URL, source } ตามสเปค addTargetMonitor
+            let rawData = isPriority
+                ? { "targets": this.collectAllTargets(list).map(({ URL, source }) => ({ URL, source })) }
+                : { "data": this.collectAllTargets(list) };
             const config = {
                 method: "post",
-                url: "https://api2.cognizata.com/api/v2/monitor/targetandhashtag",
+                url: isPriority
+                    ? "https://api2.cognizata.com/api/v2/monitor/addTargetMonitor"
+                    : "https://api2.cognizata.com/api/v2/monitor/targetandhashtag",
                 data: rawData,
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),

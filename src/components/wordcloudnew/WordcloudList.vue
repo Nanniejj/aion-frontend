@@ -10,9 +10,19 @@
       <b-row class="align-items-center px-3">
         <b-col cols="12" md>
           <div class="text-left">
-            <span class="h4 mr-3 d-inline-block bold mb-0">TOP 10</span>
+            <span class="h4 mr-3 d-inline-block bold mb-0">TOP {{ topLimit }}</span>
             <span class="small text-grey">(จำนวนครั้งที่พบ)</span>
           </div>
+        </b-col>
+        <b-col cols="12" md="auto" class="mt-2 mt-md-0">
+          <!-- <label class="small mb-1" for="wc-list-top-limit">จำนวนที่แสดง</label> -->
+          <b-form-select
+            id="wc-list-top-limit"
+            v-model="topLimit"
+            :options="topLimitOptions"
+            size="sm"
+            aria-label="จำนวนอันดับคำและแฮชแท็กที่แสดง"
+          />
         </b-col>
       </b-row>
 
@@ -33,9 +43,9 @@
           </div>
 
           <SentimentTopChart
-            v-if="view === 'chart' && wordTop10.length"
+            v-if="view === 'chart' && wordTopItems.length"
             :items="wordChartItems"
-            :limit="10"
+            :limit="topLimit"
             order="desc"
             labelMode="count"
             chartId="word"
@@ -43,14 +53,14 @@
             @row-click="onChartRowClick"
           />
 
-          <div v-else-if="wordTop10.length">
-            <div v-for="(word, k) in wordTop10" :key="'mw-' + k" class="my-2 d-flex align-items-center wc-list-row">
+          <div v-else-if="wordTopItems.length">
+            <div v-for="(word, k) in wordTopItems" :key="'mw-' + k" class="my-2 d-flex align-items-center wc-list-row">
               <b-button
                 block
                 pill
                 variant="warning"
                 :pressed="keyword === word.name"
-                @click="clickWord(word.name, wordTop10, 'word')"
+                @click="clickWord(word.name, wordTopItems, 'word')"
                 class="flex-grow-1 mb-0 mr-2"
               >
                 <span class="label-clip">{{ word.name }}</span>
@@ -85,9 +95,9 @@
           </div>
 
           <SentimentTopChart
-            v-if="view === 'chart' && hashTop10.length"
+            v-if="view === 'chart' && hashTopItems.length"
             :items="hashChartItems"
-            :limit="10"
+            :limit="topLimit"
             order="desc"
             labelMode="count"
             chartId="hash"
@@ -95,14 +105,14 @@
             @row-click="onChartRowClick"
           />
 
-          <div v-else-if="hashTop10.length">
-            <div v-for="(word, k) in hashTop10" :key="'mh-' + k" class="my-2 d-flex align-items-center wc-list-row">
+          <div v-else-if="hashTopItems.length">
+            <div v-for="(word, k) in hashTopItems" :key="'mh-' + k" class="my-2 d-flex align-items-center wc-list-row">
               <b-button
                 block
                 pill
                 variant="warning"
                 :pressed="keyword === word.name"
-                @click="clickWord(word.name, hashTop10, 'hash')"
+                @click="clickWord(word.name, hashTopItems, 'hash')"
                 class="flex-grow-1 mb-0 mr-2"
               >
                 <span class="label-clip">{{ word.name }}</span>
@@ -140,9 +150,9 @@
           </div>
 
           <SentimentTopChart
-            v-if="view === 'chart' && wordTop10.length"
+            v-if="view === 'chart' && wordTopItems.length"
             :items="wordChartItems"
-            :limit="10"
+            :limit="topLimit"
             order="desc"
             labelMode="count"
             chartId="word"
@@ -150,14 +160,14 @@
             @row-click="onChartRowClick"
           />
 
-          <div v-else-if="wordTop10.length">
-            <div v-for="(word, k) in wordTop10" :key="'w-' + k" class="my-2 d-flex align-items-center wc-list-row">
+          <div v-else-if="wordTopItems.length">
+            <div v-for="(word, k) in wordTopItems" :key="'w-' + k" class="my-2 d-flex align-items-center wc-list-row">
               <b-button
                 block
                 pill
                 variant="warning"
                 :pressed="keyword === word.name"
-                @click="clickWord(word.name, wordTop10, 'word')"
+                @click="clickWord(word.name, wordTopItems, 'word')"
                 class="flex-grow-1 mb-0 mr-2"
               >
                 <span class="label-clip">{{ word.name }}</span>
@@ -191,9 +201,9 @@
           </div>
 
           <SentimentTopChart
-            v-if="view === 'chart' && hashTop10.length"
+            v-if="view === 'chart' && hashTopItems.length"
             :items="hashChartItems"
-            :limit="10"
+            :limit="topLimit"
             order="desc"
             labelMode="count"
             chartId="hash"
@@ -201,14 +211,14 @@
             @row-click="onChartRowClick"
           />
 
-          <div v-else-if="hashTop10.length">
-            <div v-for="(word, k) in hashTop10" :key="'h-' + k" class="my-2 d-flex align-items-center wc-list-row">
+          <div v-else-if="hashTopItems.length">
+            <div v-for="(word, k) in hashTopItems" :key="'h-' + k" class="my-2 d-flex align-items-center wc-list-row">
               <b-button
                 block
                 pill
                 variant="warning"
                 :pressed="keyword === word.name"
-                @click="clickWord(word.name, hashTop10, 'hash')"
+                @click="clickWord(word.name, hashTopItems, 'hash')"
                 class="flex-grow-1 mb-0 mr-2"
               >
                 <span class="label-clip">{{ word.name }}</span>
@@ -291,17 +301,23 @@ export default {
       );
     },
 
-    wordTop10() {
+    wordTopItems() {
       const list = Array.isArray(this.wordItemsRaw) ? this.wordItemsRaw : [];
-      return list.filter((w) => !this.excludedWords[this._normKey(w.name)]).slice(0, 10);
+      return list
+        .filter((w) => !this.excludedWords[this._normKey(w.name)])
+        .sort((a, b) => this.pickSentimentCounts(b).total - this.pickSentimentCounts(a).total)
+        .slice(0, this.topLimit);
     },
-    hashTop10() {
+    hashTopItems() {
       const list = Array.isArray(this.hashItemsRaw) ? this.hashItemsRaw : [];
-      return list.filter((w) => !this.excludedTags[this._normKey(w.name)]).slice(0, 10);
+      return list
+        .filter((w) => !this.excludedTags[this._normKey(w.name)])
+        .sort((a, b) => this.pickSentimentCounts(b).total - this.pickSentimentCounts(a).total)
+        .slice(0, this.topLimit);
     },
 
     wordChartItems() {
-      return (this.wordTop10 || []).map(w => {
+      return (this.wordTopItems || []).map(w => {
         const { pos, neu, neg, total } = this.pickSentimentCounts(w);
         return {
           uid: w.name,
@@ -315,7 +331,7 @@ export default {
       });
     },
     hashChartItems() {
-      return (this.hashTop10 || []).map(w => {
+      return (this.hashTopItems || []).map(w => {
         const { pos, neu, neg, total } = this.pickSentimentCounts(w);
         return {
           uid: w.name,
@@ -331,6 +347,8 @@ export default {
   },
   data() {
     return {
+      topLimit: 10,
+      topLimitOptions: [10, 20, 30, 40, 50].map(value => ({ value, text: `TOP ${value}` })),
       keyword: "",
       dataFromAPI: "",
       view: "chart",
