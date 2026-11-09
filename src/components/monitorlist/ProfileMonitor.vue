@@ -487,17 +487,7 @@
                     </b-col>
 
                     <b-col cols="12" class="mt-1">
-                        <!-- ไม่มีข้อมูลผู้ติดตามทั้งคู่ → แสดงข้อความแทน 0 -->
-                        <div v-if="!hasFollowStats" class="d-flex justify-content-center justify-content-sm-start">
-                            <div class="follow-nodata">
-                                <span class="follow-nodata-icon"><i class="fas fa-user-friends"></i></span>
-                                <div class="follow-nodata-text">
-                                    <div class="follow-nodata-title">ไม่พบข้อมูลผู้ติดตาม</div>
-                                    <div class="follow-nodata-sub">บัญชีนี้ไม่ได้อยู่ในรายการบัญชีเป้าหมาย</div>
-                                </div>
-                            </div>
-                        </div>
-                        <b-row v-else class="justify-content-center justify-content-sm-start">
+                        <b-row v-if="hasFollowStats"class="justify-content-center justify-content-sm-start">
                             <b-col cols="auto">
                                 <span class="text-info bold" style="font-size: 18px;">{{ profile.followers != null ? formatNumber(profile.followers) : '-'
                                 }}</span> Followers
