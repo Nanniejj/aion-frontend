@@ -67,7 +67,7 @@
             ></b-form-input>
           </b-col>
         </b-row>
-        <b-row v-if="usernameproject == 'adminatapy'">
+        <b-row v-if="$isSuperAdmin()">
           <b-col cols="12">
             <label for="input-small1"
               ><b>Group </b><span class="h5 text-danger">*</span></label
@@ -209,7 +209,7 @@ export default {
     },
     submitform() {
       let projectU;
-      if (this.usernameproject == "adminatapy") {
+      if (this.$isSuperAdmin()) {
         projectU = {projectname:this.projectnameselected}
       } else {
         projectU = this.projectUser;

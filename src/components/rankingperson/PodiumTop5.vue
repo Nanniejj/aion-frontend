@@ -17,7 +17,7 @@
                 <!-- 4th -->
                 <div class="podium-col fourth text-center mx-1 mx-sm-2">
                     <div class="avatar-wrap sm">
-                        <img :src="(it4 && it4.avatar) ? it4.avatar : defaultAvatar" class="avatar sm">
+                        <img referrerpolicy="no-referrer" :src="(it4 && it4.avatar) ? it4.avatar : defaultAvatar" class="avatar sm">
                     </div>
                     <div class="name w-100">{{ (it4 && it4.name) ? it4.name : '—' }}</div>
                     <div class="score" v-if="it4">{{ formatNumber(it4.mentions) }} Posts</div>
@@ -26,7 +26,7 @@
                 <!-- 2nd -->
                 <div class="podium-col second text-center mx-1 mx-sm-2">
                     <div class="avatar-wrap">
-                        <img :src="(it2 && it2.avatar) ? it2.avatar : defaultAvatar" class="avatar">
+                        <img referrerpolicy="no-referrer" :src="(it2 && it2.avatar) ? it2.avatar : defaultAvatar" class="avatar">
                     </div>
                     <div class="name">{{ (it2 && it2.name) ? it2.name : '—' }}</div>
                     <div class="score" v-if="it2">{{ formatNumber(it2.mentions) }} Posts</div>
@@ -36,7 +36,7 @@
                 <!-- 1st -->
                 <div class="podium-col first text-center mx-1 mx-sm-2">
                     <div class="avatar-wrap crown">
-                        <img :src="(it1 && it1.avatar) ? it1.avatar : defaultAvatar" class="avatar">
+                        <img referrerpolicy="no-referrer" :src="(it1 && it1.avatar) ? it1.avatar : defaultAvatar" class="avatar">
                         <div class="crown-ico">👑</div>
                     </div>
                     <div class="name">{{ (it1 && it1.name) ? it1.name : '—' }}</div>
@@ -47,7 +47,7 @@
                 <!-- 3rd -->
                 <div class="podium-col third text-center mx-1 mx-sm-2">
                     <div class="avatar-wrap">
-                        <img :src="(it3 && it3.avatar) ? it3.avatar : defaultAvatar" class="avatar">
+                        <img referrerpolicy="no-referrer" :src="(it3 && it3.avatar) ? it3.avatar : defaultAvatar" class="avatar">
                     </div>
                     <div class="name">{{ (it3 && it3.name) ? it3.name : '—' }}</div>
                     <div class="score" v-if="it3">{{ formatNumber(it3.mentions) }} Posts</div>
@@ -57,7 +57,7 @@
                 <!-- 5th -->
                 <div class="podium-col fifth text-center mx-1 mx-sm-2">
                     <div class="avatar-wrap sm">
-                        <img :src="(it5 && it5.avatar) ? it5.avatar : defaultAvatar" class="avatar sm">
+                        <img referrerpolicy="no-referrer" :src="(it5 && it5.avatar) ? it5.avatar : defaultAvatar" class="avatar sm">
                     </div>
                     <div class="name">{{ (it5 && it5.name) ? it5.name : '—' }}</div>
                     <div class="score" v-if="it5">{{ formatNumber(it5.mentions) }} Posts</div>

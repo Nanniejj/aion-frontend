@@ -312,7 +312,7 @@
           </div>
         </div>
 
-        <div class="text-left ai-box mt-2" v-if="datas && datas.ocr && username == 'adminatapy'"
+        <div class="text-left ai-box mt-2" v-if="datas && datas.ocr && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.ocr">
             <div v-if="text.text_sort && text.text_sort.length">
@@ -371,7 +371,7 @@
             </span>
           </span>
         </div>
-        <div class="text-left ai-box mt-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
+        <div class="text-left ai-box mt-2" v-if="datas && datas.face_detect && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;">
           <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
             <span v-for="(face, idx) in datas.person_name">
@@ -425,32 +425,32 @@
                         <a id="user-link" v-bind:href="'https://twitter.com/' + comment.account_name
                           " target="_blank">
                           <i class="fas fa-comment"></i>
-                          <img v-bind:src="comment.photo" id="img-user" />
+                          <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                           {{ comment.account_name }}</a>
                       </span>
                       <span v-if="comment.post_type == 'retweet'">
                         <a id="user-link" v-bind:href="'https://twitter.com/' + comment.account_name
                           " target="_blank">
                           <i class="fal fa-retweet"></i>
-                          <img v-bind:src="comment.photo" id="img-user" />
+                          <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                           {{ comment.account_name }}</a>
                       </span>
                     </span>
                     
                     <a id="user-link" v-if="datas.source === 'instagram'" v-bind:href="'https://www.instagram.com//' + comment.owner.id
                       " target="_blank">
-                      <img v-bind:src="comment.owner.profile_pic_url" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.owner.profile_pic_url" id="img-user" />
                       {{ comment.owner.username }}</a>
 
                     
                     <a id="user-link" v-if="datas.source === 'pantip'" v-bind:href="'https://pantip.com//profile/' + comment.username
                       " target="_blank">
-                      <img v-bind:src="comment.photo" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                       {{ comment.username }}</a>
                     
                     <a id="user-link" v-if="datas.source === 'youtube'" v-bind:href="'https://www.youtube.com/' + comment.author_link
                       " target="_blank">
-                      <img v-bind:src="comment.photo" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                       {{ comment.author }}</a>
                   </div>
                 </div>
@@ -638,7 +638,7 @@
                   <div v-for="(cmtn, inx) in datas.comments.comments" :key="inx">
                     <b-row>
                       <b-col lg="1">
-                        <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                        <img referrerpolicy="no-referrer" :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                       </b-col>
                       <b-col lg="11">
                         <div>
@@ -662,12 +662,12 @@
                       <b-col lg="1">
                         <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
                           v-if="datas.source == 'youtube'">
-                          <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                          <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
                           <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
 
                         </a>
                         <a :href="cmt.url" target="_blank" v-else>
-                          <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
+                          <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
                           <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
                         </a>
 

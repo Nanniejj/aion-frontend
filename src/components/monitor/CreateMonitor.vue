@@ -372,7 +372,7 @@ export default {
   },
   mounted() {
     this.username = localStorage.getItem("username");
-    if (this.username == "adminatapy") {
+    if (this.$isSuperAdmin()) {
       this.options.push({ value: "news", text: "News" });
     }
   },

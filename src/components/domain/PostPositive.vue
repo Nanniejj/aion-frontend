@@ -256,7 +256,7 @@
           </div>
         </div>
 
-        <div class="text-left ai-box mt-2" v-if="profilePost && profilePost.ocr && username == 'adminatapy'"
+        <div class="text-left ai-box mt-2" v-if="profilePost && profilePost.ocr && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in profilePost.ocr">
             <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
@@ -285,7 +285,7 @@
           profilePost &&
           profilePost.location &&
           profilePost.location.length &&
-          username == 'adminatapy'
+          $isSuperAdmin()
         " class="text-left ai-box mt-3 text-small " style="font-size: 13px;font-weight: 500; color: #2c3e50;">
           <i class="fa fa-map-marker mr-1" aria-hidden="true" style="font-size: 15px;"></i>
           <span v-for="(geo, k) in filterNumbers(profilePost.location)" :key="k" class="mr-1" style="border: 1px solid #2c3e505e  ;padding: 0px 5px;display: inline-flex;text-align: center;
@@ -319,7 +319,7 @@
           </span>
         </div>
         <div class="text-left ai-box mt-2" v-if="
-          profilePost && profilePost.face_detect && username == 'adminatapy'
+          profilePost && profilePost.face_detect && $isSuperAdmin()
         " style="font-size: 15px;font-weight: 500;">
           <div v-if="profilePost.face_detect && profilePost.person_name.length">
             <span v-for="(face, idx) in profilePost.person_name">
@@ -551,7 +551,7 @@
                 <div v-for="(cmtn, inx) in profilePost.comments.comments" :key="inx">
                   <b-row>
                     <b-col lg="1">
-                      <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                      <img referrerpolicy="no-referrer" :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                     </b-col>
                     <b-col lg="11">
                       <div>
@@ -575,11 +575,11 @@
                     <b-col lg="1">
                       <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
                         v-if="profilePost.source == 'youtube'">
-                        <img :src="cmt.photo" id="img-cmt" /></a>
+                        <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" /></a>
                       <a :href="cmt.url" target="_blank" v-else>
-                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" /></a>
+                        <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" /></a>
 
-                      <!-- <img v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                      <!-- <img referrerpolicy="no-referrer" v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                       <span> </span>
                     </b-col>
                     <b-col lg="11">

@@ -92,7 +92,7 @@
         <div class="qr-title">  <b-icon icon="check-circle-fill"  variant="success" /> เชื่อมต่อ LINE สำเร็จ</div>
 
         <div class="line-account-card" v-if="line.account">
-          <img
+          <img referrerpolicy="no-referrer"
             v-if="line.account.pictureUrl"
             :src="line.account.pictureUrl"
             :alt="line.account.displayName"

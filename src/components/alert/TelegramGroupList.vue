@@ -395,7 +395,7 @@ export default {
       }
     },
     checkUserGroup(telegram) {
-      if (this.username === 'adminatapy') {
+      if (this.$isSuperAdmin()) {
         return telegram;
       }
       let filtered = telegram.filter(group =>

@@ -57,7 +57,7 @@
         <div class="d-flex flex-wrap justify-content-center" v-if="selected == 'line'">
           <div v-for="user in filteredUsers" :key="user._id"
             class="user-card shadow-sm rounded-lg m-3 p-3 text-center bg-white py-5">
-            <img :src="user.pictureUrl" alt="Profile" class="avatar mb-2" />
+            <img referrerpolicy="no-referrer" :src="user.pictureUrl" alt="Profile" class="avatar mb-2" />
             <h5 class="mb-1 truncate-230">{{ user.displayName }}</h5>
             <!-- <p class="text-muted small mb-1">ID: {{ user.userId }}</p> -->
             <!-- <p class="text-muted small mb-2">Updated: {{ formatDate(user.updatedAt) }}</p> -->

@@ -405,7 +405,7 @@
           </div>
         </div>
         <div class="text-left ai-box mt-2" v-if="
-          profilePost && profilePost.face_detect && username == 'adminatapy'
+          profilePost && profilePost.face_detect && $isSuperAdmin()
         " style="font-size: 15px;font-weight: 500;">
           <div v-if="profilePost.face_detect && profilePost.person_name && profilePost.person_name.length">
             <span v-for="(face, idx) in profilePost.person_name">
@@ -730,7 +730,7 @@
                 <div v-for="(cmtn, inx) in profilePost.comments.comments" :key="inx">
                   <b-row>
                     <b-col lg="1">
-                      <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                      <img referrerpolicy="no-referrer" :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                     </b-col>
                     <b-col lg="11">
                       <div>
@@ -754,15 +754,15 @@
                     <b-col lg="1">
                       <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
                         v-if="profilePost.source == 'youtube'">
-                        <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                        <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
                         <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
                       </a>
                       <a :href="cmt.url" target="_blank" v-else>
-                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
+                        <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
                         <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
                       </a>
 
-                      <!-- <img v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                      <!-- <img referrerpolicy="no-referrer" v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                       <span> </span>
                     </b-col>
                     <b-col lg="11">

@@ -54,6 +54,16 @@ Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png")
 });
 Vue.prototype.$emitter = emitter
+
+// สิทธิ์ superadmin — ใช้แทนการเช็คชื่อผู้ใช้ตายตัว (เดิม username == 'adminatapy')
+// อ่าน role จาก localStorage ทุกครั้งที่เรียก เพื่อให้ถูกต้องหลัง login/logout สลับบัญชี
+Vue.prototype.$isSuperAdmin = function () {
+  try {
+    return (localStorage.getItem("reftokenOpt") || "") === "superadmin";
+  } catch (e) {
+    return false;
+  }
+};
 // Vue.use(VNetworkGraph);
 Vue.component("downloadExcel", JsonExcel);
 Vue.use(VueApexCharts);
@@ -61,6 +71,39 @@ Vue.component("apexchart", VueApexCharts);
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
+
+// ทุก <b-avatar> ในแอป: ใส่ referrerpolicy="no-referrer" ให้ <img> ข้างใน
+// รูปโปรไฟล์จาก YouTube (yt3.ggpht.com / googleusercontent) และ CDN บางเจ้าจะตอบ 403
+// ถ้าเบราว์เซอร์ส่ง Referer ของเว็บเราไป แล้ว b-avatar ก็แสดงไอคอนคนแทน
+// (BAvatar ไม่มี prop สำหรับ referrerpolicy จึง extend render ของมันแล้วเติม attribute ให้ img)
+// พฤติกรรมเดิมยังอยู่ครบ: โหลดรูปไม่ได้ → แสดงไอคอนคนเหมือนเดิม
+{
+  const BaseAvatar = Vue.options.components.BAvatar;
+  if (BaseAvatar && BaseAvatar.options && typeof BaseAvatar.options.render === "function") {
+    const baseRender = BaseAvatar.options.render;
+    const addNoReferrer = (vnode) => {
+      if (!vnode) return;
+      if (vnode.tag === "img") {
+        vnode.data = vnode.data || {};
+        vnode.data.attrs = { referrerpolicy: "no-referrer", ...(vnode.data.attrs || {}) };
+      }
+      (vnode.children || []).forEach(addNoReferrer);
+      if (vnode.componentOptions && vnode.componentOptions.children) {
+        vnode.componentOptions.children.forEach(addNoReferrer);
+      }
+    };
+    Vue.component(
+      "BAvatar",
+      BaseAvatar.extend({
+        render(h) {
+          const vnode = baseRender.call(this, h);
+          addNoReferrer(vnode);
+          return vnode;
+        },
+      })
+    );
+  }
+}
 Vue.filter("numFormat", numFormat(numeral));
 Vue.use(Print);
 Vue.use(lightbox);
