@@ -62,8 +62,10 @@
 
             <!-- ✅ เปิดแล้วค่อย render -->
             <b-row v-else>
-                <!-- ซ้าย: รายการ objects -->
-                <b-col>
+                <!-- ซ้าย: รายการ objects — กำหนดสัดส่วนชัดเจน + min-width:0
+                     (เดิมเป็น <b-col> เฉย ๆ ถ้าชื่อประเด็นยาวเป็นคำเดียว เช่น "Credential/Misconfiguration"
+                     คอลัมน์ซ้ายจะหดไม่ได้ แล้วคอลัมน์ keyword ถูกดันลงไปบรรทัดใหม่) -->
+                <b-col cols="12" :md="selectedObject ? 5 : 12" :lg="selectedObject ? 4 : 12" class="obj-list-col">
                     <div class="scroll-obj">
                         <!-- รายการ objects แบบจำกัดจำนวน -->
                         <div v-for="(object, objIndex) in visibleObjects" :key="object.object_id || objIndex"
@@ -118,7 +120,7 @@
                 </b-col>
 
                 <!-- ขวา: keyword panel (เหมือนเดิม) -->
-                <b-col v-if="selectedObject" cols="12" md="7" lg="8" style="text-align: left;">
+                <b-col v-if="selectedObject" cols="12" md="7" lg="8" class="obj-keyword-col" style="text-align: left;">
                     <div v-if="selectedObject.keywords && selectedObject.keywords.length">
                         <strong class="my-3">Keywords</strong><br />
                         <div style="overflow-y: auto; max-height: 200px;">
@@ -444,6 +446,22 @@ export default {
     padding: 0 2px;
 }
 
+.obj-list-col,
+.obj-keyword-col {
+    min-width: 0;
+}
+
+.object-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    padding: 0 6px;
+}
+
+.object-item .d-flex.justify-content-end {
+    flex-shrink: 0;
+}
+
 .subdomain-name {
     font-size: 20px;
 }
@@ -510,6 +528,8 @@ export default {
     margin-right: 5px;
     font-size: 14px;
     position: relative;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 .btn-custom {
