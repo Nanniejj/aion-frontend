@@ -1199,7 +1199,7 @@ export default {
                     this.datachart = data
 
                     if (data?.name || data?.domain_name) {
-                        this.check_sentiment_word(data.name || data.domain_name)
+                        this.check_sentiment_word()
                         this.datacount = data.count || 0
                         this.platform = data.platform || {}
                     }
@@ -1550,20 +1550,18 @@ export default {
                     console.log(error);
                 });
         },
-        check_sentiment_word(name) {
-            const object_id = this.$route.query.object_id;
-            let names = ""
-            if (object_id) {
-                names = "&name=" + name
-            } else {
-                names = "&subdomain=" + name
-            }
+        check_sentiment_word() {
+            // API ใหม่ต้องใช้ id (เดิมส่งชื่อ domain/subdomain → ตอบ "Missing domain_id")
+            const { domain_id, subdomain_id, object_id } = this.$route.query;
+            if (!domain_id) return;
+            const params = new URLSearchParams({ domain_id });
+            if (subdomain_id) params.append("subdomain_id", subdomain_id);
+            if (object_id) params.append("object_id", object_id);
 
             var config = {
                 method: "get",
                 url:
-                    "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-                    this.$route.query.domain + names,
+                    "https://api2.cognizata.com/api/v2/object/check_sentiment_word?" + params.toString(),
                 headers: {
                     Authorization: "Bearer " + localStorage.getItem("token"),
                     "Content-Type": "application/json",
@@ -1576,8 +1574,8 @@ export default {
                     console.log(this.arrword);
 
                     // ดำเนินการกับข้อมูลเมื่อ API เสร็จ
-                    var k = this.arrword?.Keywords;
-                    var ka = this.arrword?.and_keywords;
+                    var k = this.arrword?.Keywords || [];
+                    var ka = this.arrword?.and_keywords || [];
                     let result = ka.map((key) => {
                         return key.split("+");
                     });
