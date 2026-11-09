@@ -467,7 +467,7 @@
                                         <div v-for="(cmtn, inx) in post.comments.comments" :key="inx">
                                             <b-row class="mx-0">
                                                 <b-col lg="1" class="px-0">
-                                                    <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                                                    <img referrerpolicy="no-referrer" :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                                                 </b-col>
                                                 <b-col lg="11">
                                                     <div>

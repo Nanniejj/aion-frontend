@@ -594,7 +594,7 @@
               </div>
         <div
           class="text-left ai-box mt-2"
-          v-if="profilePost && profilePost.ocr && username == 'adminatapy'"
+          v-if="profilePost && profilePost.ocr && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-for="(text, idx) in profilePost.ocr">
@@ -684,7 +684,7 @@
         <div
           class="text-left ai-box mt-2"
           v-if="
-            profilePost && profilePost.face_detect && username == 'adminatapy'
+            profilePost && profilePost.face_detect && $isSuperAdmin()
           "
           style="font-size: 15px;font-weight: 500;"
         >
@@ -1218,7 +1218,7 @@
                 >
                   <b-row>
                     <b-col lg="1">
-                      <img
+                      <img referrerpolicy="no-referrer"
                         :src="cmtn.pictureUrl"
                         id="img-cmt"
                         @error="setAltImg"
@@ -1249,13 +1249,13 @@
                         target="_blank"
                         v-if="profilePost.source == 'youtube'"
                       >
-                        <img :src="cmt.photo" id="img-cmt"
+                        <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt"
                       /></a>
                       <a :href="cmt.url" target="_blank" v-else>
-                        <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url"
+                        <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url"
                       /></a>
 
-                      <!-- <img v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                      <!-- <img referrerpolicy="no-referrer" v-if="profilePost.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                       <span> </span>
                     </b-col>
                     <b-col lg="11">

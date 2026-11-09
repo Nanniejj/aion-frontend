@@ -321,10 +321,14 @@
         <template #header>
           <b-row>
             <b-col style="text-align: initial; display: contents">
-              <span v-if="datas.profile_image">
-                <b-avatar @error="user" size="47px" :src="datas.profile_image" loading="lazy" class="imgpro"
-                  v-if="datas.source != 'blockdit'"></b-avatar>
-                <b-avatar @error="user" size="47px" :src="datas.profile_image" loading="lazy" v-else></b-avatar>
+              <!-- รูปจาก yt3.ggpht.com / googleusercontent (YouTube) ตอบ 403 ถ้าเบราว์เซอร์ส่ง Referer ของเว็บเรา
+                   และ b-avatar ใส่ referrerpolicy ให้ <img> ไม่ได้ → ใส่ <img> เองใน slot พร้อม no-referrer
+                   ถ้ายังโหลดไม่ได้ (ลิงก์หมดอายุ ฯลฯ) จะสลับเป็นไอคอนคนแทนรูปเสีย -->
+              <span v-if="datas.profile_image && !datas.profileImgError">
+                <b-avatar size="47px" :class="{ imgpro: datas.source != 'blockdit' }">
+                  <img :src="datas.profile_image" referrerpolicy="no-referrer" loading="lazy" alt=""
+                    class="avatar-slot-img" @error="onProfileImgError(datas)" />
+                </b-avatar>
               </span>
               <span v-else> <b-avatar size="45px"></b-avatar></span>
               <img v-if="datas.source === 'twitter'" :src="imgtw" class="social-img" />
@@ -559,7 +563,7 @@
           </div>
         </div>
 
-        <div class="text-left ai-box my-2 px-2" v-if="datas && datas.ocr && username == 'adminatapy'"
+        <div class="text-left ai-box my-2 px-2" v-if="datas && datas.ocr && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;">
           <div v-for="(text, idx) in datas.ocr">
             <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
@@ -621,7 +625,7 @@
             </span>
           </span>
         </div>
-        <div class="text-left ai-box my-2 px-2" v-if="datas && datas.face_detect && username == 'adminatapy'"
+        <div class="text-left ai-box my-2 px-2" v-if="datas && datas.face_detect && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;">
           <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
             <span v-for="(face, idx) in datas.person_name">
@@ -685,14 +689,14 @@
                         <a id="user-link" v-bind:href="'https://twitter.com/' + comment.account_name
                           " target="_blank">
                           <i class="fas fa-comment"></i>
-                          <img v-bind:src="comment.photo" id="img-user" />
+                          <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                           {{ comment.account_name }}</a>
                       </span>
                       <span v-if="comment.post_type == 'retweet'">
                         <a id="user-link" v-bind:href="'https://twitter.com/' + comment.account_name
                           " target="_blank">
                           <i class="fal fa-retweet"></i>
-                          <img v-bind:src="comment.photo" id="img-user" />
+                          <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                           {{ comment.account_name }}</a>
                       </span>
                     </span>
@@ -703,18 +707,18 @@
                     <!-- IG -->
                     <a id="user-link" v-if="datas.source === 'instagram'" v-bind:href="'https://www.instagram.com//' + comment.owner.id
                       " target="_blank">
-                      <img v-bind:src="comment.owner.profile_pic_url" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.owner.profile_pic_url" id="img-user" />
                       {{ comment.owner.username }}</a>
 
                     <!-- pt -->
                     <a id="user-link" v-if="datas.source === 'pantip'" v-bind:href="'https://pantip.com//profile/' + comment.username
                       " target="_blank">
-                      <img v-bind:src="comment.photo" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                       {{ comment.username }}</a>
                     <!-- yt -->
                     <a id="user-link" v-if="datas.source === 'youtube'" v-bind:href="'https://www.youtube.com/' + comment.author_link
                       " target="_blank">
-                      <img v-bind:src="comment.photo" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                       {{ comment.author }}</a>
                   </div>
                 </div>
@@ -923,7 +927,7 @@
                   <div v-for="(cmtn, inx) in datas.comments.comments" :key="inx">
                     <b-row>
                       <b-col lg="1">
-                        <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                        <img referrerpolicy="no-referrer" :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                       </b-col>
                       <b-col lg="11">
                         <div>
@@ -945,22 +949,24 @@
                   <div v-for="(cmt, i) in datas.comments" :key="i">
                     <b-row>
                       <b-col lg="1">
-                        <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                        <a :href="youtubeAuthorLink(cmt.author_link)" target="_blank"
                           v-if="datas.source == 'youtube'">
-                          <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                          <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo && !cmt.photoError"
+                            referrerpolicy="no-referrer" @error="onProfileImgError(cmt, 'photoError')" />
                           <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
                         </a>
                         <a :href="cmt.url" target="_blank" v-else>
-                          <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
+                          <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo && !cmt.photoError"
+                            referrerpolicy="no-referrer" @error="onProfileImgError(cmt, 'photoError')" />
                           <b-avatar v-else loading="lazy" v-else style="height: 32px;"></b-avatar>
                         </a>
 
-                        <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                        <!-- <img referrerpolicy="no-referrer" v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                         <span> </span>
                       </b-col>
                       <b-col lg="11">
                         <div>
-                          <a :href="'https://www.youtube.com/' + cmt.author_link" target="_blank"
+                          <a :href="youtubeAuthorLink(cmt.author_link)" target="_blank"
                             v-if="datas.source == 'youtube'">
                             <span v-if="datas.source == 'youtube'" class="bold">
                               {{ cmt.author }}</span></a>
@@ -1243,6 +1249,22 @@ export default {
     },
   },
   methods: {
+    // รูปโปรไฟล์/รูปผู้คอมเมนต์โหลดไม่ได้ → ตั้ง flag ให้สลับไปแสดงไอคอนคนแทน
+    onProfileImgError(item, key = 'profileImgError') {
+      if (item) this.$set(item, key, true);
+    },
+    // ใช้กับรูปผู้คอมเมนต์ข่าว (@error="setAltImg") ที่เดิมเรียกอยู่แต่ไม่เคยประกาศ method ไว้
+    setAltImg(event) {
+      if (event && event.target) event.target.style.display = 'none';
+    },
+    // author_link ของ YouTube บางครั้งเป็น URL เต็มแล้ว → ห้ามต่อ domain ซ้ำ (เดิมได้ youtube.com/https:/...)
+    youtubeAuthorLink(link) {
+      if (!link) return '#';
+      const value = String(link).trim();
+      if (/^https?:\/\//i.test(value)) return value;
+      if (value.startsWith('//')) return 'https:' + value;
+      return 'https://www.youtube.com/' + value.replace(/^\/+/, '');
+    },
     selectReadStatus() {
       this.offset = 0;
       this.currentPage = 1;
@@ -2043,6 +2065,12 @@ export default {
 </script>
 
 <style scoped>
+.avatar-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
 /* ✅ หน้า Feed: เปลี่ยนสถานะการอ่านแล้วไม่ตรงตัวกรอง → ไฮไลต์สั้นๆ ก่อนยุบหาย / โพสต์ที่เติมเข้ามาค่อยๆ โผล่ */
 .post-status-changed {
   box-shadow: 0 0 0 2px #a7f3d0, 0 1px 3px rgba(0, 0, 0, 0.06) !important;

@@ -616,7 +616,7 @@
         </div>
           <div
             class="text-left ai-box mt-2"
-            v-if="datas && datas.ocr && username == 'adminatapy'"
+            v-if="datas && datas.ocr && $isSuperAdmin()"
             style="font-size: 15px;font-weight: 500;"
           >
             <div v-for="(text, idx) in datas.ocr">
@@ -697,7 +697,7 @@
         </div>
           <div
             class="text-left ai-box mt-2"
-            v-if="datas && datas.face_detect && username == 'adminatapy'"
+            v-if="datas && datas.face_detect && $isSuperAdmin()"
             style="font-size: 15px;font-weight: 500;"
           >
             <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
@@ -781,7 +781,7 @@
                             target="_blank"
                           >
                             <i class="fas fa-comment"></i>
-                            <img v-bind:src="comment.photo" id="img-user" />
+                            <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                             {{ comment.account_name }}</a
                           >
                         </span>
@@ -794,7 +794,7 @@
                             target="_blank"
                           >
                             <i class="fal fa-retweet"></i>
-                            <img v-bind:src="comment.photo" id="img-user" />
+                            <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                             {{ comment.account_name }}</a
                           >
                         </span>
@@ -812,7 +812,7 @@
                         "
                         target="_blank"
                       >
-                        <img
+                        <img referrerpolicy="no-referrer"
                           v-bind:src="comment.owner.profile_pic_url"
                           id="img-user"
                         />
@@ -828,7 +828,7 @@
                         "
                         target="_blank"
                       >
-                        <img v-bind:src="comment.photo" id="img-user" />
+                        <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                         {{ comment.username }}</a
                       >
                       <!-- yt -->
@@ -840,7 +840,7 @@
                         "
                         target="_blank"
                       >
-                        <img v-bind:src="comment.photo" id="img-user" />
+                        <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                         {{ comment.author }}</a
                       >
                     </div>
@@ -1230,7 +1230,7 @@
                     >
                       <b-row>
                         <b-col lg="1">
-                          <img
+                          <img referrerpolicy="no-referrer"
                             :src="cmtn.pictureUrl"
                             id="img-cmt"
                             @error="setAltImg"
@@ -1261,16 +1261,16 @@
                             target="_blank"
                             v-if="datas.source == 'youtube'"
                           >
-                            <img :src="cmt.photo" id="img-cmt"
+                            <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt"
                           /></a>
                           <a :href="cmt.url" target="_blank" v-else>
-                            <img
+                            <img referrerpolicy="no-referrer"
                               :src="cmt.photo"
                               id="img-cmt"
                               v-bind:href="cmt.url"
                           /></a>
 
-                          <!-- <img v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                          <!-- <img referrerpolicy="no-referrer" v-if="datas.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                           <span> </span>
                         </b-col>
                         <b-col lg="11">

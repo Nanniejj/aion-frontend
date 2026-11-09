@@ -254,7 +254,7 @@
                 </div>
               </div>
             </div>
-            <div class="text-left ai-box my-2" v-if="postDomain && postDomain.ocr && username == 'adminatapy'"
+            <div class="text-left ai-box my-2" v-if="postDomain && postDomain.ocr && $isSuperAdmin()"
               style="font-size: 15px;font-weight: 500;">
               <div v-for="(text, idx) in postDomain.ocr">
                 <!-- {{ postDomain.ocr.face[].person_name /postDomain.ocr.face[].confidence >) }} -->
@@ -315,7 +315,7 @@
                 </span>
               </span>
             </div>
-            <div class="text-left ai-box my-2" v-if="postDomain && postDomain.face_detect && username == 'adminatapy'"
+            <div class="text-left ai-box my-2" v-if="postDomain && postDomain.face_detect && $isSuperAdmin()"
               style="font-size: 15px;font-weight: 500;">
               <div v-if="postDomain.face_detect && postDomain.person_name && postDomain.person_name.length">
                 <span v-for="(face, idx) in postDomain.person_name" :key="idx">
@@ -622,7 +622,7 @@
                     <div v-for="(cmtn, inx) in postDomain.comments.comments" :key="inx">
                       <b-row>
                         <b-col lg="1">
-                          <img :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
+                          <img referrerpolicy="no-referrer" :src="cmtn.pictureUrl" id="img-cmt" @error="setAltImg" />
                         </b-col>
                         <b-col lg="11">
                           <div>
@@ -646,16 +646,16 @@
                         <b-col lg="1">
                           <a :href="'https://www.youtube.com/' + cmt.author_link
                             " target="_blank" v-if="postDomain.source == 'youtube'">
-                            <img :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
+                            <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-if="cmt.photo" />
                             <b-avatar loading="lazy" v-else style="height: 32px;"></b-avatar>
 
                           </a>
                           <a :href="cmt.url" target="_blank" v-else>
-                            <img :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
+                            <img referrerpolicy="no-referrer" :src="cmt.photo" id="img-cmt" v-bind:href="cmt.url" v-if="cmt.photo" />
                             <b-avatar loading="lazy" v-else style="height: 32px;"></b-avatar>
                           </a>
 
-                          <!-- <img v-if="postDomain.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
+                          <!-- <img referrerpolicy="no-referrer" v-if="postDomain.source=='news'" :src="cmt.comments.pictureUrl" id="img-cmt"> -->
                           <span> </span>
                         </b-col>
                         <b-col lg="11">

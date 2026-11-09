@@ -144,7 +144,7 @@
                 <!-- Account Header -->
                 <div class="post-top">
                   <div class="avatar-wrap">
-                    <img v-if="post.account_profile_image" :src="post.account_profile_image"
+                    <img referrerpolicy="no-referrer" v-if="post.account_profile_image" :src="post.account_profile_image"
                       class="avatar-img"
                       :style="{ 'border-color': getColor(post.account_name) }"
                       @error="$event.target.style.display='none'" />

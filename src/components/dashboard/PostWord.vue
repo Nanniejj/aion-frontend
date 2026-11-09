@@ -82,7 +82,7 @@
                 class="user-img"
               />
 
-              <img
+              <img referrerpolicy="no-referrer"
                 v-else
                 v-bind:src="datas.photo"
                 loading="lazy"
@@ -411,7 +411,7 @@
         </div>
         <div
           class="text-left ai-box mt-2"
-          v-if="datas && datas.ocr && username == 'adminatapy'"
+          v-if="datas && datas.ocr && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-for="(text, idx) in datas.ocr">
@@ -501,7 +501,7 @@
         </div>
         <div
           class="text-left ai-box mt-2"
-          v-if="datas && datas.face_detect && username == 'adminatapy'"
+          v-if="datas && datas.face_detect && $isSuperAdmin()"
           style="font-size: 15px;font-weight: 500;"
         >
           <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">
@@ -563,7 +563,7 @@
                           target="_blank"
                         >
                           <i class="fas fa-comment"></i>
-                          <img v-bind:src="comment.photo" id="img-user" />
+                          <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                           {{ comment.account_name }}</a
                         >
                       </span>
@@ -576,7 +576,7 @@
                           target="_blank"
                         >
                           <i class="fal fa-retweet"></i>
-                          <img v-bind:src="comment.photo" id="img-user" />
+                          <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                           {{ comment.account_name }}</a
                         >
                       </span>
@@ -594,7 +594,7 @@
                       "
                       target="_blank"
                     >
-                      <img
+                      <img referrerpolicy="no-referrer"
                         v-bind:src="comment.owner.profile_pic_url"
                         id="img-user"
                       />
@@ -610,7 +610,7 @@
                       "
                       target="_blank"
                     >
-                      <img v-bind:src="comment.photo" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                       {{ comment.username }}</a
                     >
                     <!-- yt -->
@@ -622,7 +622,7 @@
                       "
                       target="_blank"
                     >
-                      <img v-bind:src="comment.photo" id="img-user" />
+                      <img referrerpolicy="no-referrer" v-bind:src="comment.photo" id="img-user" />
                       {{ comment.author }}</a
                     >
                   </div>

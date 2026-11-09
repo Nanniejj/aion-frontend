@@ -110,7 +110,7 @@
             </template>
             <template #cell(account_name)="row">
               <span v-if="row.item.profile_image">
-                <img :src="row.item.profile_image" id="profile-pic" />
+                <img referrerpolicy="no-referrer" :src="row.item.profile_image" id="profile-pic" />
               </span>
               <span v-else>
                 <b-avatar class="mr-3"></b-avatar>
@@ -200,7 +200,7 @@
             <a :href="dataInfo.account_url" target="_blank" id="acclink">
               <span class="bold h5">
                 <span v-if="dataInfo.profile_image"
-                  ><img :src="dataInfo.profile_image" id="profile-pic-1"/>
+                  ><img referrerpolicy="no-referrer" :src="dataInfo.profile_image" id="profile-pic-1"/>
                   <span v-if="dataInfo && dataInfo._id && dataInfo._id.source">
                     <img
                       v-if="dataInfo._id.source === 'twitter'"

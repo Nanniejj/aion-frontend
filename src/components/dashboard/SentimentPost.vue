@@ -177,7 +177,7 @@
         </div>
             <div
               class="text-left ai-box mt-2"
-              v-if="datas && datas.ocr && username == 'adminatapy'"
+              v-if="datas && datas.ocr && $isSuperAdmin()"
               style="font-size: 15px;font-weight: 500;"
             >
               <div v-for="(text, idx) in datas.ocr">
@@ -266,7 +266,7 @@
             </div>
             <div
               class="text-left ai-box mt-2"
-              v-if="datas && datas.face_detect && username == 'adminatapy'"
+              v-if="datas && datas.face_detect && $isSuperAdmin()"
               style="font-size: 15px;font-weight: 500;"
             >
               <div v-if="datas.face_detect && datas.person_name && datas.person_name.length">

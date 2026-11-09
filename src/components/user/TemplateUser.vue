@@ -27,7 +27,7 @@
             :usernameproject="username"
             v-if="
               (switchUserAll && switchUserAll.length < 5) ||
-                username == 'adminatapy'
+                $isSuperAdmin()
             "
             :userAll="userAll"
             :projectUser="{ projectname: switchUserAll[0].projectname }"
@@ -36,7 +36,7 @@
             switch
             size="lg"
             class="d-inline-block mt-3"
-            v-if="username == 'adminatapy'"
+            v-if="$isSuperAdmin()"
             v-model="userAll"
             style="cursor: pointer;"
             >บัญชีทั้งหมด</b-form-checkbox

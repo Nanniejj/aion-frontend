@@ -109,7 +109,7 @@
         </template>
         <template #cell(uid)="row">
           <!-- <span v-if="row.item.profile_image">
-          <img :src="row.item.profile_image" id="profile-pic">
+          <img referrerpolicy="no-referrer" :src="row.item.profile_image" id="profile-pic">
         </span>
         <span v-else>
           <b-avatar class="mr-3"></b-avatar>

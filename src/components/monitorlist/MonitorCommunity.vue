@@ -111,7 +111,7 @@
                         <template #cell(insert_timestamp)="data">
                             <span class="small"> {{ formatDate(data.item.insert_timestamp) }}</span>
                         </template>
-                        <template #cell(bot_timestamp)="data" v-if="username === 'adminatapy'">
+                        <template #cell(bot_timestamp)="data" v-if="$isSuperAdmin()">
                             <span v-if="data.item.latest_bot_update" class="small"> {{ formatBotDate(data.item.latest_bot_update) }}</span>
                             <span v-else class="small"> - </span>
                         </template>
@@ -124,7 +124,7 @@
                                 class="text-capitalize text-truncate">{{ data.item.group_type }}
                             </b-badge>
                         </template> -->
-                        <template #cell(status)="data" v-if="username === 'adminatapy'">
+                        <template #cell(status)="data" v-if="$isSuperAdmin()">
                             <!-- v-if="data.item.group_type === 'private'" -->
                             <b-row class="align-items-center justify-content-center text-truncate "
                                 :class="data.item.group_status === 'done' || data.item.group_type === 'public' ? 'text-success' : 'text-danger'"
@@ -139,7 +139,7 @@
 
                         <template #cell(action)="data">
                             <b-row class="m-0 justify-content-end align-items-center">
-                                <b-col cols="auto" md="12" lg="auto" v-if="username == 'adminatapy'" class="px-2 px-lg-2 pb-2 fas fa-pen" v-b-tooltip.hover title="แก้ไขข้อมูล"
+                                <b-col cols="auto" md="12" lg="auto" v-if="$isSuperAdmin()" class="px-2 px-lg-2 pb-2 fas fa-pen" v-b-tooltip.hover title="แก้ไขข้อมูล"
                                     @click="data.toggleDetails" size="sm"></b-col>
                                 <b-col cols="auto" md="12" lg="auto" class="px-2 px-lg-2 pb-2 fas fa-list-ul text-info" v-b-tooltip.hover title="ดูรายละเอียด" size="sm"
                                     @click="linkToProfile(data.item)"></b-col>
@@ -225,7 +225,7 @@ export default {
         tableFields() {
             let hidden = [];
 
-            if (this.username !== 'adminatapy') {
+            if (!this.$isSuperAdmin()) {
                 hidden = ['bot_timestamp', 'status']; // กำหนด column ที่ต้องซ่อน
             }
 
