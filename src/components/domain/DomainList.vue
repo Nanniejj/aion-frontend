@@ -1,8 +1,19 @@
 <template>
   <div class="ml-lg-5 mr-lg-5 ml-md-3 mr-md-3 ml-sm-3 mr-sm-3">
     <b-col class="prt h3 text-left">Domain List</b-col>
-    <b-col class="text-left mb-2 text-secondary">
-        ทั้งหมด {{  totalCount || 0 | numFormat }} เรื่อง
+    <b-col class="d-flex align-items-center flex-wrap mb-2 list-bar mt-2">
+      <span class="text-secondary">ทั้งหมด {{ totalCount || 0 | numFormat }} เรื่อง</span>
+      <div class="sort-toggle" role="group" aria-label="เรียงลำดับ">
+        <button
+          v-for="o in sortOptions"
+          :key="o.value"
+          type="button"
+          class="sort-btn"
+          :class="{ active: sort === o.value }"
+          :disabled="loading"
+          @click="changeSort(o.value)"
+        >{{ o.text }}</button>
+      </div>
     </b-col>
     <b-row cols="2" cols-sm="2" cols-md="3" cols-lg="4" class="m-auto">
       <!-- <LinkMain />
@@ -48,13 +59,23 @@ export default {
       return {
         domainList: [],
         totalCount: 0,
-        loading: false
+        loading: false,
+        sort: "",
+        sortOptions: [
+          { value: "desc", text: "ใหม่สุด" },
+          { value: "", text: "เก่าสุด" },
+        ]
     };
   },
   computed: {
     ...mapGetters(["getListDomain", "getLoadStatus"]),
   },
   methods: {
+    changeSort(val) {
+      if (this.sort === val) return;
+      this.sort = val;
+      this.apiGetDomains();
+    },
     toTemplate() {
       this.$router.push({
         name: "Setting",
@@ -74,7 +95,8 @@ export default {
             method: "get",
             url: "https://api2.cognizata.com/api/v2/domain/getDomainlist",
             params: {
-                name: this.search
+                name: this.search,
+                ...(this.sort ? { sort: this.sort } : {})
             },
             headers: {
                 Authorization: "Bearer " + localStorage.getItem("token"),
@@ -120,6 +142,41 @@ export default {
 };
 </script>
 <style scoped>
+.list-bar {
+  gap: 6px 12px;
+}
+.sort-toggle {
+  display: inline-flex;
+  background: #f3f3f3;
+  border-radius: 999px;
+  padding: 2px;
+}
+.sort-btn {
+  border: none;
+  background: transparent;
+  color: #777;
+  font-size: 12px;
+  line-height: 1;
+  padding: 5px 12px;
+  border-radius: 999px;
+  transition: all 0.15s;
+}
+.sort-btn:hover:not(:disabled):not(.active) {
+  color: #333;
+}
+.sort-btn.active {
+  background: #fed16e;
+  color: #4a3600;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.sort-btn:disabled {
+  cursor: default;
+}
+.sort-btn:focus {
+  outline: none;
+}
+
 #box-domain {
   width: 100%;
   height: 150px;
