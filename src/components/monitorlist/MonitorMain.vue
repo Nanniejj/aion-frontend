@@ -16,11 +16,11 @@
                     </b-button>
 
                     <b-button style="border-bottom-right-radius: 0;" :variant="activeButton === 'priority' ? 'custom' : 'outline-custom'"
-                        @click="selectButton('priority')" class="">
+                        @click="selectButton('priority')" >
                         <div class="d-flex align-items-center">
                             <i class="fa fa-chalkboard-user" style="font-size: 1.5rem;"></i>
                             <!-- <b-icon icon="person-workspace" font-scale="1.5"></b-icon> -->
-                            <span class="d-none d-lg-block pl-2">
+                            <span class=" d-lg-block pl-2">
                                 Priority Targets
                             </span>
                         </div>

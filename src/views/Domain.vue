@@ -6,32 +6,35 @@
         <TitleLogo v-show="elementVisible" />
       </Transition>
       <!-- <Map/> -->
-      <b-row class="mx-0 mx-lg-5" v-if="!getPushDomainStat">
-        <b-col cols="12" md="" >
+      <b-row class="mx-0 mx-lg-5 align-items-center domain-head" v-if="!getPushDomainStat">
+        <b-col order="1">
           <h4 class="title m-0 pb-0">หัวเรื่อง (Domain)</h4>
         </b-col>
-        <b-col class="pr-0" style="padding-top: 20px;">
-            <b-form-group label-for="search-input" class="">
-                <b-input-group-append>
-                    <b-form-input id="search-input" v-model="search" placeholder="ค้นหา"
-                        class="w-100 mr-2" @keyup.enter="hasSearched = true"></b-form-input>
-                        <!-- ปุ่มล้างค่า -->
-                        <b-input-group-append style="position: absolute;right: 96px;">
-                            <b-button
-                                variant="link"
-                                @click="resetSearch()"
-                                title="ล้างข้อความ"
-                                class="px-2"
-                                style="color: red; text-decoration: none;"
-                            >
-                                <i v-b-tooltip.hover title="ล้างคำค้นหา" class="fa fa-times"></i>
-                            </b-button>
-                        </b-input-group-append>
-                    <b-button variant="warning" style="background-color: #fed16e;" pill :pressed="false" @click="hasSearched = true" class="shadow-r px-4">ค้นหา</b-button>
-                </b-input-group-append>
-            </b-form-group>
+        <!-- ปุ่ม Report + พิมพ์ : มือถืออยู่บรรทัดเดียวกับหัวข้อ -->
+        <b-col cols="auto" order="2" order-md="3" class="d-flex align-items-center head-actions mt-md-3">
+          <b-button variant="warning" pill class="shadow-r btn-report" @click="$router.push({ name: 'ReportDomain' })">
+            <i class="fas fa-file-alt mr-1"></i> Report
+          </b-button>
+          <i class="fas fa-print fa-2x" title="พิมพ์" @click="printWindow()"></i>
         </b-col>
-        <b-col cols="auto"><i class="fas fa-print fa-2x px-0" @click="printWindow()"></i></b-col>
+        <!-- ช่องค้นหา : มือถือเต็มความกว้างบรรทัดถัดไป -->
+        <b-col cols="12" md="6" lg="5" order="3" order-md="2" class="search-col mt-md-3 px-0">
+          <div class="search-wrap">
+            <div class="search-box ">
+              <b-form-input
+                id="search-input"
+                v-model="search"
+                placeholder="ค้นหาหัวเรื่อง"
+                class="search-input"
+                @keyup.enter="hasSearched = true"
+              ></b-form-input>
+              <b-button v-if="search" type="button" class="search-clear" title="ล้างคำค้นหา" @click="resetSearch()">
+                <i class="fa fa-times"></i>
+              </b-button>
+            </div>
+            <b-button variant="warning" pill class="shadow-r btn-search" @click="hasSearched = true">ค้นหา</b-button>
+          </div>
+        </b-col>
       </b-row>
       <DomainList v-if="!getPushDomainStat" 
         :search="search" 
@@ -192,6 +195,55 @@ export default {
   box-shadow: 2px 1px 4px #888888;
 }
 
+.domain-head {
+  padding-top: 16px;
+  row-gap: 12px;
+}
+.head-actions {
+  gap: 12px;
+}
+.head-actions .fa-print {
+  float: none;
+  padding: 0;
+  cursor: pointer;
+}
+.btn-report,
+.btn-search {
+  background-color: #fed16e;
+  border-color: #fed16e;
+  white-space: nowrap;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.search-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 999px;
+  padding-left: 16px;
+  padding-right: 36px;
+}
+.search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #e0584b;
+  padding: 4px 6px;
+  line-height: 1;
+}
+
 .btn-to-top:hover {
   background-color: #f7c24e;
   border-color: #f7c24e;
@@ -263,6 +315,13 @@ export default {
 }
 
 @media only screen and (min-width: 0px) and (max-width: 600px) {
+  .title {
+    font-size: 1.25rem;
+  }
+  .btn-report {
+    padding: 4px 14px;
+    font-size: 14px;
+  }
 
   .fa-print {
     font-size: 25px;

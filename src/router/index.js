@@ -69,6 +69,12 @@ const routes = [
       import(/* webpackChunkName: "DomainList" */ "../views/SearchKeywordSetting.vue")
   },
   {
+    path: "/reportDomain",
+    name: "ReportDomain",
+    component: () =>
+      import(/* webpackChunkName: "DomainList" */ "../views/ReportDomain.vue")
+  },
+  {
     path: "/domainReport",
     name: "DomainReport",
     component: () =>
