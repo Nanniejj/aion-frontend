@@ -21,6 +21,9 @@ import * as XLSX from 'xlsx';
 import axios from 'axios';
 import moment from 'moment';
 
+// ข้อความต่อท้ายเมื่อข้อความยาวเกินขีดจำกัด 32,767 ตัวอักษรต่อช่องของ Excel
+const TRUNCATED_NOTE = ' [TRUNCATED]';
+
 export default {
   name: 'ExportExcelButton',
   props: {
@@ -57,7 +60,10 @@ export default {
 
     /** prefix ชื่อไฟล์ เช่น 'timeline' หรือ 'domain' */
     filenamePrefix: { type: String, default: 'timeline' },
-    splitByDay: { type: Boolean, default: false }
+    splitByDay: { type: Boolean, default: false },
+
+    /** จำนวนแถวข้อมูลสูงสุดต่อชีต (Excel รับได้ 1,048,576 แถวรวม header) เกินนี้จะแบ่งเป็นชีต _2, _3, ... */
+    maxRowsPerSheet: { type: Number, default: 1048575 }
   },
 
   data() {
@@ -91,8 +97,22 @@ export default {
       if (str == null) return '';
       const s = String(str);
       if (s.length <= MAX) return s;
-      const head = s.slice(0, MAX - (addNote ? 12 : 0));
-      return addNote ? head + ' [TRUNCATED]' : head;
+      const head = s.slice(0, MAX - (addNote ? TRUNCATED_NOTE.length : 0));
+      return addNote ? head + TRUNCATED_NOTE : head;
+    },
+    // นับช่องที่ถูกตัดข้อความ (ลงท้ายด้วย TRUNCATED_NOTE) แยกตามคอลัมน์ → { total, byColumn: { full_text: 3, ... } }
+    countTruncated(rows, sheetLabel, acc) {
+      (rows || []).forEach(row => {
+        Object.keys(row).forEach(col => {
+          const v = row[col];
+          if (typeof v === 'string' && v.length >= 32767 - 1 && v.endsWith(TRUNCATED_NOTE)) {
+            const key = `${sheetLabel}.${col}`;
+            acc.byColumn[key] = (acc.byColumn[key] || 0) + 1;
+            acc.total++;
+          }
+        });
+      });
+      return acc;
     },
     toast(msg, variant = 'default', delay = 2000) {
       if (!this.useToast || !this.$bvToast) return;
@@ -349,11 +369,25 @@ export default {
     },
     buildWorkbook(postsRows, commentsRows) {
       const wb = XLSX.utils.book_new();
-      const append = (rows, name, isComments, header) => {
+      const splitSheets = []; // [{ name, parts }] ชีตที่ถูกแบ่งเพราะเกินจำนวนแถว
+      const maxRows = Math.max(1, Number(this.maxRowsPerSheet) || 1048575);
+      const appendOne = (rows, name, isComments, header) => {
         const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false, header });
         if (isComments) this.autosizeCommentsSheet(ws);
         else this.autosizePostsSheet(ws);
-        XLSX.utils.book_append_sheet(wb, ws, name);
+        XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31)); // ชื่อชีตยาวได้ไม่เกิน 31 ตัวอักษร
+      };
+      const append = (rows, name, isComments, header) => {
+        if (rows.length <= maxRows) return appendOne(rows, name, isComments, header);
+        // เกินขีดจำกัดของ Excel → แบ่งเป็น name, name_2, name_3, ... (header เดียวกันทุกชีต)
+        const hdr = header || Object.keys(rows[0] || {});
+        const parts = Math.ceil(rows.length / maxRows);
+        for (let i = 0; i < parts; i++) {
+          const chunk = rows.slice(i * maxRows, (i + 1) * maxRows);
+          const suffix = i === 0 ? '' : `_${i + 1}`;
+          appendOne(chunk, name.slice(0, 31 - suffix.length) + suffix, isComments, hdr);
+        }
+        splitSheets.push({ name, parts, rows: rows.length });
       };
       const days = new Set([
         ...postsRows.map(row => this.exportDay(row.date)),
@@ -386,7 +420,41 @@ export default {
         if (postsRows.length) append(postsRows, 'Posts', false);
         if (commentsRows.length) append(commentsRows, 'Comments', true);
       }
+      wb.__splitSheets = splitSheets; // ส่งต่อให้ exportExcel ใช้แจ้งผู้ใช้ (ไม่ถูกเขียนลงไฟล์)
       return wb;
+    },
+
+    // แจ้งผู้ใช้หลัง export ถ้ามีข้อความถูกตัด หรือมีชีตที่ถูกแบ่ง
+    notifyExportWarnings(truncated, splitSheets) {
+      const fmt = n => Number(n || 0).toLocaleString();
+      const lines = [];
+      if (truncated.total > 0) {
+        const cols = Object.keys(truncated.byColumn)
+          .map(k => `• ${k}: ${fmt(truncated.byColumn[k])} ช่อง`)
+          .join('<br>');
+        lines.push(
+          `มีข้อความยาวเกินขีดจำกัดของ Excel (32,767 ตัวอักษรต่อช่อง) ` +
+          `<b>${fmt(truncated.total)}</b> ช่อง ระบบตัดส่วนที่เกินและต่อท้ายด้วย <code>[TRUNCATED]</code><br>${cols}`
+        );
+      }
+      if (splitSheets.length) {
+        const s = splitSheets
+          .map(x => `• ${x.name}: ${fmt(x.rows)} แถว → แบ่งเป็น ${x.parts} ชีต (${x.name}, ${x.name}_2${x.parts > 2 ? ', ...' : ''})`)
+          .join('<br>');
+        lines.push(`ข้อมูลเกินจำนวนแถวสูงสุดต่อชีตของ Excel (1,048,576 แถว) จึงแบ่งเป็นหลายชีต<br>${s}`);
+      }
+      if (!lines.length) return false;
+      if (typeof this.$fire === 'function') {
+        this.$fire({
+          icon: 'warning',
+          title: 'ส่งออกไฟล์สำเร็จ แต่มีข้อควรทราบ',
+          html: `<div style="text-align:left;font-size:14px;line-height:1.6">${lines.join('<br><br>')}</div>`,
+          confirmButtonText: 'รับทราบ',
+        });
+      } else {
+        this.toast(lines.join(' | ').replace(/<[^>]+>/g, ' '), 'warning', 8000);
+      }
+      return true;
     },
 
     // ----- main export -----
@@ -419,15 +487,25 @@ export default {
           return;
         }
 
+        const truncated = { total: 0, byColumn: {} };
+        this.countTruncated(postsRows, 'Posts', truncated);
+        this.countTruncated(commentsRows, 'Comments', truncated);
+
         const wb = this.buildWorkbook(postsRows, commentsRows);
+        const splitSheets = wb.__splitSheets || [];
+        delete wb.__splitSheets;
 
         const filename = this.buildFilename();
         XLSX.writeFile(wb, filename);
-        this.toast('ส่งออกไฟล์สำเร็จ', 'success');
+        if (!this.notifyExportWarnings(truncated, splitSheets)) {
+          this.toast('ส่งออกไฟล์สำเร็จ', 'success');
+        }
         this.$emit('exported', {
           filename,
           postsCount: postsRows?.length || 0,
-          commentsCount: commentsRows?.length || 0
+          commentsCount: commentsRows?.length || 0,
+          truncatedCells: truncated.total,
+          splitSheets
         });
       } catch (err) {
         console.error('Export Excel error:', err);

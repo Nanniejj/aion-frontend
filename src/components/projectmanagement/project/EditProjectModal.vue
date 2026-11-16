@@ -73,8 +73,8 @@
             <div class="combo" tabindex="-1" @focusout="closeUserMenu">
               <div class="combo-shell" @click="focusUserInput">
                 <span v-for="u in selectedUsers" :key="u._id" class="combo-chip">
-                  <span class="combo-chip-avatar">{{ u.initial }}</span>
-                  {{ u.name || u.username }}
+                  <span class="combo-chip-avatar">{{ userInitial(u) }}</span>
+                  {{ u.username }}
                   <button type="button" class="combo-chip-remove" @click.stop="removeUser(u._id)" aria-label="เอาออก">×</button>
                 </span>
                 <input
@@ -99,9 +99,9 @@
                     @click="toggleUserId(u._id)"
                   >
                     <input type="checkbox" :checked="form.userIds.includes(u._id)" tabindex="-1" />
-                    <span class="pick-avatar">{{ u.initial }}</span>
+                    <span class="pick-avatar">{{ userInitial(u) }}</span>
                     <span class="pick-text">
-                      <span class="pick-name">{{ u.name || u.username }}</span>
+                      <span class="pick-name">{{ u.username }}</span>
                       <span class="pick-role">{{ u.role }}</span>
                     </span>
                   </div>
@@ -441,6 +441,11 @@ export default {
     },
   },
   methods: {
+    // ตัวอักษรในวงกลมให้ตรงกับ username ที่แสดง (u.initial ใน store มาจากชื่อจริง)
+    userInitial(u) {
+      const s = (u && (u.username || u.initial)) || "";
+      return s ? s.charAt(0).toUpperCase() : "?";
+    },
     permissionLabel(key) {
       const labels = {
         hottopics: "ประเด็นร้อน",

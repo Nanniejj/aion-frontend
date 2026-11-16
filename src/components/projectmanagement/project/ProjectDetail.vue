@@ -100,7 +100,7 @@
           <div v-for="(u, idx) in filteredUsers" :key="u.id" class="user-row">
             <AvatarStack :users="[u]" large :start-index="idx" />
             <div class="user-text">
-              <div class="user-name">{{ u.name || u.username }}</div>
+              <div class="user-name">{{ u.username }}</div>
               <div class="user-role">
                 {{ u.role || "ไม่ระบุ role" }}
                 <span v-if="u.name"> · {{ u.username }}</span>

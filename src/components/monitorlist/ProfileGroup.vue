@@ -298,10 +298,13 @@
                 :disabled="loadingTimeline || (Array.isArray(posts) && posts.length === 0)" inline-comments="json"
                 :comments-limit="20" style="right: 5px;" v-if="!loadingTimeline" /> -->
                 <div v-if="!loadingTimeline && !loadingChart">
-                    <ExportExcelButton :posts="postForExport" :filters="formFilters"
-                        :disabled="loadAllPost || (Array.isArray(postForExport) && postForExport.length === 0)"
-                        :full-export="true" :prefer-single-shot="true" inline-comments="json" :comments-limit="20"
-                        v-if="!loadAllPost" />
+                    <!-- ดึงโพสต์ทั้งหมดตอนกด Export (ไล่ทีละหน้า) ให้ได้ครบตามจำนวน "ทั้งหมด X โพสต์"
+                         เดิมโหลดล่วงหน้าครั้งเดียว limit สูงสุด 2000 และใช้ page ปัจจุบัน → ได้ไม่ครบ -->
+                    <ExportExcelButton :posts="posts" :filters="formFilters"
+                        :fetch-all="fetchAllPostsForExport" :count="Number(total_posts) || 0"
+                        :disabled="!total_posts"
+                        :full-export="true" inline-comments="json" :comments-limit="20"
+                        filename-prefix="group" />
 
                 </div>
                 <div v-if="!loadingTimeline && !loadingChart" data-v-633a0eda="" class="text-right allpost">
@@ -1045,49 +1048,56 @@ export default {
                 this.loadingTimeline = false;
             });
         },
-        async apiGetAllPost() {
-            // console.log("get all post");
-
-            // try {
-            this.loadAllPost = true
-
-            const config = {
-                method: "get",
-                url: "https://api2.cognizata.com/api/v2/monitor/getGroupPost",
-                params: {
-                    group_id: this.$route.query.id,
-                    keyword: this.formFilters.keyword,
-                    source: this.formFilters.source,
-                    sort_by: this.formFilters.sort_by,
-                    sentiment: this.formFilters.sentiment,
-                    from: this.valueDate[0],
-                    to: this.valueDate[1],
-                    page: this.page,
-                    limit: Math.min(this.total_posts, 2000),
-                    account: this.formFilters.accountsInput,
-                    //limit: this.total_posts,
-                    querySearch: this.search || undefined, // ส่ง search ถ้ามีค่า
-                },
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token"),
-                    "Content-Type": "application/json",
-                },
+        // ดึงโพสต์ทั้งหมดตาม filter ปัจจุบันสำหรับ Export (เรียกจาก ExportExcelButton ตอนกดปุ่ม)
+        // ไล่ page=1..total_pages ทีละ EXPORT_PAGE_SIZE แล้วตัดโพสต์ซ้ำ จนครบ total_posts
+        async fetchAllPostsForExport(onProgress = () => {}) {
+            const EXPORT_PAGE_SIZE = 1000;
+            const baseParams = {
+                group_id: this.$route.query.id,
+                keyword: this.formFilters.keyword,
+                source: this.formFilters.source,
+                sort_by: this.formFilters.sort_by,
+                sentiment: this.formFilters.sentiment,
+                from: this.valueDate[0],
+                to: this.valueDate[1],
+                account: this.formFilters.accountsInput,
+                querySearch: this.search || undefined,
             };
-            // console.log('config ==== ', config);
+            const headers = {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+            };
 
-            this.axios(config).then(response => {
-                // console.log('Posts fetched successfully:', response.data);
-                // const newPosts =  response.data.posts.map(post => ({
-                //     ...post,
-                //     showAll: false,
-                // }));
-                this.postForExport = response.data.posts
-                this.loadAllPost = false
+            const all = [];
+            const seen = new Set();
+            let total = Number(this.total_posts) || 0;
+            let totalPages = Math.max(1, Math.ceil(total / EXPORT_PAGE_SIZE));
+            onProgress({ loaded: 0, total });
 
-            }).catch(error => {
-                // console.error('Error fetching posts:', error);
-                this.loadAllPost = false;
-            });
+            for (let page = 1; page <= totalPages; page++) {
+                const { data } = await this.axios.get(
+                    "https://api2.cognizata.com/api/v2/monitor/getGroupPost",
+                    { params: { ...baseParams, page, limit: EXPORT_PAGE_SIZE }, headers }
+                );
+                const chunk = Array.isArray(data && data.posts) ? data.posts : [];
+
+                // ใช้ค่าจาก API (ถ้ามี) เผื่อ backend จำกัด limit ต่อหน้าเองหรือจำนวนเปลี่ยนระหว่างดึง
+                if (page === 1) {
+                    if (Number(data && data.total_posts) > 0) total = Number(data.total_posts);
+                    if (Number(data && data.total_pages) > 0) totalPages = Number(data.total_pages);
+                }
+
+                chunk.forEach((post, i) => {
+                    const key = post._id || post.id || post.post_id || post.url || `${page}-${i}`;
+                    if (seen.has(key)) return;
+                    seen.add(key);
+                    all.push(post);
+                });
+                onProgress({ loaded: all.length, total });
+
+                if (!chunk.length || (total && all.length >= total)) break;
+            }
+            return all;
         },
         // targetlist จาก monitorGroupName API เป็นแค่จำนวน (number) ไม่ใช่ array แล้ว
         // ฟังก์ชันนี้ทำให้ใช้แสดงจำนวนได้ปลอดภัยไม่ว่าจะได้ number หรือ array มา
@@ -1238,14 +1248,7 @@ export default {
         await this.apiGetPost();
         // console.log(this.$route.query.name);
     },
-    watch: {
-        total_posts: {
-            handler(newVal, oldVal) {
-                this.apiGetAllPost();
-            },
-            // immediate: true
-        }
-    },
+    // (ลบ watcher total_posts → apiGetAllPost ออก: ไม่โหลดโพสต์ทั้งหมดล่วงหน้าแล้ว ดึงตอนกด Export แทน)
 
 
 }
