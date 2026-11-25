@@ -252,7 +252,10 @@ export default {
                     id: item._id,
                     uid: item.uid?.replace('#', ''),  // ลบ '#' ออกถ้ามี
                     source: item.source,
-                    type: 'targetlist'
+                    type: 'targetlist',
+                    // ให้หน้า profile รู้ว่ามาจาก community (ใช้ตั้งชื่อไฟล์ Export)
+                    from: 'community',
+                    name: item.name || ''
                 },
             });
             window.open(routeData.href, "_blank"); // เปิดลิงก์ในหน้าต่างใหม่

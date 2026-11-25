@@ -76,8 +76,8 @@
           <div class="d-flex box-flex-small">
             <div v-for="(item, i) in accounts" :key="item.uid + i" class="slider-item px-2">
               <!-- {{ item }} -->
-              <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3 }" body-class="p-0"
-                @click="onCardClick(item)" style="cursor:pointer" href="#chart">
+              <b-card class="ta-card h-100 shadow-sm" :class="{ 'ta-top': i < 3, 'ta-static': !cardClickable }" body-class="p-0"
+                @click="cardClickable && onCardClick(item)" :style="{ cursor: cardClickable ? 'pointer' : 'default' }" href="#chart">
                 <div class="d-flex justify-content-between">
                   <span class="position-absolute h6 py-2 bold pt-3 px-1 " style="color:#7782bf;">{{ i + 1 }}</span>
                 </div>
@@ -169,6 +169,8 @@ export default {
         title:{type: String, default: 'Top 10 Users '},
     showSentimentFilter:{type: Boolean, default: true},
     accounts: { type: Array, required: true },
+    // false = การ์ดคลิกไม่ได้ (ไม่กรองตามบัญชี ไม่มี hover ยกการ์ด) เช่นหน้า profile hashtag
+    cardClickable: { type: Boolean, default: true },
     limit: { type: Number, default: 0 },     // จำกัดจำนวนการ์ดในโหมด Cards
     loading: { type: Boolean, default: false },
     hasMore: { type: Boolean, default: false },
@@ -531,6 +533,10 @@ export default {
   transform: translateY(-2px);
   box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, .08);
 
+}
+
+.ta-card.ta-static:hover {
+  transform: none;
 }
 
 .ta-card.ta-top {

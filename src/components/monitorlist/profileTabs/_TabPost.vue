@@ -34,6 +34,12 @@
                         โพสต์ทั้งหมด<span style="color: #4c412d;" class="px-2">({{ total | numFormat }})</span>
                     </b-col>
                     <div class="col-12 col-sm-auto col-md-4 mt-3 mt-sm-0 px-0 text-right d-flex">
+                        <!-- Export โพสต์ทั้งหมดตาม filter ปัจจุบัน (ดึงทีละหน้าตอนกดปุ่ม) -->
+                        <!-- profile hashtag ย้ายปุ่มไปไว้ใต้ filter ใน ProfileMonitor แล้ว -->
+                        <ExportExcelButton v-if="$route.query.type !== 'hashtaglist'" class="ml-auto" :posts="posts" :filters="exportFilters"
+                            :fetch-all="fetchAllPostsForExport" :count="Number(total) || 0"
+                            :disabled="!total || getLoadPostTab" :full-export="true"
+                            inline-comments="json" :comments-limit="20" :filename-prefix="exportFilenamePrefix" />
                         <!-- วันที่ : {{ start }} - {{ end }} -->
                         <!-- <b-form-select 
                             v-if="this.$route.query.type === 'hashtaglist'" 
@@ -208,6 +214,16 @@
                                     </div> -->
                                 </div>
                             </div>
+                            <!-- AI สรุปวิดีโอ YouTube (แสดงเฉพาะโพสต์ที่มี summarize_youtube) — อยู่ถัดจากรูป -->
+                            <YoutubeSummary :post="post" class="mt-2" />
+                            <!-- ใบหน้าที่พบในรูป (photos_text[].face) — แบบ TopPostCrad; ข้อความ OCR ดูจากปุ่ม "OCR" -->
+                            <div v-if="ocrFaces(post).length" class="text-left ai-box my-2 px-2" style="font-size: 15px;font-weight: 500;">
+                              <span v-for="(face, faceIdx) in ocrFaces(post)" :key="'face-' + faceIdx" class="mr-2 mt-1 d-inline-block"
+                                style="background: #e5e5e5;padding: 0px 6px;border-radius: 13px;">
+                                <b-icon icon="person-bounding-box" scale="1"></b-icon> {{ face.person_name }}
+                                <span v-if="Number.isFinite(Number(face.confidence))" v-b-tooltip.hover title="ค่า confidence" class="small">({{ (Number(face.confidence) * 100).toFixed(2) }}%)</span>
+                              </span>
+                            </div>
                         </b-card-text>
 
                         <!-- domain tags  -->
@@ -224,6 +240,14 @@
                         </div> -->
                         <!-- card footer  -->
                         <template #footer>
+                            <!-- ปุ่ม OCR + ข้อความในรูป (แบบ TopPostCrad) -->
+                            <div class="float-right ml-2 mb-2" v-if="ocrTexts(post).length">
+                              <span v-b-toggle="'ocr-' + _uid + '-' + index" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr">
+                                <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
+                                  style="filter: brightness(0) invert(1);" />
+                                <span class="md-font">OCR</span>
+                              </span>
+                            </div>
                             <div class="text-left md-font">
                                 <span v-b-tooltip.hover title="Engagement" v-if="post.source == 'pantip'">
                                     <span style="font-size:14px;">Engages </span>
@@ -460,6 +484,17 @@
                             </div>
 
 
+                            <div class="clearfix" v-if="ocrTexts(post).length"></div>
+                            <b-collapse :id="'ocr-' + _uid + '-' + index" class="w-100" style="clear: both;" v-if="ocrTexts(post).length">
+                              <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px;overflow-y: auto;">
+                                <div v-for="(ocr, ocrIdx) in ocrTexts(post)" :key="'ocr-' + ocrIdx">
+                                  <div class="bold my-2">
+                                    <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="ocr" /> OCR
+                                  </div>
+                                  <div class="mt-1 px-2 pb-3" style="white-space: pre-line;">{{ ocr }}</div>
+                                </div>
+                              </b-card>
+                            </b-collapse>
                             <!-- comment content -->
                             <b-collapse :id="'btn' + post._id" class="mt-2" v-if="post.comments && post.comments.length">
                                 <b-card id="cmt-card" class="text-left">
@@ -558,12 +593,14 @@ import moment from "moment";
 import SentimentButton from "./_SentimentButton.vue";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import TranslateText from "@/components/TranslateText.vue";
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+import YoutubeSummary from "@/components/YoutubeSummary.vue";
 
 // import "@justinribeiro/lite-tiktok";
 // import { debounce } from 'lodash';
 // import Timeline from "../_Timeline.vue";
 export default {
-    components: {
+    components: { YoutubeSummary, ExportExcelButton,
         SentimentButton,
         VueGallerySlideshow,
         Highlighter,
@@ -658,6 +695,21 @@ export default {
         };
     },
     computed: {
+        // ข้อมูลสำหรับตั้งชื่อไฟล์ Export (ช่วงวันที่ + คำค้น)
+        // prefix ชื่อไฟล์ Export: target_<ชื่อ> / hashtag_<ชื่อ> / community_<ชื่อ>
+        exportFilenamePrefix() {
+            const q = this.$route.query || {};
+            const kind = q.from === 'community' ? 'community' : (q.type === 'hashtaglist' ? 'hashtag' : 'target');
+            const name = this.safeFilePart(q.name || q.uid || '');
+            return name ? `${kind}_${name}` : kind;
+        },
+        exportFilters() {
+            return {
+                startLocal: this.start ? this.start + "T00:00:00" : "",
+                endLocal: this.end ? this.end + "T23:59:59" : "",
+                keywordInput: this.keyWord || "",
+            };
+        },
         startAndEnd() {
             // if (!this.start || !this.end) return [null, null]; // ป้องกัน undefined
             // console.log("startAndEnd in tab post");
@@ -675,6 +727,21 @@ export default {
         // this.apiUserPosts()
     },
     methods: {
+      // ---- ข้อความ/ใบหน้าจากรูป (photos_text) รองรับทั้ง string และ { text | text_sort, face } ----
+      ocrText(entry) {
+        if (typeof entry === "string") return entry.trim();
+        if (!entry || typeof entry !== "object") return "";
+        if (typeof entry.text === "string") return entry.text.trim();
+        if (Array.isArray(entry.text_sort)) return entry.text_sort.filter((x) => typeof x === "string").join(" ").trim();
+        return "";
+      },
+      ocrTexts(post) {
+        return post && Array.isArray(post.photos_text) ? post.photos_text.map((e) => this.ocrText(e)).filter(Boolean) : [];
+      },
+      ocrFaces(post) {
+        if (!post || !Array.isArray(post.photos_text)) return [];
+        return post.photos_text.flatMap((e) => (e && Array.isArray(e.face) ? e.face.filter((f) => f && f.person_name) : []));
+      },
         exportSource() {
             this.$emit('update-source', this.source)
         },
@@ -806,6 +873,62 @@ export default {
             this.$store.commit("setArrDateProfile", this.valueDate);
         },
 
+        // ทำชื่อให้ใช้เป็นชื่อไฟล์ได้: ตัดอักขระต้องห้าม (\\ / : * ? " < > | #) และช่องว่างซ้ำ ยาวไม่เกิน 60 ตัว
+        safeFilePart(text) {
+            return String(text || "")
+                .replace(/[\\/:*?"<>|#\u0000-\u001f]+/g, " ")
+                .trim()
+                .replace(/\s+/g, "-")
+                .slice(0, 60);
+        },
+        // พารามิเตอร์เดียวกับ apiUserPosts (ไม่รวม offset) — ใช้ทั้งตอนแสดงและตอน Export
+        buildUserPostParams() {
+            const isHashtagList = this.$route.query.type === 'hashtaglist';
+            return {
+                ...(isHashtagList ? { hashtags: this.$route.query.uid } : { account: this.$route.query.uid }),
+                ...(this.source !== 'all' ? { source: this.source } : {}),
+                ...(this.keyWord ? { querySearch: this.keyWord } : {}),
+                sort_by: this.selectedSort,
+                sentiment: this.selected,
+                start_date: this.start + "T00:00:00",
+                end_date: this.end + "T23:59:59"
+            };
+        },
+        // ดึงโพสต์ทั้งหมดสำหรับ Export: ไล่ offset ไปเรื่อย ๆ จนครบ total
+        // ขอ limit ใหญ่ไว้ ถ้า API ไม่รับ limit (ได้ทีละ 10) ก็ยังทำงานได้ เพราะเลื่อน offset ตามจำนวนที่ได้จริง
+        async fetchAllPostsForExport(onProgress = () => {}) {
+            const isHashtagList = this.$route.query.type === 'hashtaglist';
+            const url = isHashtagList
+                ? 'https://api2.cognizata.com/api/v2/userposts/getSentimentDetailDomain/'
+                : 'https://api2.cognizata.com/api/v2/userposts/getSentimentdetail/';
+            const headers = {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+                "Content-Type": "application/json",
+            };
+            const base = this.buildUserPostParams();
+            const all = [];
+            const seen = new Set();
+            let total = Number(this.total) || 0;
+            let offset = 0;
+            let guard = 0;
+            onProgress({ loaded: 0, total });
+            while (guard++ < 2000) {
+                const { data } = await this.axios.get(url, { params: { ...base, offset, limit: 500 }, headers });
+                const chunk = Array.isArray(data && data.data) ? data.data : [];
+                if (Number(data && data.count) > 0) total = Number(data.count);
+                if (!chunk.length) break;
+                chunk.forEach((post, i) => {
+                    const key = post._id || post.uid || post.url_post || `${offset}-${i}`;
+                    if (seen.has(key)) return;
+                    seen.add(key);
+                    all.push(post);
+                });
+                offset += chunk.length;
+                onProgress({ loaded: all.length, total });
+                if (total && offset >= total) break;
+            }
+            return all;
+        },
         apiUserPosts() {
             console.log('apiUserPosts called in tab post');
 
@@ -960,6 +1083,27 @@ export default {
 };
 </script>
 <style scoped>
+/* ปุ่ม OCR แบบเดียวกับ TopPostCrad */
+#box-summarize {
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  background-image: linear-gradient(to right, #56a7b6 0%, #6d5fa0 51%, #4b9ed4 100%);
+  border-radius: 12px;
+  padding: 3px 10px;
+  margin-left: 4px;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;
+  position: relative;
+  top: -3px;
+  cursor: pointer;
+}
+#box-summarize:hover {
+  background-image: linear-gradient(to right, #d8cb16 0%, #8474be 70%, #2b5876 100%);
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+
 .highlight2 {
     background-color: #FDD071;
     padding: 0 2px;

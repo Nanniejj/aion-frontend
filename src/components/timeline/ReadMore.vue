@@ -10,7 +10,7 @@
         :style="{ textAlign:'left', fontSize:'15px', lineHeight:'1.5' }"
         highlightClassName="highlight2"
         :searchWords="cleanSearchWords"
-        :autoEscape="true"
+        :autoEscape="false"
         :textToHighlight="safeTitle"  
       />
     </div>
@@ -41,7 +41,12 @@ export default {
     ...mapGetters(["getSearchWords"]),
     cleanSearchWords() {
       const arr = Array.isArray(this.getSearchWords) ? this.getSearchWords : [];
-      return arr.filter(Boolean).map(s => String(s));
+      // คำค้นเป็น "วลี" ได้ (เว้นวรรคไม่ใช่ AND แล้ว) — แปลงเป็น regex ที่ยอมให้ช่องว่างในเนื้อหาต่างจากที่พิมพ์
+      // (เว้นวรรคหลายตัว / ขึ้นบรรทัด / non-breaking space / zero-width space) และ escape อักขระพิเศษเอง
+      // ใช้คู่กับ :autoEscape="false"
+      return arr.filter(Boolean).map(s => String(s).trim()).filter(Boolean).map(s =>
+        s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[\\s\\u200b]+")
+      );
     },
     safeTitle() {
       // แทน item?.title || ''

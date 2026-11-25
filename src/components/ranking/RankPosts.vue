@@ -465,7 +465,11 @@
                   v-if="datas && datas.title"
                   class="title-news text-left my-2"
                 >
-                  {{ datas.title }}
+                  {{ trTitle(datas) }}
+                </div>
+                <div v-if="datas && datas._id && trSource(datas)" class="text-left mb-1 translate-row">
+                  <TranslateText combined :post-id="datas._id" :title="datas.title || ''" :full-text="trSource(datas)"
+                    @update="(payload) => onTranslateUpdate(datas, payload)" />
                 </div>
                 <Highlighter
                   class="my-highlight md-font"
@@ -478,7 +482,7 @@
                   :searchWords="highlightText(datas.full_text)"
                   :autoEscape="true"
                   :textToHighlight="
-                    datas.read ? datas.full_text.slice(0, 450) : datas.full_text
+                    datas.read ? trText(datas).slice(0, 450) : trText(datas)
                   "
                 ></Highlighter>
                 <div
@@ -590,34 +594,16 @@
             </div>
           </b-col>
         </b-row>
-                <div class="text-left ai-box mt-2"
-          v-if="datas && datas.photos_text && datas.photos_text.length"
-          style="font-size: 15px;font-weight: 500;">
-          <div v-for="(text, idx) in datas.photos_text" >
-           
-            <div v-if="text&&text.length">
-              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
-              </b-avatar>
-              <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
-              </span>
-              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
-              {{ text }}
-            </div>
-            <div v-if="text.face" >
-              <span v-for="(face, idx) in text.face">
-                <span v-if="face.person_name" class="mr-2 mt-1">
-                  <span style="background: #e5e5e5;
-                    padding: 0px 6px;
-                    border-radius: 13px;">
-                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                    {{ face.person_name}}
-                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
-                      parseFloat((face.confidence * 100).toFixed(2))
-                    }}%)</span></span></span>
-              </span>
-            </div>
-          </div>
-        </div>
+                <!-- AI สรุปวิดีโอ YouTube (แสดงเฉพาะโพสต์ที่มี summarize_youtube) — อยู่ถัดจากรูป -->
+                <YoutubeSummary :post="datas" class="mt-2" />
+                <!-- ใบหน้าที่พบในรูป (photos_text[].face) — แบบ TopPostCrad; ข้อความ OCR ดูจากปุ่ม "OCR" -->
+                <div v-if="ocrFaces(datas).length" class="text-left ai-box my-2 px-2" style="font-size: 15px;font-weight: 500;">
+                  <span v-for="(face, faceIdx) in ocrFaces(datas)" :key="'face-' + faceIdx" class="mr-2 mt-1 d-inline-block"
+                    style="background: #e5e5e5;padding: 0px 6px;border-radius: 13px;">
+                    <b-icon icon="person-bounding-box" scale="1"></b-icon> {{ face.person_name }}
+                    <span v-if="Number.isFinite(Number(face.confidence))" v-b-tooltip.hover title="ค่า confidence" class="small">({{ (Number(face.confidence) * 100).toFixed(2) }}%)</span>
+                  </span>
+                </div>
         <div
           class="text-left ai-box mt-2"
           v-if="datas && datas.ocr && $isSuperAdmin()"
@@ -730,6 +716,14 @@
         </div>
         <template #footer>
           <div class="comment-img text-left md-font">
+            <!-- ปุ่ม OCR + ข้อความในรูป (แบบ TopPostCrad) -->
+            <div class="float-right ml-2 mb-2" v-if="ocrTexts(datas).length">
+              <span v-b-toggle="'ocr-' + _uid + '-' + k" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr">
+                <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
+                  style="filter: brightness(0) invert(1);" />
+                <span class="md-font">OCR</span>
+              </span>
+            </div>
             <!------------- engages-------------- -->
             <span
               v-b-tooltip.hover
@@ -1200,6 +1194,17 @@
                 <!-- end yt -->
               </span>
             </span>
+            <div class="clearfix" v-if="ocrTexts(datas).length"></div>
+            <b-collapse :id="'ocr-' + _uid + '-' + k" class="w-100" style="clear: both;" v-if="ocrTexts(datas).length">
+              <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px;overflow-y: auto;">
+                <div v-for="(ocr, ocrIdx) in ocrTexts(datas)" :key="'ocr-' + ocrIdx">
+                  <div class="bold my-2">
+                    <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="ocr" /> OCR
+                  </div>
+                  <div class="mt-1 px-2 pb-3" style="white-space: pre-line;">{{ ocr }}</div>
+                </div>
+              </b-card>
+            </b-collapse>
             <!-- comment content -->
             <b-collapse
               :id="'btn' + page + k"
@@ -1351,6 +1356,7 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { fetchSentimentWord } from "@/common/sentimentWord";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
@@ -1358,6 +1364,8 @@ import "@justinribeiro/lite-tiktok";
 import provinces from "@/components/map/provinces.json";
 import districts from "@/components/map/districts.json";
 import subdistricts from "@/components/map/subdistricts.json";
+import TranslateText from "@/components/TranslateText.vue";
+import YoutubeSummary from "@/components/YoutubeSummary.vue";
 export default {
   props: {
     checkpost: {
@@ -1464,7 +1472,7 @@ export default {
       ],
     };
   },
-  components: {
+  components: { YoutubeSummary, TranslateText,
     Highlighter,
     VueGallerySlideshow,
   },
@@ -1527,6 +1535,43 @@ export default {
     },
   },
   methods: {
+    // ---- ข้อความ/ใบหน้าจากรูป (photos_text) รองรับทั้ง string และ { text | text_sort, face } ----
+    ocrText(entry) {
+      if (typeof entry === "string") return entry.trim();
+      if (!entry || typeof entry !== "object") return "";
+      if (typeof entry.text === "string") return entry.text.trim();
+      if (Array.isArray(entry.text_sort)) return entry.text_sort.filter((x) => typeof x === "string").join(" ").trim();
+      return "";
+    },
+    ocrTexts(post) {
+      return post && Array.isArray(post.photos_text) ? post.photos_text.map((e) => this.ocrText(e)).filter(Boolean) : [];
+    },
+    ocrFaces(post) {
+      if (!post || !Array.isArray(post.photos_text)) return [];
+      return post.photos_text.flatMap((e) => (e && Array.isArray(e.face) ? e.face.filter((f) => f && f.person_name) : []));
+    },
+    // ---- ปุ่มแปลภาษา (TranslateText โหมด combined) ----
+    // ข้อความต้นฉบับ (ตัด marker ที่ปนมากับเนื้อหา) ใช้ส่งให้ TranslateText เช็คว่าเป็นภาษาต่างประเทศหรือไม่
+    trSource(post, field = "full_text") {
+      const t = (post && post[field]) || "";
+      return String(t).replace("...___...", "").replace(".#.##.", "");
+    },
+    // ข้อความที่แสดงจริง: คำแปล (ถ้ากดแปลและเลือกดูคำแปลอยู่) หรือต้นฉบับ
+    trText(post, field = "full_text") {
+      if (post && post.showTranslated && post.translatedFullText) return post.translatedFullText;
+      return this.trSource(post, field);
+    },
+    trTitle(post) {
+      if (post && post.showTranslated && post.translatedTitle) return post.translatedTitle;
+      return (post && post.title) || "";
+    },
+    // TranslateText แปล/สลับเสร็จ → เก็บผลไว้ที่ตัวโพสต์นั้น ๆ (reactive ด้วย $set)
+    onTranslateUpdate(post, payload) {
+      if (!post || !payload) return;
+      this.$set(post, "translatedTitle", payload.title);
+      this.$set(post, "translatedFullText", payload.fullText);
+      this.$set(post, "showTranslated", payload.showTranslated);
+    },
  filterNumbers(numbers) {
       // ✅ PRE-PROCESS
       const filtered = [
@@ -1835,15 +1880,10 @@ export default {
     // console.log(offset, sort);
     let domain = this.getObjectName;
     let subdomain = this.getSubDomain;
-    await this.axios
-      .get(
-        "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +encodeURIComponent(domain) +
-      "&subdomain=" +
-      encodeURIComponent(subdomain)
-      )
-      .then((response) => (this.arrword = response.data[0]));
+    // API ใหม่ใช้ domain_id → helper แปลงชื่อเป็น id ให้
+    this.arrword = await fetchSentimentWord({ domain, subdomain });
     var k = this.arrword.Keywords;
-    var ka = this.arrword.and_keywords;
+    var ka = this.arrword.and_keywords || [];
     let result = ka.map((key) => {
       // console.log("log3");
       return key.split("+");
@@ -1855,6 +1895,27 @@ export default {
 </script>
 
 <style scoped>
+/* ปุ่ม OCR แบบเดียวกับ TopPostCrad */
+#box-summarize {
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  background-image: linear-gradient(to right, #56a7b6 0%, #6d5fa0 51%, #4b9ed4 100%);
+  border-radius: 12px;
+  padding: 3px 10px;
+  margin-left: 4px;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;
+  position: relative;
+  top: -3px;
+  cursor: pointer;
+}
+#box-summarize:hover {
+  background-image: linear-gradient(to right, #d8cb16 0%, #8474be 70%, #2b5876 100%);
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+
 .box-hl {
   border-radius: 10px;
 }

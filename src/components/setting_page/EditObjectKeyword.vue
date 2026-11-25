@@ -21,7 +21,8 @@
         <h5><b>แก้ไขประเด็น</b></h5>
         <hr />
         <p class="text-danger">คำแนะนำ : กรุณาตรวจสอบข้อมูลทุกครั้งก่อนทำการบันทึก</p>
-        <b-container>
+        <!-- :key เปลี่ยนทุกครั้งที่ปิดหน้าต่าง → สร้างช่องกรอกใหม่ ล้างข้อความที่พิมพ์ค้างในช่อง tag (ยังไม่กด Enter) -->
+        <b-container :key="'form-' + formKey">
           <!-- {{ objectData }} -->
           <!-- Object Name -->
           <b-form-group label="ประเด็น" label-class="font-weight-bold">
@@ -107,6 +108,7 @@ export default {
       editAndKeywords: [],
       editNotKeywords: [],
       saving: false,
+      formKey: 0,
     };
   },
 
@@ -117,6 +119,9 @@ export default {
     //  และกด "ปิดหน้าต่าง" แล้วเปิดใหม่ ค่าที่ยังไม่บันทึกก็ค้างอยู่)
     open(isOpen) {
       if (isOpen) this.loadData();
+      // ปิดหน้าต่าง (ทุกทาง: ปุ่มปิด, X, คลิกนอกกล่อง, บันทึกสำเร็จ) → เปลี่ยน key ให้ฟอร์มถูกสร้างใหม่
+      // b-form-tags เก็บข้อความที่พิมพ์ค้าง (ยังไม่กด Enter) ไว้ใน state ภายใน ล้างจาก v-model ไม่ได้
+      else this.formKey++;
     },
   },
   methods: {
@@ -260,6 +265,35 @@ export default {
   /* ตัวหนาเมื่อ active */
 }
 
+
+/* กล่องคำในโมดัลไม่ให้กว้างเกินหน้าต่าง: .modal-vue--content เป็น flex ทำให้ตัวโมดัล (min-width:auto)
+   ขยายตามคำที่ยาวมาก ๆ (คำที่คั่นด้วย , ยาวเป็นบรรทัดเดียว) จนเกิด scroll แนวนอน */
+::v-deep .modal-vue--content-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+::v-deep .b-form-tags .b-form-tags-list > li {
+  max-width: 100%;
+  min-width: 0;
+}
+::v-deep .b-form-tags .b-form-tag {
+  max-width: 100%;
+  /* คำยาวให้ขึ้นบรรทัดใหม่ภายใน chip เดิม (ไม่ตัดเป็น ...) */
+  white-space: normal;
+  text-align: left;
+  line-height: 1.4;
+  align-items: flex-start;
+}
+::v-deep .b-form-tags .b-form-tag .b-form-tag-content {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+::v-deep .b-form-tags .b-form-tag .b-form-tag-remove {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
 
 /* สีใน keyword  */
 ::v-deep .b-form-tags .b-form-tag {

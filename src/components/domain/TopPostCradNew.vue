@@ -319,7 +319,7 @@
                         </b-col>
                         <b-col cols="12" lg="" class="px-0">
                             <div v-if="postDomain && postDomain.title" class="title-news text-left my-2">
-                                {{ postDomain.title }}
+                                {{ trTitle(postDomain) }}
                             </div>
 
                             <div id="txt-cmt" class="font-weight-normal" v-if="postDomain.full_text">
@@ -329,14 +329,18 @@
                                     overflowY: !postDomain.read && postDomain.full_text.length > 450 ? 'auto' : 'visible'
                                     }"
                                 >
+                                    <div v-if="postDomain && postDomain._id && trSource(postDomain)" class="text-left mb-1 translate-row">
+                                      <TranslateText combined :post-id="postDomain._id" :title="postDomain.title || ''" :full-text="trSource(postDomain)"
+                                        @update="(payload) => onTranslateUpdate(postDomain, payload)" />
+                                    </div>
                                     <Highlighter class="my-highlight" :style="{
                                         textAlign: 'justify',
                                         fontSize: '17px',
                                         padding: '10px',
                                     }" highlightClassName="highlight2" :searchWords="highlightText(postDomain.full_text)"
                                         :autoEscape="true" :textToHighlight="postDomain.read
-                                        ? postDomain.full_text.slice(0, 450)
-                                        : postDomain.full_text
+                                        ? trText(postDomain).slice(0, 450)
+                                        : trText(postDomain)
                                         " />
                                 </div>
                                 <div v-if="postDomain.full_text.length > 450" @click="postDomain.read = !postDomain.read"
@@ -344,6 +348,8 @@
                                     <span v-if="postDomain.read == true" >... อ่านต่อ</span>
                                     <span v-else>ย่อบทความ</span>
                                 </div>
+                                <!-- AI สรุปวิดีโอ YouTube (แสดงเฉพาะโพสต์ที่มี summarize_youtube) -->
+                                <YoutubeSummary :post="postDomain" class="mt-2" />
                             </div>
                         </b-col>
                     </b-row>
@@ -443,6 +449,25 @@
                     </div>
                     <template #footer>
                         <div class="text-left md-font" style="position: relative;">
+                        <div class="float-right ml-2 mb-2">
+                            <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR"
+                            class=" btn-ocr"
+                            v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text">
+                            <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png"
+                                alt="printed-ocr" style="filter: brightness(0) invert(1);" />
+                            <span class="md-font">
+                                OCR
+                            </span>
+                            </span>
+                            <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
+                            title="comments analysis" v-if="postDomain.summarize">
+                            <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                                alt="sparkling" style="filter: brightness(0) invert(1);" />
+                            <span class="md-font">
+                                Analysis
+                            </span>
+                            </span>
+                        </div>
                         <!------------- engages-------------- -->
                         <span v-b-tooltip.hover title="Engagement" v-if="postDomain.source == 'pantip'">
                             <span style="font-size:14px;">Engages </span>
@@ -670,32 +695,13 @@
                             <!-- end yt -->
                             </span>
                         </span>
-                        <div class="float-right">
-                            <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR"
-                            class=" btn-ocr"
-                            v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text">
-                            <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png"
-                                alt="printed-ocr" style="filter: brightness(0) invert(1);" />
-                            <span class="md-font">
-                                OCR
-                            </span>
-                            </span>
-                            <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
-                            title="comments analysis" v-if="postDomain.summarize">
-                            <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
-                                alt="sparkling" style="filter: brightness(0) invert(1);" />
-                            <span class="md-font">
-                                Analysis
-                            </span>
-                            </span>
-                        </div>
                         </div>
 
                         <b-collapse 
                         @shown="onShown('ocr-text' + page + k)"
                         @hidden="onHidden('ocr-text' + page + k)"
-                        :id="'ocr-text' + page + k" class="mt-2" v-if="postDomain && postDomain.photos_text">
-                        <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
+                        :id="'ocr-text' + page + k" class="w-100" style="clear: both;" v-if="postDomain && postDomain.photos_text">
+                        <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px;overflow-y: scroll;">
                             <div v-for="(text, idx) in postDomain.photos_text">
 
                             <div v-if="text && text.text && text.text.length">
@@ -716,9 +722,9 @@
                         <b-collapse 
                         @shown="onShown('summarize' + page + k)"
                         @hidden="onHidden('summarize' + page + k)"
-                        :id="'summarize' + page + k" class="mt-2"
+                        :id="'summarize' + page + k" class="mt-2 w-100" style="clear: both;"
                         v-if="postDomain.summarize && postDomain.summarize.length">
-                        <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
+                        <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px;overflow-y: scroll;">
                             <div>
                                 <div class="bold my-2">
                                     <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
@@ -843,8 +849,10 @@ import subdistricts from "@/components/map/subdistricts.json";
 import PostCard from './PostCard.vue';
 import Swal from 'sweetalert2'
 import SummarizeCommentChart from "../chart/SummarizeCommentChart.vue";
+import TranslateText from "@/components/TranslateText.vue";
+import YoutubeSummary from "@/components/YoutubeSummary.vue";
 export default {
-  components: { VueGallerySlideshow, Highlighter, SummarizeCommentChart, PostCard },
+  components: { YoutubeSummary, TranslateText, VueGallerySlideshow, Highlighter, SummarizeCommentChart, PostCard },
   props: {
     tpyeCard: {
       type: String,
@@ -914,6 +922,28 @@ export default {
     ]),
   },
     methods: {
+      // ---- ปุ่มแปลภาษา (TranslateText โหมด combined) ----
+      // ข้อความต้นฉบับ (ตัด marker ที่ปนมากับเนื้อหา) ใช้ส่งให้ TranslateText เช็คว่าเป็นภาษาต่างประเทศหรือไม่
+      trSource(post, field = "full_text") {
+        const t = (post && post[field]) || "";
+        return String(t).replace("...___...", "").replace(".#.##.", "");
+      },
+      // ข้อความที่แสดงจริง: คำแปล (ถ้ากดแปลและเลือกดูคำแปลอยู่) หรือต้นฉบับ
+      trText(post, field = "full_text") {
+        if (post && post.showTranslated && post.translatedFullText) return post.translatedFullText;
+        return this.trSource(post, field);
+      },
+      trTitle(post) {
+        if (post && post.showTranslated && post.translatedTitle) return post.translatedTitle;
+        return (post && post.title) || "";
+      },
+      // TranslateText แปล/สลับเสร็จ → เก็บผลไว้ที่ตัวโพสต์นั้น ๆ (reactive ด้วย $set)
+      onTranslateUpdate(post, payload) {
+        if (!post || !payload) return;
+        this.$set(post, "translatedTitle", payload.title);
+        this.$set(post, "translatedFullText", payload.fullText);
+        this.$set(post, "showTranslated", payload.showTranslated);
+      },
         onShown(key) {
             this.$set(this.collapseStates, key, true)
         },
@@ -1736,8 +1766,12 @@ a {
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
     .btn-ocr {
-    right: 100px !important;
-    top: -52px !important;
+    /* จอมือถือ: ปุ่ม OCR อยู่ในแถบท้ายการ์ด (ไม่ลอยขึ้นไปทับป้ายใบหน้า/เนื้อหา) */
+    position: relative !important;
+    right: auto !important;
+    top: 0 !important;
+    display: inline-block;
+    margin-top: 4px;
   }
 
   #box-summarize {

@@ -635,6 +635,16 @@
                     </b-form>
                 </b-card>
             </b-col>
+            <!-- กราฟสถิติ (ChartTime → API userposts/getPostCharts) — ซ่อนไว้ก่อนทุกโหมด (target / hashtag / community)
+                 เปิดกลับ: เอา comment ครอบด้านล่างออก (โค้ด statChartParams / import ChartTime ยังอยู่ครบ)
+            <b-col v-if="$route.query.from !== 'community'" cols="12" class="px-0 mb-3">
+                <b-card class="shadow-sm" style="border-radius: 20px;" body-class="px-1 px-md-3">
+                    <ChartTime v-if="statChartParams" :filters="statChartParams" :postsForAnalysis="[]"
+                        :hide-top-users="type !== 'hashtaglist'"
+                        :top-users-clickable="type !== 'hashtaglist'" />
+                </b-card>
+            </b-col>
+            -->
             <!-- <b-col cols="12" class="px-0">
                 <b-row class="justify-content-between align-items-center mb-3 mx-0">
                     <b-col cols="12" sm="auto" class="text-left px-0">
@@ -679,7 +689,12 @@
                     <b-col data-v-633a0eda="" class="text-left">
                         ทั้งหมด <b data-v-633a0eda="">{{ totalTimelinePost || 0 | numFormat }}</b> โพสต์
                     </b-col>
-                    <b-col data-v-633a0eda="" class="text-right text-info">
+                    <b-col data-v-633a0eda="" class="text-right text-info d-flex justify-content-end align-items-center" style="gap: 8px;">
+                        <!-- profile hashtag: ปุ่ม Export ข้างปุ่มแสดง/ซ่อน timeline (ใช้ logic ดึงโพสต์ทั้งหมดของ TabPost ผ่าน ref) -->
+                        <ExportExcelButton class="hashtag-export-btn" :posts="[]" :filters="hashtagExportFilters"
+                            :fetch-all="exportHashtagPosts" :count="Number(totalPost) || 0"
+                            :disabled="!totalPost" :full-export="true" inline-comments="json"
+                            :comments-limit="20" :filename-prefix="hashtagExportPrefix" />
                         <b-button v-if="!showTimeline" variant="info" @click="showTimeline = !showTimeline">
                             แสดง timeline
                         </b-button>
@@ -714,7 +729,7 @@
         </b-row>
 
         <!-- posts -->
-        <TabPost :source="selectedSource" :start="valueDate[0]" :end="valueDate[1]" :topDomain="topDomain"
+        <TabPost ref="tabPost" :source="selectedSource" :start="valueDate[0]" :end="valueDate[1]" :topDomain="topDomain"
             :isBottom="alreadyAtBottom" :keyWord="keyWord" :sentiment="selected" :sortBy="selectedSort"
             @totalPost="data => totalPost = data" @update:start="data => valueDate = [data, valueDate[1]]"
             @update:end="data => valueDate = [valueDate[0], data]" @update-source="data => setHashtagSource(data)" />
@@ -724,6 +739,8 @@
 import TabDomain from "./profileTabs/_TabDomain.vue"
 import TabHashtag from "./profileTabs/_TabHashtag.vue"
 import TabPost from "./profileTabs/_TabPost.vue"
+import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
+import ChartTime from "@/components/timeline/ChartTime.vue";
 import Swal from 'sweetalert2'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
@@ -744,6 +761,8 @@ export default {
         TabHashtag,
         Timeline,
         TabPost,
+        ExportExcelButton,
+        ChartTime,
         Multiselect,
         HashtagBarChar,
         WordcloudDomain
@@ -869,6 +888,12 @@ export default {
         }
     },
     methods: {
+        // ปุ่ม Export ใต้ filter (profile hashtag) → ใช้ฟังก์ชันดึงโพสต์ทั้งหมดของ TabPost ให้ได้ filter ชุดเดียวกับรายการโพสต์
+        async exportHashtagPosts(onProgress) {
+            const tab = this.$refs.tabPost;
+            if (!tab || typeof tab.fetchAllPostsForExport !== 'function') return [];
+            return tab.fetchAllPostsForExport(onProgress);
+        },
         resetFilters() {
             this.timelinePosts = [];
             this.offset = 0;
@@ -923,7 +948,41 @@ export default {
         updateFilterLocation() {
             this.location = this.location; // trigger setter → อัปเดต filterRules.location
         },
+        // ประเทศของบัญชีเป็นไทยหรือไม่ (จาก getProfile → data.country) — ใช้ตัดสินว่าต้องโหลดจังหวัด/อำเภอหรือไม่
+        // ไม่มีข้อมูลประเทศ → ถือว่าไทยเฉพาะเมื่อ location เป็นรหัสตัวเลข (ข้อมูลเก่าของไทย)
+        isThaiLocation() {
+            const d = this.data && !Array.isArray(this.data) ? this.data : {};
+            const c = d.country;
+            if (c && typeof c === 'object') {
+                return c.country_code2 === 'TH' || Number(c.code_num) === 764 || c.country_name_en === 'Thailand';
+            }
+            return this.locationIds().length > 0;
+        },
+        // รหัสพื้นที่ (จังหวัด/อำเภอ/ตำบล) ที่เป็นตัวเลขจริงใน location — ตัดค่าอย่าง "Thailand" / "United States" ทิ้ง
+        // (บางบัญชีเก็บชื่อประเทศไว้ใน location[0] เดิมเลยยิง getProvinces?id=Thailand แล้วได้ 500)
+        locationIds() {
+            const loc = this.selectedData && this.selectedData.location;
+            if (!Array.isArray(loc)) return [];
+            const ids = [];
+            for (const v of loc) {
+                if (v === null || v === undefined || !/^\d+$/.test(String(v).trim())) break;
+                ids.push(String(v).trim());
+            }
+            return ids;
+        },
         async checkLocation() {
+            // ไม่ใช่ประเทศไทย หรือเป็นไทยแต่ไม่ได้ระบุจังหวัด (ไม่มีรหัสพื้นที่ที่เป็นตัวเลข)
+            // → ไม่ต้องเรียก getProvinces / getAmphures / getTambons
+            const ids = this.locationIds();
+            if (!this.isThaiLocation() || ids.length === 0) {
+                this.province_id = null;
+                this.district_id = null;
+                this.subDistrict_id = null;
+                this.selectedProvince = null;
+                this.selectedDistrict = null;
+                this.selectedSubDistrict = null;
+                return;
+            }
             if (!this.selectedData.location || this.selectedData.location.length === 0 || typeof this.selectedData.location === "string") {
                 // console.log("ไม่มีข้อมูล location");
                 this.province_id = null;
@@ -934,7 +993,7 @@ export default {
                 this.selectedSubDistrict = null;
                 return; // ออกจากฟังก์ชันทันที
             }
-            const location = this.selectedData.location;
+            const location = ids; // ใช้เฉพาะรหัสที่เป็นตัวเลข
             // console.log("location ==== ", location);
             // กำหนดค่าพร้อมตรวจว่ามีข้อมูลครบหรือไม่
             this.province_id = location.length >= 1 ? location[0] : null;
@@ -1086,6 +1145,16 @@ export default {
         },
         editProfile() {
             this.editable = !this.editable;
+            // โหลดรายชื่อจังหวัดตอนเปิดฟอร์มแก้ไขครั้งแรก (บัญชีในไทย หรือยังไม่ระบุประเทศ)
+            // ส่ง keepSelection = true เพื่อไม่ล้างอำเภอ/ตำบลที่โหลดไว้แล้ว
+            const d = this.data && !Array.isArray(this.data) ? this.data : {};
+            const c = d.country;
+            const isThaiCountry = c && typeof c === 'object'
+                ? (c.country_code2 === 'TH' || Number(c.code_num) === 764 || c.country_name_en === 'Thailand')
+                : true;
+            if (this.editable && !this.provinces.length && isThaiCountry) {
+                this.apiGetProvinces(true);
+            }
             this.checkProfile()
             // console.log('edit/able ', this.editable);
         },
@@ -1320,6 +1389,7 @@ export default {
                     this.topHashtags = response.data?.topHashtag
                     // console.log('this.profile ', this.profile);
                     this.checkProfile();
+                    // รายชื่อจังหวัดทั้งหมดใช้แค่ในฟอร์มแก้ไข → โหลดตอนกดแก้ไข (editProfile) ไม่ต้องโหลดตอนเปิดหน้า
                     this.checkLocation();
                     this.load = false;
                     this.profileLoading = false;
@@ -1330,9 +1400,11 @@ export default {
                     // console.error(error);
                 });
         },
-        apiGetProvinces() {
-            this.district_id = null;
-            this.subDistrict_id = null;
+        apiGetProvinces(keepSelection = false) {
+            if (!keepSelection) {
+                this.district_id = null;
+                this.subDistrict_id = null;
+            }
             this.load = true;
             const config = {
                 method: "get",
@@ -1629,7 +1701,7 @@ export default {
         }
         this.$store.commit('setNamePlatform', this.selectedSource);
         await this.apiMonitorProfile();
-        this.apiGetProvinces();
+        // apiGetProvinces (รายชื่อจังหวัดทั้งหมด) โหลดตอนเปิดฟอร์มแก้ไขเท่านั้น — ดู editProfile
         this.apiGetInfluencerType();
         await this.getWordCloudImage();
 
@@ -1638,6 +1710,51 @@ export default {
           this.$store.commit('setNamePlatform', '');
     },
     computed: {
+        // Export ของ profile hashtag (ปุ่มใต้ filter) — ชื่อไฟล์/ช่วงวันที่ใช้ logic เดียวกับ TabPost
+        hashtagExportPrefix() {
+            const name = String(this.$route.query.name || this.$route.query.uid || '')
+                .replace(/[\\/:*?"<>|#\u0000-\u001f]+/g, ' ').trim().replace(/\s+/g, '-').slice(0, 60);
+            return name ? `hashtag_${name}` : 'hashtag';
+        },
+        // พารามิเตอร์ของกราฟสถิติ (รูปแบบเดียวกับ buildParams ในหน้า timeline)
+        // hashtag → hashtags[]=<แท็กไม่มี #> + limit=50 + page=1
+        // target / community → account[]=<ชื่อบัญชี (account_name จาก getProfile)>
+        //   รอโหลดโปรไฟล์เสร็จก่อน (คืน null = ยังไม่แสดงกราฟ จะได้ไม่ยิง API ด้วยค่าผิด)
+        statChartParams() {
+            const q = this.$route.query || {};
+            const [from, to] = Array.isArray(this.valueDate) ? this.valueDate : [];
+            const p = {
+                sentiment: this.selected != null && this.selected !== '' ? String(this.selected) : '1,0,-1',
+                keyword: this.keyWord || undefined,
+                start: from ? `${from}T00:00:00` : undefined,
+                end: to ? `${to}T23:59:59` : undefined,
+                source: this.selectedSource && this.selectedSource !== 'all' ? this.selectedSource : undefined,
+            };
+            if (this.type === 'hashtaglist') {
+                const tag = String(q.uid || '').trim().replace(/^#/, '');
+                if (!tag) return null;
+                p.limit = 50;
+                p.page = 1;
+                p.hashtags = [tag];
+            } else {
+                if (this.profileLoading) return null;
+                const d = this.data && !Array.isArray(this.data) ? this.data : {};
+                const pr = this.profile || {};
+                const account = String(d.account_name || pr.account_name || pr.name || q.uid || '').trim();
+                if (!account) return null;
+                p.account = [account];
+            }
+            Object.keys(p).forEach(k => (p[k] == null || p[k] === '') && delete p[k]);
+            return p;
+        },
+        hashtagExportFilters() {
+            const [from, to] = Array.isArray(this.valueDate) ? this.valueDate : [];
+            return {
+                startLocal: from ? `${from}T00:00:00` : '',
+                endLocal: to ? `${to}T23:59:59` : '',
+                keywordInput: this.keyWord || '',
+            };
+        },
         // มีข้อมูล followers หรือ following อย่างน้อย 1 ค่า (null = ระบบไม่มีข้อมูล ไม่ใช่ 0)
         hasFollowStats() {
             const p = this.profile || {};

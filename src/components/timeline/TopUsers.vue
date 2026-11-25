@@ -27,7 +27,7 @@
       <!-- {{ topUsers }} -->
       <!-- :showSentimentFilter="false" -->
       <top-accounts :keyword="filters.keyword" :accounts="topUsers" :limit="10" :loading="loading"
-        :top-sentiment="sentiment" @filter-account="onFilterAccount" @change-top-sentiment="onChangeTopSentiment" />
+        :top-sentiment="sentiment" :card-clickable="cardClickable" @filter-account="onFilterAccount" @change-top-sentiment="onChangeTopSentiment" />
     </div>
   </b-card>
 </template>
@@ -46,6 +46,8 @@ export default {
     // canNextTop: { type: Boolean, default: false },
     // peakOnlyWindow: { type: Object, default: null },
     filters: { type: Object, default: () => ({}) },
+    // false = การ์ดบัญชีคลิกไม่ได้ (ใช้ในหน้า profile hashtag) — หน้า timeline ใช้ค่าเริ่มต้น true = คลิกแล้วกรองตามบัญชี
+    cardClickable: { type: Boolean, default: true },
   },
   components: { TopAccounts },
   data() {
@@ -59,12 +61,15 @@ export default {
       topUsers: [],
       accountsInput: [],
       account: '',
-      loading: false
+      loading: false,
+      // sentiment ที่เลือกในกล่อง Top 10 Users เอง (null = ใช้ตาม filter หลัก)
+      // เดิมเขียนทับ this.filters.sentiment (prop ของ parent) ทำให้กราฟสถิติด้านบนเปลี่ยนตามไปด้วย
+      topSentiment: null
     }
   },
   computed: {
     sentiment() {
-      return this.filters.sentiment || '1,0,-1'
+      return this.topSentiment || this.filters.sentiment || '1,0,-1'
     },
     // safePosts() {
     //   return Array.isArray(this.topPosts) ? this.topPosts : []
@@ -133,7 +138,7 @@ export default {
       }).format(d)
     },
     onChangeTopSentiment(val) {
-      this.filters.sentiment = val;
+      this.topSentiment = val;
       this.fetchTopUsers();
     },
     onFilterAccount({ uid }) {
@@ -163,7 +168,11 @@ export default {
         page: this.topPage,
         start: this.filters.start,
         end: this.filters.end,
-        ...(this.filters.source ? { source: this.filters.source } : {})
+        ...(this.filters.source ? { source: this.filters.source } : {}),
+        // เดิมไม่ได้ส่ง hashtags → หน้า profile hashtag / timeline ที่กรอง hashtag ได้ Top users ของทั้งระบบ
+        ...(Array.isArray(this.filters.hashtags) && this.filters.hashtags.length
+          ? { hashtags: this.filters.hashtags }
+          : (this.filters.hashtags && !Array.isArray(this.filters.hashtags) ? { hashtags: this.filters.hashtags } : {}))
       }
 
       axios.get(API_URL, {
@@ -197,6 +206,7 @@ export default {
 
         if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
           // this.topPage = 1
+          this.topSentiment = null; // filter หลักเปลี่ยน → กลับไปใช้ sentiment ตาม filter
           this.fetchTopUsers();
         }
       },

@@ -739,6 +739,7 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { fetchSentimentWord } from "@/common/sentimentWord";
 import Highlighter from "vue-highlight-words";
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import moment from "moment";
@@ -1209,26 +1210,20 @@ export default {
   },
   mounted() {
     this.apiSpotNewsPost();
-    var config = {
-      method: "get",
-      url:
-        "https://api2.cognizata.com/api/v2/object/check_sentiment_word?domain=" +
-        this.$route.query.domain,
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("token"),
-        "Content-Type": "application/json",
-      },
-    };
-
-    this.axios(config)
-      .then((response) => {
-        this.arrword = response.data[0];
+    // API ใหม่ใช้ domain_id (ส่งมาจาก SlideSpot* = getClickDomainId แบบเดียวกับหน้า All Posts)
+    // เปิดจากลิงก์เก่าที่ไม่มี domain_id → helper แปลงชื่อ domain เป็น id ให้
+    fetchSentimentWord({
+      domainId: this.$route.query.domain_id,
+      domain: this.$route.query.domain,
+    })
+      .then((arrword) => {
+        this.arrword = arrword;
         console.log(this.arrword);
 
         // ดำเนินการกับข้อมูลเมื่อ API เสร็จ
         var k = this.arrword?.Keywords;
         var ka = this.arrword?.and_keywords;
-        let result = ka.map((key) => {
+        let result = (ka || []).map((key) => {
           return key.split("+");
         });
         this.andkey = result;

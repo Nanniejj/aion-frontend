@@ -126,9 +126,10 @@ export default {
     buildKeywordParam(filters) {
       const raw = (filters?.keywordInput || '').trim();
       if (!raw) return '';
-      return raw
-        .split(',')
-        .map(g => g.trim().split(/[+\s]+/).filter(Boolean).join('+'))
+      // + = AND, , = OR (เว้นวรรคเป็นส่วนหนึ่งของคำ — ให้ตรงกับหน้า timeline)
+      return raw.split(',')
+        .map(g => g.split('+').map(w => w.trim().replace(/\s+/g, ' ')).filter(Boolean).join('+'))
+        .filter(Boolean)
         .join(',');
     },
     sourceParam(list) {
@@ -167,9 +168,9 @@ export default {
     buildExcludeKeywordParam(filters) {
       const raw = (filters?.excludeKeywordInput || '').trim();
       if (!raw) return '';
-      return raw
-        .split(',')
-        .map(g => g.trim().split(/[+\s]+/).filter(Boolean).join('+'))
+      return raw.split(',')
+        .map(g => g.split('+').map(w => w.trim().replace(/\s+/g, ' ')).filter(Boolean).join('+'))
+        .filter(Boolean)
         .join(',');
     },
 

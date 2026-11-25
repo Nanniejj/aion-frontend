@@ -206,7 +206,7 @@ export default {
       console.log("data", data.cluster, id);
       const routeData = this.$router.resolve({
         name: "SpotSocialPost",
-        query: { id: id, cluster: data.cluster, domain: domain },
+        query: { id: id, cluster: data.cluster, domain: domain, domain_id: this.getClickDomainId || undefined },
       });
 
       window.open(routeData.href, "_blank");

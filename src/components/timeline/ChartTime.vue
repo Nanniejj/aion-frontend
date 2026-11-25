@@ -42,6 +42,7 @@
           <SummaryButton
             class="text-left mb-3"
             :hideTrandButton="series.length === 0"
+            :hideTopUsersButton="hideTopUsers"
             :posts="postsForAnalysis"
             :filters="filters"
             :loading="loading"
@@ -60,10 +61,11 @@
       </b-col>
 
       <!-- TopUsers: ย้ายออกมานอกเงื่อนไข series เพื่อให้โหลดข้อมูลของตัวเองได้ทันที ไม่ต้องรอกราฟ -->
-      <b-col cols="12" class="nuxt-page">
+      <b-col v-if="!hideTopUsers" cols="12" class="nuxt-page">
         <b-collapse id="top-participants" v-model="openTopUsers" class="my-2">
             <TopUsers
                 :filters="filters"
+                :card-clickable="topUsersClickable"
                 @filterAccount="updateAccount"
             />
         </b-collapse>
@@ -86,7 +88,11 @@ export default {
     TopUsers,TopAccounts, SummaryButton },
     props: {
         filters: { type: Object, default: () => ({}) },
-        postsForAnalysis: {type: [Array, Object], required: true}
+        postsForAnalysis: {type: [Array, Object], required: true},
+        // true = ซ่อนกล่องผู้มีส่วนร่วมสูงสุด (TopUsers) เช่นหน้า profile ของบัญชีเดียว
+        hideTopUsers: { type: Boolean, default: false },
+        // false = การ์ด Top 10 User คลิกไม่ได้ (หน้า timeline ใช้ค่าเริ่มต้น true = คลิกแล้วกรองตามบัญชีเหมือนเดิม)
+        topUsersClickable: { type: Boolean, default: true }
     },
   data() {
       return {

@@ -95,6 +95,21 @@
               +{{ post.photos.length - 5 }}
             </div>
           </div>
+          <div v-if="post && Array.isArray(post.photos_text) && post.photos_text.length"
+            class="text-left ai-box mt-2" style="font-size: 15px;font-weight: 500;">
+            <div v-for="(text, idx) in post.photos_text" :key="idx">
+              <div v-if="text && (typeof text === 'string' ? text.trim().length : text.text || (Array.isArray(text.text_sort) && text.text_sort.length))">
+                <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}</b-avatar>
+                <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+                {{ typeof text === 'string' ? text : text.text || text.text_sort.join(' ') }}
+              </div>
+              <div v-if="text && Array.isArray(text.face) && text.face.length">
+                <span v-for="(face, faceIdx) in text.face" :key="faceIdx" v-if="face && face.person_name" class="mr-2 mt-1">
+                  <b-icon icon="person-bounding-box" scale="1"></b-icon> {{ face.person_name }}
+                </span>
+              </div>
+            </div>
+          </div>
 
           <!-- Footer: Engagement -->
           <div class="d-flex align-items-center justify-content-between post-footer">

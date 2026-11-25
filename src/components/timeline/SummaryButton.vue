@@ -14,7 +14,7 @@
                     </span>
                 </b-button>
             </b-col>
-            <b-col cols="auto" sm="auto" class="mt-2 mr-2 px-0">
+            <b-col v-if="!hideTopUsersButton" cols="auto" sm="auto" class="mt-2 mr-2 px-0">
                 <b-button size="sm" :variant="openTopUsers ? 'secondary' : 'outline-secondary'"
                 class="w-100" v-b-toggle href="#top-participants" 
                 @click.prevent>
@@ -114,6 +114,8 @@ export default {
     },
     props: {
         hideTrandButton:{ type: Boolean, default: false },
+        // true = ซ่อนปุ่ม "Top 10 User" (เช่นหน้า profile ของบัญชีเดียว)
+        hideTopUsersButton: { type: Boolean, default: false },
         posts: { type: [Array, Object], required: true }, // postsFromApi (flat array หรือ grouped daily)
         filters: { type: Object, required: true },
         loading: { type: Boolean, default: false },

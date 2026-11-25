@@ -321,34 +321,13 @@
           </b-col>
         </b-row>
         <!-- {{ profilePost.photos_text }} -->
-        <div class="text-left ai-box mt-2"
-          v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length"
-          style="font-size: 15px;font-weight: 500;">
-          <div v-for="(text, idx) in profilePost.photos_text">
-
-            <div v-if="text && text.length">
-              <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}
-              </b-avatar>
-              <span style="background-color: #e5e5e5;border-radius: 50%;width: 10px;height: 6px;">
-              </span>
-              <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
-              {{ text }}
-            </div>
-            <div v-if="text.face">
-              <span v-for="(face, idx) in text.face">
-                <!-- "face.confidence > 0.68" -->
-                <span v-if="face.confidence" class="mr-2 mt-1">
-                  <span style="background: #e5e5e5;
-                    padding: 0px 6px;
-                    border-radius: 13px;">
-                    <b-icon icon="person-bounding-box" scale="1"></b-icon>
-                    {{ face.person_name }}
-                    <span v-b-tooltip.hover :title="'ค่า confidence'" class="small">({{
-                      parseFloat((face.confidence * 100).toFixed(2))
-                    }}%)</span></span></span>
-              </span>
-            </div>
-          </div>
+        <!-- ใบหน้าที่พบในรูป (photos_text[].face) — แบบ TopPostCrad; ข้อความ OCR ดูจากปุ่ม "OCR" -->
+        <div v-if="ocrFaces(profilePost).length" class="text-left ai-box my-2 px-2" style="font-size: 15px;font-weight: 500;">
+          <span v-for="(face, faceIdx) in ocrFaces(profilePost)" :key="'face-' + faceIdx" class="mr-2 mt-1 d-inline-block"
+            style="background: #e5e5e5;padding: 0px 6px;border-radius: 13px;">
+            <b-icon icon="person-bounding-box" scale="1"></b-icon> {{ face.person_name }}
+            <span v-if="Number.isFinite(Number(face.confidence))" v-b-tooltip.hover title="ค่า confidence" class="small">({{ (Number(face.confidence) * 100).toFixed(2) }}%)</span>
+          </span>
         </div>
 
         <div class="tag-domain text-left" v-if="$route.name == 'Profile' || $route.name == 'Dashboard'">
@@ -421,6 +400,21 @@
         </div>
         <template #footer>
           <div class="text-left md-font" style="position: relative;">
+            <!-- === OCR / Analysis buttons === -->
+            <div class="float-right ml-2 mb-2">
+              <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr"
+                v-if="profilePost && profilePost.photos_text && profilePost.photos_text[0] && profilePost.photos_text[0].text">
+                <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
+                  style="filter: brightness(0) invert(1);" />
+                <span class="md-font">OCR</span>
+              </span>
+              <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover title="comments analysis"
+                v-if="profilePost && profilePost.summarize && profilePost.summarize.length">
+                <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png" alt="sparkling"
+                  style="filter: brightness(0) invert(1);" />
+                <span class="md-font">Analysis</span>
+              </span>
+            </div>
             <span v-b-tooltip.hover title="Engagement" v-if="profilePost.source == 'pantip'">
               <span style="font-size:14px;">Engages </span>
               {{
@@ -671,29 +665,14 @@
                 <!-- end yt -->
               </span>
             </span>
-            <!-- === OCR / Analysis buttons === -->
-            <div class="float-right">
-              <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr"
-                v-if="profilePost && profilePost.photos_text && profilePost.photos_text[0] && profilePost.photos_text[0].text">
-                <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
-                  style="filter: brightness(0) invert(1);" />
-                <span class="md-font">OCR</span>
-              </span>
-              <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover title="comments analysis"
-                v-if="profilePost && profilePost.summarize && profilePost.summarize.length">
-                <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png" alt="sparkling"
-                  style="filter: brightness(0) invert(1);" />
-                <span class="md-font">Analysis</span>
-              </span>
-            </div>
             <!-- === /OCR / Analysis buttons === -->
 
           </div>
           <!-- comment content -->
           <!-- === OCR Result Panel === -->
-          <b-collapse :id="'ocr-text' + page + k" class="mt-2"
+          <b-collapse :id="'ocr-text' + page + k" class="w-100" style="clear: both;"
             v-if="profilePost && profilePost.photos_text && profilePost.photos_text.length">
-            <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+            <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px; overflow-y: auto;">
               <div v-for="(text, idx) in profilePost.photos_text" :key="idx">
                 <div class="bold my-2">
                   <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" />
@@ -708,9 +687,9 @@
           </b-collapse>
 
           <!-- === Comments Analysis Panel === -->
-          <b-collapse :id="'summarize' + page + k" class="mt-2"
+          <b-collapse :id="'summarize' + page + k" class="mt-2 w-100" style="clear: both;"
             v-if="profilePost && profilePost.summarize && profilePost.summarize.length">
-            <b-card id="cmt-card" class="text-left" style="max-height: 300px; overflow-y: auto;">
+            <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px; overflow-y: auto;">
               <div>
                 <div class="bold my-2">
                   <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
@@ -1085,6 +1064,21 @@ export default {
     },
   },
   methods: {
+    // ---- ข้อความ/ใบหน้าจากรูป (photos_text) รองรับทั้ง string และ { text | text_sort, face } ----
+    ocrText(entry) {
+      if (typeof entry === "string") return entry.trim();
+      if (!entry || typeof entry !== "object") return "";
+      if (typeof entry.text === "string") return entry.text.trim();
+      if (Array.isArray(entry.text_sort)) return entry.text_sort.filter((x) => typeof x === "string").join(" ").trim();
+      return "";
+    },
+    ocrTexts(post) {
+      return post && Array.isArray(post.photos_text) ? post.photos_text.map((e) => this.ocrText(e)).filter(Boolean) : [];
+    },
+    ocrFaces(post) {
+      if (!post || !Array.isArray(post.photos_text)) return [];
+      return post.photos_text.flatMap((e) => (e && Array.isArray(e.face) ? e.face.filter((f) => f && f.person_name) : []));
+    },
     // ===== TikTok media =====
     // รูปแรกของโพสต์ (photos อาจเป็น array หรือ string)
     tiktokPhoto(post) {
@@ -2234,8 +2228,12 @@ a {
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
   .btn-ocr {
-    right: 100px !important;
-    top: -52px !important;
+    /* จอมือถือ: ปุ่ม OCR อยู่ในแถบท้ายการ์ด (ไม่ลอยขึ้นไปทับป้ายใบหน้า/เนื้อหา) */
+    position: relative !important;
+    right: auto !important;
+    top: 0 !important;
+    display: inline-block;
+    margin-top: 4px;
   }
 
   #box-summarize {

@@ -122,11 +122,29 @@
                                 ย่อบทความ
                             </span>
                         </p>
+                        <!-- AI สรุปวิดีโอ YouTube (แสดงเฉพาะโพสต์ที่มี summarize_youtube) — อยู่ถัดจากรูป -->
+                        <YoutubeSummary :post="item" class="mt-2" />
+                        <!-- ใบหน้าที่พบในรูป (photos_text[].face) — แบบ TopPostCrad; ข้อความ OCR ดูจากปุ่ม "OCR" -->
+                        <div v-if="ocrFaces(item).length" class="text-left ai-box my-2 px-2" style="font-size: 15px;font-weight: 500;">
+                          <span v-for="(face, faceIdx) in ocrFaces(item)" :key="'face-' + faceIdx" class="mr-2 mt-1 d-inline-block"
+                            style="background: #e5e5e5;padding: 0px 6px;border-radius: 13px;">
+                            <b-icon icon="person-bounding-box" scale="1"></b-icon> {{ face.person_name }}
+                            <span v-if="Number.isFinite(Number(face.confidence))" v-b-tooltip.hover title="ค่า confidence" class="small">({{ (Number(face.confidence) * 100).toFixed(2) }}%)</span>
+                          </span>
+                        </div>
                         <div v-if="item.photos && item.photos.length && item.source !=='tiktok'" class="d-block d-md-none text-center">
                             <img class="item-image w-100" style="border-radius: 16px;"  :src="item.photos[0]"/>
                         </div>
                     </b-card-text>
                     <template #footer>
+                        <!-- ปุ่ม OCR + ข้อความในรูป (แบบ TopPostCrad) -->
+                        <div class="float-right ml-2 mb-2" v-if="ocrTexts(item).length">
+                          <span v-b-toggle="'ocr-' + _uid + '-' + index" id="box-summarize" v-b-tooltip.hover title="OCR" class="btn-ocr">
+                            <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="printed-ocr"
+                              style="filter: brightness(0) invert(1);" />
+                            <span class="md-font">OCR</span>
+                          </span>
+                        </div>
                         <b-row class="justify-content-between m-0">
                             <b-col class="px-2 text-left">
                                 <div class=" text-left d-block small mt-1 text-muted" style="font-size: 14px;">
@@ -190,6 +208,17 @@
                             </b-col>
                         </b-row>
 
+                        <div class="clearfix" v-if="ocrTexts(item).length"></div>
+                        <b-collapse :id="'ocr-' + _uid + '-' + index" class="w-100" style="clear: both;" v-if="ocrTexts(item).length">
+                          <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px;overflow-y: auto;">
+                            <div v-for="(ocr, ocrIdx) in ocrTexts(item)" :key="'ocr-' + ocrIdx">
+                              <div class="bold my-2">
+                                <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png" alt="ocr" /> OCR
+                              </div>
+                              <div class="mt-1 px-2 pb-3" style="white-space: pre-line;">{{ ocr }}</div>
+                            </div>
+                          </b-card>
+                        </b-collapse>
                         <!-- comment content -->
                         <div v-if="isCommentOpen(item)" class="timeline-comments text-left mt-2">
                             <div v-for="(cmt, ci) in getComments(item)" :key="'cmt-' + ci" class="timeline-comment">
@@ -250,9 +279,10 @@
 import VueGallerySlideshow from "vue-gallery-slideshow";
 import Highlighter from "vue-highlight-words";
 import TranslateText from "@/components/TranslateText.vue";
+import YoutubeSummary from "@/components/YoutubeSummary.vue";
 
 export default {
-    components: {
+    components: { YoutubeSummary,
         VueGallerySlideshow,
         Highlighter,
         TranslateText
@@ -321,6 +351,21 @@ export default {
         window.removeEventListener("scroll", this.handleScroll);
     },
     methods: {
+      // ---- ข้อความ/ใบหน้าจากรูป (photos_text) รองรับทั้ง string และ { text | text_sort, face } ----
+      ocrText(entry) {
+        if (typeof entry === "string") return entry.trim();
+        if (!entry || typeof entry !== "object") return "";
+        if (typeof entry.text === "string") return entry.text.trim();
+        if (Array.isArray(entry.text_sort)) return entry.text_sort.filter((x) => typeof x === "string").join(" ").trim();
+        return "";
+      },
+      ocrTexts(post) {
+        return post && Array.isArray(post.photos_text) ? post.photos_text.map((e) => this.ocrText(e)).filter(Boolean) : [];
+      },
+      ocrFaces(post) {
+        if (!post || !Array.isArray(post.photos_text)) return [];
+        return post.photos_text.flatMap((e) => (e && Array.isArray(e.face) ? e.face.filter((f) => f && f.person_name) : []));
+      },
         // ตัด marker ที่ปนมากับเนื้อหาก่อนนำไปใช้แสดงผล/ส่งไปแปล
         cleanFullText(item) {
             return item && item.full_text
@@ -469,6 +514,27 @@ export default {
 </script>
 
 <style scoped>
+/* ปุ่ม OCR แบบเดียวกับ TopPostCrad */
+#box-summarize {
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  background-image: linear-gradient(to right, #56a7b6 0%, #6d5fa0 51%, #4b9ed4 100%);
+  border-radius: 12px;
+  padding: 3px 10px;
+  margin-left: 4px;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;
+  position: relative;
+  top: -3px;
+  cursor: pointer;
+}
+#box-summarize:hover {
+  background-image: linear-gradient(to right, #d8cb16 0%, #8474be 70%, #2b5876 100%);
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+
 .highlight2 {
   background-color: #FDD071;
   padding: 0 2px;

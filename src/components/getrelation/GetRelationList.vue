@@ -16,7 +16,22 @@
            <span id="txt-name"> <b>{{influencer.tw_obj.user.name}} </b> 
             <a v-bind:href="'https://twitter.com/' +influencer.tw_from+'/status/'+influencer.tw_obj.uid" class="fa fa-link" target="_blank"></a></span>
            <div id="txt-cmt">{{influencer.tw_obj.full_text}}</div>
-           <div style="color:#4c412b;padding: 0px 20px;"><i class="fa fa-retweet"/> {{influencer.retweet.toLocaleString()}}  <span id="space"> </span>
+             <div v-if="influencer.tw_obj && Array.isArray(influencer.tw_obj.photos_text) && influencer.tw_obj.photos_text.length"
+               class="text-left ai-box mt-2" style="font-size: 15px;font-weight: 500;">
+               <div v-for="(text, idx) in influencer.tw_obj.photos_text" :key="idx">
+                 <div v-if="text && (typeof text === 'string' ? text.trim().length : text.text || (Array.isArray(text.text_sort) && text.text_sort.length))">
+                   <b-avatar size="20px" style="font-size: 12px;background-color:#4e6175;" class="mr-2">{{ idx + 1 }}</b-avatar>
+                   <b-icon icon="textarea-t" scale="1.3"></b-icon> OCR :
+                   {{ typeof text === 'string' ? text : text.text || text.text_sort.join(' ') }}
+                 </div>
+                 <div v-if="text && Array.isArray(text.face) && text.face.length">
+                   <span v-for="(face, faceIdx) in text.face" :key="faceIdx" v-if="face && face.person_name" class="mr-2 mt-1">
+                     <b-icon icon="person-bounding-box" scale="1"></b-icon> {{ face.person_name }}
+                   </span>
+                 </div>
+               </div>
+             </div>
+             <div style="color:#4c412b;padding: 0px 20px;"><i class="fa fa-retweet"/> {{influencer.retweet.toLocaleString()}}  <span id="space"> </span>
            <i class="fa fa-heart" /> {{influencer.favourites.toLocaleString()}}</div>
            </div>
            

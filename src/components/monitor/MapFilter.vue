@@ -66,12 +66,12 @@
             </b-input-group-prepend>
             <b-form-input
               v-model="addKeyword"
-              placeholder="เช่น คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย"
+              placeholder="เช่น คาเฟ่+บรรยากาศดี, มัทฉะ+อร่อย"
               :disabled="!select_changwats.length"
             ></b-form-input>
           </b-input-group>
           <small class="kw-hint" v-if="!excludeOnly">
-            เว้นวรรค หรือ + = AND, จุลภาค (,) = OR
+            + = AND, จุลภาค (,) = OR (เว้นวรรคเป็นส่วนหนึ่งของคำ)
           </small>
         </b-col>
         <b-col md="6" lg="6" class="p-2">
@@ -94,13 +94,16 @@
               id="date-map"
               style="width: 100% !important;height:40px"
               v-model="valueDate"
-              type="date"
+              type="datetime"
               range
               @change="checkDateRange"
-              placeholder="เลือกช่วงเวลา"
+              placeholder="เลือกวันและเวลา"
               :disabled-date="(date) => date >= new Date()"
               value-type="format"
-              format="YYYY-MM-DD"
+              format="YYYY-MM-DD HH:mm"
+              :show-second="false"
+              confirm
+              confirm-text="ตกลง"
               >{{ valueDate }}</date-picker
             >
           </section>
@@ -209,7 +212,7 @@
           <b-row>
             <b-col md="12" lg="12" class="p-2">
                <small class="kw-hint" style="font-size: 15px;">
-               <b>เว้นวรรค</b>  หรือ <span > <i class="fa fa-plus"></i> </span> = AND | <b>จุลภาค ( , )</b> = OR
+               <span > <i class="fa fa-plus"></i> </span> = AND | <b>จุลภาค ( , )</b> = OR <span class="text-muted">(เว้นวรรคเป็นส่วนหนึ่งของคำ)</span>
               </small>
               <b-input-group class="mb-1 my-0 kw-group">
                 <b-input-group-prepend is-text>
@@ -218,7 +221,7 @@
                 <b-form-input
                   v-model="addKeyword"
                   size="sm"
-                  placeholder="เช่น คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย"
+                  placeholder="เช่น คาเฟ่+บรรยากาศดี, มัทฉะ+อร่อย"
                   :disabled="!select_Region.length"
                 ></b-form-input>
               </b-input-group>
@@ -243,12 +246,15 @@
                   id="date-map"
                   style="width: 100% !important;height:40px"
                   v-model="valueDate"
-                  type="date"
+                  type="datetime"
                   range
-                  placeholder="เลือกช่วงเวลา"
+                  placeholder="เลือกวันและเวลา"
                   :disabled-date="(date) => date >= new Date()"
                   value-type="format"
-                  format="YYYY-MM-DD"
+                  format="YYYY-MM-DD HH:mm"
+                  :show-second="false"
+                  confirm
+                  confirm-text="ตกลง"
                   @change="checkDateRange"
                   >{{ valueDate }}</date-picker
                 >
@@ -390,13 +396,10 @@ export default {
       showFilter: true,
       start_date: "",
       end_date: "",
+      // วัน+เวลา ("YYYY-MM-DD HH:mm")
       valueDate: [
-        moment(new Date())
-          .format()
-          .slice(0, 10),
-        moment(new Date())
-          .format()
-          .slice(0, 10),
+        moment().format("YYYY-MM-DD") + " 00:00",
+        moment().format("YYYY-MM-DD") + " 23:59",
       ],
       locPost: [],
       addKeyword: "",
@@ -665,6 +668,23 @@ export default {
     },
   },
   methods: {
+    // วัน+เวลา ("YYYY-MM-DD HH:mm") → ISO local ที่ส่ง API (ค่าที่มีแต่วันที่ → ทั้งวันเหมือนเดิม)
+    toStartIso(v) {
+      const s = String(v || "").trim();
+      return s.length <= 10 ? `${s.slice(0, 10)}T00:00:00` : `${s.replace(" ", "T").slice(0, 16)}:00`;
+    },
+    toEndIso(v) {
+      const s = String(v || "").trim();
+      return s.length <= 10 ? `${s.slice(0, 10)}T23:59:59` : `${s.replace(" ", "T").slice(0, 16)}:59`;
+    },
+    // จัดรูปคำค้น: แยก OR ด้วย , และ AND ด้วย + ตัดช่องว่างหัวท้าย/ซ้ำ (เว้นวรรคกลางคำคงไว้)
+    normalizeKeyword(raw) {
+      return String(raw || "").trim()
+        .split(",")
+        .map(g => g.split("+").map(w => w.trim().replace(/\s+/g, " ")).filter(Boolean).join("+"))
+        .filter(Boolean)
+        .join(",");
+    },
     checkDateRange() {
       const startDate = moment(this.valueDate[0]);
       const endDate = moment(this.valueDate[1]);
@@ -674,7 +694,8 @@ console.log('diffDays',diffDays);
 
       if (diffDays > 31) {
         alert('กรุณาเลือกช่วงเวลาที่ไม่เกิน 30 วัน');
-        this.valueDate[0] = startDate.add(30, 'days').format('YYYY-MM-DD');
+        // เดิมเลื่อน "วันเริ่ม" ไป +30 วัน (ผิด) → จำกัด "วันสิ้นสุด" ไม่เกิน 30 วันจากวันเริ่มแทน
+        this.valueDate = [this.valueDate[0], startDate.clone().add(30, 'days').format('YYYY-MM-DD HH:mm')];
       }
     },
     getColors(posval, neuval, negval) {
@@ -809,8 +830,8 @@ console.log('diffDays',diffDays);
             .format()
             .slice(0, 10) + "T23:59:59";
       } else {
-        this.start_date = this.valueDate[0] + "T00:00:00";
-        this.end_date = this.valueDate[1] + "T23:59:59";
+        this.start_date = this.toStartIso(this.valueDate[0]);
+        this.end_date = this.toEndIso(this.valueDate[1] || this.valueDate[0]);
       }
 
       if (this.select_changwats == "") {
@@ -848,9 +869,9 @@ console.log('diffDays',diffDays);
           this.code_id = this.dataChagwats;
         }
       }
-      // คำค้นหารูปแบบ AND/OR: เว้นวรรคหรือ + = AND, จุลภาค (,) = OR
-      this.keyword = (this.addKeyword || "").trim();
-      this.exclude = (this.excludeKeyword || "").trim();
+      // คำค้นหารูปแบบ AND/OR: + = AND, จุลภาค (,) = OR — เว้นวรรคเป็นส่วนหนึ่งของคำ (ไม่ใช่ AND แล้ว)
+      this.keyword = this.normalizeKeyword(this.addKeyword);
+      this.exclude = this.normalizeKeyword(this.excludeKeyword);
       console.log("code_id", this.code_id);
       this.locPost = [...this.code_id].map((x) => x.name);
       console.log("locPost", this.locPost);

@@ -74,6 +74,16 @@
             </b-col>
         </b-row>
 
+        <!-- Wordcloud / Hashtagcloud ของโพสต์ทั้งกลุ่ม (ตามช่วงวันที่ที่เลือก) — แสดงก่อนตัวกรอง -->
+        <b-row class="mx-0 mb-2">
+            <b-col cols="12" class="px-0">
+                <WordcloudDomain :data="wordcloudData" :is-loading="wordcloudLoading" :error="wordcloudError"
+                    :start="valueDate && valueDate[0] ? valueDate[0] : ''"
+                    :end="valueDate && valueDate[1] ? valueDate[1] : ''"
+                    storage-key="profile-group" @retry="fetchGroupWordcloud" />
+            </b-col>
+        </b-row>
+
         <!-- time line -->
         <b-row id="timeline-container" class="m-0">
             <b-col id="chart" cols="12" class="px-0">
@@ -300,11 +310,11 @@
                 <div v-if="!loadingTimeline && !loadingChart">
                     <!-- ดึงโพสต์ทั้งหมดตอนกด Export (ไล่ทีละหน้า) ให้ได้ครบตามจำนวน "ทั้งหมด X โพสต์"
                          เดิมโหลดล่วงหน้าครั้งเดียว limit สูงสุด 2000 และใช้ page ปัจจุบัน → ได้ไม่ครบ -->
-                    <ExportExcelButton :posts="posts" :filters="formFilters"
+                    <ExportExcelButton :posts="posts" :filters="exportFilters"
                         :fetch-all="fetchAllPostsForExport" :count="Number(total_posts) || 0"
                         :disabled="!total_posts"
                         :full-export="true" inline-comments="json" :comments-limit="20"
-                        filename-prefix="group" />
+                        :filename-prefix="exportFilenamePrefix" />
 
                 </div>
                 <div v-if="!loadingTimeline && !loadingChart" data-v-633a0eda="" class="text-right allpost">
@@ -347,6 +357,7 @@ import ExportExcelButton from "@/components/timeline/ExportExcelButton.vue";
 import StaticTimeline from '@/components/timeline/StaticTimeline.vue';
 import SentimentUsers from './_SentimentUsers.vue';
 import TrendSummary from '@/components/monitorlist/TrendSummary.vue'
+import WordcloudDomain from "@/components/domain/WordcloudDomain.vue";
 export default {
     components: {
         Timeline,
@@ -354,7 +365,8 @@ export default {
         ExportExcelButton,
         StaticTimeline,
         SentimentUsers,
-        TrendSummary
+        TrendSummary,
+        WordcloudDomain
     },
     data() {
         const today = moment();
@@ -413,6 +425,10 @@ export default {
                 accountsInput: [],
             },
             submittedFilters: {},
+            // Wordcloud / Hashtagcloud ของกลุ่ม
+            wordcloudData: null,
+            wordcloudLoading: false,
+            wordcloudError: '',
             datachart: null,
             series: [],
             chartOptions: {
@@ -474,6 +490,21 @@ export default {
         }
     },
     computed: {
+        // prefix ชื่อไฟล์ Export: group_<ชื่อกลุ่ม>
+        exportFilenamePrefix() {
+            const name = this.safeFilePart(this.$route.query.name || this.$route.query.id || '');
+            return name ? `group_${name}` : 'group';
+        },
+        // filter สำหรับ ExportExcelButton (เพิ่มช่วงวันที่/คำค้นที่ใช้ตั้งชื่อไฟล์)
+        exportFilters() {
+            const [from, to] = Array.isArray(this.valueDate) ? this.valueDate : [];
+            return {
+                ...this.formFilters,
+                startLocal: from ? `${from}T00:00:00` : '',
+                endLocal: to ? `${to}T23:59:59` : '',
+                keywordInput: this.formFilters.keyword || '',
+            };
+        },
         pretty() {
             const f = this.filters || this.formFilters || {};
 
@@ -609,8 +640,47 @@ export default {
             //     // this.limit = 10
             // }, 500);
             this.posts = []
+            this.fetchGroupWordcloud(); // ไม่ต้องรอ — โหลดคู่ขนานกับกราฟ/โพสต์
             await this.fetchDataGroupChart();
             await this.apiGetPost();
+        },
+        // ทำชื่อให้ใช้เป็นชื่อไฟล์ได้: ตัดอักขระต้องห้าม (\\ / : * ? " < > | #) และช่องว่างซ้ำ ยาวไม่เกิน 60 ตัว
+        safeFilePart(text) {
+            return String(text || "")
+                .replace(/[\\/:*?"<>|#\u0000-\u001f]+/g, " ")
+                .trim()
+                .replace(/\s+/g, "-")
+                .slice(0, 60);
+        },
+        // Wordcloud / Hashtagcloud ของโพสต์ทั้งกลุ่ม — wordcloud/getWordCloud?start=&end=&group_id=
+        async fetchGroupWordcloud() {
+            const id = this.$route.query.id;
+            if (!id) return;
+            const [from, to] = Array.isArray(this.valueDate) ? this.valueDate : [];
+            const params = { group_id: id };
+            if (from) params.start = `${from}T00:00:00`;
+            if (to) params.end = `${to}T23:59:59`;
+
+            const reqId = (this._wordcloudReq = (this._wordcloudReq || 0) + 1);
+            this.wordcloudLoading = true;
+            this.wordcloudError = '';
+            try {
+                const { data } = await this.axios.get('https://api2.cognizata.com/api/v2/wordcloud/getWordCloud', {
+                    params,
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("token"),
+                        "Content-Type": "application/json",
+                    },
+                });
+                if (reqId !== this._wordcloudReq) return; // มีคำขอใหม่กว่าแล้ว ทิ้งผลเก่า
+                this.wordcloudData = data || null;
+            } catch (error) {
+                if (reqId !== this._wordcloudReq) return;
+                this.wordcloudData = null;
+                this.wordcloudError = 'ไม่สามารถโหลด Wordcloud ได้';
+            } finally {
+                if (reqId === this._wordcloudReq) this.wordcloudLoading = false;
+            }
         },
         onPageChange() {
             this.page = this.page + 1;
@@ -1244,6 +1314,7 @@ export default {
         this.submittedFilters = await this.checkSubmittedFilters();
         await this.getGroupDetail();
         await this.apiGetGroupTargets();
+        this.fetchGroupWordcloud();
         await this.fetchDataGroupChart();
         await this.apiGetPost();
         // console.log(this.$route.query.name);
@@ -1305,7 +1376,10 @@ export default {
 }
 
 .filter-btn {
-    top: 38px;
+    /* ไม่กินพื้นที่แนวตั้ง (height: 0) — ปุ่มลอยทับมุมบนขวาของการ์ดตัวกรองเหมือนเดิม
+       เดิมใช้ top: 38px แต่กล่องปุ่มยังกินที่ ~30px ทำให้ช่องว่างเหนือการ์ดกว้างเกิน */
+    height: 0;
+    top: 8px;
     right: 15px;
     z-index: 2;
 }
@@ -1336,6 +1410,7 @@ export default {
 }
 
 #chart {
+    margin-top: 8px;
     margin-bottom: 0px;
 }
 

@@ -53,8 +53,8 @@
         <b-alert show variant="info" class="no-print">
           <div class="text-left">
             <b-icon icon="info-circle" variant="info"></b-icon>
-            <small>คำค้นหา (AND ใช้ช่องว่างหรือ +, OR ใช้ ,)
-              <span class="text-muted"> ตัวอย่าง: <code>คาเฟ่ บรรยากาศดี, มัทฉะ อร่อย</code> = (คาเฟ่ AND บรรยากาศดี) OR (มัทฉะ AND อร่อย)</span>
+            <small>คำค้นหา (AND ใช้ +, OR ใช้ , — เว้นวรรคถือเป็นส่วนหนึ่งของคำ)
+              <span class="text-muted"> ตัวอย่าง: <code>คาเฟ่+บรรยากาศดี, มัทฉะ+อร่อย</code> = (คาเฟ่ AND บรรยากาศดี) OR (มัทฉะ AND อร่อย)</span>
             </small>
           </div>
         </b-alert>
@@ -64,7 +64,7 @@
             <b-col cols="12" md="6">
               <b-form-group label-for="kw">
                 <b-form-input id="kw" v-model.trim="formFilters.keywordInput"
-                  placeholder="คำค้นหา เช่น คาเฟ่ บรรยากาศดี,มัทฉะ อร่อย" />
+                  placeholder="คำค้นหา เช่น คาเฟ่+บรรยากาศดี, มัทฉะ+อร่อย" />
               </b-form-group>
             </b-col>
             <b-col cols="12" md="6">
@@ -99,9 +99,11 @@
             </b-col>
             <b-col cols="12" md="4">
               <section id="date-picker">
-                <date-picker v-model="valueDate" type="date" range placeholder="เลือกช่วงเวลา" class="w-100" size="sm"
-                  :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD"
-                  @change="checkDateRange()" id="date-domain">{{ valueDate }}</date-picker>
+                <!-- เลือกได้ทั้งวันและเวลา (valueDateTime) — valueDate (เฉพาะวันที่) sync ตามเพื่อใช้กับโหมดรายวัน -->
+                <date-picker v-model="valueDateTime" type="datetime" range placeholder="เลือกวันและเวลา" class="w-100" size="sm"
+                  :disabled-date="(date) => date >= new Date()" value-type="format" format="YYYY-MM-DD HH:mm"
+                  :show-second="false" confirm confirm-text="ตกลง"
+                  @change="onDateTimeChange" id="date-domain">{{ valueDateTime }}</date-picker>
               </section>
             </b-col>
           </b-row>
@@ -267,6 +269,11 @@ export default {
         moment().format("YYYY-MM-DD"),
         moment().format("YYYY-MM-DD"),
       ],
+      // วัน+เวลาที่เลือกใน date picker ("YYYY-MM-DD HH:mm")
+      valueDateTime: [
+        moment().format("YYYY-MM-DD") + " 00:00",
+        moment().format("YYYY-MM-DD") + " 23:59",
+      ],
 
       // Applied filters
       filters: {
@@ -384,10 +391,8 @@ export default {
   mounted() {
     this.username = localStorage.getItem("username");
 
-    const startYMD = this.valueDate[0] || moment().format("YYYY-MM-DD");
-    const endYMD   = this.valueDate[1] || startYMD;
-    this.filters.startLocal = `${startYMD}T00:00:00`;
-    this.filters.endLocal   = `${endYMD}T23:59:59`;
+    this.filters.startLocal = this.pickerStartIso();
+    this.filters.endLocal   = this.pickerEndIso();
 
     const domain = localStorage.getItem("domainArr");
     this.$store.commit("setDomainArr", domain);
@@ -452,6 +457,32 @@ export default {
       return moment(endYMD, "YYYY-MM-DD").diff(moment(startYMD, "YYYY-MM-DD"), "days") + 1;
     },
 
+    // ---- วัน+เวลาจาก date picker → ISO local ที่ส่ง API ----
+    // ค่าเก่าที่มีแต่วันที่ (YYYY-MM-DD) → 00:00:00 / 23:59:59 เหมือนเดิม
+    toStartIso(v) {
+      const s = String(v || "").trim();
+      if (!s) return "";
+      return s.length <= 10 ? `${s.slice(0, 10)}T00:00:00` : `${s.replace(" ", "T").slice(0, 16)}:00`;
+    },
+    toEndIso(v) {
+      const s = String(v || "").trim();
+      if (!s) return "";
+      return s.length <= 10 ? `${s.slice(0, 10)}T23:59:59` : `${s.replace(" ", "T").slice(0, 16)}:59`;
+    },
+    pickerStartIso() {
+      const v = (this.valueDateTime && this.valueDateTime[0]) || this.valueDate[0] || moment().format("YYYY-MM-DD");
+      return this.toStartIso(v);
+    },
+    pickerEndIso() {
+      const v = (this.valueDateTime && this.valueDateTime[1]) || this.valueDate[1] || this.valueDate[0] || moment().format("YYYY-MM-DD");
+      return this.toEndIso(v);
+    },
+    onDateTimeChange() {
+      const dt = Array.isArray(this.valueDateTime) ? this.valueDateTime : [];
+      if (dt[0] && dt[1]) this.valueDate = [String(dt[0]).slice(0, 10), String(dt[1]).slice(0, 10)];
+      this.checkDateRange();
+    },
+
     checkDateRange() {
       const startYMD = this.valueDate?.[0];
       const endYMD   = this.valueDate?.[1];
@@ -483,16 +514,23 @@ export default {
       return arr.join(",");
     },
 
+    // คำค้น: + = AND, , = OR — เว้นวรรคไม่ใช่ AND แล้ว (ถือเป็นส่วนหนึ่งของคำ เช่น "ราคา ทอง")
     buildKeywordParam() {
       const raw = (this.filters.keywordInput || "").trim();
       if (!raw) return "";
-      return raw.split(",").map(g => g.trim().split(/[+\s]+/).filter(Boolean).join("+")).join(",");
+      return raw.split(",")
+        .map(g => g.split("+").map(w => w.trim().replace(/\s+/g, " ")).filter(Boolean).join("+"))
+        .filter(Boolean)
+        .join(",");
     },
 
     buildExcludeKeywordParam() {
       const raw = (this.filters.excludeKeywordInput || "").trim();
       if (!raw) return "";
-      return raw.split(",").map(g => g.trim().split(/[+\s]+/).filter(Boolean).join("+")).join(",");
+      return raw.split(",")
+        .map(g => g.split("+").map(w => w.trim().replace(/\s+/g, " ")).filter(Boolean).join("+"))
+        .filter(Boolean)
+        .join(",");
     },
 
     // ── Build params ─────────────────────────────────────────────────────────
@@ -538,8 +576,9 @@ export default {
         sort_by:     sortRaw === "recent" ? undefined : sortRaw,
         limit,
         page,
-        start: `${ymd}T00:00:00`,
-        end:   `${ymd}T23:59:59`,
+        // วันแรก/วันสุดท้ายใช้เวลาที่เลือกไว้ วันอื่นทั้งวัน
+        start: (this.filters.startLocal || "").slice(0, 10) === ymd ? this.filters.startLocal : `${ymd}T00:00:00`,
+        end:   (this.filters.endLocal || "").slice(0, 10) === ymd ? this.filters.endLocal : `${ymd}T23:59:59`,
       };
 
       if (this.filters?.accounts?.length) p.account  = this.filters.accounts;
@@ -557,8 +596,8 @@ export default {
         source:      this.sourceParam(this.filters.source),
         source_news: this.filters.source_news === "all" ? undefined : this.filters.source_news,
         sort_by:     this.filters.sort_by === "recent"  ? undefined : this.filters.sort_by,
-        start: `${startYMD}T00:00:00`,
-        end:   `${endYMD}T23:59:59`,
+        start: (this.filters.startLocal || "").slice(0, 10) === startYMD ? this.filters.startLocal : `${startYMD}T00:00:00`,
+        end:   (this.filters.endLocal || "").slice(0, 10) === endYMD ? this.filters.endLocal : `${endYMD}T23:59:59`,
       };
       if (this.filters?.accounts?.length) p.account  = this.filters.accounts;
       if (this.filters?.hashtags?.length) p.hashtags = this.filters.hashtags;
@@ -874,6 +913,7 @@ export default {
       if (this.filters.view_mode === "daily") {
         this.dayPageMap = {}; this.dayLimitMap = {}; this.daySortMap = {};
         this.valueDate = [startIso.slice(0, 10), endIso.slice(0, 10)];
+        this.valueDateTime = [startIso.slice(0, 16).replace("T", " "), endIso.slice(0, 16).replace("T", " ")];
       }
       this.postsFromApi = [];
       this.apiTimeline();
@@ -905,10 +945,8 @@ export default {
     handleSearch() {
       const next = { ...this.filters, ...this.formFilters, page: 1 };
 
-      const startYMD  = this.valueDate?.[0] || moment().format("YYYY-MM-DD");
-      const endYMD    = this.valueDate?.[1]  || startYMD;
-      next.startLocal = `${startYMD}T00:00:00`;
-      next.endLocal   = `${endYMD}T23:59:59`;
+      next.startLocal = this.pickerStartIso();
+      next.endLocal   = this.pickerEndIso();
 
       // Normalize accounts
       const rawAcc   = next.accountsInput;
@@ -929,7 +967,7 @@ export default {
       }
 
       const inputkeyword = (this.filters.keywordInput || "").split(",")
-        .map(g => g.trim().split(/\s+|\+/).filter(Boolean)).flat();
+        .map(g => g.split("+").map(w => w.trim()).filter(Boolean)).flat();
       const searchWords = Array.from(new Set([
         ...inputkeyword,
         ...next.hashtags.map(t => `#${t}`),

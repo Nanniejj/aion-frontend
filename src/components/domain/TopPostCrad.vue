@@ -332,6 +332,25 @@
             </div>
             <template #footer>
               <div class="text-left md-font" style="position: relative;">
+                <div class="float-right ml-2 mb-2">
+                  <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR"
+                    class=" btn-ocr"
+                    v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text">
+                    <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png"
+                      alt="printed-ocr" style="filter: brightness(0) invert(1);" />
+                    <span class="md-font">
+                      OCR
+                    </span>
+                  </span>
+                  <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
+                    title="comments analysis" v-if="postDomain.summarize">
+                    <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
+                      alt="sparkling" style="filter: brightness(0) invert(1);" />
+                    <span class="md-font">
+                      Analysis
+                    </span>
+                  </span>
+                </div>
                 <!------------- engages-------------- -->
                 <span v-b-tooltip.hover title="Engagement" v-if="postDomain.source == 'pantip'">
                   <span style="font-size:14px;">Engages </span>
@@ -561,29 +580,10 @@
                     <!-- end yt -->
                   </span>
                 </span>
-                <div class="float-right">
-                  <span v-b-toggle="'ocr-text' + page + k" id="box-summarize" v-b-tooltip.hover title="OCR"
-                    class=" btn-ocr"
-                    v-if="postDomain && postDomain.photos_text && postDomain.photos_text[0] && postDomain.photos_text[0].text">
-                    <img width="25" height="25" src="https://img.icons8.com/sf-regular/50/printed-ocr.png"
-                      alt="printed-ocr" style="filter: brightness(0) invert(1);" />
-                    <span class="md-font">
-                      OCR
-                    </span>
-                  </span>
-                  <span v-b-toggle="'summarize' + page + k" id="box-summarize" v-b-tooltip.hover
-                    title="comments analysis" v-if="postDomain.summarize">
-                    <img width="22" height="22" src="https://img.icons8.com/ios-filled/50/sparkling--v1.png"
-                      alt="sparkling" style="filter: brightness(0) invert(1);" />
-                    <span class="md-font">
-                      Analysis
-                    </span>
-                  </span>
-                </div>
               </div>
 
-              <b-collapse :id="'ocr-text' + page + k" class="mt-2" v-if="postDomain && postDomain.photos_text">
-                <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
+              <b-collapse :id="'ocr-text' + page + k" class="w-100" style="clear: both;" v-if="postDomain && postDomain.photos_text">
+                <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px;overflow-y: scroll;">
                   <div v-for="(text, idx) in postDomain.photos_text">
 
                     <div v-if="text && text.text && text.text.length">
@@ -600,9 +600,9 @@
                   </div>
                 </b-card>
               </b-collapse>
-              <b-collapse :id="'summarize' + page + k" class="mt-2"
+              <b-collapse :id="'summarize' + page + k" class="mt-2 w-100" style="clear: both;"
                 v-if="postDomain.summarize && postDomain.summarize.length">
-                <b-card id="cmt-card" class="text-left" style="max-height: 300px;overflow-y: scroll;">
+                <b-card id="cmt-card" class="text-left w-100" style="max-height: 300px;overflow-y: scroll;">
                   <div>
                     <div class="bold my-2">
                       <img width="22" height="22" src="https://img.icons8.com/ios/50/sparkling.png" />
@@ -1540,8 +1540,12 @@ a {
 
 @media only screen and (min-width: 0px) and (max-width: 760px) {
   .btn-ocr {
-    right: 100px !important;
-    top: -52px !important;
+    /* จอมือถือ: ปุ่ม OCR อยู่ในแถบท้ายการ์ด (ไม่ลอยขึ้นไปทับป้ายใบหน้า/เนื้อหา) */
+    position: relative !important;
+    right: auto !important;
+    top: 0 !important;
+    display: inline-block;
+    margin-top: 4px;
   }
 
   #box-summarize {
